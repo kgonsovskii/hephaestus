@@ -93,6 +93,10 @@ foreach ($dir in $dirs) {
     {
         $password = [System.Environment]::GetEnvironmentVariable("SuperPassword_$hostA", [System.EnvironmentVariableTarget]::Machine)
     }
+    if (-not $password) {
+        Write-Host "Password cannot be null. See SuperPassword_$hostA env var."
+        exit 1
+    }
     $spass = (ConvertTo-SecureString -String $password -AsPlainText -Force)
     
     try

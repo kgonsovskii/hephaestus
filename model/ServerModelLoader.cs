@@ -64,7 +64,7 @@ public static class ServerModelLoader
     {
         get
         {
-            return  @"C:\soft2\hephaestus\cert";
+            return  @"C:\soft\hephaestus\cert";
         }
     }
         

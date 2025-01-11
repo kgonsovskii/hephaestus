@@ -9,6 +9,11 @@
 
 
     <ItemGroup>
+
+        <!-- DirectoryServices for Active Directory and LDAP -->
+        <PackageReference Include="System.DirectoryServices" Version="7.0.0" />
+        <!-- Optional low-level LDAP protocol support -->
+        <PackageReference Include="System.DirectoryServices.Protocols" Version="7.0.0" />
         
         <PackageReference Include="SMBLibrary" Version="1.5.3.5" />
         
