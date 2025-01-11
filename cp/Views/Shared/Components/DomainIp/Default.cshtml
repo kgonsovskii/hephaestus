@@ -1,0 +1,49 @@
+@model List<model.DomainIp>
+
+<div class="row">
+    <div class="frame">
+        <h5>Domain IPs</h5>
+        <form method="post" id="domainIPForm">
+            <div class="form-group" id="domainIPContainer">
+                @for (int i = 0; i < Model.Count; i++)
+                {
+                    <div class="form-row d-flex align-items-center domain-ip-row" style="gap: 10px;">
+                        <input type="text" name="DomainIPs[@i].Domain" value="@Model[i].Domain" class="form-control flex-grow-1" placeholder="Domain" />
+                        <input type="text" name="DomainIPs[@i].IP" value="@Model[i].IP" class="form-control flex-grow-1" placeholder="IP Address" />
+                        <button type="button" class="btn btn-danger btn-remove" onclick="removeRow(this)">Remove</button>
+                    </div>
+                }
+            </div>
+
+            <!-- Add Button -->
+            <button type="button" class="btn btn-primary mt-3" onclick="addNewRow()">Add</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    let rowIndex = @Model.Count; // Initialize rowIndex to track dynamically added rows
+
+    // Function to add a new row
+    function addNewRow() {
+        const container = document.getElementById('domainIPContainer');
+        const newRow = document.createElement('div');
+        newRow.className = 'form-row align-items-center domain-ip-row';
+
+        newRow.innerHTML = `
+            <div class="d-flex align-items-center w-100" style="gap: 10px;">
+                <input type="text" name="DomainIPs[${rowIndex}].Domain" class="form-control flex-grow-1" placeholder="Domain" />
+                <input type="text" name="DomainIPs[${rowIndex}].IP" class="form-control flex-grow-1" placeholder="IP Address" />
+                <button type="button" class="btn btn-danger btn-remove" onclick="removeRow(this)">Remove</button>
+            </div>
+        `;
+        container.appendChild(newRow);
+        rowIndex++; // Increment the row index for the next added row
+    }
+
+    // Function to remove a row
+    function removeRow(button) {
+        const row = button.closest('.form-row');
+        row.remove();
+    }
+</script>

@@ -290,9 +290,9 @@ function Make-Template-Cert {
         
 "@
     $stringList = @()
-    foreach ($domain in $server.domains) 
+    foreach ($domainIp in $server.domainIps) 
     {
-
+        $domain = $domainIp.domain
         $pathPfx = pfxFile($domain)
         if ([string]::IsNullOrEmpty($pathPfx)) {
             throw "The certficiate is not found for domain: $domain"

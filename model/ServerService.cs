@@ -136,8 +136,7 @@ public class ServerService
             if (updateDns)
             {
                 var result = new PsList(server).Run().Where(a => a != server.Server).ToList();
-                if (result.Count >=2 || ServerModelLoader.IsLocalDev)
-                    server.Interfaces = result;
+                server.Interfaces = result;
             }
 
             UpdateIpDomains(server, false);
@@ -215,37 +214,20 @@ public class ServerService
 
     public void UpdateIpDomains(ServerModel server, bool raize)
     {
-        while (server.Domains.Count < server.Interfaces.Count)
-            server.Domains.Add("test.com");
-        var zippedDictionary = server.Interfaces
-            .Zip(server.Domains, (iface, domain) => new { Interface = iface, Domain = domain })
-            .Where(pair => server.Domains.Contains(pair.Domain))
-            .ToDictionary(pair => pair.Interface, pair => pair.Domain);
-        server.IpDomains = zippedDictionary;
-        if (raize && !ServerModelLoader.IsLocalDev)
+        server.DomainIps = server.DomainIps.DistinctBy(a=>a).ToList();
+        for (int i=0; i<= server.DomainIps.Count-1; i++)
         {
-            if (server.Domains.Distinct().Count() != server.Domains.Count)
+            if (!server.Interfaces.Contains(server.DomainIps[i].IP))
             {
-                throw new InvalidOperationException("Domains are not unique");
-            }
-
-            if (server.Domains.Contains("test.com"))
-            {
-                throw new InvalidOperationException("Domains are not unique");
-            }
+                server.DomainIps[i].IP = server.DomainInterface;
+            }   
         }
     }
         
     public void UpdateDNS(ServerModel server)
     {
-        if (ServerModelLoader.IsLocalDev)
-        {
-            server.PrimaryDns = "8.8.8.8";
-            server.SecondaryDns = "8.8.4.4";
-            return;
-        }
-            
-        server.PrimaryDns = server.Interfaces[0];
+        var first = server.Interfaces.Count >= 1 ? server.Interfaces[0] : server.Server;
+        server.PrimaryDns = first;
         server.SecondaryDns = server.PrimaryDns;
         if (server.Interfaces.Count >= 2)
             server.SecondaryDns = server.Interfaces[1];

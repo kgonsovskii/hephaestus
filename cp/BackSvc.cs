@@ -32,8 +32,8 @@ public class BackSvc: BackgroundService
             return server;
         }
         
-        if (request.Host.Host == "localhost")
-            return ServerModelLoader.ipFromHost(ServerModelLoader.DomainControllerStatic);
+        // if (request.Host.Host == "localhost")
+        //     return ServerModelLoader.ipFromHost(ServerModelLoader.DomainControllerStatic);
 
         return ServerModelLoader.ipFromHost(request.Host.Host);
     }

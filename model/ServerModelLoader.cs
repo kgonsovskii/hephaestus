@@ -103,15 +103,11 @@ public static class ServerModelLoader
             return @"C:\data";
         }
     }
-
-    public static bool IsLocalDev => System.Environment.MachineName.ToLower(CultureInfo.InvariantCulture) == "k";
-
+    
     public static string DomainControllerStatic
     {
         get
         {
-            if (IsLocalDev)
-                return "185.247.141.125";
             return "185.247.141.125";
         }
     }

@@ -34,6 +34,10 @@ public class RemoteAuthentication
 
     public static bool IsValidUser(string username, string password, string serverIpAddress, out string msg)
     {
+        #if DEBUG
+            msg = "debug mode";
+            return true;
+#endif
         IntPtr userToken = IntPtr.Zero;
 
         try

@@ -245,12 +245,11 @@ public class CpController : BaseController
             existingModel.ExtractIconFromFront = updatedModel.ExtractIconFromFront;
             existingModel.EmbeddingsForce = updatedModel.EmbeddingsForce;
             existingModel.Embeddings = updatedModel.Embeddings;
-            existingModel.Domains = updatedModel.IpDomains.Values.ToList();
             existingModel.LandingFtp = updatedModel.LandingFtp;
             existingModel.LandingAuto = updatedModel.LandingAuto;
             existingModel.LandingName = updatedModel.LandingName;
 
-            
+            existingModel.DomainIps = updatedModel.DomainIps;
             existingModel.Bux = updatedModel.Bux;
             existingModel.DnSponsor = updatedModel.DnSponsor;
             existingModel.DisableVirus = updatedModel.DisableVirus;

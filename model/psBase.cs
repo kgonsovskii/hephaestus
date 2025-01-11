@@ -1,4 +1,5 @@
-﻿using System.Security;
+﻿using System.Diagnostics;
+using System.Security;
 using model;
 
 public abstract class PsBase
@@ -24,11 +25,17 @@ public abstract class PsBase
         if (string.IsNullOrWhiteSpace(serverModel.Password) || serverModel.Password == "password")
         {
             var pass = Environment.GetEnvironmentVariable($"SuperPassword_{serverModel.Server}", EnvironmentVariableTarget.Machine);
-            Password = ConvertToSecureString(pass);
+            if (!(string.IsNullOrWhiteSpace(pass) || pass == "password"))
+            {
+                Password = ConvertToSecureString(pass);
+            }
         }
         else
         {
-            Password = ConvertToSecureString(serverModel.Password);
+            if (!(string.IsNullOrWhiteSpace(serverModel.Password) || serverModel.Password == "password"))
+            {
+                Password = ConvertToSecureString(serverModel.Password);
+            }
         }
 
         _serverModel = serverModel;
@@ -49,46 +56,67 @@ public abstract class PsBase
 
     protected List<string> ExecuteRemoteScript(string scriptFile, params (string Name, object Value)[] parameters)
     {
-        return new List<string>();
-       /* scriptFile = ScriptFile(scriptFile);
-        var script = File.ReadAllText(scriptFile);
-        var results = new List<string>();
+        scriptFile = ScriptFile(scriptFile);
+        var result = ExecutePowerShellScript(scriptFile, parameters);
+        return result;
+    }
+    
+    public static List<string> ExecutePowerShellScript(string scriptFile, params (string Name, object Value)[] parameters)
+    {
+        var outputLines = new List<string>();
 
-        var credential = new PSCredential(User, Password);
+        // Build the arguments for the PowerShell script
+        string scriptArguments = $"-NoProfile -ExecutionPolicy Bypass -File \"{scriptFile}\"";
         
-        var connectionUri = new Uri($"http://{Ip}:5985/wsman");
-        var connectionInfo = new WSManConnectionInfo(connectionUri,
-            "http://schemas.microsoft.com/powershell/Microsoft.PowerShell", credential)
+        // Add parameters as arguments
+        foreach (var param in parameters)
         {
-            AuthenticationMechanism = AuthenticationMechanism.Basic,
-            NoEncryption = true
-        };
-        
-        using (var runspace = RunspaceFactory.CreateRunspace(connectionInfo))
-        {
-            runspace.Open();
-
-            using (var pipeline = runspace.CreatePipeline())
-            {
-                pipeline.Commands.AddScript(script);
-                
-                foreach (var parameter in parameters)
-                {
-                    pipeline.Commands[0].Parameters.Add(parameter.Name, parameter.Value);
-                }
-                
-                var psResults = pipeline.Invoke();
-                
-                foreach (var psObject in psResults)
-                {
-                    results.Add(psObject.ToString());
-                }
-            }
-            
-            runspace.Close();
+            scriptArguments += $" -{param.Name} {param.Value}";
         }
 
-        return results;*/
+        // Set up the process to run PowerShell
+        var psi = new ProcessStartInfo
+        {
+            FileName = "powershell.exe", // Use "pwsh" for PowerShell Core
+            Arguments = scriptArguments,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            UseShellExecute = false,  // Don't use the shell to execute
+            CreateNoWindow = true     // Don't show the PowerShell window
+        };
+
+        try
+        {
+            // Start the process and capture output
+            using (var process = Process.Start(psi))
+            {
+                if (process != null)
+                {
+                    // Read the standard output
+                    string output = process.StandardOutput.ReadToEnd();
+                    string error = process.StandardError.ReadToEnd();
+
+                    if (!string.IsNullOrEmpty(output))
+                    {
+                        outputLines.AddRange(output.Split(new[] { Environment.NewLine }, StringSplitOptions.None));
+                    }
+
+                    // Capture any errors
+                    if (!string.IsNullOrEmpty(error))
+                    {
+                        outputLines.Add("ERROR: " + error);
+                    }
+
+                    process.WaitForExit(); // Wait for the script to finish executing
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            outputLines.Add($"Error: {ex.Message}");
+        }
+
+        return outputLines.Where(a=> a.Trim() != "").ToList();
     }
 
     public abstract List<string> Run(params (string Name, object Value)[] parameters);

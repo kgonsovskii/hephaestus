@@ -9,8 +9,14 @@ Set-Location -Path $scriptDir
 . ".\current.ps1" -serverName $serverName
 . ".\lib.ps1"
 
-$credentialObject = New-Object System.Management.Automation.PSCredential ($server.login, (ConvertTo-SecureString -String $server.password -AsPlainText -Force))
-$session = New-PSSession -ComputerName $server.server -Credential $credentialObject
+if ([string]::IsNullOrEmpty($server.password)) {
+    $session = Get-PSSession
+}
+else {
+    $credentialObject = New-Object System.Management.Automation.PSCredential ($server.login, (ConvertTo-SecureString -String $server.password -AsPlainText -Force))
+    $session = New-PSSession -ComputerName $server.server -Credential $credentialObject
+    
+}
 
 & (Join-Path -Path $scriptDir -ChildPath "./transfer.ps1") -serverName $serverName -session $session
 

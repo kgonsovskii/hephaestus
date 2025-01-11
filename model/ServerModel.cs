@@ -229,11 +229,20 @@ public class ServerModel
 
     [JsonPropertyName("autoUpdate")] public bool AutoUpdate { get; set; }
 
-    [JsonPropertyName("domains")] public List<string> Domains { get; set; }
+    [JsonPropertyName("domains")] public List<string> Domains => DomainIps.Select(a=>a.Domain).ToList();
 
     [JsonPropertyName("interfaces")] public List<string> Interfaces { get; set; }
 
-    [JsonPropertyName("ipDomains")] public Dictionary<string, string> IpDomains { get; set; }
+    [JsonPropertyName("domainIps")] public List<DomainIp> DomainIps { get; set; }
+
+    public string DomainInterface
+    {
+        get
+        {
+            var x = Interfaces.FirstOrDefault(a=> a != Server);
+            return x ?? Server;
+        }
+    }
 
     [JsonPropertyName("pushesForce")] public bool PushesForce { get; set; } = true;
     [JsonPropertyName("pushes")] public List<string> Pushes { get; set; }
@@ -280,12 +289,11 @@ public class ServerModel
         Track = false;
         AutoStart = false;
         AutoUpdate = false;
-        Domains = new List<string>();
         StartUrls = new List<string>();
         StartDownloads = new List<string>();
         Interfaces = new List<string>();
         Pushes = new List<string>();
-        IpDomains = new();
+        DomainIps = new();
         Front = new List<string>();
         ExtractIconFromFront = false;
         Embeddings = new List<string>();

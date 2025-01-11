@@ -55,8 +55,8 @@ catch {
 
 
 
-for ($i = 0; $i -lt $server.domains.Length; $i++) {
-    $domain = $server.domains[$i]
-    $ip = $server.interfaces[$i]
+for ($i = 0; $i -lt $server.domainIps.Length; $i++) {
+    $domain = $server.domainIps[$i].domain
+    $ip = $server.domainIps[$i].ip
     AddOrUpdateDnsRecord $domain $ip
 }

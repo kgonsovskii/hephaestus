@@ -307,22 +307,7 @@ Layout = "~/Views/Shared/_Layout.cshtml";
 
 
                                 <!-- IP Domains in Frame -->
-                                <div class="frame">
-                                    <h5>IP Domains</h5>
-                                    <div class="form-group">
-                                        @foreach (var item in Model.IpDomains)
-                                        {
-                                            <div class="form-row">
-                                                <div class="col">
-                                                    <div class="input-group">
-                                                        <input type="text" readonly="readonly" name="@item.Key" value="@item.Key" class="form-control"/>
-                                                        <input type="text" name="IpDomains[@item.Key]" value="@item.Value" class="form-control"/>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        }
-                                    </div>
-                                </div>
+                                @await Component.InvokeAsync("DomainIp", new { ipDomainsModel = Model.DomainIps })
 
                                 <div class="form-group">
                                     <label>FTP</label>
