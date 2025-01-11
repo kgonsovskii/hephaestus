@@ -1,0 +1,42 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "model", "model\model.csproj", "{A7BC8490-5D7C-42A3-A5C1-81B55E73AF55}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cp", "cp\cp.csproj", "{F9C741CF-8B52-41A8-A1DF-C2843B6CA2CF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Refiner", "Refiner\Refiner.csproj", "{7524DAF6-7B3C-45DA-8404-745F2DE85E8A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{9C3B6E20-DEEA-4813-B690-EE5C793E56E3}"
+	ProjectSection(SolutionItems) = preProject
+		cp\nullhost.ps1 = cp\nullhost.ps1
+		cp\publish.ps1 = cp\publish.ps1
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "stuff", "stuff", "{3B6BF360-603F-4144-8B3C-023E34701D88}"
+	ProjectSection(SolutionItems) = preProject
+		db\db.sql = db\db.sql
+		php\dn.php = php\dn.php
+		php\download.html = php\download.html
+		php\download.php = php\download.php
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A7BC8490-5D7C-42A3-A5C1-81B55E73AF55}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A7BC8490-5D7C-42A3-A5C1-81B55E73AF55}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A7BC8490-5D7C-42A3-A5C1-81B55E73AF55}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A7BC8490-5D7C-42A3-A5C1-81B55E73AF55}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F9C741CF-8B52-41A8-A1DF-C2843B6CA2CF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F9C741CF-8B52-41A8-A1DF-C2843B6CA2CF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F9C741CF-8B52-41A8-A1DF-C2843B6CA2CF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F9C741CF-8B52-41A8-A1DF-C2843B6CA2CF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7524DAF6-7B3C-45DA-8404-745F2DE85E8A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7524DAF6-7B3C-45DA-8404-745F2DE85E8A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7524DAF6-7B3C-45DA-8404-745F2DE85E8A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7524DAF6-7B3C-45DA-8404-745F2DE85E8A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

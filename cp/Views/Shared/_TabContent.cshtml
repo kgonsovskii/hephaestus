@@ -1,0 +1,144 @@
+﻿@model model.TabModel
+
+
+<div class="form-group">
+    <label>Tracking Serie</label>
+    <input name="TrackSerie" value="@Model.TrackSerie" class="form-control"/>
+    <span class="text-danger"></span>
+
+    <label>
+        <input type="checkbox" name="TrackDesktop" value="true" @(Model.TrackDesktop ? "checked" : "")/> Put file with Tracking Serie/Number on desktop
+    </label>
+    <span class="text-danger"></span>
+</div>
+
+<div class="form-group">
+    <label>
+        <input type="checkbox" name="DisableVirus" value="true" @(Model.DisableVirus ? "checked" : "")/> Disable Virus
+    </label>
+    <span class="text-danger"></span>
+</div>
+
+<!-- Icon Upload -->
+<div class="form-group">
+    <img class="icon-preview" src="/GetIcon" alt="Icon Preview" class="img-thumbnail"/>
+
+    <label>
+        <input type="checkbox" name="ExtractIconFromFront" value="true" @(Model.ExtractIconFromFront ? "checked" : "")/> Extract Icon From Front
+    </label>
+    <span class="text-danger"></span>
+</div>
+
+<div class="form-group">
+    <label for="iconFile">Upload Icon (ICO file)</label>
+    <input type="file" id="iconFile" name="iconFile" accept=".ico" class="form-control-file">
+    <span class="text-danger"></span>
+</div>
+
+<div class="form-group">
+    <h5>Troyan</h5>
+    <a href="/GetExe">Download troyan</a>
+    <span class="text-danger"></span>
+</div>
+
+<div class="form-group">
+    <h5>Troyan</h5>
+    <a href="/GetExeMono">Download troyan (Mono)</a>
+    <span class="text-danger"></span>
+</div>
+
+<div class="form-group">
+    <h5>Troyan VBS</h5>
+    <a href="@Model.DnVbsLinkShort">Download troyan VBS</a>
+    <span class="text-danger"></span>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <a target="_blank" href="@Model.PhpVbsLinkShort">PHP code for your site</a>
+</div>
+
+<hr/>
+<div class="form-group">
+    <label>
+        <input type="checkbox" name="LandingAuto" value="true" @(Model.LandingAuto ? "checked" : "")/> Auto Landing (5 minutes based renewal)
+    </label>
+    <span class="text-danger"></span>
+
+    <label>Landing Name</label>
+    <input name="LandingName" value="@Model.LandingName" class="form-control"/>
+    <span class="text-danger"></span>
+
+    <label>Landing Ftp</label>
+    <input name="LandingFtp" value="@Model.LandingFtp" class="form-control"/>
+    <span class="text-danger"></span>
+</div>
+<hr/>
+
+<div class="form-group">
+    <label>Pushes</label><input type="checkbox" name="PushesForce" value="true" @(Model.PushesForce ? "checked" : "")/> Force
+    <textarea name="Pushes" class="form-control" rows="3">
+        @foreach (var push in Model.Pushes)
+        {
+            @push.Trim()
+            @if (Model.Pushes.IndexOf(push) < Model.Pushes.Count - 1)
+            {
+                @Html.Raw(Environment.NewLine)
+            }
+        }
+                                        </textarea>
+    <span class="text-danger"></span>
+</div>
+
+
+<div class="frame">
+    <div class="form-group">
+        <label>StartDownloads</label><input type="checkbox" name="StartDownloadsForce" value="true" @(Model.StartDownloadsForce ? "checked" : "")/> Force
+        <textarea name="StartDownloads" class="form-control" rows="3">
+            @foreach (var startDn in Model.StartDownloads)
+                {
+                    @startDn.Trim()
+                    @if (Model.StartDownloads.IndexOf(startDn) < Model.StartDownloads.Count - 1)
+                    {
+                    @Html.Raw(Environment.NewLine)
+                }
+            }
+                                </textarea>
+        <span class="text-danger"></span>
+    </div>
+</div>
+
+<div class="frame">
+    <div class="form-group">
+        <label>StartUrls</label><input type="checkbox" name="StartUrlsForce" value="true" @(Model.StartUrlsForce ? "checked" : "")/> Force
+        <textarea name="StartUrls" class="form-control" rows="3">
+                                        @foreach (var startUrl in Model.StartUrls)
+            {
+            @startUrl.Trim()
+            @if (Model.StartUrls.IndexOf(startUrl) < Model.StartUrls.Count - 1)
+            {
+            @Html.Raw(Environment.NewLine)
+            }
+            }
+                                </textarea>
+        <span class="text-danger"></span>
+    </div>
+</div>
+
+
+<div class="form-group">
+    <label>Front</label><input type="checkbox" name="FrontForce" value="true" @(Model.FrontForce ? "checked" : "")/> Force
+    <div class="file-upload-container">
+        <label for="frontInput">Upload Files</label>
+        <input type="file" id="frontInput" name="newFront" multiple>
+        <ul id="frontList" class="file-upload-list">
+        </ul>
+    </div>
+</div>
+
+<div class="form-group">
+    <label>Embeddings</label><input type="checkbox" name="EmbeddingsForce" value="true" @(Model.EmbeddingsForce ? "checked" : "")/> Force
+    <div class="file-upload-container">
+        <label for="embeddingsInput">Upload Files</label>
+        <input type="file" id="embeddingsInput" name="newEmbeddings" multiple>
+        <ul id="embeddingsList" class="file-upload-list">
+        </ul>
+    </div>
+</div>

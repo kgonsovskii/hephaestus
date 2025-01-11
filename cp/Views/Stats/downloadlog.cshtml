@@ -1,0 +1,50 @@
+@model IEnumerable<model.DownloadLog>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Download Log</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+<h1>Download Log</h1>
+<table>
+    <thead>
+    <tr>
+        <th>Ip</th>
+        <th>Server</th>
+        <th>Profile</th>
+        <th>FirstSeen</th>
+        <th>LastSeen</th>
+        <th>NumberOfRequests</th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var stat in Model)
+    {
+        <tr>
+            <td>@stat.Ip</td>
+            <td>@stat.Server</td>
+            <td>@stat.Profile</td>
+            <td>@stat.FirstSeen.ToString("yy-MM-dd hh:mm:ss")</td>
+            <td>@stat.LastSeen.ToString("yy-MM-dd hh:mm:ss")</td>
+            <td>@stat.NumberOfRequests</td>
+        </tr>
+    }
+    </tbody>
+</table>
+</body>
+</html>

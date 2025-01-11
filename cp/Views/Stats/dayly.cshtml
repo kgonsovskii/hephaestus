@@ -1,0 +1,54 @@
+@model IEnumerable<model.DailyServerSerieStats>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Daily Server Serie Stats</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+<h1>Daily Server Serie Stats</h1>
+<table>
+    <thead>
+    <tr>
+        <th>Date</th>
+        <th>Server</th>
+        <th>Serie</th>
+        <th>Unique ID Count</th>
+        <th>Elevated Unique ID Count</th>
+        <th>Number Of Downloads</th>
+        <th>InstallCount</th>
+        <th>UnInstallCount</th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var stat in Model)
+    {
+        <tr>
+            <td>@stat.Date.ToString("yyyy-MM-dd")</td>
+            <td>@stat.Server</td>
+            <td>@stat.Serie</td>
+            <td>@stat.UniqueIDCount</td>
+            <td>@stat.ElevatedUniqueIDCount</td>
+            <td>@stat.NumberOfDownloads</td>
+            <td>@stat.InstallCount</td>
+            <td>@stat.UnInstallCount</td>
+        </tr>
+    }
+    </tbody>
+</table>
+</body>
+</html>

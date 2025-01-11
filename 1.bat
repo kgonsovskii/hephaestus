@@ -1,0 +1,1 @@
+powershell -File C:\Soft\hephaestus\sys\compile.ps1
