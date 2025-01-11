@@ -1,0 +1,380 @@
+{
+  "format": 1,
+  "restore": {
+    "C:\\soft\\hephaestus\\src\\Tests\\Tests.csproj": {}
+  },
+  "projects": {
+    "C:\\soft\\hephaestus\\src\\cp\\cp.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "C:\\soft\\hephaestus\\src\\cp\\cp.csproj",
+        "projectName": "cp",
+        "projectPath": "C:\\soft\\hephaestus\\src\\cp\\cp.csproj",
+        "packagesPath": "C:\\Users\\k\\.nuget\\packages",
+        "outputPath": "C:\\soft\\hephaestus\\src\\cp\\obj\\",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "C:\\soft\\hephaestus\\src\\NuGet.Config",
+          "C:\\Users\\k\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "net9.0"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net9.0": {
+            "targetAlias": "net9.0",
+            "projectReferences": {
+              "C:\\soft\\hephaestus\\src\\model\\model.csproj": {
+                "projectPath": "C:\\soft\\hephaestus\\src\\model\\model.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        },
+        "SdkAnalysisLevel": "10.0.200"
+      },
+      "frameworks": {
+        "net9.0": {
+          "targetAlias": "net9.0",
+          "dependencies": {
+            "SMBLibrary": {
+              "target": "Package",
+              "version": "[1.5.3.5, )"
+            },
+            "System.Data.SqlClient": {
+              "target": "Package",
+              "version": "[4.9.0, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.AspNetCore.App": {
+              "privateAssets": "none"
+            },
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.201/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "C:\\soft\\hephaestus\\src\\model\\model.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "C:\\soft\\hephaestus\\src\\model\\model.csproj",
+        "projectName": "model",
+        "projectPath": "C:\\soft\\hephaestus\\src\\model\\model.csproj",
+        "packagesPath": "C:\\Users\\k\\.nuget\\packages",
+        "outputPath": "C:\\soft\\hephaestus\\src\\model\\obj\\",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "C:\\soft\\hephaestus\\src\\NuGet.Config",
+          "C:\\Users\\k\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "net9.0"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net9.0": {
+            "targetAlias": "net9.0",
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        },
+        "SdkAnalysisLevel": "10.0.200"
+      },
+      "frameworks": {
+        "net9.0": {
+          "targetAlias": "net9.0",
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.201/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "C:\\soft\\hephaestus\\src\\Refiner\\Refiner.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "C:\\soft\\hephaestus\\src\\Refiner\\Refiner.csproj",
+        "projectName": "Refiner",
+        "projectPath": "C:\\soft\\hephaestus\\src\\Refiner\\Refiner.csproj",
+        "packagesPath": "C:\\Users\\k\\.nuget\\packages",
+        "outputPath": "C:\\soft\\hephaestus\\src\\Refiner\\obj\\",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "C:\\soft\\hephaestus\\src\\NuGet.Config",
+          "C:\\Users\\k\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "net9.0"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net9.0": {
+            "targetAlias": "net9.0",
+            "projectReferences": {
+              "C:\\soft\\hephaestus\\src\\model\\model.csproj": {
+                "projectPath": "C:\\soft\\hephaestus\\src\\model\\model.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        },
+        "SdkAnalysisLevel": "10.0.200"
+      },
+      "frameworks": {
+        "net9.0": {
+          "targetAlias": "net9.0",
+          "dependencies": {
+            "System.Data.SqlClient": {
+              "target": "Package",
+              "version": "[4.9.0, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.201/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "C:\\soft\\hephaestus\\src\\Tests\\Tests.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "C:\\soft\\hephaestus\\src\\Tests\\Tests.csproj",
+        "projectName": "Tests",
+        "projectPath": "C:\\soft\\hephaestus\\src\\Tests\\Tests.csproj",
+        "packagesPath": "C:\\Users\\k\\.nuget\\packages",
+        "outputPath": "C:\\soft\\hephaestus\\src\\Tests\\obj\\",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "C:\\soft\\hephaestus\\src\\NuGet.Config",
+          "C:\\Users\\k\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "net9.0"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net9.0": {
+            "targetAlias": "net9.0",
+            "projectReferences": {
+              "C:\\soft\\hephaestus\\src\\cp\\cp.csproj": {
+                "projectPath": "C:\\soft\\hephaestus\\src\\cp\\cp.csproj"
+              },
+              "C:\\soft\\hephaestus\\src\\model\\model.csproj": {
+                "projectPath": "C:\\soft\\hephaestus\\src\\model\\model.csproj"
+              },
+              "C:\\soft\\hephaestus\\src\\Refiner\\Refiner.csproj": {
+                "projectPath": "C:\\soft\\hephaestus\\src\\Refiner\\Refiner.csproj"
+              },
+              "C:\\soft\\hephaestus\\src\\TroyanBuilder\\TroyanBuilder.csproj": {
+                "projectPath": "C:\\soft\\hephaestus\\src\\TroyanBuilder\\TroyanBuilder.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        },
+        "SdkAnalysisLevel": "10.0.200"
+      },
+      "frameworks": {
+        "net9.0": {
+          "targetAlias": "net9.0",
+          "dependencies": {
+            "FluentAssertions": {
+              "target": "Package",
+              "version": "[6.13.0, )"
+            },
+            "HtmlAgilityPack": {
+              "target": "Package",
+              "version": "[1.11.47, )"
+            },
+            "MSTest.TestAdapter": {
+              "target": "Package",
+              "version": "[3.1.2, )"
+            },
+            "MSTest.TestFramework": {
+              "target": "Package",
+              "version": "[3.1.2, )"
+            },
+            "Microsoft.NET.Test.Sdk": {
+              "target": "Package",
+              "version": "[17.13.0, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.201/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "C:\\soft\\hephaestus\\src\\TroyanBuilder\\TroyanBuilder.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "C:\\soft\\hephaestus\\src\\TroyanBuilder\\TroyanBuilder.csproj",
+        "projectName": "TroyanBuilder",
+        "projectPath": "C:\\soft\\hephaestus\\src\\TroyanBuilder\\TroyanBuilder.csproj",
+        "packagesPath": "C:\\Users\\k\\.nuget\\packages",
+        "outputPath": "C:\\soft\\hephaestus\\src\\TroyanBuilder\\obj\\",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "C:\\soft\\hephaestus\\src\\NuGet.Config",
+          "C:\\Users\\k\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "net9.0"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net9.0": {
+            "targetAlias": "net9.0",
+            "projectReferences": {
+              "C:\\soft\\hephaestus\\src\\model\\model.csproj": {
+                "projectPath": "C:\\soft\\hephaestus\\src\\model\\model.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        },
+        "SdkAnalysisLevel": "10.0.200"
+      },
+      "frameworks": {
+        "net9.0": {
+          "targetAlias": "net9.0",
+          "dependencies": {
+            "Microsoft.PowerShell.SDK": {
+              "target": "Package",
+              "version": "[7.5.0, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.201/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    }
+  }
+}

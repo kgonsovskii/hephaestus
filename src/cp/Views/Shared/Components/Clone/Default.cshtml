@@ -1,0 +1,66 @@
+@model model.CloneModel
+
+<h2>Clone Server</h2>
+
+<div>
+    <li>Server 2022 от 2 CPU, 2GB RAM, 40GB SPACE</li>
+    <li>Клонирование может занять до 20 минут</li>
+    <li>Обновление пройдет быстрее</li>
+    <li>Перед обновлением сохраните снимок сервера</li>
+    <li>После запуска нажимте на кнопку Лог и обновите, там что-то должно происходить</li>
+    <li>Закончится процесс --THE END фразой</li>
+
+    <li>* Памятка по IP адресам сервера. В зависимости от хостера множество дополнительных IP адресов либо появляются автоматически либо их нужно
+        прописывать вручную о чем у них спросить. Это невозможно автоматизировать</li>
+
+    <li>На новом сервере перестроить троян и сервер. Обязательно указать Alias - домен привязнный к IP сервера</li>
+</div>
+
+<hr/>
+
+<div class="row">
+    <div class="col-md-6">
+        <label asp-for="CloneServerIp" class="form-label">Server IP</label>
+        <input asp-for="CloneServerIp" name="CloneServerIp"  value="@Model.CloneServerIp" id="cloneServerIp" class="form-control" />
+    </div>
+    <div class="col-md-6">
+        <label asp-for="CloneUser" class="form-label">User</label>
+        <input asp-for="CloneUser"   name="CloneUser" value="@Model.CloneUser"  id="cloneUser" class="form-control" />
+    </div>
+</div>
+
+<div class="row mt-3">
+    <div class="col-md-6">
+        <label asp-for="ClonePassword" class="form-label">Password</label>
+        <input asp-for="ClonePassword"  name="ClonePassword"  value="@Model.ClonePassword" id="clonePassword" class="form-control" />
+    </div>
+</div>
+
+<div class="row mt-3">
+    <div class="col-md-6">
+        <button type="button" class="btn btn-primary" id="cloneServerBtn">Clone Server</button>
+    </div>
+</div>
+
+<a href="/Clone/ViewLog" class="btn btn-secondary mt-3">=== View Log ===</a>
+
+<div id="cloneResult" class="mt-3"></div>
+
+<script>
+document.getElementById("cloneServerBtn").addEventListener("click", function () {
+    var serverIp = document.getElementById("cloneServerIp").value;
+    var user = document.getElementById("cloneUser").value;
+    var password = document.getElementById("clonePassword").value;
+
+    fetch('/clone', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cloneServerIp: serverIp, cloneUser: user, clonePassword: password })
+    })
+    .then(response => response.text())
+    .then(data => {
+        document.getElementById("cloneResult").innerHTML = `<div class="alert alert-success">${data}</div>`;
+    })
+    .catch(error => console.error('Error:', error));
+});
+</script>

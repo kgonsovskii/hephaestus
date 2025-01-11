@@ -1,0 +1,12 @@
+c:\soft\hephaestus\src\model\bin\Release\net9.0\model.deps.json
+c:\soft\hephaestus\src\model\bin\Release\net9.0\model.dll
+c:\soft\hephaestus\src\model\bin\Release\net9.0\model.pdb
+c:\soft\hephaestus\src\model\obj\Release\net9.0\model.GeneratedMSBuildEditorConfig.editorconfig
+c:\soft\hephaestus\src\model\obj\Release\net9.0\model.AssemblyInfoInputs.cache
+c:\soft\hephaestus\src\model\obj\Release\net9.0\model.AssemblyInfo.cs
+c:\soft\hephaestus\src\model\obj\Release\net9.0\model.csproj.CoreCompileInputs.cache
+c:\soft\hephaestus\src\model\obj\Release\net9.0\model.sourcelink.json
+c:\soft\hephaestus\src\model\obj\Release\net9.0\model.dll
+c:\soft\hephaestus\src\model\obj\Release\net9.0\refint\model.dll
+c:\soft\hephaestus\src\model\obj\Release\net9.0\model.pdb
+c:\soft\hephaestus\src\model\obj\Release\net9.0\ref\model.dll
