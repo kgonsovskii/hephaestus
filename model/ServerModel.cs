@@ -229,21 +229,14 @@ public class ServerModel
 
     [JsonPropertyName("autoUpdate")] public bool AutoUpdate { get; set; }
 
-    [JsonPropertyName("domains")] public List<string> Domains => DomainIps.Select(a=>a.Domain).ToList();
+    public List<string> Domains(string name) => DomainIps.Where(a=> a.Name == name).SelectMany(a=>a.Domains).ToList();
 
+    public List<string> AllDomains() => DomainIps.SelectMany(a=>a.Domains).ToList();
+    
     [JsonPropertyName("interfaces")] public List<string> Interfaces { get; set; }
 
     [JsonPropertyName("domainIps")] public List<DomainIp> DomainIps { get; set; }
-
-    public string DomainInterface
-    {
-        get
-        {
-            var x = Interfaces.FirstOrDefault(a=> a != Server);
-            return x ?? Server;
-        }
-    }
-
+    
     [JsonPropertyName("pushesForce")] public bool PushesForce { get; set; } = true;
     [JsonPropertyName("pushes")] public List<string> Pushes { get; set; }
         

@@ -253,11 +253,6 @@ public class CpController : BaseController
             existingModel.Bux = updatedModel.Bux;
             existingModel.DnSponsor = updatedModel.DnSponsor;
             existingModel.DisableVirus = updatedModel.DisableVirus;
-            
-            if (!ContainsUniqueValues(existingModel.Domains))
-            {
-                return View("Index", new ServerModel() {Server = server, Result = "Домены должны быть уникальными" });
-            }
 
             //service
             var result = _serverService.PostServer(server, existingModel, action, "kill");
@@ -270,22 +265,7 @@ public class CpController : BaseController
             return View("Index", new ServerModel() {Server = server, Result = e.Message + "\r\n" + e.StackTrace });
         }
     }
-
-    private static bool ContainsUniqueValues(List<string> strings)
-    {
-        HashSet<string> uniqueStrings = new HashSet<string>();
-
-        foreach (var str in strings)
-        {
-            if (!uniqueStrings.Add(str))
-            {
-                // If Add returns false, the string was already in the HashSet
-                return false;
-            }
-        }
-        return true;
-    }
-
+    
     #region BOT
     [HttpGet("/{profile}/{random}/{target}/DnLog")]
     public async Task<IActionResult> DnLog(string profile, string random, string target)

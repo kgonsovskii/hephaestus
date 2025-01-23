@@ -156,7 +156,8 @@ function HexToBytes($hex) {
 function CreateWebsite {
     param (
         [string]$domain,
-        [string]$ip
+        [string]$ip,
+        [bool]$isFirst
     )
     
     $hostHeader = $domain
@@ -191,7 +192,10 @@ function CreateWebsite {
         if ($httpsBinding) {
             Remove-WebBinding -Name $siteName -Protocol "https" -Port $portHttps --HostHeader $hostHeader
         }
-        New-WebBinding -Name $siteName -IPAddress $ip -Port $portHttp -HostHeader "" -Protocol "http" 
+        if ($isFirst)
+        {
+            New-WebBinding -Name $siteName -IPAddress $ip -Port $portHttp -HostHeader "" -Protocol "http" 
+        }
         New-WebBinding -Name $siteName -IPAddress $ip -Port $portHttps -HostHeader $hostHeader -Protocol "https" 
         $httpsBinding = Get-WebBinding -Port $portHttps -Name $siteName -HostHeader $hostHeader -Protocol "https"    
         $httpsBinding.AddSslCertificate($certRootMy.Thumbprint, "My")
@@ -205,7 +209,7 @@ function CreateWebsite {
 for ($i = 0; $i -lt $server.domainIps.Length; $i++) {
     $domain = $server.domainIps[$i].domain
     $ip = $server.domainIps[$i].ip
-    CreateWebsite -domain $domain $ip
+    CreateWebsite -domain $domain $ip -isFirst ($i -eq 0)
 }
 
 Write-Host "Done IIS"

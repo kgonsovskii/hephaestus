@@ -135,8 +135,15 @@ public class ServerService
 
             if (updateDns)
             {
-                var result = new PsList(server).Run().Where(a => a != server.Server).ToList();
-                server.Interfaces = result;
+                if (server.Server == "127.0.0.1")
+                {
+                    server.Interfaces = new List<string>() {"127.0.0.1", "127.0.0.2", "127.0.0.3", "127.0.0.4", "127.0.0.5"};    
+                }
+                else
+                {
+                    var result = new PsList(server).Run().Where(a => a != server.Server).ToList();
+                    server.Interfaces = result;                    
+                }
             }
 
             UpdateIpDomains(server, false);
@@ -214,12 +221,27 @@ public class ServerService
 
     public void UpdateIpDomains(ServerModel server, bool raize)
     {
-        server.DomainIps = server.DomainIps.DistinctBy(a=>a).ToList();
+        for (int i = 0; i <= server.DomainIps.Count - 1; i++)
+        {
+            var domainIp = server.DomainIps[i];
+            var cnt = server.DomainIps.Count(a => a.Name == domainIp.Name);
+            if (cnt >= 2 || string.IsNullOrEmpty(domainIp.Name))
+            {
+                domainIp.Name = Guid.NewGuid().ToString();
+            }
+        }
+
         for (int i=0; i<= server.DomainIps.Count-1; i++)
         {
             if (!server.Interfaces.Contains(server.DomainIps[i].IP))
             {
-                server.DomainIps[i].IP = server.DomainInterface;
+                var allIps = server.DomainIps.Select(a => a.IP).ToList();
+                var freeDomain = server.Interfaces.FirstOrDefault(a=> !allIps.Contains(a));
+                if (freeDomain == null)
+                {
+                    freeDomain = "_NOT_";
+                }
+                server.DomainIps[i].IP = freeDomain;
             }   
         }
     }
@@ -253,7 +275,7 @@ public class ServerService
         File.WriteAllText(DataFile(serverName),
             JsonSerializer.Serialize(serverModel, JSO));
 
-        if (action != "none")
+        if (!(action == "none" || serverName == "127.0.0.1"))
         {
             var result = RunScript(serverModel.Server, SysScript("compile"),
                 new ValueTuple<string, object>("serverName", serverModel.Server),

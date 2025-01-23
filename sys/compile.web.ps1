@@ -9,23 +9,38 @@ Set-Location -Path $scriptDir
 . ".\current.ps1" -serverName $serverName
 . ".\lib.ps1"
 
-if ([string]::IsNullOrEmpty($server.password)) {
+$ipv4Addresses = Get-NetIPAddress -AddressFamily IPv4 | Select-Object -ExpandProperty IPAddress
+
+if ($serverName -in $ipv4Addresses)
+{
     $session = Get-PSSession
+    & ".\transfer.ps1"  -serverName $serverName -session $null
+    & ".\dns.ps1"  -serverName $serverName
+    & ".\iis.ps1"  -serverName $serverName
+    & ".\ftp.ps1"  -serverName $serverName
 }
 else {
-    $credentialObject = New-Object System.Management.Automation.PSCredential ($server.login, (ConvertTo-SecureString -String $server.password -AsPlainText -Force))
+    $pass = $server.password
+    if ([string]::IsNullOrEmpty($passs) -or $pass -eq "password")
+    {
+        $pass = [System.Environment]::GetEnvironmentVariable("SuperPassword_$serverName", [System.EnvironmentVariableTarget]::Machine)
+    }
+    $credentialObject = New-Object System.Management.Automation.PSCredential ($server.login, (ConvertTo-SecureString -String $pass -AsPlainText -Force))
     $session = New-PSSession -ComputerName $server.server -Credential $credentialObject
+
+    
+    & (Join-Path -Path $scriptDir -ChildPath "./transfer.ps1") -serverName $serverName -session $session
+
+    if ($action -eq "apply")
+    {
+        Invoke-RemoteSysScript -Session $session -ArgumentList $serverName, "dns.ps1"
+
+        Invoke-RemoteSysScript -Session $session -ArgumentList $serverName, "iis.ps1"
+
+        Invoke-RemoteSysScript -Session $session -ArgumentList $serverName, "ftp.ps1"
+    }
     
 }
 
-& (Join-Path -Path $scriptDir -ChildPath "./transfer.ps1") -serverName $serverName -session $session
 
-if ($action -eq "apply")
-{
-    Invoke-RemoteSysScript -Session $session -ArgumentList $serverName, "dns.ps1"
-
-    Invoke-RemoteSysScript -Session $session -ArgumentList $serverName, "iis.ps1"
-
-    Invoke-RemoteSysScript -Session $session -ArgumentList $serverName, "ftp.ps1"
-}
 Write-Host "Compile Web complete"

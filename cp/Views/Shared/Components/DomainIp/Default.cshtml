@@ -8,8 +8,9 @@
                 @for (int i = 0; i < Model.Count; i++)
                 {
                     <div class="form-row d-flex align-items-center domain-ip-row" style="gap: 10px;">
-                        <input type="text" name="DomainIPs[@i].Domain" value="@Model[i].Domain" class="form-control flex-grow-1" placeholder="Domain" />
+                        <input type="text" name="DomainIPs[@i].Name" value="@Model[i].Name" class="form-control flex-grow-1" placeholder="Name" />
                         <input type="text" name="DomainIPs[@i].IP" value="@Model[i].IP" class="form-control flex-grow-1" placeholder="IP Address" />
+                        <button type="button" class="btn btn-primary btn-primary" onclick="manageRow(this)">Manage</button>
                         <button type="button" class="btn btn-danger btn-remove" onclick="removeRow(this)">Remove</button>
                     </div>
                 }
@@ -32,8 +33,9 @@
 
         newRow.innerHTML = `
             <div class="d-flex align-items-center w-100" style="gap: 10px;">
-                <input type="text" name="DomainIPs[${rowIndex}].Domain" class="form-control flex-grow-1" placeholder="Domain" />
+                <input type="text" name="DomainIPs[${rowIndex}].Name" class="form-control flex-grow-1" placeholder="Name" />
                 <input type="text" name="DomainIPs[${rowIndex}].IP" class="form-control flex-grow-1" placeholder="IP Address" />
+                <button type="button" class="btn btn-primary btn-primary" onclick="manageRow(this)">Manage</button>
                 <button type="button" class="btn btn-danger btn-remove" onclick="removeRow(this)">Remove</button>
             </div>
         `;
@@ -45,5 +47,23 @@
     function removeRow(button) {
         const row = button.closest('.form-row');
         row.remove();
+    }
+
+    // Function to remove a row
+    function manageRow(button) {
+        // Find the parent row (div with class 'domain-ip-row')
+        const row = button.closest('.domain-ip-row');
+
+        // Find the input with the Name value inside this row
+        const nameInput = row.querySelector('input[name^="DomainIPs"][name$=".Name"]');
+
+        // Extract the value from the Name input
+        const name = nameInput ? nameInput.value : '';
+
+        // Construct the URL with the Name value
+        const url = `manage?name=${encodeURIComponent(name)}`;
+
+        // Navigate to the constructed URL
+        window.location.href = url;
     }
 </script>

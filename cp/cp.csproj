@@ -51,4 +51,9 @@
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </Content>
     </ItemGroup>
+
+    <ItemGroup>
+      <AdditionalFiles Include="Views\Manage\admin.cshtml" />
+      <AdditionalFiles Include="Views\Manage\index.cshtml" />
+    </ItemGroup>
 </Project>

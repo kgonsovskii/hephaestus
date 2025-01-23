@@ -126,8 +126,7 @@ Enable-PSRemoting -Force
 Get-PSSessionConfiguration
 
 
-Set-Item WSMan:\localhost\Client\TrustedHosts -Value "185.247.141.76, 213.226.112.110, 109.248.201.219"
-Set-Item WSMan:\localhost\Client\TrustedHosts -Value "127.0.0.1"
+Set-Item WSMan:\localhost\Client\TrustedHosts -Value "185.247.141.125, 127.0.0.19"
 Restart-Service WinRM
 # Write-Host "Installatin 1 complete"
 
