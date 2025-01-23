@@ -73,8 +73,12 @@ function Copy-FileIfDifferentLocation {
     Write-Output "Copied file from '$SourceFilePath' to '$DestinationFilePath'."
 }
 
-foreach ($domain in $server.domainIps) {
-    CreateCertificate($domain.domain)
+foreach ($domainIp in $server.domainIps)
+{ 
+    foreach ($domain in $domainIp.domains) 
+    {
+        CreateCertificate($domain)
+    }
 }
 
 Write-Host "Compile cert сomplete"

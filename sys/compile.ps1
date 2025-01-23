@@ -4,7 +4,7 @@ param (
 
 if ($serverName -eq "") {
     $serverName = "127.0.0.1"
-    $action = "exe"
+    $action = "apply"
 } 
 
 if ([string]::IsNullOrEmpty($serverName))

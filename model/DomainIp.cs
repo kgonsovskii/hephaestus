@@ -4,6 +4,9 @@ namespace model;
 
 public class DomainIp
 {
+    [JsonPropertyName("index")]
+    public string Index { get; set; }
+    
     [JsonPropertyName("name")]
     public string Name { get; set; }
     
@@ -13,19 +16,26 @@ public class DomainIp
     [JsonPropertyName("domains")]
     public List<string> Domains { get; set; } = new List<string>();
     
-    [JsonPropertyName("ftp")]
-    public string Ftp  { get; set; }
+    //FTP
+    [JsonPropertyName("ftp")] public string Ftp => $@"ftp://ftp_{Name.Replace(' ','_')}:Abc12345!@{IP}";
+    [JsonPropertyName("ftpAsHttp")] public string FtpAsHttp => $@"http://{IP}/ftp";
     
     [JsonIgnore] public string? Result { get; set; }
     
     [JsonPropertyName("enabled")]
     public bool Enabled {get; set;}
+    
+    public static string _WWW => @"C:\inetpub\wwwroot\";
+    public static string _ADS => Path.Combine(_WWW, "ads");
 
-    public void AssignHead(DomainIp domainIp)
+    [JsonPropertyName("ads")] public string Ads => Path.Combine(_ADS, Name.Replace(' ','_'));
+
+    public void Assign(DomainIp domainIp, bool withDomains)
     {
         this.Name = domainIp.Name;
         this.IP = domainIp.IP;
-        this.Ftp = domainIp.Ftp;
         this.Enabled = domainIp.Enabled;
+        if (withDomains)
+            this.Domains = domainIp.Domains;
     }
 }

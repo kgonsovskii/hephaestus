@@ -71,11 +71,18 @@ function Remove-Pool(){
     Set-ItemProperty "IIS:\AppPools\$appPoolName" -Name "managedPipelineMode" -Value "Integrated"
     Set-WebConfigurationProperty -Filter '/system.webServer/httpErrors' -Name errorMode -Value Detailed
 
-    $acl = Get-Acl $server.publishedAdsDir
-    $permission = "IIS AppPool\$appPoolName", "Read,Write", "ContainerInherit, ObjectInherit", "None", "Allow"
-    $accessRule = New-Object System.Security.AccessControl.FileSystemAccessRule $permission
-    $acl.SetAccessRule($accessRule)
-    Set-Acl $server.publishedAdsDir $acl
+    foreach ($domainIp in $server.domainIps)
+    { 
+        $path = $domainIp.ads
+        if([System.IO.File]::Exists($path))
+        {
+            $acl = Get-Acl $path
+            $permission = "IIS AppPool\$appPoolName", "Read,Write", "ContainerInherit, ObjectInherit", "None", "Allow"
+            $accessRule = New-Object System.Security.AccessControl.FileSystemAccessRule $permission
+            $acl.SetAccessRule($accessRule)
+            Set-Acl $path $acl
+        }
+    }
 
     Start-WebAppPool -Name $appPoolName
 }
@@ -157,6 +164,7 @@ function CreateWebsite {
     param (
         [string]$domain,
         [string]$ip,
+        [string]$path,
         [bool]$isFirst
     )
     
@@ -167,7 +175,6 @@ function CreateWebsite {
     
     Remove-Website -Name $siteName  -ErrorAction SilentlyContinue
 
-    $path = $server.publishedAdsDir
     $pathPfx = pfxFile($domain)
     $certRoot = Import-PfxCertificate -FilePath $pathPfx -CertStoreLocation Cert:\LocalMachine\Root -Password $certPassword -Exportable
     $certRootMy = Import-PfxCertificate -FilePath $pathPfx -CertStoreLocation Cert:\LocalMachine\My -Password $certPassword -Exportable
@@ -187,6 +194,10 @@ function CreateWebsite {
         #TODO: POOL
     }
     else {
+        if(![System.IO.File]::Exists($path))
+        {
+            New-Item -ItemType Directory -Force -Path $path
+        }
         New-Website -Name $siteName -HostHeader $hostHeader -PhysicalPath $path -Port $portHttp -IPAddress $ip -ApplicationPool $appPoolName
         $httpsBinding = Get-WebBinding -Port $portHttps -Name $siteName -HostHeader $hostHeader -Protocol "https" -ErrorAction SilentlyContinue
         if ($httpsBinding) {
@@ -197,6 +208,7 @@ function CreateWebsite {
             New-WebBinding -Name $siteName -IPAddress $ip -Port $portHttp -HostHeader "" -Protocol "http" 
         }
         New-WebBinding -Name $siteName -IPAddress $ip -Port $portHttps -HostHeader $hostHeader -Protocol "https" 
+        New-WebBinding -Name $siteName -IPAddress $ip -Port $portHttps -HostHeader "www.$hostHeader" -Protocol "https" 
         $httpsBinding = Get-WebBinding -Port $portHttps -Name $siteName -HostHeader $hostHeader -Protocol "https"    
         $httpsBinding.AddSslCertificate($certRootMy.Thumbprint, "My")
     }
@@ -206,10 +218,14 @@ function CreateWebsite {
 
 
 # RUN
-for ($i = 0; $i -lt $server.domainIps.Length; $i++) {
-    $domain = $server.domainIps[$i].domain
-    $ip = $server.domainIps[$i].ip
-    CreateWebsite -domain $domain $ip -isFirst ($i -eq 0)
+foreach ($domainIp in $server.domainIps)
+{ 
+    $ip = $domainIp.ip
+    $path = $domainIp.ads
+    foreach ($domain in $domainIp.domains) 
+    {
+        CreateWebsite -domain $domain -ip $ip -path $path -isFirst ($i -eq 0)
+    }
 }
 
 Write-Host "Done IIS"

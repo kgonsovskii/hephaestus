@@ -1,6 +1,10 @@
 param (
     [string]$serverName
 )
+if ($serverName -eq "") {
+    $serverName = "185.247.141.125"
+} 
+
 if ([string]::IsNullOrEmpty($serverName)) {
         throw "-serverName argument is null"
 }
@@ -27,17 +31,17 @@ function AddOrUpdateDnsRecord {
 
     $zoneExists = Get-DnsServerZone -Name $zoneName -ComputerName $dnsServer -ErrorAction SilentlyContinue
     if ($null -eq $zoneExists) {
-        dnscmd . /zoneadd $zoneName /primary 
     } else {
+        $aRecords = Get-DnsServerResourceRecord -ZoneName $zoneName -RRType A -ComputerName $dnsServer
+        foreach ($record in $aRecords) {
+            Remove-DnsServerResourceRecord -ZoneName $zoneName -Name $record.HostName -RRType A -ComputerName $dnsServer -Force
+        }
         dnscmd $dnsServer /ZoneDelete $zoneName /f 2>$null
     }
     dnscmd . /zoneadd $zoneName /primary 
-	Start-Sleep -Milliseconds 100
-    $aRecords = Get-DnsServerResourceRecord -ZoneName $zoneName -RRType A -ComputerName $dnsServer
-    foreach ($record in $aRecords) {
-        Remove-DnsServerResourceRecord -ZoneName $zoneName -Name $record.Name -RRType A -ComputerName $dnsServer -Force
-    }
+	Start-Sleep -Milliseconds 10
     Add-DnsServerResourceRecordA -Name $recordName -ZoneName $zoneName -IPv4Address $ip -ComputerName $dnsServer -ErrorAction Stop
+    Add-DnsServerResourceRecordA -Name "www" -ZoneName $zoneName -IPv4Address $ip -ComputerName $dnsServer -ErrorAction Stop
 }
 
 
@@ -54,9 +58,11 @@ catch {
 }
 
 
-
-for ($i = 0; $i -lt $server.domainIps.Length; $i++) {
-    $domain = $server.domainIps[$i].domain
-    $ip = $server.domainIps[$i].ip
-    AddOrUpdateDnsRecord $domain $ip
+foreach ($domainIp in $server.domainIps)
+{ 
+    $ip = $domainIp.ip
+    foreach ($domain in $domainIp.domains) 
+    {
+        AddOrUpdateDnsRecord $domain $ip
+    }
 }

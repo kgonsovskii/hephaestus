@@ -13,8 +13,8 @@ function Generate-RandomCode {
     $actions = @("writedbg2")
     $messages = @()
 
-    $five = 5
-    $twenty = 20
+    $five = 2
+    $twenty = 5
 
     # Generate random function and variable names
     for ($i = 0; $i -lt $five; $i++) {

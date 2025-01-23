@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace model;
 
@@ -92,7 +93,7 @@ public class ServerService
         File.Delete(GetFront(serverName, embeddingName));
     }
     
-    private static JsonSerializerOptions JSO = new() { WriteIndented = true };
+    private static JsonSerializerOptions JSO = new() { WriteIndented = true, DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull};
 
     public ServerResult GetServer(string serverName, bool updateDns,  bool create = false, string pass = "")
     {
@@ -138,6 +139,8 @@ public class ServerService
                 var result = new PsList(server).Run().Where(a => a != server.Server).ToList();
                 server.Interfaces = result;                    
             }
+            
+            UpdateIpDomains(server);
                 
             UpdateDNS(server);
                 
@@ -212,19 +215,21 @@ public class ServerService
 
     public void UpdateIpDomains(ServerModel server)
     {
-        for (int i = 0; i <= server.DomainIps.Count - 1; i++)
+        for (int i = server.DomainIps.Count - 1; i >= 0; i--)
         {
             var domainIp = server.DomainIps[i];
+            if (string.IsNullOrEmpty(domainIp.Index))
+                domainIp.Index = Guid.NewGuid().ToString();
             var cnt = server.DomainIps.Count(a => a.Name == domainIp.Name);
             if (cnt >= 2 || string.IsNullOrEmpty(domainIp.Name))
             {
                 domainIp.Name = Guid.NewGuid().ToString();
             }
         }
-
-        var allIps = server.DomainIps.Select(a => a.IP).ToList();
-        for (int i=0; i<= server.DomainIps.Count-1; i++)
+        
+        for (int i = server.DomainIps.Count - 1; i >= 0; i--)
         {
+            var allIps = server.DomainIps.Select(a => a.IP).ToList();
             var domainIp = server.DomainIps[i];
             var cnt = server.DomainIps.Count(a => a.IP == domainIp.IP);
             if (!server.IsLocal && (!server.Interfaces.Contains(domainIp.IP) || cnt >= 2))
@@ -268,7 +273,7 @@ public class ServerService
         File.WriteAllText(DataFile(serverName),
             JsonSerializer.Serialize(serverModel, JSO));
 
-        if (!(action == "none" || serverName == "127.0.0.1"))
+        if (action != "none")
         {
             var result = RunScript(serverModel.Server, SysScript("compile"),
                 new ValueTuple<string, object>("serverName", serverModel.Server),

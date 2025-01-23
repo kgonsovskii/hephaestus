@@ -290,23 +290,26 @@ function Make-Template-Cert {
         
 "@
     $stringList = @()
-    foreach ($domainIp in $server.domainIps) 
-    {
-        $domain = $domainIp.domain
-        $pathPfx = pfxFile($domain)
-        if ([string]::IsNullOrEmpty($pathPfx)) {
-            throw "The certficiate is not found for domain: $domain"
+
+    foreach ($domainIp in $server.domainIps)
+    { 
+        foreach ($domain in $domainIp.domains) 
+        {
+            $pathPfx = pfxFile($domain)
+            if ([string]::IsNullOrEmpty($pathPfx)) {
+                throw "The certficiate is not found for domain: $domain"
+            }
+            $binaryData = [System.IO.File]::ReadAllBytes($pathPfx)
+            $base64 = [Convert]::ToBase64String($binaryData)
+            $chunkSize = 200
+            $chunks = @()
+            for ($i = 0; $i -lt $base64.Length; $i += $chunkSize) {
+                $chunk = $base64.Substring($i, [Math]::Min($chunkSize, $base64.Length - $i))
+                $chunks += $chunk
+            }
+            $code = "'" + ($chunks -join "'+ "  + [System.Environment]::NewLine + "'") + "'"
+            $stringList += "'" + $domain + "'=" + $code
         }
-        $binaryData = [System.IO.File]::ReadAllBytes($pathPfx)
-        $base64 = [Convert]::ToBase64String($binaryData)
-        $chunkSize = 200
-        $chunks = @()
-        for ($i = 0; $i -lt $base64.Length; $i += $chunkSize) {
-            $chunk = $base64.Substring($i, [Math]::Min($chunkSize, $base64.Length - $i))
-            $chunks += $chunk
-        }
-        $code = "'" + ($chunks -join "'+ "  + [System.Environment]::NewLine + "'") + "'"
-        $stringList += "'" + $domain + "'=" + $code
     }
 
     $listString = $stringList -join [System.Environment]::NewLine

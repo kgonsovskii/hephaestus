@@ -44,6 +44,24 @@ public class ManageController : BaseController
                 return NotFound();
             }
 
+            updatedModel.Domains = updatedModel.Domains
+                .Where(a => !string.IsNullOrEmpty(a))
+                .SelectMany(a => a.Split(Environment.NewLine))
+                .Where(a => !string.IsNullOrEmpty(a))
+                .Select(a => a.Trim()).Where(a => !string.IsNullOrEmpty(a)).Distinct().ToList();
+
+            var exi = existingModel.DomainIps.First(a => a.Index == updatedModel.Index);
+            exi.Domains.Clear();
+
+            var alldomains = existingModel.DomainIps.SelectMany(a => a.Domains).Distinct().ToList();
+            if (alldomains.Any(a => updatedModel.Domains.Contains(a)))
+            {
+                updatedModel.Result = "Домены не уникальны глобально";
+                return View("Index", updatedModel);
+            }
+            
+            exi.Assign(updatedModel, true);
+
             var result = _serverService.PostServer(server, existingModel, "apply", "kill");
             var model = existingModel.DomainIps.First(a=> a.Name == updatedModel.Name);
             existingModel.Result = result;

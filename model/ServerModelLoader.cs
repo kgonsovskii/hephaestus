@@ -119,12 +119,7 @@ public static class ServerModelLoader
     public static string CertDirStatic => Path.Combine(RootDirStatic, "cert");
 
     public static string SysDirStatic => Path.Combine(RootDirStatic, "sys");
-
-    public static string AdsDirStatic => Path.Combine(RootDirStatic, "ads");
-
-    public static string PublishedDirStatic => @"C:\inetpub\wwwroot\";
-        
-    public static string PublishedAdsDirStatic => Path.Combine(PublishedDirStatic, "ads");
+    
         
     public static string TroyanDirStatic => Path.Combine(RootDirStatic, "troyan/");
 

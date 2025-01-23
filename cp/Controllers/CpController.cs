@@ -254,10 +254,10 @@ public class CpController : BaseController
             for (int i = 0; i <= updatedModel.DomainIps.Count-1; i++)
             {
                 var upModel = updatedModel.DomainIps[i];
-                var existsModel = existingModel.DomainIps.Where(a => a.Name == upModel.Name).FirstOrDefault();
+                var existsModel = existingModel.DomainIps.Where(a => a.Index == upModel.Index).FirstOrDefault();
                 if (existsModel != null)
                 {
-                    existsModel.AssignHead(upModel);
+                    existsModel.Assign(upModel, false);
                 }
                 else
                 {
@@ -268,7 +268,7 @@ public class CpController : BaseController
             while (n <= existingModel.DomainIps.Count-1)
             {
                 var existModel = existingModel.DomainIps[n];
-                var upModel = updatedModel.DomainIps.FirstOrDefault(a => a.Name == existModel.Name);
+                var upModel = updatedModel.DomainIps.FirstOrDefault(a => a.Index == existModel.Index);
                 if (upModel == null)
                 {
                     existingModel.DomainIps.RemoveAt(n);

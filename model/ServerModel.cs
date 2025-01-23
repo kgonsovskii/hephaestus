@@ -53,9 +53,6 @@ public class ServerModel
     [JsonPropertyName("phpTemplateSponsorFile")] public string PhpTemplateSponsorFile => Path.Join(PhpDir, ".\\download.php");
     [JsonPropertyName("htmlTemplateSponsorFile")] public string HtmlTemplateSponsorFile => Path.Join(PhpDir, ".\\download.html");
     [JsonPropertyName("sysDir")] public string SysDir => ServerModelLoader.SysDirStatic;
-    [JsonPropertyName("adsDir")] public string AdsDir => ServerModelLoader.AdsDirStatic;
-    [JsonPropertyName("publishedAdsDir")] public string PublishedAdsDir => ServerModelLoader.PublishedAdsDirStatic;
-    [JsonPropertyName("publishedDir")] public string PublishedDir => ServerModelLoader.PublishedDirStatic;
         
     public string UpdateFile  { get; set; }
         
@@ -139,11 +136,7 @@ public class ServerModel
             return "download";
         }
     }
-        
-    //FTP
-    [JsonPropertyName("ftp")] public string Ftp => $@"ftp://ftpData:Abc12345!@{Server}";
-    [JsonPropertyName("ftpAsHttp")] public string FtpAsHttp => $@"http://{Server}/ftp";
-        
+    
         
     //Update
     [JsonPropertyName("updateUrl")]

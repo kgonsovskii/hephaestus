@@ -83,8 +83,7 @@ public static class Program
         var app = builder.Build();
 
         app.UseDeveloperExceptionPage();
-
-        FtpServe(app);
+        
         DataServe(app);
 
         if (IsSuperHost)
@@ -103,16 +102,7 @@ public static class Program
 
         await app.RunAsync();
     }
-
-    public static void FtpServe(WebApplication app)
-    {
-        app.UseStaticFiles(new StaticFileOptions
-        {
-            FileProvider = new PhysicalFileProvider(ServerModelLoader.PublishedAdsDirStatic),
-            RequestPath = "/ftp"
-        });
-    }
-
+    
     public static void DataServe(WebApplication app)
     {
         var allIps = BackSvc.GetPublicIPv4Addresses();

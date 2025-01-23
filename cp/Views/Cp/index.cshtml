@@ -309,13 +309,6 @@ Layout = "~/Views/Shared/_Layout.cshtml";
                                 <!-- IP Domains in Frame -->
                                 @await Component.InvokeAsync("DomainIp", new { ipDomainsModel = Model.DomainIps })
 
-                                <div class="form-group">
-                                    <label>FTP</label>
-                                    <span class="text-danger"></span>
-                                    <input name="Ftp" readonly="readonly" value="@Model.Ftp" class="form-control"/>
-                                    <span class="text-danger"></span>
-                                    <a href="@Model.FtpAsHttp" target="_blank">@Model.FtpAsHttp</a>
-                                </div>
 
                                 <!-- Save Button -->
                                 <div class="form-group mt-3">

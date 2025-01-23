@@ -207,12 +207,20 @@ Layout = "~/Views/Shared/_Layout.cshtml";
                         <h2>Manage DomainIp</h2>
                     </div>
                     <div class="card-body">
+
+                        <button type="button" onclick="window.location.href='/'" class="btn btn-primary">Go back</button>
+
+
                         <input type="hidden" name="Server" value=""/>
 
                         <div class="row">
                             <!-- First Column -->
                             <div class="col-md-6">
                                 <!-- General Settings -->
+                                <div class="form-group">
+                                    <input type="hidden" name="Index" value="@Model.Index" class="form-control"/>
+                                </div>
+
                                 <div class="form-group">
                                     <label>Name</label>
                                     <input name="Name" value="@Model.Name" class="form-control"/>
@@ -223,7 +231,7 @@ Layout = "~/Views/Shared/_Layout.cshtml";
                                     <input type="checkbox" name="Enabled" value="true" @(Model.Enabled ? "checked" : "")/>
                                 </div>
 
-                       
+
                                 <div class="form-group">
                                     <label>IP</label>
                                     <input name="IP" value="@Model.IP" class="form-control"/>
@@ -235,8 +243,13 @@ Layout = "~/Views/Shared/_Layout.cshtml";
                                 </div>
 
                                 <div class="form-group">
+                                    <label>FTP As HTTP</label>
+                                    <a href="@Model.FtpAsHttp" target="_blank">@Model.FtpAsHttp</a>
+                                </div>
+
+                                <div class="form-group">
                                     <label>Domains</label>
-                                    <textarea name="StartUrls" class="form-control" rows="25">
+                                    <textarea name="Domains" class="form-control" rows="18">
                                         @foreach (var domain in Model.Domains)
                                             {
                                                 @domain.Trim()
@@ -246,19 +259,19 @@ Layout = "~/Views/Shared/_Layout.cshtml";
                                                 }
                                             }
                                     </textarea>
-                                    
+
                                 </div>
                             </div>
                         </div>
-                            
-                                
-                        <!-- Save Button -->
-                            <div class="form-group mt-3">
-                                &nbsp;&nbsp;&nbsp;&nbsp;
-                                <button type="submit" name="action" value="apply" class="btn btn-primary">Apply Changes</button>
-                            </div>
 
+
+                        <!-- Save Button -->
+                        <div class="form-group mt-3">
+                            &nbsp;&nbsp;&nbsp;&nbsp;
+                            <button type="submit" name="action" value="apply" class="btn btn-primary">Apply Changes</button>
                         </div>
+
+                    </div>
                     </div>
                 </div>
             </div>
