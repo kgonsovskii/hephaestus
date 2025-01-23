@@ -17,4 +17,15 @@ public class DomainIp
     public string Ftp  { get; set; }
     
     [JsonIgnore] public string? Result { get; set; }
+    
+    [JsonPropertyName("enabled")]
+    public bool Enabled {get; set;}
+
+    public void AssignHead(DomainIp domainIp)
+    {
+        this.Name = domainIp.Name;
+        this.IP = domainIp.IP;
+        this.Ftp = domainIp.Ftp;
+        this.Enabled = domainIp.Enabled;
+    }
 }

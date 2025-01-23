@@ -16,5 +16,10 @@ if (-not $networkInterfaces) {
     $networkInterfaces = @($networkInterfaces)
 }
 
+if ($networkInterfaces.Count -eq 0)
+{
+    $networkInterfaces = @("127.0.0.1")
+}
+
 # Return the $networkInterfaces array
 return $networkInterfaces

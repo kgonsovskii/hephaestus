@@ -272,6 +272,8 @@ public class ServerModel
     [JsonPropertyName("extraUpdate")] public bool ExtraUpdate { get; set; }
     [JsonPropertyName("extraUpdateUrl")] public string ExtraUpdateUrl { get; set; }
 
+    [JsonIgnore] public bool IsLocal => Server == "127.0.0.1";
+    
     //constructor
     public ServerModel()
     {

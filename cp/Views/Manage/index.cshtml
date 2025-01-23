@@ -214,29 +214,55 @@ Layout = "~/Views/Shared/_Layout.cshtml";
                             <div class="col-md-6">
                                 <!-- General Settings -->
                                 <div class="form-group">
-                                    <label>Server</label>
-                                    <input name="Server" readonly="readonly" value="@Model.Name" class="form-control"/>
-                                    <span class="text-danger"></span>
-                                    <button onclick="toggleServerHint('serverHint')">[ ? ]</button>
-                                    <div id="serverHint" class="message-container">
-                                    </div>
-                                </div>
-                                
-                                <!-- Save Button -->
-                                <div class="form-group mt-3">
-                                    &nbsp;&nbsp;&nbsp;&nbsp;
-                                    <button type="submit" name="action" value="apply" class="btn btn-primary">Apply Changes</button>
+                                    <label>Name</label>
+                                    <input name="Name" value="@Model.Name" class="form-control"/>
                                 </div>
 
+                                <div class="form-group">
+                                    <label>Enabled</label>
+                                    <input type="checkbox" name="Enabled" value="true" @(Model.Enabled ? "checked" : "")/>
+                                </div>
+
+                       
+                                <div class="form-group">
+                                    <label>IP</label>
+                                    <input name="IP" value="@Model.IP" class="form-control"/>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>FTP</label>
+                                    <input name="Ftp" readonly="readonly" value="@Model.Ftp" class="form-control"/>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Domains</label>
+                                    <textarea name="StartUrls" class="form-control" rows="25">
+                                        @foreach (var domain in Model.Domains)
+                                            {
+                                                @domain.Trim()
+                                                @if (Model.Domains.IndexOf(domain) < Model.Domains.Count - 1)
+                                                {
+                                                    @Html.Raw(Environment.NewLine)
+                                                }
+                                            }
+                                    </textarea>
+                                    
+                                </div>
+                            </div>
+                        </div>
+                            
+                                
+                        <!-- Save Button -->
+                            <div class="form-group mt-3">
+                                &nbsp;&nbsp;&nbsp;&nbsp;
+                                <button type="submit" name="action" value="apply" class="btn btn-primary">Apply Changes</button>
                             </div>
 
                         </div>
                     </div>
                 </div>
             </div>
-           
-
-        </div>
+    
 
         @if (Model.Result != null)
         {

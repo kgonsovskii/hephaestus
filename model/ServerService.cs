@@ -135,18 +135,9 @@ public class ServerService
 
             if (updateDns)
             {
-                if (server.Server == "127.0.0.1")
-                {
-                    server.Interfaces = new List<string>() {"127.0.0.1", "127.0.0.2", "127.0.0.3", "127.0.0.4", "127.0.0.5"};    
-                }
-                else
-                {
-                    var result = new PsList(server).Run().Where(a => a != server.Server).ToList();
-                    server.Interfaces = result;                    
-                }
+                var result = new PsList(server).Run().Where(a => a != server.Server).ToList();
+                server.Interfaces = result;                    
             }
-
-            UpdateIpDomains(server, false);
                 
             UpdateDNS(server);
                 
@@ -219,7 +210,7 @@ public class ServerService
             server.DnSponsor.Add(new DnSponsorModel(){Id="ufiler.biz"});
     }
 
-    public void UpdateIpDomains(ServerModel server, bool raize)
+    public void UpdateIpDomains(ServerModel server)
     {
         for (int i = 0; i <= server.DomainIps.Count - 1; i++)
         {
@@ -231,17 +222,19 @@ public class ServerService
             }
         }
 
+        var allIps = server.DomainIps.Select(a => a.IP).ToList();
         for (int i=0; i<= server.DomainIps.Count-1; i++)
         {
-            if (!server.Interfaces.Contains(server.DomainIps[i].IP))
+            var domainIp = server.DomainIps[i];
+            var cnt = server.DomainIps.Count(a => a.IP == domainIp.IP);
+            if (!server.IsLocal && (!server.Interfaces.Contains(domainIp.IP) || cnt >= 2))
             {
-                var allIps = server.DomainIps.Select(a => a.IP).ToList();
-                var freeDomain = server.Interfaces.FirstOrDefault(a=> !allIps.Contains(a));
-                if (freeDomain == null)
+                var freeIp = server.Interfaces.FirstOrDefault(a=> !allIps.Contains(a));
+                if (freeIp == null)
                 {
-                    freeDomain = "_NOT_";
+                    freeIp = "127.0.0.1";
                 }
-                server.DomainIps[i].IP = freeDomain;
+                server.DomainIps[i].IP = freeIp;
             }   
         }
     }
@@ -262,7 +255,7 @@ public class ServerService
         if (!Directory.Exists(ServerDir(serverName)))
             return $"Server {serverName} is not registered";
         
-        UpdateIpDomains(serverModel, true);
+        UpdateIpDomains(serverModel);
             
         UpdateDNS(serverModel);
             

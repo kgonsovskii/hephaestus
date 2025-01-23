@@ -8,8 +8,9 @@
                 @for (int i = 0; i < Model.Count; i++)
                 {
                     <div class="form-row d-flex align-items-center domain-ip-row" style="gap: 10px;">
-                        <input type="text" name="DomainIPs[@i].Name" value="@Model[i].Name" class="form-control flex-grow-1" placeholder="Name" />
-                        <input type="text" name="DomainIPs[@i].IP" value="@Model[i].IP" class="form-control flex-grow-1" placeholder="IP Address" />
+                        <input type="checkbox" name="DomainIPs[@i].Enabled" value="true" @(@Model[i].Enabled ? "checked" : "")/>
+                        <input type="text" name="DomainIPs[@i].Name" value="@Model[i].Name" class="form-control flex-grow-1" placeholder="Name"/>
+                        <input type="text" name="DomainIPs[@i].IP" value="@Model[i].IP" class="form-control flex-grow-1" placeholder="IP Address"/>
                         <button type="button" class="btn btn-primary btn-primary" onclick="manageRow(this)">Manage</button>
                         <button type="button" class="btn btn-danger btn-remove" onclick="removeRow(this)">Remove</button>
                     </div>
@@ -33,6 +34,7 @@
 
         newRow.innerHTML = `
             <div class="d-flex align-items-center w-100" style="gap: 10px;">
+                <input type="checkbox" name="DomainIPs[${rowIndex}].Enabled" value="true"/>
                 <input type="text" name="DomainIPs[${rowIndex}].Name" class="form-control flex-grow-1" placeholder="Name" />
                 <input type="text" name="DomainIPs[${rowIndex}].IP" class="form-control flex-grow-1" placeholder="IP Address" />
                 <button type="button" class="btn btn-primary btn-primary" onclick="manageRow(this)">Manage</button>

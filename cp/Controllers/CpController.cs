@@ -138,6 +138,7 @@ public class CpController : BaseController
             {
                 return NotFound();
             }
+            updatedModel.Server = server;
 
             if (action == "reboot")
             {
@@ -248,8 +249,35 @@ public class CpController : BaseController
             existingModel.LandingFtp = updatedModel.LandingFtp;
             existingModel.LandingAuto = updatedModel.LandingAuto;
             existingModel.LandingName = updatedModel.LandingName;
+            
+            _serverService.UpdateIpDomains(updatedModel);
+            for (int i = 0; i <= updatedModel.DomainIps.Count-1; i++)
+            {
+                var upModel = updatedModel.DomainIps[i];
+                var existsModel = existingModel.DomainIps.Where(a => a.Name == upModel.Name).FirstOrDefault();
+                if (existsModel != null)
+                {
+                    existsModel.AssignHead(upModel);
+                }
+                else
+                {
+                    existingModel.DomainIps.Add(upModel);
+                }
+            }
+            var n = 0;
+            while (n <= existingModel.DomainIps.Count-1)
+            {
+                var existModel = existingModel.DomainIps[n];
+                var upModel = updatedModel.DomainIps.FirstOrDefault(a => a.Name == existModel.Name);
+                if (upModel == null)
+                {
+                    existingModel.DomainIps.RemoveAt(n);
+                    n--;
+                }
 
-            existingModel.DomainIps = updatedModel.DomainIps;
+                n++;
+            }
+            
             existingModel.Bux = updatedModel.Bux;
             existingModel.DnSponsor = updatedModel.DnSponsor;
             existingModel.DisableVirus = updatedModel.DisableVirus;
