@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using System.DirectoryServices;
 using System.Net;
 using System.Runtime.InteropServices;
 using SMBLibrary;
@@ -96,91 +95,4 @@ public class RemoteAuthentication
                 break;
         }
     }
-    
-    
-    public static bool IsValidUser5(string username, string password, string domainOrMachineName, out string msg)
-    {
-        msg = string.Empty;
-
-        try
-        {
-            // Construct the LDAP path for the domain or machine
-            string ldapPath = $"LDAP://{domainOrMachineName}";
-
-            // Create a DirectoryEntry with the provided credentials
-            using (DirectoryEntry entry = new DirectoryEntry(ldapPath, username, password))
-            {
-                // Try to access the native object to validate credentials
-                object nativeObject = entry.NativeObject;
-
-                msg = "Authentication successful.";
-                return true;
-            }
-        }
-        catch (Exception ex)
-        {
-            // Handle different exceptions for meaningful error messages
-            if (ex is UnauthorizedAccessException)
-            {
-                msg = "Invalid username or password.";
-            }
-            else if (ex is DirectoryServicesCOMException)
-            {
-                msg = "Unable to connect to the specified domain or machine.";
-            }
-            else
-            {
-                msg = $"Unexpected error: {ex.Message}";
-            }
-
-            return false;
-        }
-    }
-    
-
-
-
-
-    public static bool IsValidUser3(string username, string password, string serverIpAddress, out string msg)
-    {
-        msg = string.Empty;
-
-        try
-        {
-            // Create a new SMB2Client instance
-            SMB2Client smbClient = new SMB2Client();
-// #if DEBUG
-//             msg = "debug mode";
-//             return true;
-// #endif
-
-            // Attempt to connect to the server (Direct TCP port or NetBIOS over TCP)
-            bool isConnected = smbClient.Connect(IPAddress.Parse(serverIpAddress), SMBTransportType.DirectTCPTransport);
-            
-            if (!isConnected)
-            {
-                msg = "Unable to connect to server.";
-                return false;
-            }
-
-
-            var auth = smbClient.Login(serverIpAddress, username, password, AuthenticationMethod.NTLMv2);
-            if (auth == NTStatus.STATUS_SUCCESS)
-            {
-                msg = "Authentication successful.";
-                return true;
-            }
-            else
-            {
-                msg = "Invalid username or password.";
-                return false;
-            }
-        }
-        catch (Exception ex)
-        {
-            msg = $"Error: {ex.Message}";
-            return false;
-        }
-    }
-  
 }
