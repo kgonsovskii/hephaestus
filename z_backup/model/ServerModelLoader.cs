@@ -103,6 +103,14 @@ public static class ServerModelLoader
             return @"C:\data";
         }
     }
+    
+    public static string DomainControllerStatic
+    {
+        get
+        {
+            return "185.247.141.125";
+        }
+    }
 
     public static string CpDirStatic => Path.Combine(RootDirStatic, "cp");
         
@@ -113,9 +121,11 @@ public static class ServerModelLoader
     public static string SysDirStatic => Path.Combine(RootDirStatic, "sys");
     
         
-    public static string TroyanDirStatic => Path.Combine(RootDirStatic, "troyan");
+    public static string TroyanDirStatic => Path.Combine(RootDirStatic, "troyan/");
 
-    public static string TroyanScriptDirStatic => Path.Combine(TroyanDirStatic, "troyanps");
+    public static string TroyanScriptDirStatic => Path.Combine(RootDirStatic, "troyan/troyanps");
 
-    public static string TroyanVbsDirStatic => Path.Combine(TroyanDirStatic, "troyanvbs");
+    public static string TroyanDelphiDirStatic => Path.Combine(RootDirStatic, "troyan/troyandelphi");
+        
+    public static string TroyanVbsDirStatic => Path.Combine(RootDirStatic, "troyan/troyanvbs");
 }

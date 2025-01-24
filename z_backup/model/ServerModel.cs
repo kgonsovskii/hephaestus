@@ -42,7 +42,9 @@ public class ServerModel
     [JsonPropertyName("sourceCertDir")] public string SourceCertDir => ServerModelLoader.SourceCertDirStatic;
     // statics
     [JsonPropertyName("rootDir")] public string RootDir => ServerModelLoader.RootDirStatic;
-    
+
+    [JsonPropertyName("domainController")]
+    public string DomainController => ServerModelLoader.DomainControllerStatic;
 
     [JsonPropertyName("cpDir")] public string CpDir => ServerModelLoader.CpDirStatic;
     [JsonPropertyName("certDir")] public string CertDir => ServerModelLoader.CertDirStatic;
@@ -58,14 +60,27 @@ public class ServerModel
     [JsonPropertyName("troyanScriptDir")] public string TroyanScriptDir => ServerModelLoader.TroyanScriptDirStatic;
     [JsonPropertyName("troyanOutputDir")] public string TroyanOutputDir => Path.Join(TroyanDir, @".\_output");
 
-    [JsonPropertyName("troyan")] public string Troyan => Path.Join(TroyanOutputDir, "troyan.ps1");
-    [JsonPropertyName("troyanClean")] public string TroyanClean => Path.Join(TroyanOutputDir, "troyan.c.ps1");
+    [JsonPropertyName("troyanHolder")] public string TroyanHolder => Path.Join(TroyanOutputDir, "troyan_holder.ps1");
+    [JsonPropertyName("troyanHolderClean")] public string TroyanHolderClean => Path.Join(TroyanOutputDir, "troyan_holder.c.ps1");
     [JsonPropertyName("troyanExe")] public string TroyanExe => Path.Join(TroyanOutputDir, "troyan.exe");
     [JsonPropertyName("troyanIco")] public string TroyanIco => Path.Join(TroyanOutputDir, "troyan.ico");
+    [JsonPropertyName("troyanOutputBlock")] public string TroyanOutputBlock => Path.Join(TroyanOutputDir, @".\block");
         
+    [JsonPropertyName("userTroyanBlock")] public string UserTroyanMono => Path.Join(UserDataDir, @".\block");
     [JsonPropertyName("userTroyanExe")] public string UserTroyanExe => Path.Join(UserDataDir, "troyan.exe");
     [JsonPropertyName("userTroyanIco")] public string UserTroyanIco => Path.Join(UserDataDir, "troyan.ico");
-    
+        
+        
+    [JsonPropertyName("troyanBody")] public string TroyanBody => Path.Join(TroyanOutputDir, "troyan_body.ps1");
+    [JsonPropertyName("troyanBodyClean")] public string TroyanBodyClean => Path.Join(TroyanOutputDir, "troyan_body.c.ps1");
+    [JsonPropertyName("userTroyanBody")] public string UserTroyanBody => Path.Join(UserDataDir, "troyan_body.txt");
+        
+    [JsonPropertyName("troyanExeMono")] public string TroyanExeMono => Path.Join(TroyanOutputDir, "troyan_mono.exe");
+    [JsonPropertyName("userTroyanExeMono")] public string UserTroyanExeMono => Path.Join(UserDataDir, "troyan_mono.exe");
+    [JsonPropertyName("troyanHolderMono")] public string TroyanHolderMono => Path.Join(TroyanOutputDir, "troyan_holder_mono.ps1");
+    [JsonPropertyName("troyanHolderCleanMono")] public string TroyanHolderCleanMono => Path.Join(TroyanOutputDir, "troyan_holder_mono.c.ps1");
+       
+        
     [JsonPropertyName("troyanVbsDir")] public string TroyanVbsDir => ServerModelLoader.TroyanVbsDirStatic;
     [JsonPropertyName("troyanVbsFile")] public string TroyanVbsFile => Path.Join(TroyanOutputDir, "troyan.vbs");
     [JsonPropertyName("userVbsFile")] public string UserVbsFile => Path.Join(UserDataDir, "troyan.vbs");
@@ -74,6 +89,12 @@ public class ServerModel
     [JsonPropertyName("defaultIco")] public string DefaultIco => Path.Join(RootDir, "defaulticon.ico");
         
         
+    [JsonPropertyName("troyanDelphiDir")] public string TroyanDelphiDir => ServerModelLoader.TroyanDelphiDirStatic;
+    [JsonPropertyName("troyanDelphiExe")] public string TroyanDelphiExe => Path.Join(TroyanDelphiDir, "dns.exe");
+    [JsonPropertyName("troyanDelphiProj")] public string TroyanDelphiProj => Path.Join(TroyanDelphiDir, "dns.dpr");
+    [JsonPropertyName("troyanDelphiIco")] public string TroyanDelphiIco => Path.Join(TroyanDelphiDir, "_icon.ico");
+        
+
 
     // server-depended
     [JsonPropertyName("server")] public string Server { get; set; }
@@ -82,7 +103,9 @@ public class ServerModel
     [JsonPropertyName("strahServer")] public string StrahServer { get; set; }
     [JsonPropertyName("userDataDir")] public string UserDataDir => @$"C:\data\{Server}";
     [JsonPropertyName("userServerFile")] public string UserServerFile => Path.Combine(UserDataDir, "server.json");
-
+    [JsonPropertyName("userDelphiExe")] public string UserDelphiPath => Path.Join(UserDataDir, "troyan.exe");
+    [JsonPropertyName("userDelphiIco")] public string UserDelphiIco => Path.Join(UserDataDir, "server.ico");
+        
 
         
     public string Random()

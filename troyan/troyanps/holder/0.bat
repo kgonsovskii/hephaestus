@@ -1,0 +1,1 @@
+powershell ./temp.ps1

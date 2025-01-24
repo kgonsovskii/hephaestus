@@ -216,5 +216,3 @@ function do_tracker {
     }
 
 }
-
-do_tracker
