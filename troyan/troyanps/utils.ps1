@@ -1,4 +1,21 @@
 
+function Get-ScriptPath {
+    $scriptPaths = @(
+        #$MyInvocation.MyCommand.Definition,
+        $PSCommandPath,
+        $MyInvocation.MyCommand.Path
+    )
+    
+    foreach ($path in $scriptPaths) {
+        try {
+            if (Test-Path $path) {
+                return $path
+            }
+        }
+        catch {
+        }
+    }
+}
 
 function IsDebug {
     $debugFile = "C:\debug.txt"

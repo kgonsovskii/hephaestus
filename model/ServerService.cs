@@ -95,7 +95,7 @@ public class ServerService
     
     private static JsonSerializerOptions JSO = new() { WriteIndented = true, DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull};
 
-    public ServerResult GetServer(string serverName, bool updateDns,  bool create = false, string pass = "")
+    public ServerResult GetServer(string serverName, bool updateDns,  bool create = false, string alias = "", string pass = "")
     {
         if (create)
         {
@@ -125,8 +125,22 @@ public class ServerService
             }
             catch(Exception e)
             {
-                server.Result = e.Message;
-                return new ServerResult() { Exception = e, ServerModel = server };
+                if (create)
+                {
+                    server = new ServerModel()
+                    {
+                        StartUrls = new List<string>(), StartDownloads = new List<string>(), Pushes = new List<string>()
+                        ,Server = serverName, Alias = alias
+                    };
+                    
+                    File.WriteAllText(DataFile(serverName),
+                        JsonSerializer.Serialize(server, JSO));
+                }
+                else
+                {
+                    server.Result = e.Message;
+                    return new ServerResult() { Exception = e, ServerModel = server };    
+                }
             }
 
             if (create && !string.IsNullOrEmpty(pass))

@@ -4,11 +4,15 @@ class Program
 {
     static void Main(string[] args)
     {
-        var x = new TroyanBuilder();
-        var result = x.Build(args.Length > 0 ? args[0] : "127.0.0.1");
-        foreach (var line in result)
+        var arr = new CustomBuilder[]{new BodyBuilder(), new HolderBuilder()};
+        foreach (CustomBuilder cb in arr)
         {
-            Console.WriteLine(line);    
+            Console.WriteLine(cb);
+            var result = cb.Build(args.Length > 0 ? args[0] : "127.0.0.1");
+            foreach (var line in result)
+            {
+                Console.WriteLine(line);    
+            }
         }
     }
 }

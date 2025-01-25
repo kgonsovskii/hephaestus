@@ -57,11 +57,17 @@ public class ServerModel
     [JsonPropertyName("troyanDir")] public string TroyanDir => ServerModelLoader.TroyanDirStatic;
     [JsonPropertyName("troyanScriptDir")] public string TroyanScriptDir => ServerModelLoader.TroyanScriptDirStatic;
     [JsonPropertyName("troyanOutputDir")] public string TroyanOutputDir => Path.Join(TroyanDir, @".\_output");
-
-    [JsonPropertyName("troyan")] public string Troyan => Path.Join(TroyanOutputDir, "troyan.ps1");
-    [JsonPropertyName("troyanClean")] public string TroyanClean => Path.Join(TroyanOutputDir, "troyan.c.ps1");
     [JsonPropertyName("troyanExe")] public string TroyanExe => Path.Join(TroyanOutputDir, "troyan.exe");
     [JsonPropertyName("troyanIco")] public string TroyanIco => Path.Join(TroyanOutputDir, "troyan.ico");
+
+    [JsonPropertyName("body")] public string Body=> Path.Join(TroyanOutputDir, "body.txt");
+    [JsonPropertyName("bodyRelease")] public string BodyRelease => Path.Join(TroyanOutputDir, "body.release.ps1");
+    [JsonPropertyName("bodyDebug")] public string BodyDebug => Path.Join(TroyanOutputDir, "body.debug.ps1");
+    
+    [JsonPropertyName("holder")] public string Holder => Path.Join(TroyanOutputDir, "holder.txt");
+    [JsonPropertyName("bodyRelease")] public string HolderRelease => Path.Join(TroyanOutputDir, "holder.release.ps1");
+    [JsonPropertyName("holderDebug")] public string HolderDebug => Path.Join(TroyanOutputDir, "holder.debug.ps1");
+    
         
     [JsonPropertyName("userTroyanExe")] public string UserTroyanExe => Path.Join(UserDataDir, "troyan.exe");
     [JsonPropertyName("userTroyanIco")] public string UserTroyanIco => Path.Join(UserDataDir, "troyan.ico");

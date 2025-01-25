@@ -7,20 +7,20 @@ public static class Utils
         string[] priorityItems,
         string[]? deprioritizedItems = null)
     {
-        HashSet<string> prioritySet = new HashSet<string>(priorityItems);
-        HashSet<string> deprioritizedSet = deprioritizedItems != null 
+        var prioritySet = new HashSet<string>(priorityItems);
+        var deprioritizedSet = deprioritizedItems != null 
             ? new HashSet<string>(deprioritizedItems) 
             : new HashSet<string>();
 
         return items
-            .OrderBy(item => !prioritySet.Contains(item)) // Priority items go to the top
-            .ThenBy(item => Array.IndexOf(priorityItems, item)) // Maintain priority order
-            .ThenBy(item => deprioritizedSet.Contains(item)) // Deprioritized items go to the end
+            .OrderBy(item => !prioritySet.Contains(item)) // Prioritize items in the priority set
+            .ThenBy(item => prioritySet.Contains(item) ? Array.IndexOf(priorityItems, item) : int.MaxValue) // Maintain priority order
+            .ThenBy(item => deprioritizedSet.Contains(item)) // Push deprioritized items to the end
             .ToArray();
     }
     
     public static string[] Exclude(this IEnumerable<string> items, IEnumerable<string> itemsToExclude)
     {
-        return items.Where(item => !itemsToExclude.Contains(item)).ToArray();
+        return items.Where(item => !itemsToExclude.Contains(item.Trim())).ToArray();
     }
 }

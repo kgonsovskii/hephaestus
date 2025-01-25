@@ -1,8 +1,6 @@
 using System.Net;
-using System.Text;
 using cp.Controllers;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.FileProviders;
 using model;
 
