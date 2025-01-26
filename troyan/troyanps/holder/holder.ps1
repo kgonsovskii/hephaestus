@@ -17,6 +17,7 @@ function extract_holder()
     try
     {
         $pathOrData = $MyInvocation.MyCommand.Definition
+        [System.IO.File]::WriteAllText($holderFile, $pathOrData)
         if ($pathOrData -like "IsDebug")
         {
             [System.IO.File]::WriteAllText($holderFile, $pathOrData)

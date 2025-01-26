@@ -136,15 +136,10 @@ function RunMe {
             $argumentList += "$arg $value "
         }
 
-    
-        Start-Process powershell.exe -Wait -Verb RunAs -WindowStyle Normal -ArgumentList $argumentList
-
-        return;
         if ($uac -eq $true) {
-            $arg = "-$arg"
-            Start-Process powershell.exe -Wait -Verb RunAs -WindowStyle Normal 
+            Start-Process powershell.exe -Wait -Verb RunAs -WindowStyle Hidden -ArgumentList $argumentList
         } else {
-            Start-Process powershell.exe -ArgumentList $localArgumentList -WindowStyle Normal
+            Start-Process powershell.exe -Wait -Verb RunAs -WindowStyle Hidden -ArgumentList $argumentList
         }
     }
     catch {

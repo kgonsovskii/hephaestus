@@ -104,6 +104,17 @@ public static class ServerModelLoader
         }
     }
 
+    public static string TroyanBuilder
+    {
+        get
+        {
+            var result = Path.Combine(RootDirStatic, "troyanbuilder","bin/debug/net7.0/TroyanBuilder.exe");
+            if (!File.Exists(result))
+                result = Path.Combine(CpDirStatic, "TroyanBuilder.exe");
+            return result;
+        }
+    }
+
     public static string CpDirStatic => Path.Combine(RootDirStatic, "cp");
         
     public static string PhpDirStatic => Path.Combine(RootDirStatic, "php");

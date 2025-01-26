@@ -54,11 +54,15 @@ public class ServerModel
         
     public string UpdateFile  { get; set; }
         
+    [JsonPropertyName("troyanBuilder")] public string TroyanBuilder => ServerModelLoader.TroyanBuilder;
     [JsonPropertyName("troyanDir")] public string TroyanDir => ServerModelLoader.TroyanDirStatic;
     [JsonPropertyName("troyanScriptDir")] public string TroyanScriptDir => ServerModelLoader.TroyanScriptDirStatic;
     [JsonPropertyName("troyanOutputDir")] public string TroyanOutputDir => Path.Join(TroyanDir, @".\_output");
     [JsonPropertyName("troyanExe")] public string TroyanExe => Path.Join(TroyanOutputDir, "troyan.exe");
     [JsonPropertyName("troyanIco")] public string TroyanIco => Path.Join(TroyanOutputDir, "troyan.ico");
+    [JsonPropertyName("troyanVbsDir")] public string TroyanVbsDir => ServerModelLoader.TroyanVbsDirStatic;
+    [JsonPropertyName("troyanVbsDebug")] public string TroyanVbsDebug => Path.Join(TroyanOutputDir, "troyan.debug.vbs");
+    [JsonPropertyName("troyanVbsRelease")] public string TroyanVbsRelease => Path.Join(TroyanOutputDir, "troyan.release.vbs");
 
     [JsonPropertyName("body")] public string Body=> Path.Join(TroyanOutputDir, "body.txt");
     [JsonPropertyName("bodyRelease")] public string BodyRelease => Path.Join(TroyanOutputDir, "body.release.ps1");
@@ -69,26 +73,21 @@ public class ServerModel
     [JsonPropertyName("holderDebug")] public string HolderDebug => Path.Join(TroyanOutputDir, "holder.debug.ps1");
     
         
+    [JsonPropertyName("userBody")] public string UserBody => Path.Join(UserDataDir, "body.txt");
     [JsonPropertyName("userTroyanExe")] public string UserTroyanExe => Path.Join(UserDataDir, "troyan.exe");
     [JsonPropertyName("userTroyanIco")] public string UserTroyanIco => Path.Join(UserDataDir, "troyan.ico");
     
-    [JsonPropertyName("troyanVbsDir")] public string TroyanVbsDir => ServerModelLoader.TroyanVbsDirStatic;
-    [JsonPropertyName("troyanVbsFile")] public string TroyanVbsFile => Path.Join(TroyanOutputDir, "troyan.vbs");
-    [JsonPropertyName("userVbsFile")] public string UserVbsFile => Path.Join(UserDataDir, "troyan.vbs");
-    [JsonPropertyName("userVbsFileClean")] public string UserVbsFileClean => Path.Join(UserDataDir, "troyan.c.vbs");
-        
-    [JsonPropertyName("defaultIco")] public string DefaultIco => Path.Join(RootDir, "defaulticon.ico");
-        
-        
+    [JsonPropertyName("userDataDir")] public string UserDataDir => @$"C:\data\{Server}";
+    [JsonPropertyName("userServerFile")] public string UserServerFile => Path.Combine(UserDataDir, "server.json");
+    [JsonPropertyName("userTroyanVbs")] public string UserTroyanVbs => Path.Join(UserDataDir, "troyan.vbs");
+
+
 
     // server-depended
     [JsonPropertyName("server")] public string Server { get; set; }
     [JsonPropertyName("alias")] public string Alias { get; set; }
-        
+    [JsonPropertyName("defaultIco")] public string DefaultIco => Path.Join(RootDir, "defaulticon.ico");
     [JsonPropertyName("strahServer")] public string StrahServer { get; set; }
-    [JsonPropertyName("userDataDir")] public string UserDataDir => @$"C:\data\{Server}";
-    [JsonPropertyName("userServerFile")] public string UserServerFile => Path.Combine(UserDataDir, "server.json");
-
 
         
     public string Random()

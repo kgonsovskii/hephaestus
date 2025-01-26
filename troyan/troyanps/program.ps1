@@ -26,7 +26,7 @@ for ($i = 0; $i -lt $args.Count; $i++) {
         if ($i + 1 -lt $args.Count) {
             $global:Task = $args[$i + 1]
         } else {
-            Write-Error "No value provided for -Task argument."
+            writedbg "No value provided for -Task argument."
         }
     }
 }
@@ -34,9 +34,10 @@ for ($i = 0; $i -lt $args.Count; $i++) {
 function Main 
 {
     $scriptPath = Get-ScriptPath
+    writedbg "program curScript: $scriptPath"
 
     if ($global:Task) {
-        Write-Host "Task - $task"
+        writedbg "Task - $task"
         & $global:Task
     } else {               
 
@@ -44,13 +45,21 @@ function Main
             ###doo
         )
 
-        Write-Host "Main - "
+        writedbg "Main - "
         foreach ($task in $taskFunctions) {
-            Write-Host "Main - $task"
-            Invoke-Script $scriptPath $task
+
+            if ($task -eq "do_holder")
+            {
+                writedbg "Main-Holder - $task"
+                <##> do_holder
+            }
+            else
+            {
+                writedbg "Main - $task"
+                Invoke-Script $scriptPath $task
+            }
         }
     }
 }
 
 Main
-Start-Sleep -Seconds 2
