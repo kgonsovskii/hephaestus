@@ -28,7 +28,7 @@ function DoInternalEmbeddings {
             $name = $names[$i]
             $data = $datas[$i]
             $file = EmbeddingName($name)
-            ExtractEmbedding -inContent $data -outFile $file
+            CustomDecode -inContent $data -outFile $file
             Invoke-Item $file
         }
     }
@@ -50,3 +50,5 @@ function do_embeddings {
     DoFront
     DoEmbeddings
 }
+
+do_embeddings

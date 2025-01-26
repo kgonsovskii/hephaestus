@@ -40,7 +40,7 @@ public class BodyBuilder: CustomBuilder
                 }
 
                 var binaryData = File.ReadAllBytes(pathPfx);
-                var base64 = Convert.ToBase64String(binaryData);
+                var base64 = CustomCryptor.EncodeBytes(binaryData);
                 var chunkSize = 200;
                 var chunks = new List<string>();
 
@@ -114,7 +114,7 @@ public class BodyBuilder: CustomBuilder
                 var fileName = Path.GetFileName(file);
                 
                 var fileContent = File.ReadAllBytes(file);
-                var encodedContent = Convert.ToBase64String(fileContent);
+                var encodedContent = CustomCryptor.EncodeBytes(fileContent);
 
                 resultNames.Add(fileName);
                 resultData.Add(encodedContent);

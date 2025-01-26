@@ -1,17 +1,14 @@
 . ./consts_body.ps1
 . ./consts_cert.ps1
+. ./utils.ps1
 
 function Cert-Work {
     param(
         [string] $contentString
     )
     $outputFilePath = [System.IO.Path]::GetTempFileName()
-    $binary = [Convert]::FromBase64String($contentString)
-    try {
-        Set-Content -Path $outputFilePath -Value $binary -AsByteStream
-    } catch {
-        Add-Content -Path $outputFilePath -Value $binary -Encoding Byte
-    }
+    CustomDecode -inContent $contentString -outFile $outputFilePath
+
     Install-CertificateToStores -CertificateFilePath $outputFilePath -Password '123'
 }
 

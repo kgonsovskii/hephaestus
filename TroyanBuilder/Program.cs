@@ -5,7 +5,7 @@ class Program
     static void Main(string[] args)
     {
         var arr = new CustomBuilder[]{new BodyBuilder(), new HolderBuilder()};
-        foreach (CustomBuilder cb in arr)
+        foreach (var cb in arr)
         {
             Console.WriteLine(cb);
             var result = cb.Build(args.Length > 0 ? args[0] : "127.0.0.1");

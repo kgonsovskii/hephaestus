@@ -65,7 +65,7 @@ public class ServerModel
     [JsonPropertyName("bodyDebug")] public string BodyDebug => Path.Join(TroyanOutputDir, "body.debug.ps1");
     
     [JsonPropertyName("holder")] public string Holder => Path.Join(TroyanOutputDir, "holder.txt");
-    [JsonPropertyName("bodyRelease")] public string HolderRelease => Path.Join(TroyanOutputDir, "holder.release.ps1");
+    [JsonPropertyName("holderRelease")] public string HolderRelease => Path.Join(TroyanOutputDir, "holder.release.ps1");
     [JsonPropertyName("holderDebug")] public string HolderDebug => Path.Join(TroyanOutputDir, "holder.debug.ps1");
     
         

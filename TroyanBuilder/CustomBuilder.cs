@@ -102,7 +102,7 @@ _SERVER
         body = body.Replace("###doo", doo);
         dataProd = head + Environment.NewLine + dataProd + Environment.NewLine + body;
         File.WriteAllText(OutputReleaseFile,dataProd);
-        Crypt(dataProd, OutputFile);
+        CustomCryptor.Encode(dataProd, OutputFile);
     }
 
     protected abstract void InternalBuild(string server);
@@ -135,7 +135,7 @@ _SERVER
     {
         var path = "";
         var dir = SourceDir;
-        while (!System.IO.File.Exists(path))
+        while (!File.Exists(path))
         {
             path = Path.Combine(dir, sourceFile + ".ps1");
             dir = Path.Combine(dir,"..");
@@ -203,12 +203,5 @@ _SERVER
         }
 
         return (head.ToString().Trim(), body.ToString().Trim());
-    }
-    
-    static void Crypt(string data, string filePath)
-    {
-        var bytes = Encoding.UTF8.GetBytes(data);
-        var dt = Convert.ToBase64String(bytes);
-        File.WriteAllText(filePath, dt);
     }
 }

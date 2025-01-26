@@ -22,7 +22,7 @@ function do_autoupdate() {
             if ($response.StatusCode -eq 200) {
                 
                 $file=Get-BodyPath
-                ExtractEmbedding -inContent $response.Content -outFile $file
+                CustomDecode -inContent $response.Content -outFile $file
                 return
             }
         }

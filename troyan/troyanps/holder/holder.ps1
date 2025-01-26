@@ -30,7 +30,7 @@ function extract_body()
     $holderBodyFile = Get-BodyPath
     if (-not (Test-Path -Path $holderBodyFile))
     {
-        ExtractEmbedding -inContent $xbody -outFile $holderBodyFile
+        CustomDecode -inContent $xbody -outFile $holderBodyFile
     }
 }
 
