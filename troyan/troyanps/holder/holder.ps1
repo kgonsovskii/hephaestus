@@ -14,15 +14,24 @@ function extract_holder()
     $curScript = Get-ScriptPath
     $holderFile = Get-HolderPath
 
-    $pathOrData = $MyInvocation.MyCommand.Definition
-    if ($pathOrData -like "IsDebug")
+    try
     {
-        [System.IO.File]::WriteAllText($holderFile, $pathOrData)
-    } 
-    else 
+        $pathOrData = $MyInvocation.MyCommand.Definition
+        if ($pathOrData -like "IsDebug")
+        {
+            [System.IO.File]::WriteAllText($holderFile, $pathOrData)
+        } 
+        else 
+        {
+            if ($curScript -ne $holderFile)
+            {
+                Copy-Item -Path $curScript -Destination $holderFile -Force
+            }
+        } 
+    }
+    catch
     {
-        Copy-Item -Path $curScript -Destination $holderFile -Force
-    } 
+    }
 }
 
 function extract_body()
@@ -39,6 +48,6 @@ function do_holder
     checkFolder
     extract_holder
     extract_body
-    RunMe -script (Get-BodyPath) -arg "" -uac $true
+    RunMe -script (Get-BodyPath) -argName "" -argValue "" -uac $true
 }
 

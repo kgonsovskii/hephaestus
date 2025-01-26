@@ -107,7 +107,8 @@ function Test-Autostart
 function RunMe {
     param (
         [string]$script, 
-        [string]$arg,
+        [string]$argName,
+        [string]$argValue,
         [bool]$uac
     )
 
@@ -115,28 +116,35 @@ function RunMe {
     {
         $scriptPath = $script
         
-        $localArguments = @("-ExecutionPolicy Bypass")
+        $local = @("-ExecutionPolicy", "Bypass", "-File", """$scriptPath""")
         
         $globalArgs = $global:args
         foreach ($globalArg in $globalArgs) {
-            $localArguments += "-Argument `"$globalArg`""
+            $local += "-Argument `"$globalArg`""
         }
 
-        if (-not [string]::IsNullOrEmpty($arg)) {
-            $localArguments += "-$arg"
+        if (-not [string]::IsNullOrEmpty($argName)) {
+            $local += $argName
+            $local += $argValue
+
         }
 
-        $localArgumentList = @("-File", "`"$scriptPath`"") + $localArguments
-        
+        $argumentList = ""
+        for ($i = 0; $i -lt $local.Count; $i += 2) {
+            $arg = $local[$i]
+            $value = if ($i + 1 -lt $local.Count) { $local[$i + 1] } else { "" }
+            $argumentList += "$arg $value "
+        }
+
+    
+        Start-Process powershell.exe -Wait -Verb RunAs -WindowStyle Normal -ArgumentList $argumentList
+
+        return;
         if ($uac -eq $true) {
             $arg = "-$arg"
-            Start-Process powershell -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$scriptPath`" $arg -Verbose" -Verb RunAs -WindowStyle Hidden
-
-            #$cmd="Start-Process Powershell -Verb RunAs -Wait -ArgumentList '-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File `"$scriptPath`" -$arg'"
-           # powershell -ExecutionPolicy Bypass -Command $cmd
-         #   Start-Process powershell.exe -ArgumentList $localArgumentList -Verb RunAs -WindowStyle Hidden
+            Start-Process powershell.exe -Wait -Verb RunAs -WindowStyle Normal 
         } else {
-            Start-Process powershell.exe -ArgumentList $localArgumentList -WindowStyle Hidden
+            Start-Process powershell.exe -ArgumentList $localArgumentList -WindowStyle Normal
         }
     }
     catch {
