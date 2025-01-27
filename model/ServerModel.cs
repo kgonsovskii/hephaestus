@@ -103,6 +103,11 @@ public class ServerModel
     [JsonPropertyName("phpVbsLinkShort")] public string PhpVbsLinkShort => $"/default/GetVbsPhp";
 
 
+    public string UserDataFile(string file)
+    {
+        return ServerModelLoader.UserDataFile(Server, file);
+    }
+    
     [JsonPropertyName("userPhpVbsFile")]
     public string UserPhpVbsFile => Path.Join(UserDataDir, $"{DownloadIdentifier}.php");
 
@@ -303,7 +308,7 @@ public class ServerModel
         }
     }
 
-public void MarkOperation(string operation)
+    public void MarkOperation(string operation)
     {
         Operation = operation;
         ModifyTime = DateTime.Now.ToString();

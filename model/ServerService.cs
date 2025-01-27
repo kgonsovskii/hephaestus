@@ -54,11 +54,6 @@ public class ServerService
         return Path.Combine(ServerDir(serverName), "troyan.exe");
     }
 
-    public string GetExeMono(string serverName)
-    {
-        return Path.Combine(ServerDir(serverName), "troyan_mono.exe");
-    }
-
     public string BuildExe(string serverName, string url)
     {
         return Path.Combine(ServerDir(serverName), "troyan.exe");
@@ -301,7 +296,14 @@ public class ServerService
 
         if (realWork == false)
         {
-            serverModel.MarkOperation(action);
+            var useAction = action;
+            var p = GetServerLite(serverName);
+            if (p.IsAtWork)
+            {
+                if (p.Operation == "apply")
+                    useAction = "apply";
+            }
+            serverModel.MarkOperation(useAction);
             SaveServerLite(serverName, serverModel);
             var process = new Process
             {

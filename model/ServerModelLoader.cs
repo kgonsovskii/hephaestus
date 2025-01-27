@@ -135,9 +135,14 @@ public static class ServerModelLoader
     
     public const string BodyFileConst = "body.txt";
     
+    public static string UserDataFile(string server, string file)
+    {
+        return Path.Combine(UserDataDir(server), file);
+    }
+    
     public static string UserDataBody(string server)
     {
-        return Path.Combine(UserDataDir(server), BodyFileConst);
+        return UserDataFile(server, BodyFileConst);
     }
 
     public static string CpDirStatic => Path.Combine(RootDirStatic, "cp");

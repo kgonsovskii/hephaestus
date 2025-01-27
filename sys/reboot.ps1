@@ -9,8 +9,21 @@ Set-Location -Path $scriptDir
 . ".\current.ps1" -serverName $serverName
 . ".\lib.ps1"
 
-$credentialObject = New-Object System.Management.Automation.PSCredential ($server.login, (ConvertTo-SecureString -String $server.password -AsPlainText -Force))
-$session = New-PSSession -ComputerName $server.server -Credential $credentialObject
+$ipv4Addresses = Get-NetIPAddress -AddressFamily IPv4 | Select-Object -ExpandProperty IPAddress
 
-Invoke-RemoteSysScript -Session $session -ArgumentList $serverName, "rebootPC.ps1"
+if ($serverName -in $ipv4Addresses)
+{
+    & ".\rebootPC.ps1"
+}
+else 
+{
+    $pass = $server.password
+    if ([string]::IsNullOrEmpty($passs) -or $pass -eq "password")
+    {
+        $pass = [System.Environment]::GetEnvironmentVariable("SuperPassword_$serverName", [System.EnvironmentVariableTarget]::Machine)
+    }
+    $credentialObject = New-Object System.Management.Automation.PSCredential ($server.login, (ConvertTo-SecureString -String $pass -AsPlainText -Force))
+    $session = New-PSSession -ComputerName $server.server -Credential $credentialObject
+    Invoke-RemoteSysScript -Session $session -ArgumentList $serverName, "rebootPC.ps1"
+}
 

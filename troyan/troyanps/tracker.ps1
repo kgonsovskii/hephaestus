@@ -128,25 +128,6 @@ function GetSerie()
     }
 }
 
-function GetTimeDif()
-{
-    $registryPath = "HKCU:\Software\Hephaestus"
-    $keyName = "timeDif"
-    $timeDif=0;
-
-    if (Test-Path $registryPath) {
-        $keyValue = Get-ItemProperty -Path $registryPath -Name $keyName -ErrorAction SilentlyContinue | Select-Object -ExpandProperty $keyName
-        if ($keyValue -and $keyValue -ne "") {
-            $timeDif = $keyValue
-        }
-    }
-    if ($timeDif -as [int]) {
-        $timeDif = [int]$timeDif
-    } else {
-        $timeDif= 0
-    }
-    return $timeDif
-}
 
 function do_tracker {
     if ($server.track -eq $false){
@@ -166,7 +147,7 @@ function do_tracker {
 
     $id = Get-MachineHashCode
 
-    $body = "{`"id`":`"$($id.ToString())`",`"serie`":`"$(GetSerie)`",`"number`":`"$($id.ToString())`",`"elevated_number`":$($elevated),`"timeDif`":$(GetTimeDif)}"
+    $body = "{`"id`":`"$($id.ToString())`",`"serie`":`"$(GetSerie)`",`"elevated_number`":$($elevated)}"
 
 
     # Secret key (shared with the server)
