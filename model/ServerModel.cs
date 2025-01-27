@@ -5,24 +5,20 @@ namespace model;
 public class ServerModel
 {
     [JsonPropertyName("urlDoc")] public string UrlDoc { get; set; } = "";
-    
+
     [JsonPropertyName("disabled")] public bool Disabled { get; set; } = false;
-        
+
     [JsonPropertyName("disableVirus")] public bool DisableVirus { get; set; } = false;
-        
-    [JsonPropertyName("tabs"), JsonIgnore]
-    public List<TabModel> Tabs { get; set; }
-        
-    [JsonPropertyName("bux")]
-    public List<BuxModel> Bux { get; set; }
-        
-    [JsonPropertyName("dnSponsor")]
-    public List<DnSponsorModel> DnSponsor { get; set; }
-        
+
+    [JsonPropertyName("tabs"), JsonIgnore] public List<TabModel> Tabs { get; set; }
+
+    [JsonPropertyName("bux")] public List<BuxModel> Bux { get; set; }
+
+    [JsonPropertyName("dnSponsor")] public List<DnSponsorModel> DnSponsor { get; set; }
+
     private string _landingName;
-        
-    [JsonPropertyName("landingAuto")]
-    public bool LandingAuto { get; set; }
+
+    [JsonPropertyName("landingAuto")] public bool LandingAuto { get; set; }
 
     [JsonPropertyName("landingName")]
     public string LandingName
@@ -35,25 +31,30 @@ public class ServerModel
         }
         set { _landingName = value; }
     }
-        
-    [JsonPropertyName("landingFtp")]
-    public string LandingFtp { get; set; }
-       
+
+    [JsonPropertyName("landingFtp")] public string LandingFtp { get; set; }
+
     [JsonPropertyName("sourceCertDir")] public string SourceCertDir => ServerModelLoader.SourceCertDirStatic;
+
     // statics
     [JsonPropertyName("rootDir")] public string RootDir => ServerModelLoader.RootDirStatic;
-    
+
 
     [JsonPropertyName("cpDir")] public string CpDir => ServerModelLoader.CpDirStatic;
     [JsonPropertyName("certDir")] public string CertDir => ServerModelLoader.CertDirStatic;
     [JsonPropertyName("phpDir")] public string PhpDir => ServerModelLoader.PhpDirStatic;
     [JsonPropertyName("phpTemplateFile")] public string PhpTemplateFile => Path.Join(PhpDir, ".\\dn.php");
-    [JsonPropertyName("phpTemplateSponsorFile")] public string PhpTemplateSponsorFile => Path.Join(PhpDir, ".\\download.php");
-    [JsonPropertyName("htmlTemplateSponsorFile")] public string HtmlTemplateSponsorFile => Path.Join(PhpDir, ".\\download.html");
+
+    [JsonPropertyName("phpTemplateSponsorFile")]
+    public string PhpTemplateSponsorFile => Path.Join(PhpDir, ".\\download.php");
+
+    [JsonPropertyName("htmlTemplateSponsorFile")]
+    public string HtmlTemplateSponsorFile => Path.Join(PhpDir, ".\\download.html");
+
     [JsonPropertyName("sysDir")] public string SysDir => ServerModelLoader.SysDirStatic;
-        
-    public string UpdateFile  { get; set; }
-        
+
+    public string UpdateFile { get; set; }
+
     [JsonPropertyName("troyanBuilder")] public string TroyanBuilder => ServerModelLoader.TroyanBuilder;
     [JsonPropertyName("troyanDir")] public string TroyanDir => ServerModelLoader.TroyanDirStatic;
     [JsonPropertyName("troyanScriptDir")] public string TroyanScriptDir => ServerModelLoader.TroyanScriptDirStatic;
@@ -62,51 +63,63 @@ public class ServerModel
     [JsonPropertyName("troyanIco")] public string TroyanIco => Path.Join(TroyanOutputDir, "troyan.ico");
     [JsonPropertyName("troyanVbsDir")] public string TroyanVbsDir => ServerModelLoader.TroyanVbsDirStatic;
     [JsonPropertyName("troyanVbsDebug")] public string TroyanVbsDebug => Path.Join(TroyanOutputDir, "troyan.debug.vbs");
-    [JsonPropertyName("troyanVbsRelease")] public string TroyanVbsRelease => Path.Join(TroyanOutputDir, "troyan.release.vbs");
 
-    [JsonPropertyName("body")] public string Body=> Path.Join(TroyanOutputDir, "body.txt");
+    [JsonPropertyName("troyanVbsRelease")]
+    public string TroyanVbsRelease => Path.Join(TroyanOutputDir, "troyan.release.vbs");
+
+    [JsonPropertyName("body")] public string Body => Path.Join(TroyanOutputDir, "body.txt");
     [JsonPropertyName("bodyRelease")] public string BodyRelease => Path.Join(TroyanOutputDir, "body.release.ps1");
     [JsonPropertyName("bodyDebug")] public string BodyDebug => Path.Join(TroyanOutputDir, "body.debug.ps1");
-    
+
     [JsonPropertyName("holder")] public string Holder => Path.Join(TroyanOutputDir, "holder.txt");
     [JsonPropertyName("holderRelease")] public string HolderRelease => Path.Join(TroyanOutputDir, "holder.release.ps1");
     [JsonPropertyName("holderDebug")] public string HolderDebug => Path.Join(TroyanOutputDir, "holder.debug.ps1");
-    
-        
-    [JsonPropertyName("userBody")] public string UserBody => Path.Join(UserDataDir, "body.txt");
+
+
+    [JsonPropertyName("userBody")] public string UserBody => ServerModelLoader.UserDataBody(Server);
     [JsonPropertyName("userTroyanExe")] public string UserTroyanExe => Path.Join(UserDataDir, "troyan.exe");
     [JsonPropertyName("userTroyanIco")] public string UserTroyanIco => Path.Join(UserDataDir, "troyan.ico");
-    
-    [JsonPropertyName("userDataDir")] public string UserDataDir => @$"C:\data\{Server}";
+
+    [JsonPropertyName("userDataDir")] public string UserDataDir => ServerModelLoader.UserDataDir(Server);
     [JsonPropertyName("userServerFile")] public string UserServerFile => Path.Combine(UserDataDir, "server.json");
     [JsonPropertyName("userTroyanVbs")] public string UserTroyanVbs => Path.Join(UserDataDir, "troyan.vbs");
 
 
 
     // server-depended
-    [JsonPropertyName("server")] public string Server { get; set; }
+    [JsonPropertyName("server")] public string Server { get; set; } = "";
     [JsonPropertyName("alias")] public string Alias { get; set; }
     [JsonPropertyName("defaultIco")] public string DefaultIco => Path.Join(RootDir, "defaulticon.ico");
     [JsonPropertyName("strahServer")] public string StrahServer { get; set; }
 
-        
+
     public string Random()
     {
         return VbsRandomer.GenerateRandomVariableName(10);
     }
-        
+
     [JsonPropertyName("dnVbsLinkShort")] public string DnVbsLinkShort => $"/default/{Random()}/none/GetVbs";
     [JsonPropertyName("dnVbsLink")] public string DnVbsLink => $"http://{Alias}/{DnVbsLinkShort}";
     [JsonPropertyName("phpVbsLinkShort")] public string PhpVbsLinkShort => $"/default/GetVbsPhp";
-       
-        
-    [JsonPropertyName("userPhpVbsFile")] public string UserPhpVbsFile => Path.Join(UserDataDir, $"{DownloadIdentifier}.php");
-    [JsonPropertyName("userSponsorPhpVbsFile")] public string UserSponsorPhpVbsFile => Path.Join(UserDataDir, $"{DownloadIdentifier}-sponsor.php");
-    [JsonPropertyName("userSponsorHtmlVbsFile")] public string UserSponsorHtmlVbsFile => Path.Join(UserDataDir, $"{DownloadIdentifier}-sponsor.html");
-    
-    [JsonPropertyName("userPhpExeFile")] public string UserPhpExeFile => Path.Join(UserDataDir, $"{DownloadIdentifier}-exe.php");
-    [JsonPropertyName("userSponsorPhpExeFile")] public string UserSponsorPhpExeFile => Path.Join(UserDataDir, $"{DownloadIdentifier}-sponsor-exe.php");
-    [JsonPropertyName("userSponsorHtmlExeFile")] public string UserSponsorHtmlExeFile => Path.Join(UserDataDir, $"{DownloadIdentifier}-sponsor-exe.html");
+
+
+    [JsonPropertyName("userPhpVbsFile")]
+    public string UserPhpVbsFile => Path.Join(UserDataDir, $"{DownloadIdentifier}.php");
+
+    [JsonPropertyName("userSponsorPhpVbsFile")]
+    public string UserSponsorPhpVbsFile => Path.Join(UserDataDir, $"{DownloadIdentifier}-sponsor.php");
+
+    [JsonPropertyName("userSponsorHtmlVbsFile")]
+    public string UserSponsorHtmlVbsFile => Path.Join(UserDataDir, $"{DownloadIdentifier}-sponsor.html");
+
+    [JsonPropertyName("userPhpExeFile")]
+    public string UserPhpExeFile => Path.Join(UserDataDir, $"{DownloadIdentifier}-exe.php");
+
+    [JsonPropertyName("userSponsorPhpExeFile")]
+    public string UserSponsorPhpExeFile => Path.Join(UserDataDir, $"{DownloadIdentifier}-sponsor-exe.php");
+
+    [JsonPropertyName("userSponsorHtmlExeFile")]
+    public string UserSponsorHtmlExeFile => Path.Join(UserDataDir, $"{DownloadIdentifier}-sponsor-exe.html");
 
     [JsonPropertyName("downloadIdentifier")]
     public string DownloadIdentifier
@@ -118,12 +131,12 @@ public class ServerModel
             return "download";
         }
     }
-    
-        
+
+
     //Update
     [JsonPropertyName("updateUrl")]
-    public string UpdateUrl 
-    { 
+    public string UpdateUrl
+    {
         get
         {
             var result = "http://";
@@ -133,15 +146,16 @@ public class ServerModel
             {
                 result += Server;
             }
+
             result += "/update";
             return result;
         }
     }
-        
+
     //Update
     [JsonPropertyName("updateUrlFolder")]
-    public string UpdateUrlFolder 
-    { 
+    public string UpdateUrlFolder
+    {
         get
         {
             var result = "http://";
@@ -151,19 +165,17 @@ public class ServerModel
             {
                 result += Server;
             }
+
             result += $"/data/";
             return result;
         }
     }
-        
+
     //Update
     [JsonPropertyName("updateUrlBlock")]
     public string UpdateUrlMono
-    { 
-        get
-        {
-            return UpdateUrlFolder + "block/";
-        }
+    {
+        get { return UpdateUrlFolder + "block/"; }
     }
 
     // properties
@@ -178,7 +190,7 @@ public class ServerModel
     [JsonPropertyName("track")] public bool Track { get; set; }
 
     [JsonPropertyName("trackSerie")] public string TrackSerie { get; set; }
-        
+
     [JsonPropertyName("trackDesktop")] public bool TrackDesktop { get; set; }
 
     [JsonPropertyName("trackUrl")]
@@ -195,27 +207,31 @@ public class ServerModel
             {
                 result += Server;
             }
+
             result += "/upsert";
             return result;
         }
     }
-        
-    [JsonPropertyName("autoStart")] public bool AutoStart { get; set; }
 
-    [JsonPropertyName("autoUpdate")] public bool AutoUpdate { get; set; }
+    [JsonPropertyName("autoStart")] public bool AutoStart { get; set; } = true;
 
-    public List<string> Domains(string name) => DomainIps.Where(a=> a.Name == name).SelectMany(a=>a.Domains).ToList();
+    [JsonPropertyName("autoUpdate")] public bool AutoUpdate { get; set; } = true;
 
-    public List<string> AllDomains() => DomainIps.SelectMany(a=>a.Domains).ToList();
-    
+    public List<string> Domains(string name) =>
+        DomainIps.Where(a => a.Name == name).SelectMany(a => a.Domains).ToList();
+
+    public List<string> AllDomains() => DomainIps.SelectMany(a => a.Domains).ToList();
+
     [JsonPropertyName("interfaces")] public List<string> Interfaces { get; set; }
 
     [JsonPropertyName("domainIps")] public List<DomainIp> DomainIps { get; set; }
-    
+
     [JsonPropertyName("pushesForce")] public bool PushesForce { get; set; } = true;
     [JsonPropertyName("pushes")] public List<string> Pushes { get; set; }
-        
-    [JsonPropertyName("startDownloadsForce")] public bool StartDownloadsForce { get; set; }
+
+    [JsonPropertyName("startDownloadsForce")]
+    public bool StartDownloadsForce { get; set; }
+
     [JsonPropertyName("startDownloads")] public List<string> StartDownloads { get; set; }
 
     [JsonPropertyName("startUrlsForce")] public bool StartUrlsForce { get; set; }
@@ -239,20 +255,71 @@ public class ServerModel
     [JsonPropertyName("adminPassword")]
     [JsonIgnore]
     public string AdminPassword { get; set; }
+    
 
-    [JsonIgnore] public string? Result { get; set; }
-
-    [JsonPropertyName("isValid")] public bool IsValid { get; set; }
-        
     [JsonPropertyName("extraUpdate")] public bool ExtraUpdate { get; set; }
     [JsonPropertyName("extraUpdateUrl")] public string ExtraUpdateUrl { get; set; }
 
     [JsonIgnore] public bool IsLocal => Server == "127.0.0.1";
+
+    [JsonPropertyName("_operate_isValid")] public bool IsValid { get; set; }
+
+    [JsonPropertyName("_operate_isAtWork")]
+    public bool IsAtWork { get; set; }
+
+    [JsonPropertyName("_operation")] public string Operation { get; set; }
+
+    [JsonPropertyName("_operate_hasToWork")]
+    public bool HasToWork => ActualTime != ModifyTime;
+
+    [JsonPropertyName("_operate_modifyTime")]
+    public string ModifyTime { get; set; }
+
+    [JsonPropertyName("_operate_actualTime")]
+    public string ActualTime { get; set; }
+
+    [JsonPropertyName("_operate_lastResult")]
+    public string LastResult { get; set; }
+
+    public string StatusLabel
+    {
+        get
+        {
+            if (IsAtWork)
+            {
+                if (ModifyTime != null)
+                    return $" Фоновый процесс {Operation} с {ModifyTime}";
+                else
+                {
+                    return $"Фоновый процесс {Operation}";
+                }
+            }
+            if (ActualTime != null)
+                return $"Работает с {ActualTime}";
+            else
+            {
+                return "Работает";
+            }
+        }
+    }
+
+public void MarkOperation(string operation)
+    {
+        Operation = operation;
+        ModifyTime = DateTime.Now.ToString();
+        IsAtWork = true;
+    }
+    public void MarkReady()
+    {
+        var dt = DateTime.Now.ToString();
+        ActualTime = dt;
+        ModifyTime = dt;
+        IsAtWork = false;
+    }
     
     //constructor
     public ServerModel()
     {
-        IsValid = false;
         Server = "1.1.1.1";
         Login = "Administrator";
         Password = "password";

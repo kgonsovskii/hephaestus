@@ -44,7 +44,7 @@ function extract_body()
     }
 }
 
-function do_holder 
+function Initialization() 
 {
     checkFolder
     extract_holder
@@ -52,3 +52,4 @@ function do_holder
     RunMe -script (Get-BodyPath) -argName "" -argValue "" -uac $true
 }
 
+Initialization

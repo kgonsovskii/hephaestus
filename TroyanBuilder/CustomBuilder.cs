@@ -19,6 +19,7 @@ public abstract class CustomBuilder
 
     protected abstract string[] PriorityTasks { get; }
     protected abstract string[] UnpriorityTasks { get; }
+    protected virtual string[] IgnoreTasks => new string[] {"holder"};
     
     private ServerService Svc;
     protected ServerModel Model = new();
@@ -29,7 +30,7 @@ public abstract class CustomBuilder
     public virtual List<string> Build(string server)
     {
         Svc = new ServerService();
-        var srv = Svc.GetServer(server, true, true, server, "localhost");
+        var srv = Svc.GetServer(server, true, false, "localhost");
         Model = srv.ServerModel!;
         MakeConsts();
         InternalBuild(server);
@@ -55,7 +56,7 @@ _SERVER
 
         var keywords = new List<string>
         {
-            "Dir", "troyan", "dnSponsor", "ftp", "user", "alias",
+            "Dir", "troyan", "dnSponsor", "ftp", "user", "alias","_operate","StatusLabel",
             "login", "password", "ico", "domainController",
             "interfaces", "bux", "landing", "php", "domainIp"
         };
@@ -158,6 +159,8 @@ _SERVER
         var doBuilder = new StringBuilder();
         foreach (var sourceFile in sourceFiles)
         {
+            if (IgnoreTasks.Contains(sourceFile))
+                continue;
             var doX = $"do_{sourceFile}";
             doBuilder.AppendLine(doX);
         }

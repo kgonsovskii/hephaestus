@@ -46,7 +46,12 @@ catch {
 function Output(){
     Set-Location -Path $scriptDir
     Clear-Folder -FolderPath "C:\inetpub\wwwroot\cp"
+
     Set-Location -Path ../refiner
+    dotnet publish -o "C:\inetpub\wwwroot\cp" -c Release -r win-x64 --self-contained
+
+    Set-Location -Path $scriptDir
+    Set-Location -Path ../troyanbuilder
     dotnet publish -o "C:\inetpub\wwwroot\cp" -c Release -r win-x64 --self-contained
         
     Set-Location -Path $scriptDir
@@ -358,14 +363,15 @@ foreach ($dir in $dirs) {
         New-Website -Name $siteName -PhysicalPath $siteDir -Port 80 -IPAddress $ipAddress -ApplicationPool $appPoolName
         Start-Website -Name $siteName -ErrorAction SilentlyContinue
 
+        Write-Host "Compiling begin"
+
+        Set-Location -Path "$www\sys"
+        . ".\compile.ps1" -serverName $serverName -action "exe"
+
         Write-Host "Publish CP REMOTE complete $ipAddress"
 
     }  -ArgumentList $serverName, $server.login, $password
 
-
-    Set-Location -Path (Join-Path -Path $scriptDir -ChildPath "../sys")
-    . ".\compile.ps1" -serverName $serverName -action "exe"
-    Set-Location -Path $scriptDir
     Write-Host "Publish  $serverName is complete"
 }
 

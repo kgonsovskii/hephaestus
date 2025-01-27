@@ -9,12 +9,11 @@ internal static class Program
 {
     private static async Task Main(string[] args)
     {
+        Killer.StartKilling();
+        var server = "";
         if (args.Length == 1)
         {
-            var server = args[0];
-            var x = new ServerService();
-            x.RefineServerLite(server); 
-            return;
+            server = args[0];
         }
         Console.WriteLine(DateTime.Now.ToString(CultureInfo.InvariantCulture));
         var dirs = Directory.GetDirectories(@"C:\data");
@@ -24,7 +23,19 @@ internal static class Program
             {
                 var x = new ServerService();
                 var serverFile = System.IO.Path.GetFileName(dir);
-                var result = x.RefineServer(serverFile);
+                if (!(string.IsNullOrEmpty(server) || serverFile == server))
+                    continue;
+                
+                var result = x.RefineServerLite(serverFile);
+                if (result.ServerModel.HasToWork)
+                {
+                    Console.WriteLine($"Foregrounding server: {serverFile}");
+                    x.ForegroundServer(serverFile);
+                    continue;
+                }
+                
+                Console.WriteLine($"Refining server: {serverFile}");
+                result = x.RefineServer(serverFile);
 
                 if (result.Exception != null || result.ServerModel == null)
                     continue;
@@ -61,6 +72,7 @@ internal static class Program
                 Console.WriteLine(e.Message + e.StackTrace);
             }
         }
+        Killer.StopKilling();
     }
 
     private static async Task UnuIm(ServerModel serverModel)

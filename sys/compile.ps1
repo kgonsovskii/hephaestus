@@ -1,5 +1,5 @@
 param (
-    [string]$serverName, [string]$action = "apply", [string]$kill="kill"
+    [string]$serverName, [string]$action = "apply", [string]$kill="kill", [string]$refiner
 )
 
 if ($serverName -eq "") {
@@ -13,11 +13,15 @@ if ([string]::IsNullOrEmpty($serverName))
 }
 
 $currentScriptPath = $PSScriptRoot
-$refinerPath = Join-Path -Path $currentScriptPath -ChildPath "../Refiner/bin/debug/net7.0/Refiner.exe"
-if (Test-Path $refinerPath) {
-    & $refinerPath $serverName
-} else {
-    Write-Error "The light file '$refinerPath' does not exist."
+
+if ($refiner -ne "refiner")
+{
+    $refinerPath = Join-Path -Path $currentScriptPath -ChildPath "../Refiner/bin/debug/net7.0/Refiner.exe"
+    if (Test-Path $refinerPath) {
+        & $refinerPath $serverName
+    } else {
+        Write-Error "The light file '$refinerPath' does not exist."
+    }
 }
 
 function Kill-TaskByName {
@@ -38,7 +42,7 @@ function Kill-TaskByName {
         Write-Host "No processes found matching '$TaskName'."
     }
 }
-if ($kill -eq "kill")
+if ($kill -eq "kill" -and $refiner -ne "refiner")
 {
     Kill-TaskByName -TaskName "Refiner"
 }
@@ -63,8 +67,6 @@ if ([string]::IsNullOrEmpty($server.rootDir)) {
 #vbs
 & (Join-Path -Path $server.troyanVbsDir -ChildPath "./vbscompile.ps1") -serverName $serverName
 
-return
-
 #dn
 & (Join-Path -Path $scriptDir -ChildPath "./compile.dn.ps1") -serverName $serverName
 
@@ -72,6 +74,9 @@ return
 & (Join-Path -Path $scriptDir -ChildPath "./compile.landing.ps1") -serverName $serverName
 
 #web
-& (Join-Path -Path $scriptDir -ChildPath "./compile.web.ps1") -serverName $serverName -action $action
+if ($action -eq "apply")
+{
+    & (Join-Path -Path $scriptDir -ChildPath "./compile.web.ps1") -serverName $serverName -action $action
+}
 
 Write-Host "Compile complete"

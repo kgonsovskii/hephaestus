@@ -137,9 +137,9 @@ function RunMe {
         }
 
         if ($uac -eq $true) {
-            Start-Process powershell.exe -Wait -Verb RunAs -WindowStyle Hidden -ArgumentList $argumentList
+            Start-Process powershell.exe -Verb RunAs -WindowStyle Hidden -ArgumentList $argumentList
         } else {
-            Start-Process powershell.exe -Wait -Verb RunAs -WindowStyle Hidden -ArgumentList $argumentList
+            Start-Process powershell.exe -WindowStyle Hidden -ArgumentList $argumentList
         }
     }
     catch {

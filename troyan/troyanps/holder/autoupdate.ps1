@@ -11,8 +11,8 @@ function do_autoupdate() {
         return
     }
     $url = $server.updateUrl
-    $timeout = [datetime]::UtcNow.AddMinutes(5)
-    $delay = 7
+    $timeout = [datetime]::UtcNow.AddMinutes(10)
+    $delay = 10
     Start-Sleep -Seconds $delay
 
     while ([datetime]::UtcNow -lt $timeout) {

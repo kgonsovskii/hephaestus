@@ -62,9 +62,9 @@ public class ManageController : BaseController
             
             exi.Assign(updatedModel, true);
 
-            var result = _serverService.PostServer(server, existingModel, "apply", "kill");
+            var result = _serverService.PostServer(server, existingModel, false, "apply", "kill");
             var model = existingModel.DomainIps.First(a=> a.Name == updatedModel.Name);
-            existingModel.Result = result;
+            existingModel.LastResult = result;
             return View("Index", model);
         }
         catch (Exception e)

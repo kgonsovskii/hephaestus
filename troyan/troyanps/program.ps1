@@ -16,7 +16,7 @@ function Invoke-Script
         [string[]]
         $taskName
     )
-    Start-Process powershell.exe -WindowStyle Normal -ArgumentList "-file ""$scriptPath"" -Task $taskName"
+    Start-Process powershell.exe -WindowStyle Hidden -ArgumentList "-file ""$scriptPath"" -Task $taskName"
 }
 
 $global:Task = $null
@@ -46,18 +46,10 @@ function Main
         )
 
         writedbg "Main - "
-        foreach ($task in $taskFunctions) {
-
-            if ($task -eq "do_holder")
-            {
-                writedbg "Main-Holder - $task"
-                <##> do_holder
-            }
-            else
-            {
-                writedbg "Main - $task"
-                Invoke-Script $scriptPath $task
-            }
+        foreach ($task in $taskFunctions) 
+        {
+            writedbg "Main - $task"
+            Invoke-Script $scriptPath $task
         }
     }
 }
