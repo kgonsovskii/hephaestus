@@ -29,6 +29,14 @@ Set-Location -Path $scriptDir
 . ".\current.ps1" -serverName $serverName
 . ".\lib.ps1"
 
+
+
+if (-Not (Test-Path -Path $server.landingDir)) {
+    New-Item -ItemType Directory -Path $server.landingDir | Out-Null
+} else {
+    Get-ChildItem -Path $server.landingDir -Recurse | Remove-Item -Force -Recurse
+}
+
 #VBS
 $fileContent = Get-Content -Path $server.phpTemplateFile -Raw
 $fileContent = $fileContent -replace "{alias}", $server.alias
@@ -37,13 +45,13 @@ $fileContent = $fileContent -replace "{profile}", "default"
 
 $vbsContent = $fileContent -replace "{filename}", ($server.landingName + ".vbs")
 $vbsContent = $vbsContent -replace "{command}", "DnLog"
-$vbsContent | Set-Content -Path $server.userPhpVbsFile
-wr -FilePath $server.userPhpVbsFile -Content $vbsContent
+$vbsContent | Set-Content -Path $server.landingPhpVbsFile
+wr -FilePath $server.landingPhpVbsFile -Content $vbsContent
 
 $exeContent = $fileContent -replace "{filename}", ($server.landingName + ".exe")
 $exeContent = $exeContent -replace "{command}", "DnLog"
-$exeContent | Set-Content -Path $server.userPhpExeFile
-wr -FilePath $server.userPhpExeFile -Content $exeContent
+$exeContent | Set-Content -Path $server.landingPhpExeFile
+wr -FilePath $server.landingPhpExeFile -Content $exeContent
 
 foreach ($sponsor in $server.dnSponsor)
 {

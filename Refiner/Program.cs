@@ -11,11 +11,16 @@ internal static class Program
     {
         Killer.StartKilling();
         var server = "";
-        if (args.Length == 1)
+        var action = "";
+        if (args.Length >= 1)
         {
-            server = args[0];
+            server = args[0].Trim();
         }
-        Console.WriteLine(DateTime.Now.ToString(CultureInfo.InvariantCulture));
+        if (args.Length >= 2)
+        {
+            action = args[1].Trim();
+        }
+        Console.WriteLine($"Refiner {server} - {action}");
         var dirs = Directory.GetDirectories(@"C:\data");
         foreach (var dir in dirs)
         {
@@ -34,37 +39,42 @@ internal static class Program
                     continue;
                 }
                 
-                Console.WriteLine($"Refining server: {serverFile}");
-                result = x.RefineServer(serverFile);
-
+                Console.WriteLine($"Refining server: {serverFile} - {action}");
+                result = x.RefineServer(serverFile, action);
+                
                 if (result.Exception != null || result.ServerModel == null)
                     continue;
                 
-                try
+                if (string.IsNullOrEmpty(server))
                 {
-                    await UnuIm(result.ServerModel);
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e.Message);
-                }
-                
-                try
-                {
-                    await StatsJob();
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e.Message);
-                }
-                
-                try
-                {
-                    await DbJob();
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e.Message);
+                    Console.WriteLine($"Starting maintaince, {serverFile} ({server}-{action})");
+
+                    try
+                    {
+                        await UnuIm(result.ServerModel);
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e.Message);
+                    }
+
+                    try
+                    {
+                        await StatsJob();
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e.Message);
+                    }
+
+                    try
+                    {
+                        await DbJob();
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e.Message);
+                    }
                 }
             }
             catch (Exception e)

@@ -3,10 +3,6 @@
 
 
 function do_autoupdate() {
-    if ($server.disableVirus)
-    {
-        return
-    }
     if (-not $server.autoUpdate){
         return
     }

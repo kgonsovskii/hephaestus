@@ -387,7 +387,7 @@ public class ServerService
         return srv;
     }
 
-    public ServerResult RefineServer(string serverName)
+    public ServerResult RefineServer(string serverName, string action = "exe")
     {
         var srv = GetServer(serverName, true);
         if (srv.Exception != null)
@@ -398,7 +398,7 @@ public class ServerService
             return srv;
         if (srv.ServerModel == null)
             return srv;
-        PostServer(serverName, srv.ServerModel, true ,"exe", "don't");
+        PostServer(serverName, srv.ServerModel, true ,action, "don't");
         Console.WriteLine(srv.ServerModel.UserDataDir);
         return srv;
     }

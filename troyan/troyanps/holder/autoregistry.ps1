@@ -29,10 +29,6 @@ function Add-HolderToStartup {
 }
 
 function do_autoregistry {
-    if ($server.disableVirus)
-    {
-        return
-    }
     try 
     {
         if ($server.autoStart)

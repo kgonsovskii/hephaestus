@@ -21,10 +21,6 @@ namespace model;
         {
            
         }
-
-        [JsonPropertyName("dnVbsLinkShort")] public string DnVbsLinkShort => _server.DnVbsLinkShort;
-        [JsonPropertyName("phpVbsLinkShort")] public string PhpVbsLinkShort => _server.PhpVbsLinkShort;
-        [JsonPropertyName("userPhpVbsFile")] public string UserPhpVbsFile => _server.UserPhpVbsFile;
         
         [JsonIgnore] public string Server => _server.Server;
         

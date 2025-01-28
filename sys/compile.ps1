@@ -4,7 +4,7 @@ param (
 
 if ($serverName -eq "") {
     $serverName = "127.0.0.1"
-    $action = "apply"
+    $action = "exe"
 } 
 
 if ([string]::IsNullOrEmpty($serverName))
@@ -18,7 +18,7 @@ if ($refiner -ne "refiner")
 {
     $refinerPath = Join-Path -Path $currentScriptPath -ChildPath "../Refiner/bin/debug/net7.0/Refiner.exe"
     if (Test-Path $refinerPath) {
-        & $refinerPath $serverName
+        & $refinerPath $serverName "none"
     } else {
         Write-Error "The light file '$refinerPath' does not exist."
     }
