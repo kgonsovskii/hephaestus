@@ -102,7 +102,22 @@ public class ServerModel
     [JsonPropertyName("landingSponsorHtmlExeFile")] public string LandingSponsorHtmlExeFile => Path.Join(LandingDir, $"{LandingName}-sponsor-exe.html");
 
 
-    //Update
+    // properties
+    [JsonPropertyName("login")] public string Login { get; set; }
+
+    [JsonPropertyName("password")] public string Password { get; set; }
+
+    [JsonPropertyName("primaryDns")] public string PrimaryDns { get; set; }
+
+    [JsonPropertyName("secondaryDns")] public string SecondaryDns { get; set; }
+    
+    
+    
+    
+    
+    [JsonPropertyName("extraUpdate")] public bool ExtraUpdate { get; set; }
+    [JsonPropertyName("extraUpdateUrl")] public string ExtraUpdateUrl { get; set; }
+    
     [JsonPropertyName("updateUrl")]
     public string UpdateUrl
     {
@@ -116,45 +131,14 @@ public class ServerModel
                 result += Server;
             }
 
-            result += "/update";
+            result += "/bot/update";
             return result;
         }
     }
-
-    //Update
-    [JsonPropertyName("updateUrlFolder")]
-    public string UpdateUrlFolder
-    {
-        get
-        {
-            var result = "http://";
-            if (!string.IsNullOrEmpty(Alias))
-                result += Alias;
-            else
-            {
-                result += Server;
-            }
-
-            result += $"/data/";
-            return result;
-        }
-    }
-
-    // properties
-    [JsonPropertyName("login")] public string Login { get; set; }
-
-    [JsonPropertyName("password")] public string Password { get; set; }
-
-    [JsonPropertyName("primaryDns")] public string PrimaryDns { get; set; }
-
-    [JsonPropertyName("secondaryDns")] public string SecondaryDns { get; set; }
 
     [JsonPropertyName("track")] public bool Track { get; set; }
-
     [JsonPropertyName("trackSerie")] public string TrackSerie { get; set; }
-
     [JsonPropertyName("trackDesktop")] public bool TrackDesktop { get; set; }
-
     [JsonPropertyName("trackUrl")]
     public string TrackUrl
     {
@@ -174,11 +158,10 @@ public class ServerModel
             return result;
         }
     }
-
     [JsonPropertyName("autoStart")] public bool AutoStart { get; set; } = true;
-
     [JsonPropertyName("autoUpdate")] public bool AutoUpdate { get; set; } = true;
 
+    
     public List<string> Domains(string name) =>
         DomainIps.Where(a => a.Name == name).SelectMany(a => a.Domains).ToList();
 
@@ -202,8 +185,7 @@ public class ServerModel
     [JsonPropertyName("frontForce")] public bool FrontForce { get; set; }
     [JsonPropertyName("front")] public List<string> Front { get; set; }
 
-    [JsonPropertyName("extractIconFromFront")]
-    public bool ExtractIconFromFront { get; set; }
+    [JsonPropertyName("extractIconFromFront")] public bool ExtractIconFromFront { get; set; }
 
     [JsonPropertyName("embeddingsForce")] public bool EmbeddingsForce { get; set; }
     [JsonPropertyName("embeddings")] public List<string> Embeddings { get; set; }
@@ -219,8 +201,6 @@ public class ServerModel
     public string AdminPassword { get; set; }
     
 
-    [JsonPropertyName("extraUpdate")] public bool ExtraUpdate { get; set; }
-    [JsonPropertyName("extraUpdateUrl")] public string ExtraUpdateUrl { get; set; }
 
     [JsonIgnore] public bool IsLocal => Server == "127.0.0.1";
 

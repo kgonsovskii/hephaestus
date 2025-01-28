@@ -312,7 +312,7 @@ public class ServerService
                     FileName = ServerModelLoader.Refiner,
                     Arguments = $"{serverName}",
                     CreateNoWindow = true,
-                    UseShellExecute = true,
+                    UseShellExecute = false,
                     RedirectStandardOutput = false,
                     RedirectStandardError = false 
                 }
