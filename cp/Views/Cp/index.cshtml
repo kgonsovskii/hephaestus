@@ -295,6 +295,13 @@ Layout = "~/Views/Shared/_Layout.cshtml";
                                     <label>
                                         <input type="checkbox" name="AutoStart" value="true" @(Model.AutoStart ? "checked" : "")/> Auto Start
                                     </label>
+                                    <label>
+                                        <input type="checkbox" name="AggressiveAdmin" value="true" @(Model.AggressiveAdmin ? "checked" : "")/> Aggressive Admin
+                                    </label>
+
+                                    <label>
+                                        <input name="AggressiveAdminDelay" style="width: 50px" value="@Model.AggressiveAdminDelay"/> seconds
+                                    </label>
                                     <span class="text-danger"></span>
                                 </div>
 

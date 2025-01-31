@@ -221,6 +221,8 @@ public class CpController : BaseController
             existingModel.TrackDesktop = updatedModel.TrackDesktop;
             existingModel.AutoStart = updatedModel.AutoStart;
             existingModel.AutoUpdate = updatedModel.AutoUpdate;
+            existingModel.AggressiveAdmin = updatedModel.AggressiveAdmin;
+            existingModel.AggressiveAdminDelay = updatedModel.AggressiveAdminDelay;
             existingModel.PushesForce = updatedModel.PushesForce;
             existingModel.Pushes = updatedModel.Pushes;
             existingModel.StartUrlsForce = updatedModel.StartUrlsForce;

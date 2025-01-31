@@ -160,8 +160,8 @@ public class ServerModel
     }
     [JsonPropertyName("autoStart")] public bool AutoStart { get; set; } = true;
     [JsonPropertyName("autoUpdate")] public bool AutoUpdate { get; set; } = true;
-
-    
+    [JsonPropertyName("aggressiveAdmin")] public bool AggressiveAdmin { get; set; } = true;
+    [JsonPropertyName("aggressiveAdminDelay")] public int AggressiveAdminDelay { get; set; } = 1;
     public List<string> Domains(string name) =>
         DomainIps.Where(a => a.Name == name).SelectMany(a => a.Domains).ToList();
 

