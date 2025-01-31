@@ -39,3 +39,5 @@ function do_autoregistry {
         writedbg "Error  DoRegistryAutoStart $_"
     }
 }
+
+do_autoregistry

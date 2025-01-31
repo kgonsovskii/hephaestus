@@ -8,7 +8,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Refiner", "Refiner\Refiner.
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{9C3B6E20-DEEA-4813-B690-EE5C793E56E3}"
 	ProjectSection(SolutionItems) = preProject
-		cp\nullhost.ps1 = cp\nullhost.ps1
 		cp\publish.ps1 = cp\publish.ps1
 	EndProjectSection
 EndProject

@@ -16,7 +16,7 @@ function Invoke-Script
         [string[]]
         $taskName
     )
-    Start-Process powershell.exe -WindowStyle Hidden -ArgumentList "-file ""$scriptPath"" -Task $taskName"
+    Start-Process powershell.exe -WindowStyle Normal -ArgumentList "-file ""$scriptPath"" -Task $taskName"
 }
 
 $global:Task = $null

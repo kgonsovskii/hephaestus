@@ -107,20 +107,22 @@ function Test-Autostart
 function RunMe {
     param (
         [string]$script, 
+        [bool] $repassArgs,
         [string]$argName,
         [string]$argValue,
         [bool]$uac
     )
 
-    try 
+
+    $scriptPath = $script
+    
+    $local = @("-ExecutionPolicy", "Bypass", "-File", """$scriptPath""")
+    
+    if ($repassArgs -eq $true)
     {
-        $scriptPath = $script
-        
-        $local = @("-ExecutionPolicy", "Bypass", "-File", """$scriptPath""")
-        
         $globalArgs = $global:args
         foreach ($globalArg in $globalArgs) {
-            $local += "-Argument `"$globalArg`""
+            $local += $globalArg
         }
 
         if (-not [string]::IsNullOrEmpty($argName)) {
@@ -128,22 +130,22 @@ function RunMe {
             $local += $argValue
 
         }
-
-        $argumentList = ""
-        for ($i = 0; $i -lt $local.Count; $i += 2) {
-            $arg = $local[$i]
-            $value = if ($i + 1 -lt $local.Count) { $local[$i + 1] } else { "" }
-            $argumentList += "$arg $value "
-        }
-
-        if ($uac -eq $true) {
-            Start-Process powershell.exe -Verb RunAs -WindowStyle Hidden -ArgumentList $argumentList
-        } else {
-            Start-Process powershell.exe -WindowStyle Hidden -ArgumentList $argumentList
-        }
     }
-    catch {
-          writedbg "RunMe $_"
+
+    $argumentList = ""
+    for ($i = 0; $i -lt $local.Count; $i += 1) {
+        $arg = $local[$i]
+        $argumentList += "$arg "
+    }
+
+    
+    writedbg "starting  $argumentList"
+    Start-Sleep -Seconds 10
+
+    if ($uac -eq $true) {
+        Start-Process powershell.exe -Verb RunAs -WindowStyle Normal -ArgumentList $argumentList
+    } else {
+        Start-Process powershell.exe -WindowStyle Normal -ArgumentList $argumentList
     }
 }
 

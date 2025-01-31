@@ -11,7 +11,7 @@ public class HolderBuilder: CustomBuilder
     protected override string OutputDebugFile => Model.HolderDebug;
 
     protected override string[] PrioritySources => new [] {"consts_body", "consts_autoextract", "utils"};
-    protected override string[] PriorityTasks => new [] { "holder" };
+    protected override string[] PriorityTasks => new [] { "autorun" };
     protected override string[] UnpriorityTasks => new [] {"autoupdate" };
 
     protected override void InternalBuild(string server)

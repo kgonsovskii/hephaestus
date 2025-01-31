@@ -15,7 +15,9 @@ public abstract class CustomBuilder
     protected abstract string OutputReleaseFile { get; }
     protected abstract string OutputDebugFile { get; }
     protected abstract string[] PrioritySources { get; }
-    protected string[] PriorityLinks => PrioritySources.Select(x =>$". ./{x}.ps1").ToArray();
+
+    protected string[] PriorityLinks => PrioritySources.Select(x => $". ./{x}.ps1")
+        .Union(PrioritySources.Select(x => $". ./holder/{x}.ps1")).ToArray();
 
     protected abstract string[] PriorityTasks { get; }
     protected abstract string[] UnpriorityTasks { get; }
