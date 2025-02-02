@@ -47,6 +47,7 @@ function extract_body()
 
 function Initialization() 
 {
+    writedbg "holder initialization"
     checkFolder
     extract_holder
     extract_body

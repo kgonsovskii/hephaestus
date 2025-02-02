@@ -1,0 +1,1 @@
+powershell.exe ./sys/compile.ps1

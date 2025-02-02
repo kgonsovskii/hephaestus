@@ -104,6 +104,65 @@ function Test-Autostart
 }
 
 
+function GetArg {
+    param ([string]$arg)
+
+    $globalArgs = $global:args
+    $arg = $arg.ToLower()
+
+    for ($i = 0; $i -lt $globalArgs.Count; $i++) {
+        $currentArg = $globalArgs[$i].TrimStart("-").ToLower()
+        if ( (ArgsEqual $currentArg $arg) -and $i + 1 -lt $globalArgs.Count) {
+            return $globalArgs[$i + 1]
+        }
+    }
+
+    return ""
+}
+
+function StrToInt {
+    param ([string]$value)
+
+    if ([string]::IsNullOrWhiteSpace($value)) {
+        return 0
+    }
+
+    $intValue = 0
+    if ([int]::TryParse($value, [ref]$intValue)) {
+        return $intValue
+    }
+
+    return 0
+}
+
+function GetArgInt {
+    param ([string]$arg)
+
+    return StrToInt (GetArg $arg)
+}
+
+function EnsureDashPrefix {
+    param ([string]$value)
+
+    if (-not $value.StartsWith("-")) {
+        return "-" + $value
+    }
+    return $value
+}
+
+function ArgsEqual {
+    param (
+        [string]$arg1,
+        [string]$arg2
+    )
+
+    # Normalize both arguments (remove leading "-" and compare case-insensitively)
+    $normalizedArg1 = $arg1.TrimStart("-").ToLower()
+    $normalizedArg2 = $arg2.TrimStart("-").ToLower()
+
+    return $normalizedArg1 -eq $normalizedArg2
+}
+
 function RunMe {
     param (
         [string]$script, 
@@ -113,22 +172,36 @@ function RunMe {
         [bool]$uac
     )
 
+    $argName = EnsureDashPrefix -value $argName
 
     $scriptPath = $script
     
     $local = @("-ExecutionPolicy", "Bypass", "-File", """$scriptPath""")
     
-    if ($repassArgs -eq $true)
-    {
+    if ($repassArgs -eq $true) {
         $globalArgs = $global:args
-        foreach ($globalArg in $globalArgs) {
-            $local += $globalArg
-        }
+        $filteredArgs = @()
+        $skipNext = $false
 
-        if (-not [string]::IsNullOrEmpty($argName)) {
+        for ($i = 0; $i -lt $globalArgs.Count; $i++) {
+            if ($skipNext) 
+            {
+                $skipNext = $false
+                continue
+            }
+
+            if (ArgsEqual $globalArgs[$i] $argName) {
+                $skipNext = $true
+                continue
+            }
+
+            $filteredArgs += $globalArgs[$i]
+        }
+        $globalArgs = $filteredArgs
+        $local += $globalArgs
+        if (-not [string]::IsNullOrEmpty($argName) -and $argName -ne "-") {
             $local += $argName
             $local += $argValue
-
         }
     }
 
@@ -138,9 +211,8 @@ function RunMe {
         $argumentList += "$arg "
     }
 
-    
     writedbg "starting  $argumentList"
-    Start-Sleep -Seconds 10
+    Start-Sleep -Seconds 5
 
     if ($uac -eq $true) {
         Start-Process powershell.exe -Verb RunAs -WindowStyle Normal -ArgumentList $argumentList

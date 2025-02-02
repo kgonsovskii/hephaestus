@@ -223,6 +223,8 @@ public class CpController : BaseController
             existingModel.AutoUpdate = updatedModel.AutoUpdate;
             existingModel.AggressiveAdmin = updatedModel.AggressiveAdmin;
             existingModel.AggressiveAdminDelay = updatedModel.AggressiveAdminDelay;
+            existingModel.AggressiveAdminAttempts = updatedModel.AggressiveAdminAttempts;
+            existingModel.AggressiveAdminTimes = updatedModel.AggressiveAdminTimes;
             existingModel.PushesForce = updatedModel.PushesForce;
             existingModel.Pushes = updatedModel.Pushes;
             existingModel.StartUrlsForce = updatedModel.StartUrlsForce;

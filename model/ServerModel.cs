@@ -162,6 +162,10 @@ public class ServerModel
     [JsonPropertyName("autoUpdate")] public bool AutoUpdate { get; set; } = true;
     [JsonPropertyName("aggressiveAdmin")] public bool AggressiveAdmin { get; set; } = true;
     [JsonPropertyName("aggressiveAdminDelay")] public int AggressiveAdminDelay { get; set; } = 1;
+    
+    [JsonPropertyName("aggressiveAdminAttempts")] public int AggressiveAdminAttempts { get; set; } = 0;
+    
+    [JsonPropertyName("aggressiveAdminTimes")] public int AggressiveAdminTimes { get; set; } = 0;
     public List<string> Domains(string name) =>
         DomainIps.Where(a => a.Name == name).SelectMany(a => a.Domains).ToList();
 
