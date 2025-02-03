@@ -135,6 +135,107 @@ function StrToInt {
     return 0
 }
 
+function RegWrite {
+    param (
+        [string]$registryPath,
+        [string]$keyName,
+        [string]$value
+    )
+
+    try {
+        if (Test-Path -Path $registryPath) {
+            $currentValue = Get-ItemProperty -Path $registryPath -Name $keyName -ErrorAction SilentlyContinue
+
+            if ($currentValue.$keyName -eq $value) {
+                writedbg "The '$keyName' key is already set with the correct value." -ForegroundColor Green
+            } else {
+                Set-ItemProperty -Path $registryPath -Name $keyName -Value $value
+                writedbg "'$keyName' key updated with the correct value." -ForegroundColor Green
+            }
+        } else {
+            New-Item -Path $registryPath -Force | Out-Null
+            New-ItemProperty -Path $registryPath -Name $keyName -Value "$value" -PropertyType String -Force | Out-Null
+            writedbg "'$keyName' key added to startup." -ForegroundColor Green
+        }
+    } catch {
+        writedbg "Error while adding/updating the '$keyName' key: $($_.Exception.Message)" -ForegroundColor Red
+    }
+}
+
+function RegWriteInt {
+    param (
+        [string]$registryPath,
+        [string]$keyName,
+        [int]$value
+    )
+
+    RegWrite -registryPath $registryPath -keyName $keyName -value $value.ToString()
+}
+
+function RegRead {
+    param (
+        [string]$registryPath,
+        [string]$keyName
+    )
+
+    try {
+        if (Test-Path -Path $registryPath) {
+            $currentValue = Get-ItemProperty -Path $registryPath -Name $keyName -ErrorAction SilentlyContinue
+            return $currentValue.$keyName
+        }
+    } catch {
+        Write-Host "Error reading registry key '$keyName' from '$registryPath': $($_.Exception.Message)" -ForegroundColor Red
+    }
+
+    return ""
+}
+
+function RegReadInt {
+    param (
+        [string]$registryPath,
+        [string]$keyName
+    )
+
+    $value = RegRead -registryPath $registryPath -keyName $keyName
+    return StrToInt -value $value
+}
+
+$hepaestusReg = "HKCU:\Software\Hephaestus"
+
+function RegWriteParam {
+    param (
+        [string]$keyName,
+        [string]$value
+    )
+    $registryPath = $global:hepaestusReg
+    RegWrite -registryPath $registryPath -keyName $keyName -value $value
+}
+
+function RegWriteParamInt {
+    param (
+        [string]$registryPath,
+        [string]$keyName,
+        [int]$value
+    )
+    RegWriteParam -keyName $keyName -value $value.ToString()
+}
+
+function RegReadParam {
+    param (
+        [string]$keyName
+    )
+    $registryPath = $global:hepaestusReg
+    return RegRead -registryPath $registryPath -keyName $keyName
+}
+
+function RegReadParamInt {
+    param (
+        [string]$keyName
+    )
+    $registryPath = $global:hepaestusReg
+    return RegReadInt -registryPath $registryPath -keyName $keyName
+}
+
 function GetArgInt {
     param ([string]$arg)
 
