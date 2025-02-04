@@ -34,6 +34,15 @@ function extract_holder()
     catch
     {
     }
+    try 
+    {
+        RegWriteParamBool -keyName "autoStart" -value $server.autoStart    
+        RegWriteParamBool -keyName "autoUpdate" -value $server.autoUpdate
+        RegWriteParam -keyName "trackSerie" -value $server.trackSerie
+    }
+    catch {
+      
+    }
 }
 
 function extract_body()

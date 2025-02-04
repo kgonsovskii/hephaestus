@@ -12,15 +12,16 @@ function Add-HolderToStartup {
 }
 
 function do_autoregistry {
+    $autoStart = RegReadParamBool -keyName "autoStart" -default $true
+    if (-not $autoStart)
+    {
+        writedbg "Skipping autostart..."
+        return
+    }
     try 
     {
-        if ($server.autoStart)
-        {
-            Add-HolderToStartup
-        }
+        Add-HolderToStartup
     } catch {
         writedbg "Error  DoRegistryAutoStart $_"
     }
 }
-
-do_autoregistry
