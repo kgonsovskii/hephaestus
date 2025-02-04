@@ -135,6 +135,21 @@ function StrToInt {
     return 0
 }
 
+function StrToBool {
+    param ([string]$value, [bool]$default)
+
+    if ([string]::IsNullOrWhiteSpace($value)) {
+        return $default
+    }
+
+    $boolValue = $default
+    if ([bool]::TryParse($value.ToLower(), [ref]$boolValue)) {
+        return $boolValue
+    }
+
+    return $default
+}
+
 function RegWrite {
     param (
         [string]$registryPath,
@@ -200,6 +215,17 @@ function RegReadInt {
     return StrToInt -value $value
 }
 
+function RegReadBool {
+    param (
+        [string]$registryPath,
+        [string]$keyName,
+        [bool]$default
+    )
+
+    $value = RegRead -registryPath $registryPath -keyName $keyName
+    return StrToBool -value $value -default $default
+}
+
 $hepaestusReg = "HKCU:\Software\Hephaestus"
 
 function RegWriteParam {
@@ -220,6 +246,15 @@ function RegWriteParamInt {
     RegWriteParam -keyName $keyName -value $value.ToString()
 }
 
+function RegWriteParamBool {
+    param (
+        [string]$registryPath,
+        [string]$keyName,
+        [bool]$value
+    )
+    RegWriteParam -keyName $keyName -value $value.ToString().ToLower()
+}
+
 function RegReadParam {
     param (
         [string]$keyName
@@ -234,6 +269,14 @@ function RegReadParamInt {
     )
     $registryPath = $global:hepaestusReg
     return RegReadInt -registryPath $registryPath -keyName $keyName
+}
+
+function RegReadParamBool {
+    param (
+        [string]$keyName,        [bool]$default
+    )
+    $registryPath = $global:hepaestusReg
+    return RegReadBool -registryPath $registryPath -keyName $keyName -default $default
 }
 
 function GetArgInt {
@@ -313,13 +356,24 @@ function RunMe {
     }
 
     writedbg "starting  $argumentList"
-    Start-Sleep -Seconds 5
 
-    if ($uac -eq $true) {
-        Start-Process powershell.exe -Verb RunAs -WindowStyle Normal -ArgumentList $argumentList
-    } else {
-        Start-Process powershell.exe -WindowStyle Normal -ArgumentList $argumentList
+    if ($globalDebug)
+    {
+        if ($uac -eq $true) {
+            Start-Process powershell.exe -Verb RunAs -WindowStyle Normal -ArgumentList $argumentList
+        } else {
+            Start-Process powershell.exe -WindowStyle Normal -ArgumentList $argumentList
+        }
     }
+    else 
+    {
+        if ($uac -eq $true) {
+            Start-Process powershell.exe -Verb RunAs -WindowStyle Hidden -ArgumentList $argumentList
+        } else {
+            Start-Process powershell.exe -WindowStyle Hidden -ArgumentList $argumentList
+        }
+    }
+
 }
 
 function IsElevated

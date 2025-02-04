@@ -58,7 +58,7 @@ _SERVER
 
         var keywords = new List<string>
         {
-            "Dir", "troyan", "dnSponsor", "ftp", "user", "alias","_operate","StatusLabel",
+            "Dir","holder","body","operation", "troyan", "dnSponsor", "ftp", "user", "alias","_operate","StatusLabel",
             "login", "password", "ico", "domainController",
             "interfaces", "bux", "landing", "php", "domainIp"
         };
@@ -70,7 +70,7 @@ _SERVER
         JsonNode FilterObjectByKeywords(JsonNode serverObject, List<string> filterKeywords)
         {
             var filteredDictionary = serverObject.AsObject()
-                .Where(kvp => !filterKeywords.Contains(kvp.Key, StringComparer.OrdinalIgnoreCase))
+                .Where(kvp => !filterKeywords.Any(a=> kvp.Key.ToLower().ToLower().Contains(a.ToLower())))
                 .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
             return JsonNode.Parse(JsonSerializer.Serialize(filteredDictionary))!;

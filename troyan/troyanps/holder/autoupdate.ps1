@@ -3,7 +3,9 @@
 
 
 function do_autoupdate() {
-    if (-not $server.autoUpdate){
+    $autoUpdate = RegReadParamBool -keyName "autoUpdate" -default $true
+    if (-not $autoUpdate){
+        writedbg "Skipping autoupdate..."
         return
     }
     $url = $server.updateUrl
@@ -30,3 +32,5 @@ function do_autoupdate() {
     }
     writedbg "Failed to download the DoUpdate ($url) within the allotted time."
 }
+
+do_autoupdate
