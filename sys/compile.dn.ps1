@@ -3,7 +3,7 @@ param (
 )
 
 if ($serverName -eq "") {
-    $serverName = "185.247.141.125"
+    $serverName = "127.0.0.1"
     $action = "exe"
 } 
 
@@ -59,22 +59,22 @@ foreach ($sponsor in $server.dnSponsor)
     {
         $fileContent = Get-Content -Path $server.phpTemplateSponsorFile -Raw
         $fileContent = $fileContent -replace "{sponsor_url}", $sponsor.url
-        $fileContent = $fileContent -replace "{downloadidentifier}", ($server.downloadidentifier)
-        wr -FilePath $server.userSponsorPhpVbsFile -Content $fileContent
+        $fileContent = $fileContent -replace "{downloadidentifier}", ($server.landingName)
+        wr -FilePath $server.landingSponsorPhpVbsFile -Content $fileContent
 
         $fileContent = Get-Content -Path $server.HtmlTemplateSponsorFile -Raw
-        $fileContent = $fileContent -replace "{sponsordownload}", ($server.downloadidentifier + "-sponsor")
-        wr -FilePath $server.userSponsorHtmlVbsFile -Content $fileContent
+        $fileContent = $fileContent -replace "{sponsordownload}", ($server.landingName + "-sponsor")
+        wr -FilePath $server.landingSponsorHtmlVbsFile -Content $fileContent
 
         #exe
         $fileContent = Get-Content -Path $server.phpTemplateSponsorFile -Raw
         $fileContent = $fileContent -replace "{sponsor_url}", $sponsor.url
-        $fileContent = $fileContent -replace "{downloadidentifier}", ($server.downloadidentifier + "-exe")
-        wr -FilePath $server.userSponsorPhpExeFile -Content $fileContent
+        $fileContent = $fileContent -replace "{downloadidentifier}", ($server.landingName + "-exe")
+        wr -FilePath $server.landingSponsorPhpExeFile -Content $fileContent
 
         $fileContent = Get-Content -Path $server.HtmlTemplateSponsorFile -Raw
-        $fileContent = $fileContent -replace "{sponsordownload}", ($server.downloadidentifier + "-sponsor-exe")
-        wr -FilePath $server.userSponsorHtmlExeFile -Content $fileContent
+        $fileContent = $fileContent -replace "{sponsordownload}", ($server.landingName + "-sponsor-exe")
+        wr -FilePath $server.landingSponsorHtmlExeFile -Content $fileContent
     }
 }
 

@@ -4,7 +4,7 @@ class Program
 {
     static void Main(string[] args)
     {
-        var arr = new CustomBuilder[]{new BodyBuilder(), new HolderBuilder()};
+        var arr = new CustomBuilder[]{new BodyBuilderDebug(), new BodyBuilderRelease(), new HolderBuilderDebug(), new HolderBuilderRelease()};
         foreach (var cb in arr)
         {
             Console.WriteLine(cb);

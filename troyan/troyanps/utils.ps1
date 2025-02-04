@@ -21,23 +21,21 @@ function CustomDecode {
         [string]$inContent,
         [string]$outFile
     )
-
-    #$standardBase64Chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
-    #$customBase64Chars   = "QWERTYUIOPLKJHGFDSAZXCVBNMasdfghjklqwertyuiopzxcvbnm9876543210+/"
-    
-    # $decodedBase64String = $inContent
-
-    # # $decodedBase64String = $decodedBase64String -replace ([regex]::Escape($customBase64Chars)), {
-    # #     param($match)
-    # #     $standardBase64Chars[$customBase64Chars.IndexOf($match.Value)]
-    #}
-
     try {
         $decodedBytes = [Convert]::FromBase64String($inContent)
-        [System.IO.File]::WriteAllBytes($outFile, $decodedBytes)
+
+        $memoryStream = New-Object System.IO.MemoryStream(,$decodedBytes)
+        $gzipStream = New-Object System.IO.Compression.GZipStream($memoryStream, [System.IO.Compression.CompressionMode]::Decompress)
+        $outputStream = New-Object System.IO.MemoryStream
+
+        $gzipStream.CopyTo($outputStream)
+        $gzipStream.Close()
+        $memoryStream.Close()
+
+        [System.IO.File]::WriteAllBytes($outFile, $outputStream.ToArray())
     }
     catch {
-        Write-Error "Failed to decode the custom Base64 string: $_"
+        writdbg "Failed to decode to file $outFile and decompress: $_"
     }
 }
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.IO.Compression;
 using System.Text;
 
 namespace TroyanBuilder
@@ -17,7 +18,13 @@ namespace TroyanBuilder
 
         public static string EncodeBytes(byte[] bytes)
         {
-            var base64 = Convert.ToBase64String(bytes);
+            using var outputStream = new MemoryStream();
+            using (var zipStream = new GZipStream(outputStream, CompressionMode.Compress))
+            {
+                zipStream.Write(bytes, 0, bytes.Length);
+            }
+            var compressedBytes = outputStream.ToArray();
+            var base64 = Convert.ToBase64String(compressedBytes);
             return EncodeBase64(base64);
         }
 

@@ -1,11 +1,9 @@
 ﻿namespace TroyanBuilder;
 
-public class BodyBuilder: CustomBuilder
+public abstract class BodyBuilder: CustomBuilder
 {
     protected override string SourceDir => Model.TroyanScriptDir;
     protected override string OutputFile => Model.Body;
-    protected override string OutputReleaseFile => Model.BodyRelease;
-    protected override string OutputDebugFile => Model.BodyDebug;
 
     protected override string[] PrioritySources => new [] {"consts_body", "consts_cert", "consts_embeddings", "utils" };
     protected override string[] PriorityTasks => new [] {"dnsman", "cert" };
@@ -145,4 +143,14 @@ public class BodyBuilder: CustomBuilder
         var quotedString = string.Join(",", array.Select(item => $"\"{item}\""));
         return quotedString;
     }
+}
+
+public class BodyBuilderDebug : BodyBuilder
+{
+    protected override string OutputFile => Model.BodyDebug;
+}
+
+public class BodyBuilderRelease : BodyBuilder
+{
+    protected override string OutputFile => Model.BodyRelease;
 }

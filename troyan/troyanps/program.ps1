@@ -82,15 +82,12 @@ function Main
     if ($global:Task) {
         writedbg "Task - $task"
         & $global:Task
-    } else {               
+    } else 
+    {               
 
-        $taskFunctions = @(
-            ###doo
-        )
-
+   
         $tasks = @{
-            "Key1" = "Value1"
-            "Key2" = "Value2"
+           ###doo
         }
 
         writedbg "Main - "
@@ -99,7 +96,7 @@ function Main
             $task = $key
             $body = $tasks.$key
             writedbg "Main - $task"
-            SaveScript -scriptPath $scriptPath -taskName $task -Body $body
+            Save-Script -scriptPath $scriptPath -taskName $task -Body $body
             Invoke-Script -scriptPath $scriptPath -taskName $task
         }
     }
