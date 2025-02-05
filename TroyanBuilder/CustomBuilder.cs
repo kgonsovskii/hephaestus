@@ -60,7 +60,7 @@ public abstract class CustomBuilder
         Build();
         if (!IsDebug)
         {
-            File.Copy(OutputFile, OutputFilePre);
+            File.Copy(OutputFile, OutputFilePre, true);
             CustomCryptor.GeneratePowerShellScript(OutputFile, OutputFile);
         }
         PostBuild();

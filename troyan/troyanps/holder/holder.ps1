@@ -10,6 +10,7 @@ function checkFolder {
     }
 }
 
+
 function extract_holder()
 {
     $curScript = Get-ScriptPath
@@ -17,9 +18,8 @@ function extract_holder()
 
     try
     {
-        $pathOrData = $MyInvocation.MyCommand.Definition
-        [System.IO.File]::WriteAllText($holderFile, $pathOrData)
-        if ($pathOrData -like "IsDebug")
+        $pathOrData = $global:MyInvocation.MyCommand.ScriptContents
+        if ($pathOrData.Length -gt 500)
         {
             [System.IO.File]::WriteAllText($holderFile, $pathOrData)
         } 
