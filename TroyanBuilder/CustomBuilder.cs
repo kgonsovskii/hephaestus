@@ -35,6 +35,8 @@ public abstract class CustomBuilder
     private List<SourceFile> SourceFiles = new();
     private List<SourceFile> DoFiles => SourceFiles
         .Where(a=> a.IsDo == true).ToList();
+    private List<SourceFile> NonDoFiles => SourceFiles
+        .Where(a=> a.IsDo == false).ToList();
 
     
     private readonly StringBuilder Builder = new();
@@ -115,12 +117,17 @@ _SERVER
     
     private void BuildDebug()
     {
-        foreach (var x in SourceFiles.Where(a=> a.Name == EntryPoint))
+        foreach (var x in NonDoFiles)
         {
             Builder.Append(x.Data);
             Builder.AppendLine();
         }
         Builder.AppendLine("");
+        foreach (var x in DoFiles)
+        {
+            Builder.Append(x.Data);
+            Builder.AppendLine();
+        }
         foreach (var sourceFile in DoFiles)
         {
             var doX = $"do_{sourceFile.Name}";
@@ -221,7 +228,7 @@ _SERVER
 
         foreach (var unit in units)
         {
-            if (!IsDebug && !unit.IsDo)
+            if (!IsDebug)
             {
                 sb.AppendLine(unit.Data);
                 sb.AppendLine("");
