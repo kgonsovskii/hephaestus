@@ -147,11 +147,13 @@ public abstract class BodyBuilder: CustomBuilder
 public class BodyBuilderDebug : BodyBuilder
 {
     protected override string OutputFile => Model.BodyDebug;
+    protected override string OutputFilePre => throw new NotImplementedException();
 }
 
 public class BodyBuilderRelease : BodyBuilder
 {
     protected override string OutputFile => Model.BodyRelease;
+    protected override string OutputFilePre => Model.BodyPreRelease;
 
     protected override void PostBuild()
     {

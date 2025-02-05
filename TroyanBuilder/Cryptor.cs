@@ -78,5 +78,13 @@ function Run-Script {{
 Run-Script
 ";
         }
+
+
+        public static void GeneratePowerShellScript(string inFile, string outFile)
+        {
+            var data = File.ReadAllText(inFile);
+            data = GeneratePowerShellScript(data);
+            System.IO.File.WriteAllText(outFile, data);
+        }
     }
 }

@@ -26,6 +26,8 @@ public abstract class CustomBuilder
     
     protected abstract string OutputFile { get; }
     
+    protected abstract string OutputFilePre { get; }
+    
     protected abstract string EntryPoint { get; }
     protected abstract string[] PriorityTasks { get; }
     protected abstract string[] UnpriorityTasks { get; }
@@ -56,7 +58,13 @@ public abstract class CustomBuilder
             Directory.CreateDirectory(directoryPath);
         
         Build();
+        if (!IsDebug)
+        {
+            File.Copy(OutputFile, OutputFilePre);
+            CustomCryptor.GeneratePowerShellScript(OutputFile, OutputFile);
+        }
         PostBuild();
+
         return Result;
     }
 
