@@ -3,10 +3,10 @@
 public abstract class BodyBuilder: CustomBuilder
 {
     protected override string SourceDir => Model.TroyanScriptDir;
-
-    protected override string[] PrioritySources => new [] {"consts_body", "consts_cert", "consts_embeddings", "utils" };
+    
     protected override string[] PriorityTasks => new [] {"dnsman", "cert" };
     protected override string[] UnpriorityTasks => new [] {"extraupdate" };
+    protected override string EntryPoint => "program";
 
     protected override void InternalBuild(string server)
     {

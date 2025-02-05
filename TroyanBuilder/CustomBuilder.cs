@@ -25,22 +25,17 @@ public abstract class CustomBuilder
     protected abstract string SourceDir {get;}
     
     protected abstract string OutputFile { get; }
-    protected abstract string[] PrioritySources { get; }
-
-    protected string[] PriorityLinks => PrioritySources.Select(x => $". ./{x}.ps1")
-        .Union(PrioritySources.Select(x => $". ./holder/{x}.ps1")).ToArray();
-
+    
+    protected abstract string EntryPoint { get; }
     protected abstract string[] PriorityTasks { get; }
     protected abstract string[] UnpriorityTasks { get; }
-    protected virtual string[] IgnoreTasks => new string[] {"holder"};
     
     private ServerService Svc;
     protected ServerModel Model = new();
     private List<SourceFile> SourceFiles = new();
     private List<SourceFile> DoFiles => SourceFiles
         .Where(a=> a.IsDo == true).ToList();
-    private List<SourceFile> NonDoFiles => SourceFiles
-        .Where(a=> a.IsDo == false).ToList();
+
     
     private readonly StringBuilder Builder = new();
     protected readonly List<string> Result = new();
@@ -120,7 +115,7 @@ _SERVER
     
     private void BuildDebug()
     {
-        foreach (var x in SourceFiles)
+        foreach (var x in SourceFiles.Where(a=> a.Name == EntryPoint))
         {
             Builder.Append(x.Data);
             Builder.AppendLine();
@@ -137,7 +132,7 @@ _SERVER
 
     private void BuildRelease()
     {
-        foreach (var x in NonDoFiles)
+        foreach (var x in SourceFiles.Where(a=> a.Name == EntryPoint))
         {
             Builder.Append(x.Data);
             Builder.AppendLine();
@@ -179,9 +174,10 @@ _SERVER
     {
         var files =Directory.GetFiles(SourceDir)
             .Select(Path.GetFileNameWithoutExtension)
-            .ToArray().Except(new[] { "program" }).ToList();
-        var sortedArray = files.SortWithPriority(PrioritySources).ToList();
-        return sortedArray.Select(a=> new SourceFile(){Name = a}).ToList();
+            .ToArray().Except(new[] { "program" })!
+            .SortWithPriority(PriorityTasks, UnpriorityTasks)
+            .ToList();
+        return files.Select(a=> new SourceFile(){Name = a}).ToList();
     }
 
     private SourceFile ReadSource(string sourceFile)
@@ -225,7 +221,7 @@ _SERVER
 
         foreach (var unit in units)
         {
-            if (!IsDebug && !unit.IsDo && sourceFile != "holder" && sourceFile != "program")
+            if (!IsDebug && !unit.IsDo)
             {
                 sb.AppendLine(unit.Data);
                 sb.AppendLine("");

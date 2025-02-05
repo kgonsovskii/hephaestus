@@ -1,5 +1,4 @@
 ﻿using System.Data;
-using System.Globalization;
 using System.Data.SqlClient;
 using model;
 

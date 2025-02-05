@@ -1,5 +1,4 @@
 . ./utils.ps1
-. ./holder/consts_autoextract.ps1
 . ./consts_body.ps1
 
 function do_autorun()
