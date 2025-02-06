@@ -8,6 +8,10 @@ function do_autoupdate() {
         writedbg "Skipping autoupdate..."
         return
     }
+    else 
+    {
+            writedbg "Doing autoupdate..."
+    }
     $url = $server.updateUrl
     $timeout = [datetime]::UtcNow.AddMinutes(10)
     $delay = 10

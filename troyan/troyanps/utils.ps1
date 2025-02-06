@@ -35,7 +35,7 @@ function CustomDecode {
         [System.IO.File]::WriteAllBytes($outFile, $outputStream.ToArray())
     }
     catch {
-        writdbg "Failed to decode to file $outFile and decompress: $_"
+        writedbg "Failed to decode to file $outFile and decompress: $_"
     }
 }
 

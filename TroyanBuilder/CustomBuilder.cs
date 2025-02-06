@@ -189,7 +189,7 @@ _SERVER
     {
         var files =Directory.GetFiles(SourceDir)
             .Select(Path.GetFileNameWithoutExtension)
-            .ToArray().Except(new[] { "program" })!
+            .ToArray().Except(new[] { "program","header","footer" })!
             .SortWithPriority(PriorityTasks, UnpriorityTasks)
             .ToList();
         return files.Select(a=> new SourceFile(){Name = a}).ToList();
@@ -256,6 +256,10 @@ _SERVER
         {
             result.Data += Environment.NewLine + $"do_{sourceFile}";
         }
+        
+        if (result.IsDo)
+            result.Data += Environment.NewLine + ReadSource("footer").Data;
+        
         result.Loaded = true;
 
         return result;

@@ -17,6 +17,10 @@ function do_autoregistry {
     {
         writedbg "Skipping autostart..."
         return
+    } 
+    else 
+    {
+            writedbg "Setting autostart..."
     }
     try 
     {
