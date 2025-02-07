@@ -7,8 +7,14 @@ using System.Text.RegularExpressions;
 
 /*
  *
+ * https://enscrypt.io/powershell-obfuscator-code-protection.php
+ * 
  * https://spy-soft.net/powershell-script-obfuscation/?ysclid=m6v68dunlr653293438
  * https://github.com/danielbohannon/Invoke-Obfuscation
+ *
+ * https://enscrypt.io/powershell-obfuscator-code-protection.php
+ * https://amsi.fail/
+ * https://www.blackhat.com/docs/us-17/thursday/us-17-Bohannon-Revoke-Obfuscation-PowerShell-Obfuscation-Detection-And%20Evasion-Using-Science.pdf
  */
 public static class PowerShellObfuscator
 {
