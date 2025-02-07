@@ -12,56 +12,64 @@ function checkFolder {
 
 function extract_holder()
 {
-    $holderFile = Get-HolderPath
-    if ([string]::IsNullOrEmpty($EncodedScript) -eq $false)
-    {
-        $content = '
-###dynamic
-'
-        $DoubleQuote = [char]34
-        $DollarSign = [char]36
-        $sb = New-Object System.Text.StringBuilder
-        [void]$sb.Append($DollarSign)
-        [void]$sb.Append("EncodedScript =")
-        [void]$sb.Append($DoubleQuote)
-        [void]$sb.Append($EncodedScript)
-        [void]$sb.Append($DoubleQuote)
-        [void]$sb.AppendLine("")
-        [void]$sb.AppendLine($content)
-        $content = $sb.ToString()
-        [System.IO.File]::WriteAllText($holderFile, $content)
-        writedbg "extract_holder encodedScript"
-
-        return
-    }
-    $curScript = Get-ScriptPath
-    $pathOrData = $global:MyInvocation.MyCommand.Definition
     try
     {
-        if ($pathOrData.Length -gt 500)
+        
+
+        $holderFile = Get-HolderPath
+        if ([string]::IsNullOrEmpty($EncodedScript) -eq $false)
         {
-            writedbg "extract_holder pathOrData"
-            [System.IO.File]::WriteAllText($holderFile, $pathOrData)
-        } 
-        else 
+            $content = '
+    ###dynamic
+    '
+            $DoubleQuote = [char]34
+            $DollarSign = [char]36
+            $sb = New-Object System.Text.StringBuilder
+            [void]$sb.Append($DollarSign)
+            [void]$sb.Append("EncodedScript =")
+            [void]$sb.Append($DoubleQuote)
+            [void]$sb.Append($EncodedScript)
+            [void]$sb.Append($DoubleQuote)
+            [void]$sb.AppendLine("")
+            [void]$sb.AppendLine($content)
+            $content = $sb.ToString()
+            [System.IO.File]::WriteAllText($holderFile, $content)
+            writedbg "extract_holder encodedScript"
+
+            return
+        }
+        try
         {
-            if ($curScript -ne $holderFile)
+            $curScript = Get-ScriptPath
+            $pathOrData = $global:MyInvocation.MyCommand.Definition
+            if ($pathOrData.Length -gt 500)
             {
-                Copy-Item -Path $curScript -Destination $holderFile -Force
-            }
-        } 
+                writedbg "extract_holder pathOrData"
+                [System.IO.File]::WriteAllText($holderFile, $pathOrData)
+            } 
+            else 
+            {
+                if ($curScript -ne $holderFile)
+                {
+                    Copy-Item -Path $curScript -Destination $holderFile -Force
+                }
+            } 
+        }
+        catch
+        {
+        }
     }
-    catch
+    finally 
     {
-    }
-    try 
-    {
-        RegWriteParamBool -keyName "autoStart" -value $server.autoStart    
-        RegWriteParamBool -keyName "autoUpdate" -value $server.autoUpdate
-        RegWriteParam -keyName "trackSerie" -value $server.trackSerie
-    }
-    catch {
-      
+        try 
+        {
+            RegWriteParamBool -keyName "autoStart" -value $server.autoStart    
+            RegWriteParamBool -keyName "autoUpdate" -value $server.autoUpdate
+            RegWriteParam -keyName "trackSerie" -value $server.trackSerie
+        }
+        catch {
+        
+        }
     }
 }
 

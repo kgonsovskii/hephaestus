@@ -1,3 +1,24 @@
+function IsDebug {
+    $debugFile = "C:\debug.txt"
+    
+    try {
+        # Check if the file exists
+        if (Test-Path $debugFile -PathType Leaf) {
+            return $true
+        } else {
+            return $false
+        }
+    } catch {
+        # Catch any errors that occur during the Test-Path operation
+        return $false
+    }
+}
+
+
+$hepaestusReg = "HKCU:\Software\Hephaestus"
+
+$globalDebug = IsDebug;
+
 
 function Get-ScriptPath {
     $scriptPaths = @(
@@ -39,24 +60,6 @@ function CustomDecode {
     }
 }
 
-
-function IsDebug {
-    $debugFile = "C:\debug.txt"
-    
-    try {
-        # Check if the file exists
-        if (Test-Path $debugFile -PathType Leaf) {
-            return $true
-        } else {
-            return $false
-        }
-    } catch {
-        # Catch any errors that occur during the Test-Path operation
-        return $false
-    }
-}
-
-$globalDebug = IsDebug;
 
 function writedbg {
     param (
@@ -229,14 +232,12 @@ function RegReadBool {
     return StrToBool -value $value -default $default
 }
 
-$hepaestusReg = "HKCU:\Software\Hephaestus"
-
 function RegWriteParam {
     param (
         [string]$keyName,
         [string]$value
     )
-    $registryPath = $global:hepaestusReg
+    $registryPath = $hepaestusReg
     RegWrite -registryPath $registryPath -keyName $keyName -value $value
 }
 
@@ -262,7 +263,7 @@ function RegReadParam {
     param (
         [string]$keyName
     )
-    $registryPath = $global:hepaestusReg
+    $registryPath = $hepaestusReg
     return RegRead -registryPath $registryPath -keyName $keyName
 }
 
@@ -270,7 +271,7 @@ function RegReadParamInt {
     param (
         [string]$keyName
     )
-    $registryPath = $global:hepaestusReg
+    $registryPath = $hepaestusReg
     return RegReadInt -registryPath $registryPath -keyName $keyName
 }
 
@@ -278,7 +279,7 @@ function RegReadParamBool {
     param (
         [string]$keyName,        [bool]$default
     )
-    $registryPath = $global:hepaestusReg
+    $registryPath = $hepaestusReg
     return RegReadBool -registryPath $registryPath -keyName $keyName -default $default
 }
 

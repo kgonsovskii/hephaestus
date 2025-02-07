@@ -274,6 +274,7 @@ public class ServerModel
         Track = false;
         AutoStart = false;
         AutoUpdate = false;
+        AggressiveAdmin = false;
         StartUrls = new List<string>();
         StartDownloads = new List<string>();
         Interfaces = new List<string>();
