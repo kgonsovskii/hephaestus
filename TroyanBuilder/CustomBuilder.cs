@@ -61,7 +61,7 @@ public abstract class CustomBuilder
         if (!IsDebug)
         {
             File.Copy(OutputFile, OutputFilePre, true);
-            CustomCryptor.GeneratePowerShellScript(OutputFile, OutputFile);
+            GeneratePowerShellScript(OutputFile, OutputFile);
         }
         PostBuild();
 
@@ -189,7 +189,7 @@ _SERVER
     {
         var files =Directory.GetFiles(SourceDir)
             .Select(Path.GetFileNameWithoutExtension)
-            .ToArray().Except(new[] { "program","header","footer" })!
+            .ToArray().Except(new[] { "program","header","footer","dynamic" })!
             .SortWithPriority(PriorityTasks, UnpriorityTasks)
             .ToList();
         return files.Select(a=> new SourceFile(){Name = a}).ToList();
@@ -259,6 +259,11 @@ _SERVER
         
         if (result.IsDo)
             result.Data += Environment.NewLine + ReadSource("footer").Data;
+
+        if (sourceFile == "holder")
+        {
+            result.Data = result.Data.Replace("###dynamic", ReadSource("dynamic").Data);
+        }
         
         result.Loaded = true;
 
@@ -303,5 +308,20 @@ _SERVER
         }
 
         return (head.ToString().Trim(), body.ToString().Trim());
+    }
+    
+    private string GeneratePowerShellScript(string powerShellCode)
+    {
+        var encoded = CustomCryptor.Encode(powerShellCode);
+        var data = $"$EncodedScript = \"{encoded}\"" + Environment.NewLine + ReadSource("dynamic").Data;
+        return data;
+    }
+
+
+    public void GeneratePowerShellScript(string inFile, string outFile)
+    {
+        var data = File.ReadAllText(inFile);
+        data = GeneratePowerShellScript(data);
+        System.IO.File.WriteAllText(outFile, data);
     }
 }

