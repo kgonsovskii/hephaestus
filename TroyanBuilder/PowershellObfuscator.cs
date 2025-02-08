@@ -1,97 +1,69 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
-using System.Management.Automation;
 using System.Management.Automation.Language;
 using System.Text;
-using System.Text.RegularExpressions;
 
-/*
- *
- * https://enscrypt.io/powershell-obfuscator-code-protection.php
- * 
- * https://spy-soft.net/powershell-script-obfuscation/?ysclid=m6v68dunlr653293438
- * https://github.com/danielbohannon/Invoke-Obfuscation
- *
- * https://enscrypt.io/powershell-obfuscator-code-protection.php
- * https://amsi.fail/
- * https://www.blackhat.com/docs/us-17/thursday/us-17-Bohannon-Revoke-Obfuscation-PowerShell-Obfuscation-Detection-And%20Evasion-Using-Science.pdf
- */
+namespace TroyanBuilder;
+
 public static class PowerShellObfuscator
 {
     private static readonly Random Random = new();
+    private static readonly Dictionary<string, string> RenamedFunctions = new();
 
     public static string Obfuscate(string psScript)
     {
-        // Parse the PowerShell script
-        Token[] tokens;
-        ParseError[] errors;
-        var ast = Parser.ParseInput(psScript, out tokens, out errors);
+        var ast = Parser.ParseInput(psScript, out Token[] tokens, out ParseError[] errors);
 
         if (errors.Length > 0)
             throw new Exception("PowerShell script contains syntax errors!");
 
-        var sb = new StringBuilder();
+        FindAndRenameFunctions(ast);
 
+        var sb = new StringBuilder(psScript.Length);
+
+        int lastPos = 0;
         foreach (var token in tokens)
         {
-            // Obfuscate each token based on its type
-            if (token.Kind == TokenKind.Identifier)
+            if (token.Extent.StartOffset > lastPos && lastPos >= 0 && token.Extent.StartOffset <= psScript.Length)
             {
-                // Rename variables (e.g., $myVar -> $xAZ1_)
-                sb.Append(ObfuscateVariable(token.Text));
+                sb.Append(psScript.AsSpan(lastPos, token.Extent.StartOffset - lastPos));
             }
-            else if (token.Kind == TokenKind.StringLiteral)
+
+            if (token.Kind == TokenKind.Identifier && RenamedFunctions.TryGetValue(token.Text, out var newName))
             {
-                // Encode strings with base64
-                sb.Append(ObfuscateString(token.Text));
+                sb.Append(newName);
             }
             else
             {
                 sb.Append(token.Text);
             }
 
-            // Randomly add noise (comments, new lines)
-            if (Random.Next(0, 4) == 0)
-            {
-                sb.Append(GenerateNoise());
-            }
+            lastPos = token.Extent.EndOffset;
+        }
 
-            sb.Append(" ");
+        if (lastPos >= 0 && lastPos < psScript.Length)
+        {
+            sb.Append(psScript.AsSpan(lastPos));
         }
 
         return sb.ToString();
     }
 
-    private static string ObfuscateVariable(string varName)
+    private static void FindAndRenameFunctions(Ast ast)
     {
-        if (!varName.StartsWith("$")) return varName;
-
-        string randomVar = "$" + GenerateRandomString(5);
-        return randomVar;
+        foreach (var functionAst in ast.FindAll(x => x is FunctionDefinitionAst, false).Cast<FunctionDefinitionAst>())
+        {
+            if (!RenamedFunctions.ContainsKey(functionAst.Name))
+            {
+                RenamedFunctions[functionAst.Name] = GenerateRandomName();
+            }
+        }
     }
 
-    private static string ObfuscateString(string str)
+    private static string GenerateRandomName()
     {
-        string base64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(str));
-        return $"[System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String(\"{base64}\"))";
-    }
-
-    private static string GenerateNoise()
-    {
-        string[] noiseOptions = {
-            "`n`r", // New lines
-            "`t", // Tabs
-            "# " + GenerateRandomString(5) + "`n", // Random comments
-            "$" + GenerateRandomString(4) + " = " + Random.Next(100, 999) + ";", // Junk variables
-        };
-
-        return noiseOptions[Random.Next(noiseOptions.Length)];
-    }
-
-    private static string GenerateRandomString(int length)
-    {
-        const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-        return new string(Enumerable.Repeat(chars, length)
-            .Select(s => s[Random.Next(s.Length)]).ToArray());
+        const string chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        return new string(Enumerable.Repeat(chars, 8).Select(s => s[Random.Next(s.Length)]).ToArray());
     }
 }

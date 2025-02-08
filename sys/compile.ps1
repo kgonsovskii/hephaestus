@@ -16,7 +16,7 @@ $currentScriptPath = $PSScriptRoot
 
 if ($refiner -ne "refiner")
 {
-    $refinerPath = Join-Path -Path $currentScriptPath -ChildPath "../Refiner/bin/debug/net7.0/Refiner.exe"
+    $refinerPath = Join-Path -Path $currentScriptPath -ChildPath "../Refiner/bin/debug/net9.0/Refiner.exe"
     if (Test-Path $refinerPath) {
         & $refinerPath $serverName "none"
     } else {

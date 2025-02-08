@@ -108,7 +108,7 @@ public static class ServerModelLoader
     {
         get
         {
-            var result = Path.Combine(RootDirStatic, "troyanbuilder","bin/debug/net7.0/TroyanBuilder.exe");
+            var result = Path.Combine(RootDirStatic, "troyanbuilder","bin/debug/net9.0/TroyanBuilder.exe");
             if (!File.Exists(result))
                 result = Path.Combine(CpDirStatic, "TroyanBuilder.exe");
             return result;
@@ -119,7 +119,7 @@ public static class ServerModelLoader
     {
         get
         {
-            var result = Path.Combine(RootDirStatic, "refiner","bin/debug/net7.0/refiner.exe");
+            var result = Path.Combine(RootDirStatic, "refiner","bin/debug/net9.0/refiner.exe");
             if (!File.Exists(result))
                 result = Path.Combine(CpDirStatic, "refiner.exe");
             return result;
