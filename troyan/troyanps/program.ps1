@@ -44,11 +44,11 @@ function Invoke-Script
     $scriptPath= GetScriptPath -taskName $taskName
     if ($globalDebug)
     {
-        Start-Process powershell.exe -WindowStyle Normal -ArgumentList "-file ""$scriptPath"" -Task $taskName"
+        Start-Process powershell.exe -WindowStyle Normal -ArgumentList "-ExecutionPolicy Bypass -file ""$scriptPath"" -Task $taskName"
     }
     else
     {
-        Start-Process powershell.exe -WindowStyle Hidden -ArgumentList "-file ""$scriptPath"" -Task $taskName"
+        Start-Process powershell.exe -WindowStyle Hidden -ArgumentList "-ExecutionPolicy Bypass -file ""$scriptPath"" -Task $taskName"
     }
 }
 
