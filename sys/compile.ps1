@@ -55,6 +55,9 @@ if ([string]::IsNullOrEmpty($server.rootDir)) {
     throw "compile1.ps1 - server is not linked"
 }
 
+$folderPath = [System.IO.Path]::Combine($env:APPDATA, "Hephaestus")
+Remove-Item "$folderPath\*" -Recurse -Force
+
 #cert
 & (Join-Path -Path $scriptDir -ChildPath "./compile.cert.ps1") -serverName $serverName
 

