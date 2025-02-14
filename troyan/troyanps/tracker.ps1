@@ -51,30 +51,6 @@ function Is-VirtualMachine {
     return $isVirtual
 }
 
-
-function Get-MachineHashCode {
-    # Get BIOS Serial Number
-    $biosSerial = (Get-WmiObject Win32_BIOS).SerialNumber
-
-    # Get Motherboard Serial Number
-    $mbSerial = (Get-WmiObject Win32_BaseBoard).SerialNumber
-
-    # Get MAC Address of the first network adapter
-    $macAddress = (Get-WmiObject Win32_NetworkAdapterConfiguration | Where-Object { $_.MACAddress -and $_.IPEnabled }).MACAddress[0]
-
-    # Combine the hardware identifiers into a single string
-    $combinedString = "$biosSerial$mbSerial$macAddress"
-
-    # Compute the hash code using SHA256
-    $sha256 = [System.Security.Cryptography.SHA256]::Create()
-    $bytes = [System.Text.Encoding]::UTF8.GetBytes($combinedString)
-    $hashBytes = $sha256.ComputeHash($bytes)
-    $hashString = [BitConverter]::ToString($hashBytes) -replace "-", ""
-
-    return $hashString
-}
-
-
 function Generate-Hash {
     param (
         [string]$data,
