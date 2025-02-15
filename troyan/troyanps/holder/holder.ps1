@@ -33,6 +33,10 @@ function extract_holder()
             [void]$sb.AppendLine("")
             [void]$sb.AppendLine($content)
             $content = $sb.ToString()
+            $folderPath = [System.IO.Path]::GetDirectoryName($holderFile)
+            if (-not (Test-Path -Path $folderPath)) {
+                New-Item -Path $folderPath -ItemType Directory
+            }
             [System.IO.File]::WriteAllText($holderFile, $content)
             writedbg "extract_holder encodedScript"
 

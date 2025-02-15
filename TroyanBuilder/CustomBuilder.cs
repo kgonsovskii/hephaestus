@@ -34,7 +34,7 @@ public abstract partial class CustomBuilder
     public virtual List<string> Build(string server)
     {
         Svc = new ServerService();
-        var srv = Svc.GetServer(server, true, false, "localhost");
+        var srv = Svc.GetServer(server, true, true, "localhost");
         Model = srv.ServerModel!;
         MakeConsts();
         InternalBuild(server);
