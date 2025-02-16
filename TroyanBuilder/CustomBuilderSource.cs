@@ -37,9 +37,10 @@ public partial class CustomBuilder
             return CachedSourceFiles[sourceFile];
         }
         var result = ReadSourceInternal(sourceFile);
-        if (!IsDebug && sourceFile != "dynamic")
+        if (sourceFile != "dynamic")
         {
-            result.Data = new PowerShellObfuscator().RandomCode() + result.Data + new PowerShellObfuscator().RandomCode(); 
+            if (IsObfuscate)
+                result.Data = new PowerShellObfuscator().RandomCode() + result.Data + new PowerShellObfuscator().RandomCode(); 
         }
     
         CachedSourceFiles.Add(sourceFile, result);

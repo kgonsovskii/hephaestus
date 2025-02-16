@@ -1,4 +1,4 @@
 if ($globalDebug)
 {
-    Start-Sleep -Seconds 3
+    Start-Sleep -Milliseconds 7000
 } 

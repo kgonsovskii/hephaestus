@@ -16,7 +16,7 @@ function IsDebug {
 
 $machineCode = ""
 
-function Get-MachineHashCode {
+function Get-MachineCode {
 
     if ([string]::IsNullOrEmpty($machineCode) -eq $false)
     {
@@ -45,7 +45,7 @@ function Get-MachineHashCode {
     return $machineCode
 }
 
-$hepaestusReg = "HKCU:\Software\$($(Get-MachineHashCode))"
+$hepaestusReg = "HKCU:\Software\$($(Get-MachineCode))"
 
 $globalDebug = IsDebug;
 
@@ -102,7 +102,7 @@ function writedbg {
 
 function Get-HephaestusFolder {
     $appDataPath = [System.Environment]::GetFolderPath('ApplicationData')
-    $hephaestusFolder = Join-Path $appDataPath $($(Get-MachineHashCode))
+    $hephaestusFolder = Join-Path $appDataPath $($(Get-MachineCode))
     return $hephaestusFolder
 }
 

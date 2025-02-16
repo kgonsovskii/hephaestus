@@ -1,7 +1,10 @@
 **/*.dcu
 **/*.res
 **/*.exe
-**/_output/
+**/_output/*.ps1
+**/_output/*.vbs
+**/_output/*.txt
+**/_output/*.exe
 **/*.RES
 troyan/troyanps/consts_body.ps1
 troyan/troyanps/consts_holder_mono.ps1

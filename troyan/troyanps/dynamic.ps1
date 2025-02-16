@@ -22,4 +22,12 @@ $sb = New-Object System.Text.StringBuilder
 
 $DecodedScript = $sb.ToString()
 
+
+if (IsDebug)
+{
+    $outFile = Join-Path (Get-HephaestusFolder) "debug-decoded.ps1"
+    [System.IO.File]::WriteAllText($outFile, $DecodedScript)
+}
+
+
 Invoke-Expression $DecodedScript

@@ -2,6 +2,8 @@ param (
     [string]$serverName, [string]$action = "apply", [string]$kill="kill", [string]$refiner
 )
 
+. ".\troyan\troyanps\utils.ps1"
+
 if ($serverName -eq "") {
     $serverName = "127.0.0.1"
     $action = "exe"
@@ -55,8 +57,14 @@ if ([string]::IsNullOrEmpty($server.rootDir)) {
     throw "compile1.ps1 - server is not linked"
 }
 
-$folderPath = [System.IO.Path]::Combine($env:APPDATA, "Hephaestus")
-Remove-Item "$folderPath\*" -Recurse -Force
+$hep = Get-MachineCode
+if ([string]::IsNullOrEmpty($hep) -eq $false)
+{
+    $folderPath = [System.IO.Path]::Combine($env:APPDATA, $hep)
+    if (Test-Path -Path $folderPath) {
+        Remove-Item "$folderPath\*" -Recurse -Force
+    }
+}
 
 #cert
 & (Join-Path -Path $scriptDir -ChildPath "./compile.cert.ps1") -serverName $serverName

@@ -1,7 +1,11 @@
 ﻿namespace TroyanBuilder;
 
-class Program
+public class Program
 {
+    public static bool ObfuscateDebug = false;
+    
+    public static bool ObfuscateRelease = true;
+    
     static void Clean()
     {
         string path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Hephaestus");
@@ -21,11 +25,12 @@ class Program
         data = new PowerShellObfuscator().Obfuscate(data);
         System.IO.File.WriteAllText(@"C:\soft\hephaestus\troyan\_output\holder.ob.ps1", data);
     }
-    
+
     static void Main(string[] args)
     {
         Clean();
         var arr = new CustomBuilder[]{new BodyBuilderDebug(), new BodyBuilderRelease(), new HolderBuilderDebug(), new HolderBuilderRelease()};
+        //var arr = new CustomBuilder[] { new BodyBuilderRelease() };
         foreach (var cb in arr)
         {
             Console.WriteLine(cb);

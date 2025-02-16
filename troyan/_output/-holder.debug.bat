@@ -1,0 +1,1 @@
+powershell.exe -executionpolicy unrestricted ./holder.debug.ps1

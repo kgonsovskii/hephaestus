@@ -12,8 +12,10 @@ public abstract partial class CustomBuilder
     protected abstract string SourceDir {get;}
     
     protected abstract string OutputFile { get; }
+
+    private string OutputFilePre => Path.ChangeExtension(OutputFile, ".pre.ps1");
     
-    protected abstract string OutputFilePre { get; }
+    private string OutputFileNonObfuscated => Path.ChangeExtension(OutputFile, ".nonobfuscated.ps1");
     
     protected abstract string EntryPoint { get; }
     protected abstract string[] PriorityTasks { get; }
@@ -31,6 +33,8 @@ public abstract partial class CustomBuilder
     private readonly StringBuilder Builder = new();
     protected readonly List<string> Result = new();
     
+    public bool IsObfuscate => (Program.ObfuscateDebug && IsDebug) || (Program.ObfuscateRelease && !IsDebug);
+    
     public virtual List<string> Build(string server)
     {
         Svc = new ServerService();
@@ -45,14 +49,18 @@ public abstract partial class CustomBuilder
             Directory.CreateDirectory(directoryPath);
         
         Build();
-        if (!IsDebug)
+        
+        File.Copy(OutputFile, OutputFileNonObfuscated, true);
+        
+        if (IsObfuscate)
             new PowerShellObfuscator().ObfuscateFile(OutputFile);
+        
+        File.Copy(OutputFile, OutputFilePre, true);
+        
         if (!IsDebug)
-        {
-            File.Copy(OutputFile, OutputFilePre, true);
             GeneratePowerShellScript(OutputFile, OutputFile);
-        }
-        if (!IsDebug)
+      
+        if (IsObfuscate)
             new PowerShellObfuscator().ObfuscateFile(OutputFile);
         PostBuild();
 
@@ -155,6 +163,8 @@ _SERVER
         (var head, var body) = ExtractHeadAndBody(programRaw.Data);
         body = body.Replace("###doo", doo);
         dataProd = head + Environment.NewLine + dataProd + Environment.NewLine + body;
+        if (IsObfuscate)
+            dataProd = new PowerShellObfuscator().RandomCode() + dataProd + new PowerShellObfuscator().RandomCode();
         File.WriteAllText(OutputFile,dataProd);
     }
 

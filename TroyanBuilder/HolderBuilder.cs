@@ -37,12 +37,9 @@ $xbody = ""__BODY""
 public class HolderBuilderDebug : HolderBuilder
 {
     protected override string OutputFile => Model.HolderDebug;
-    protected override string OutputFilePre => throw new NotImplementedException();
 }
 
 public class HolderBuilderRelease : HolderBuilder
 {
     protected override string OutputFile => Model.HolderRelease;
-
-    protected override string OutputFilePre => Model.HolderPreRelease;
 }

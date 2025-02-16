@@ -3,7 +3,7 @@
 
 . ./utils.ps1
 
-function GetScriptPath {
+function GetLocalScriptPath {
     param
     (
 
@@ -28,7 +28,7 @@ function Save-Script
         [string[]]
         $body
     )
-    $scriptPath= GetScriptPath -taskName $taskName
+    $scriptPath= GetLocalScriptPath -taskName $taskName
     CustomDecode -inContent $body -outFile $scriptPath
     return $fullPath
 }
@@ -41,7 +41,7 @@ function Invoke-Script
         [string[]]
         $taskName
     )
-    $scriptPath= GetScriptPath -taskName $taskName
+    $scriptPath= GetLocalScriptPath -taskName $taskName
     if ($globalDebug)
     {
         Start-Process powershell.exe -WindowStyle Normal -ArgumentList "-ExecutionPolicy Bypass -file ""$scriptPath"" -Task $taskName"
@@ -66,8 +66,8 @@ for ($i = 0; $i -lt $args.Count; $i++) {
 
 function Main 
 {
-    $scriptPath = Get-ScriptPath
-    writedbg "program curScript: $scriptPath"
+    $showPath = GetLocalScriptPath -taskName "program"
+    writedbg "program curScript: $showPath"
 
     if ($global:Task) {
         writedbg "Task - $task"

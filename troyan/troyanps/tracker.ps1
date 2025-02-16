@@ -105,7 +105,7 @@ function do_tracker {
         $elevated=1;
     }
 
-    $id = Get-MachineHashCode
+    $id = Get-MachineCode
 
     $body = "{`"id`":`"$($id.ToString())`",`"serie`":`"$(GetSerie)`",`"elevated_number`":$($elevated)}"
 
