@@ -2,7 +2,7 @@ param (
     [string]$serverName, [string]$action = "apply", [string]$kill="kill", [string]$refiner
 )
 
-. ".\troyan\troyanps\utils.ps1"
+
 
 if ($serverName -eq "") {
     $serverName = "127.0.0.1"
@@ -53,6 +53,7 @@ if ($kill -eq "kill" -and $refiner -ne "refiner")
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 Set-Location -Path $scriptDir
 . ".\current.ps1" -serverName $serverName
+. ".\troyan\troyanps\utils.ps1"
 if ([string]::IsNullOrEmpty($server.rootDir)) {
     throw "compile1.ps1 - server is not linked"
 }

@@ -160,7 +160,9 @@ public class ServerService
             if (updateDns)
             {
                 var result = new PsList(server).Run().Where(a => a != server.Server).ToList();
-                server.Interfaces = result;                    
+                server.Interfaces = result;      
+                if (server.Interfaces.Count == 0)
+                    server.Interfaces.Add(server.Server);
             }
             
             UpdateIpDomains(server);

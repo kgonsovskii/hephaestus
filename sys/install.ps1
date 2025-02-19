@@ -91,26 +91,28 @@ catch{
 
 
 #PowerShell 5.1
-$wmfVersion = "5.1"
-$wmfUrl = "https://go.microsoft.com/fwlink/?LinkId=817261" # Updated link for WMF 5.1
-$outputDir = "C:\Temp"
-$outputFile = "$outputDir\WindowsTH-KB3191564-x64.msu"
+# $wmfVersion = "5.1"
+# $wmfUrl = "https://go.microsoft.com/fwlink/?LinkId=817261" # Updated link for WMF 5.1
+# $outputDir = "C:\Temp"
+# $outputFile = "$outputDir\WindowsTH-KB3191564-x64.msu"
 
-if (!(Test-Path -Path $outputDir -PathType Container)) {
-    New-Item -Path $outputDir -ItemType Directory | Out-Null
-}
+# if (!(Test-Path -Path $outputDir -PathType Container)) {
+#     New-Item -Path $outputDir -ItemType Directory | Out-Null
+# }
 
-#PowerShell 5.1 DEFS
-Invoke-WebRequest -Uri $wmfUrl -OutFile $outputFile
-Start-Process wusa.exe -ArgumentList "$outputFile /quiet /norestart" -Wait
-$PSVersion = $PSVersionTable.PSVersion
-if ($PSVersion.Major -eq 5 -and $PSVersion.Minor -eq 1) {
-    Write-Output "PowerShell 5.1 has been successfully installed."
-} else {
-    Write-Output "PowerShell 5.1 installation failed."
-}
+# #PowerShell 5.1 DEFS
+# Invoke-WebRequest -Uri $wmfUrl -OutFile $outputFile
+# Start-Process wusa.exe -ArgumentList "$outputFile /quiet /norestart" -Wait
+# $PSVersion = $PSVersionTable.PSVersion
+# if ($PSVersion.Major -eq 5 -and $PSVersion.Minor -eq 1) {
+#     Write-Output "PowerShell 5.1 has been successfully installed."
+# } else {
+#     Write-Output "PowerShell 5.1 installation failed."
+# }
 # Ensure PowerShell 5.1 is installed
 $PSVersionTable.PSVersion
+
+
 # Delete existing WSMan configuration for PowerShell if it exists
 $existingConfig = Get-PSSessionConfiguration -Name "Microsoft.PowerShell"
 if ($existingConfig) {

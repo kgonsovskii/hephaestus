@@ -5,13 +5,17 @@ $psVer = $PSVersionTable.PSVersion.Major
 Write-Host "PowerShell v: $psVer"
 
 
-# dotnet 7 install
-$sdkUrl = "https://download.visualstudio.microsoft.com/download/pr/6f7abf5c-3f6d-43cc-8f3c-700c27d4976b/b7a3b806505c95c7095ca1e8c057e987/dotnet-sdk-7.0.410-win-x64.exe"
+
+#net 9
+$sdkUrl = "https://builds.dotnet.microsoft.com/dotnet/Sdk/9.0.200/dotnet-sdk-9.0.200-win-x64.exe"
 $targetDir = "C:\Temp"
 if (-Not (Test-Path -Path $targetDir)) {
     New-Item -Path $targetDir -ItemType Directory
 }
-$sdkOutput = "$targetDir\dotnet-sdk-7.0.100-win-x64.exe"
+$sdkOutput = "$targetDir\dotnet-sdk-9.0.200-win-x64.exe"
+Invoke-WebRequest -Uri $sdkUrl -OutFile $sdkOutput
+Start-Process -FilePath $sdkOutput -ArgumentList '/quiet', '/norestart' -Wait
+
 function Download-File {
     param (
         [string]$url,

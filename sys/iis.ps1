@@ -205,7 +205,14 @@ function CreateWebsite {
         }
         if ($isFirst)
         {
-            New-WebBinding -Name $siteName -IPAddress $ip -Port $portHttp -HostHeader "" -Protocol "http" 
+            try
+            {
+                New-WebBinding -Name $siteName -IPAddress $ip -Port $portHttp -HostHeader "" -Protocol "http" 
+            }
+            catch
+            {
+            }
+
         }
         New-WebBinding -Name $siteName -IPAddress $ip -Port $portHttps -HostHeader $hostHeader -Protocol "https" 
         New-WebBinding -Name $siteName -IPAddress $ip -Port $portHttps -HostHeader "www.$hostHeader" -Protocol "https" 
