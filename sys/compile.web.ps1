@@ -21,7 +21,7 @@ if ($serverName -in $ipv4Addresses)
 }
 else {
     $pass = $server.password
-    if ([string]::IsNullOrEmpty($passs) -or $pass -eq "password")
+    if ([string]::IsNullOrEmpty($pass) -or $pass -eq "password")
     {
         $pass = [System.Environment]::GetEnvironmentVariable("SuperPassword_$serverName", [System.EnvironmentVariableTarget]::Machine)
     }

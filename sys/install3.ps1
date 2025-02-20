@@ -1,5 +1,6 @@
 Install-Module -Name ps2exe  -Scope AllUsers
 Install-Module -Name PSPKI -Scope AllUsers
+Install-WindowsFeature -Name Web-Server -IncludeManagementTools
 
 Install-WindowsFeature FS-SMB1
 Install-WindowsFeature FS-SMB2

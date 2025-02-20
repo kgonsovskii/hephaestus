@@ -139,7 +139,7 @@ public class ServerService
                     server = new ServerModel()
                     {
                         StartUrls = new List<string>(), StartDownloads = new List<string>(),
-                        Pushes = new List<string>(), Server = serverName, Alias = alias
+                        Pushes = new List<string>(), Server = serverName, Alias = "cp.masterhost.online", Password = "Putin123"
                     };
                     
                     if (!string.IsNullOrEmpty(pass))

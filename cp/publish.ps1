@@ -109,6 +109,12 @@ foreach ($dir in $dirs) {
         $credentialObject = New-Object System.Management.Automation.PSCredential ($server.login, $spass)
         $session = New-PSSession -ComputerName $server.server -Credential $credentialObject
         Invoke-Command -Session $session -ScriptBlock {
+
+            if (-not (Test-Path "C:\data"))
+            {
+                New-Item -Path "C:\data" -ItemType Directory -Force
+            }
+
             if (-not (Test-Path "C:\_publish\"))
             {
                 New-Item -Path "C:\_publish" -ItemType Directory -Force
