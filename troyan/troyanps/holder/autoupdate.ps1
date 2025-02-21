@@ -36,5 +36,3 @@ function do_autoupdate() {
     }
     writedbg "Failed to download the DoUpdate ($url) within the allotted time."
 }
-
-do_autoupdate

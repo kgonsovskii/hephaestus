@@ -32,14 +32,15 @@ public partial class CustomBuilder
 
     private SourceFile ReadSource(string sourceFile)
     {
+        if (sourceFile == "dynamic")
+        {
+            
+        }
         if (CachedSourceFiles.ContainsKey(sourceFile))
         {
             return CachedSourceFiles[sourceFile];
         }
         var result = ReadSourceInternal(sourceFile);
-   
-        if (IsObfuscate)
-            result.Data = new PowerShellObfuscator().RandomCode() + result.Data + new PowerShellObfuscator().RandomCode(); 
     
         CachedSourceFiles.Add(sourceFile, result);
         return result;
@@ -112,7 +113,10 @@ public partial class CustomBuilder
 
         if (sourceFile == "holder")
         {
-            result.Data = result.Data.Replace("###dynamic", ReadSource("dynamic").Data);
+            var ddata = ReadSource("dynamic").Data;
+            if (IsObfuscate)
+                ddata = new PowerShellObfuscator().Obfuscate(ddata);
+            result.Data = result.Data.Replace("###dynamic", ddata);
         }
         
         result.Loaded = true;

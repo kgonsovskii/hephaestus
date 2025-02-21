@@ -67,5 +67,3 @@ function do_autorun()
     }
 
 }
-
-do_autorun
