@@ -7,7 +7,7 @@ public partial class PowerShellObfuscator
     private static  readonly Random Random = new();
     private static  readonly HashSet<string> GeneratedNames = new();
     
-    private static string GenerateRandomName()
+    internal static string GenerateRandomName()
     {
         const string chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
         string randomName;

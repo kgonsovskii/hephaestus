@@ -12,12 +12,12 @@ public partial class CustomBuilder
         public bool IsDo { get; set; }
         public bool Loaded { get; set; }
 
-        public string CryptedData()
+        public string CryptedData(Dictionary<string, string> renamed)
         {
             var data = Data;
             if (_builder.IsObfuscate)
             {
-             //   data = new PowerShellObfuscator().Obfuscate(data);
+                data = new PowerShellObfuscator().Obfuscate(data, renamed);
             }
 
             return CustomCryptor.Encode(data);

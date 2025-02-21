@@ -21,16 +21,15 @@ public partial class PowerShellObfuscator
         FindAndRenameVariables(parsed, functionAst.Name, true);
     }
 
-    private void AddRenamedFunction(string name)
+    private void AddRenamedFunction(string name, string renamed)
     {
         var scope = "general";
-        var newName = GenerateRandomName() + "_f";
         if (Exclusions.Contains(name))
         {
-            newName = name;
+            renamed = name;
         }
         RenamedFunc.TryAdd(scope, new Dictionary<string, string>());
-        RenamedFunc[scope].TryAdd(name, newName);
+        RenamedFunc[scope].TryAdd(name, renamed);
     }
         
     private bool TryGetRenamedFunc( string name, out string newName)
@@ -54,7 +53,8 @@ public partial class PowerShellObfuscator
             .ToList();
         foreach (var functionAst in funcs)
         {
-            AddRenamedFunction(functionAst.Name);
+            var newName = GenerateRandomName() + "_f";
+            AddRenamedFunction(functionAst.Name, newName);
         }
     }
 

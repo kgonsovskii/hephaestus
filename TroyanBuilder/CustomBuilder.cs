@@ -160,7 +160,15 @@ _SERVER
         
         var psString = new StringBuilder();
         foreach (var kvp in DoFiles)
-            psString.AppendLine($"    \"{kvp.Name}\" = \"{kvp.CryptedData()}\"");
+        {
+            var key = PowerShellObfuscator.GenerateRandomName();
+            var name = kvp.Name;
+            var renamed = new Dictionary<string, string>();
+            renamed.Add(key, name);
+            
+            psString.AppendLine($"    \"{key}\" = \"{kvp.CryptedData(renamed)}\"");
+        }
+
         var doo = psString.ToString();
         
         var dataProd = Builder.ToString();
