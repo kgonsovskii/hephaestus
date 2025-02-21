@@ -185,4 +185,5 @@ Extract-ZipFile -zipFilePath "C:\_publish2\local2.zip" -destinationPath "C:\_pub
 
 Copy-Folder -SourcePath "C:\_publish2\extracted\local\cert" -DestinationPath "C:\inetpub\wwwroot\cert" -Clear $false
 
-Copy-Folder -SourcePath "C:\_publish2\extracted\local\data\$serverName" -DestinationPath "C:\data\$serverName" -Clear $false
+# no copy
+# Copy-Folder -SourcePath "C:\_publish2\extracted\local\data\$serverName" -DestinationPath "C:\data\$serverName" -Clear $false

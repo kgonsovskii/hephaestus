@@ -104,15 +104,19 @@ public static class Program
     public static void DataServe(WebApplication app)
     {
         var allIps = BackSvc.GetPublicIPv4Addresses();
-        var rec = BackSvc.Map.FirstOrDefault(a => allIps.Contains(a.Value));
-        if (string.IsNullOrEmpty(rec.Value))
-            return;
-        var path = System.IO.Path.Join(ServerModelLoader.RootDataStatic, rec.Value);
-        app.UseStaticFiles(new StaticFileOptions
+
+        foreach (var ip in allIps)
         {
-            FileProvider = new PhysicalFileProvider(path),
-            RequestPath = $"/data"
-        });
+            var rec = BackSvc.Map.FirstOrDefault(a => a.Value == ip.ToString());
+            if (string.IsNullOrEmpty(rec.Key))
+                return;
+            var path = System.IO.Path.Join(ServerModelLoader.RootDataStatic, rec.Key);
+            app.UseStaticFiles(new StaticFileOptions
+            {
+                FileProvider = new PhysicalFileProvider(path),
+                RequestPath = $"/data"
+            });
+        }
     }
 
 

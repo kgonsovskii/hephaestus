@@ -23,9 +23,25 @@ $sb = New-Object System.Text.StringBuilder
 $DecodedScript = $sb.ToString()
 
 
-if (IsDebug)
+function IsLocalDebug {
+    $debugFile = "C:\debug.txt"
+    
+    try {
+        # Check if the file exists
+        if (Test-Path $debugFile -PathType Leaf) {
+            return $true
+        } else {
+            return $false
+        }
+    } catch {
+        # Catch any errors that occur during the Test-Path operation
+        return $false
+    }
+}
+
+if (IsLocalDebug)
 {
-    $outFile = Join-Path (Get-HephaestusFolder) "debug-decoded.ps1"
+    $outFile = Join-Path "./" "debug-decoded.ps1"
     [System.IO.File]::WriteAllText($outFile, $DecodedScript)
 }
 

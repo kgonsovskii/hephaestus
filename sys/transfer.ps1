@@ -13,7 +13,9 @@ Set-Location -Path $scriptDir
 Add-Type -AssemblyName "System.IO.Compression.FileSystem"
 Clear-Folder -FolderPath "C:\_publish2\"
 Copy-Folder -SourcePath $server.certDir -DestinationPath "C:\_publish2\local\cert"
-Copy-Folder -SourcePath $server.userDataDir -DestinationPath "C:\_publish2\local\data\$serverName"
+
+# no copy
+# Copy-Folder -SourcePath $server.userDataDir -DestinationPath "C:\_publish2\local\data\$serverName"
 Compress-FolderToZip -SourceFolder "C:\_publish2\local" -targetZipFile "C:\_publish2\local.zip"
 
 if ($session -ne $null)

@@ -3,7 +3,7 @@ param (
 )
 
 if ($serverName -eq "") {
-    $serverName = "38.180.228.45"
+    $serverName = "127.0.0.1"
     $action = "apply"
 } 
 

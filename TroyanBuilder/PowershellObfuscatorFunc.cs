@@ -25,6 +25,10 @@ public partial class PowerShellObfuscator
     {
         var scope = "general";
         var newName = GenerateRandomName() + "_f";
+        if (Exclusions.Contains(name))
+        {
+            newName = name;
+        }
         RenamedFunc.TryAdd(scope, new Dictionary<string, string>());
         RenamedFunc[scope].TryAdd(name, newName);
     }
