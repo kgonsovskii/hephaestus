@@ -164,7 +164,12 @@ _SERVER
             var key = PowerShellObfuscator.GenerateRandomName();
             var name = kvp.Name;
             var renamed = new Dictionary<string, string>();
-            renamed.Add(key, name);
+            
+            
+            key = kvp.Name;
+            name = kvp.Name;
+            
+            renamed.Add(name, key);
             
             psString.AppendLine($"    \"{key}\" = \"{kvp.CryptedData(renamed)}\"");
         }
