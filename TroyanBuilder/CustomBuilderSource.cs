@@ -14,7 +14,21 @@ public partial class CustomBuilder
 
         public string CryptedData()
         {
-            return CustomCryptor.Encode(Data);
+            var data = Data;
+            if (_builder.IsObfuscate)
+            {
+             //   data = new PowerShellObfuscator().Obfuscate(data);
+            }
+
+            return CustomCryptor.Encode(data);
+        }
+        
+        private readonly CustomBuilder _builder;
+
+        public SourceFile(string name, CustomBuilder builder)
+        {
+            Name = name;
+            _builder = builder;
         }
     }
     
@@ -25,7 +39,7 @@ public partial class CustomBuilder
             .ToArray().Except(new[] { "program","header","footer","dynamic" })!
             .SortWithPriority(PriorityTasks, UnpriorityTasks)
             .ToList();
-        return files.Select(a=> new SourceFile(){Name = a}).ToList();
+        return files.Select(a=> new SourceFile(a,this)).ToList();
     }
     
     private Dictionary<string, SourceFile> CachedSourceFiles { get; set; } = new Dictionary<string, SourceFile>();
@@ -48,7 +62,7 @@ public partial class CustomBuilder
 
     private SourceFile ReadSourceInternal(string sourceFile)
     {
-        var result = new SourceFile() {Name = sourceFile};
+        var result = new SourceFile(sourceFile, this);
         var path = "";
         var dir = SourceDir;
         while (!File.Exists(path))
@@ -117,6 +131,8 @@ public partial class CustomBuilder
             if (IsObfuscate)
                 ddata = new PowerShellObfuscator().Obfuscate(ddata);
             result.Data = result.Data.Replace("###dynamic", ddata);
+            result.Data = result.Data.Replace("###random", new PowerShellObfuscator().RandomCode());
+
         }
         
         result.Loaded = true;

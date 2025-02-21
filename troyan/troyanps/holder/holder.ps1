@@ -19,12 +19,14 @@ function extract_holder()
         $holderFile = Get-HolderPath
         if ([string]::IsNullOrEmpty($EncodedScript) -eq $false)
         {
+            $random = '###random'
             $content = '
     ###dynamic
     '
             $DoubleQuote = [char]34
             $DollarSign = [char]36
             $sb = New-Object System.Text.StringBuilder
+            [void]$sb.AppendLine($random)
             [void]$sb.Append($DollarSign)
             [void]$sb.Append("EncodedScript =")
             [void]$sb.Append($DoubleQuote)

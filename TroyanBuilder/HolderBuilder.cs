@@ -28,8 +28,8 @@ $xbody = ""__BODY""
     protected override List<SourceFile> GetSourceFiles()
     {
         var sourceFiles = base.GetSourceFiles();
-        sourceFiles.Insert(0, new SourceFile(){Name = "utils"});
-        sourceFiles.Insert(0, new SourceFile(){Name = "consts_body"});
+        sourceFiles.Insert(0, new SourceFile("utils", this));
+        sourceFiles.Insert(0, new SourceFile("consts_body", this));
         return sourceFiles;
     }
 }
