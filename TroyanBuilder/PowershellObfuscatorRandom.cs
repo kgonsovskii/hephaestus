@@ -26,6 +26,7 @@ public partial class PowerShellObfuscator
 
     public string RandomCode()
     {
+        return "";
         string varName = GenerateRandomName();
         string varValue = GenerateRandomName();
         string funcName = GenerateRandomName();
