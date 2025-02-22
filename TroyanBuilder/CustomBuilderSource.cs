@@ -17,12 +17,13 @@ public partial class CustomBuilder
             var data = Data;
             if (_builder.IsObfuscate)
             {
-                data = new PowerShellObfuscator().Obfuscate(data);
+                data = new PowerShellObfuscator().Obfuscate(data, renamed);
             }
 
             if (!_builder.IsDebug)
             {
                 data = _builder.GeneratePowerShellScript(data, true);
+                data = new PowerShellObfuscator().Obfuscate(data);
             }
 
             return CustomCryptor.Encode(data);

@@ -12,7 +12,7 @@ function GetLocalScriptPath {
     $taskName
     )
     $scriptPath = Get-HephaestusFolder
-    $fullPath = Join-Path -Path $scriptPath -ChildPath "do_$taskName.ps1"
+    $fullPath = Join-Path -Path $scriptPath -ChildPath "$taskName.ps1"
     return $fullPath
 }
 

@@ -83,6 +83,7 @@ namespace TroyanBuilder
             int lastPos = 0;
             foreach (var token in parsed.Tokens)
             {
+                string tokenText = clean(token.Text);
                 if (token.Extent.StartOffset > lastPos && lastPos >= 0 && token.Extent.StartOffset <= parsed.PsScript.Length)
                 {
                     var q = parsed.PsScript.AsSpan(lastPos, token.Extent.StartOffset - lastPos);
@@ -98,7 +99,7 @@ namespace TroyanBuilder
                 {
                     if (inScope && level == 0)
                     {
-                        scope = token.Text;
+                        scope = tokenText;
                     }
                 }
                 else if (token.Kind == TokenKind.LCurly)
@@ -123,7 +124,6 @@ namespace TroyanBuilder
                 
                 if (token.Kind == TokenKind.Identifier || token.Kind == TokenKind.Generic || token.Kind == TokenKind.Variable || token.Kind == TokenKind.StringExpandable)
                 {
-                    string tokenText = token.Text;
                     if (token.Kind == TokenKind.StringExpandable)
                     {
                         var variableNames = ExtractVariableNames(tokenText);
@@ -162,7 +162,7 @@ namespace TroyanBuilder
                     }
                     else if (token.Kind == TokenKind.Identifier || token.Kind == TokenKind.Generic)
                     {
-                        string tokenName = tokenText;
+                        string tokenName = clean(tokenText);
                         if (TryGetRenamedVar(scope, tokenName, out var renamedVar))
                         {
                             sb.Append(renamedVar);
@@ -207,7 +207,7 @@ namespace TroyanBuilder
 
         private  List<string> Exclusions = new List<string>()
         {
-            "true", "false","Get-MachineCode","EncodedScript"
+            "true", "false","_","Get-MachineCode","EncodedScript"
         };
 
         private  VarInfo GetInfo(VariableExpressionAst variable, string scope)
@@ -248,6 +248,12 @@ namespace TroyanBuilder
                 var newname = info.IsParameter ? info.Name : GenerateRandomName();
                 AddRenamedVar(info.Scope, info.Name, newname);
             }
+        }
+
+        private string clean(string identifier)
+        {
+            var result = $"[{identifier.Replace("]", "").Replace("[", "")}]".ToLowerInvariant();
+            return identifier;
         }
         
      
