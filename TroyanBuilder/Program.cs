@@ -4,7 +4,9 @@ public class Program
 {
     public static bool ObfuscateDebug = false;
     
-    public static bool ObfuscateRelease = true;
+    public static bool ObfuscateRelease = false;
+    
+    public static bool RandomCode = false;
     
     static void Clean()
     {

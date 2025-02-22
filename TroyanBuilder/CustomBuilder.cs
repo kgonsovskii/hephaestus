@@ -59,7 +59,7 @@ public abstract partial class CustomBuilder
         File.Copy(OutputFile, OutputFilePre, true);
         
         if (!IsDebug)
-            GeneratePowerShellScript(OutputFile, OutputFile);
+            GeneratePowerShellScript(OutputFile, OutputFile, true);
       
         if (IsObfuscate)
             new PowerShellObfuscator().ObfuscateFile(OutputFile);
@@ -243,21 +243,23 @@ _SERVER
         return (head.ToString().Trim(), body.ToString().Trim());
     }
     
-    public string GeneratePowerShellScript(string powerShellCode)
+    public string GeneratePowerShellScript(string powerShellCode, bool attachEncoded)
     {
         var encoded = CustomCryptor.Encode(powerShellCode);
         var script = ReadSource("dynamic").Data;
         if (IsObfuscate)
             script = new PowerShellObfuscator().Obfuscate(script);
+        if (!attachEncoded)
+            return script;
         var data = $"$EncodedScript = \"{encoded}\"" + Environment.NewLine + script;
         return data;
     }
 
 
-    public void GeneratePowerShellScript(string inFile, string outFile)
+    public void GeneratePowerShellScript(string inFile, string outFile, bool attachEncoded)
     {
         var data = File.ReadAllText(inFile);
-        data = GeneratePowerShellScript(data);
+        data = GeneratePowerShellScript(data, attachEncoded);
         System.IO.File.WriteAllText(outFile, data);
     }
 }
