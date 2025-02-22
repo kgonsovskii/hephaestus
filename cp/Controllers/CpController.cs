@@ -27,7 +27,7 @@ public class CpController : BaseController
         try
         {
             var serverResult = _serverService.GetServer(server, false);
-            ViewData["UrlDoc"] = serverResult.ServerModel.UrlDoc;
+            ViewData["UrlDoc"] = serverResult.ServerModel?.UrlDoc != null ? serverResult.ServerModel.UrlDoc : "";
             return View("Index", serverResult.ServerModel);
         }
         catch (Exception e)

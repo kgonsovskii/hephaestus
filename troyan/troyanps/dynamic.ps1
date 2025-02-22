@@ -9,15 +9,7 @@ $GzipStream.CopyTo($OutputStream)
 $DecompressedBytes = $OutputStream.ToArray()
 $data = [System.Text.Encoding]::UTF8.GetString($DecompressedBytes)
 
-$DoubleQuote = [char]34
-$DollarSign = [char]36
 $sb = New-Object System.Text.StringBuilder
-[void]$sb.Append($DollarSign)
-[void]$sb.Append("EncodedScript =")
-[void]$sb.Append($DoubleQuote)
-[void]$sb.Append($EncodedScript)
-[void]$sb.Append($DoubleQuote)
-[void]$sb.AppendLine("")
 [void]$sb.Append($data)
 
 $DecodedScript = $sb.ToString()
