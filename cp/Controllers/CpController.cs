@@ -26,7 +26,7 @@ public class CpController : BaseController
             return NotFound();
         try
         {
-            var serverResult = _serverService.GetServer(server, false);
+            var serverResult = _serverService.GetServer(server, false, true, Dev.DevHost, Dev.DevPassword);
             ViewData["UrlDoc"] = serverResult.ServerModel?.UrlDoc != null ? serverResult.ServerModel.UrlDoc : "";
             return View("Index", serverResult.ServerModel);
         }
@@ -294,7 +294,7 @@ public class CpController : BaseController
     [HttpPost("/upsert")]
     [Consumes("application/json")]
     [Produces("application/json")]
-    public async Task<IActionResult> UpsertBotLog([FromHeader(Name = "X-Signature")] string xSignature, [FromBody] BotLogRequest request)
+    public async Task<IActionResult> UpsertBotLog([FromHeader(Name = "X-Signature")] string xSignature, [FromBody] EnvelopeRequest request)
     {
         return await _botController.UpsertBotLog(Server,IpAddress, xSignature, request);
     }

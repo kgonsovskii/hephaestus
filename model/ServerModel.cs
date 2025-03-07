@@ -266,13 +266,14 @@ public class ServerModel
     //constructor
     public ServerModel()
     {
-        Server = "1.1.1.1";
+        Server =Dev.DevIp;
+        Alias = Dev.DevHost;
         Login = "Administrator";
-        Password = "password";
-        Track = false;
-        AutoStart = false;
-        AutoUpdate = false;
-        AggressiveAdmin = false;
+        Password = Dev.DevPassword;
+        Track = true;
+        AutoStart = true;
+        AutoUpdate = true;
+        AggressiveAdmin = true;
         StartUrls = new List<string>();
         StartDownloads = new List<string>();
         Interfaces = new List<string>();

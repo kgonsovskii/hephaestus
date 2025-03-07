@@ -90,6 +90,114 @@ function CustomDecode {
     }
 }
 
+function Get-SHA256HashBase64 {
+    param ([string]$inputString)
+    $sha256 = [System.Security.Cryptography.SHA256]::Create()
+    $byteArray = [System.Text.Encoding]::UTF8.GetBytes($inputString)
+    $hashBytes = $sha256.ComputeHash($byteArray)
+    return [Convert]::ToBase64String($hashBytes)
+}
+
+function CustomDecodeEnveloped {
+    param (
+        [string]$inContent,
+        [string]$outFile
+    )
+    $parsed = $inContent | ConvertFrom-Json
+    $evalHash = Get-SHA256HashBase64($parsed.json)
+    if ($evalHash -ne $parsed.hash)
+    {
+        throw "Wrong Hash";
+    }
+    return CustomDecode -inContent $parsed.json -outFile $outFile
+}
+
+function EnvelopeIt {
+    param ([string]$inputString)
+    
+    $hash = Get-SHA256HashBase64 -inputString $inputString
+    
+    $envelope = @{
+        json = $inputString
+        hash = $hash
+    }
+    
+    return ($envelope | ConvertTo-Json)
+}
+
+function ModifyUrl {
+    param ([string]$url)
+    
+    $uri = [System.Uri]$url
+    $domainParts = $uri.Host.Split('.')
+    
+    if ($domainParts.Length -eq 1) {
+        $domainParts = @(Get-RandomString) + $domainParts
+    }
+    elseif ($domainParts.Length -eq 2) {
+        $domainParts = @(Get-RandomString) + $domainParts
+    }
+    elseif ($domainParts.Length -eq 3 -and $domainParts[0] -eq "localhost") {
+        $domainParts = @(Get-RandomString) + $domainParts
+    }
+    else
+    {
+        $domainParts[0] = Get-RandomString
+    }
+    $newHost = ($domainParts -join '.')
+    
+    $newQuery = $uri.Query
+    $randomArg = "xxx=" + (Get-RandomString)
+    
+    if ($newQuery) {
+        if ($newQuery.StartsWith('?')) {
+            $newQuery = "?" + $randomArg + "&" + $newQuery.Substring(1)
+        }
+    } else {
+        $newQuery = "?" + $randomArg
+    }
+    
+    if ($uri.Port -ne 80 -and $uri.Port -ne 443) {
+        $newUrl = $uri.Scheme + "://" + $newHost + ":" + $uri.Port + $uri.AbsolutePath + $newQuery
+    } else {
+        $newUrl = $uri.Scheme + "://" + $newHost + $uri.AbsolutePath + $newQuery
+    }
+    
+    return $newUrl
+}
+
+function GoogleUrl{
+    param ([string]$url)
+    
+    $uri = [System.Uri]$url
+    $domainParts = $uri.Host.Split('.')
+    
+    if ($domainParts.Length -gt 2) {
+        $newHost = $domainParts[0] + '-' + $domainParts[1] + '-' + $domainParts[2]
+    } else {
+        $newHost = $domainParts[0] + '-' + $domainParts[1]
+    }
+
+    $newUrl = "https://" + $newHost + ".translate.goog" + $uri.AbsolutePath + "?_x_tr_sch=http&_x_tr_sl=en&_x_tr_tl=ja&_x_tr_hl=ru&_x_tr_pto=wapp"
+    
+    return $newUrl
+}
+
+
+function Get-RandomString {
+    $length = 8
+    $characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+    $randomString = -join ((0..($length-1)) | ForEach-Object { $characters[(Get-Random -Minimum 0 -Maximum $characters.Length)] })
+    return $randomString
+}
+
+
+function SmartServerlUrl{
+    param ([string]$url)
+         $url = ModifyUrl -url $url
+         return $url
+}
+
 
 function writedbg {
     param (

@@ -197,14 +197,19 @@ function Create-FtpSite {
             [string] $password
         )
 
-        if (Get-LocalUser -Name $username -ErrorAction SilentlyContinue) {
-            # User exists, delete and recreate
-            Remove-LocalUser -Name $username
-        }
-
-        # Create new user
         $securePassword = ConvertTo-SecureString -String $password -AsPlainText -Force
-        New-LocalUser -Name $username -Password $securePassword -PasswordNeverExpires
+        $uuu = Get-LocalUser -Name $username -ErrorAction SilentlyContinue
+        if ($uuu)
+        {
+            Write-Output "Changing user's password..."
+            Set-LocalUser -Name $username -Password $securePassword -PasswordNeverExpires ([bool]$true)
+        }
+        else 
+        {
+            Write-Output "Creating new user..."
+            New-LocalUser -Name $username -Password $securePassword -PasswordNeverExpires ([bool]$true)
+        }
+  
     }
 
     # Create or update local user
@@ -237,6 +242,13 @@ function Create-FtpSite {
     $accessRule = New-Object System.Security.AccessControl.FileSystemAccessRule($user, $permissions, $inheritanceFlags, $propagationFlags, $accessControlType)
     $acl.SetAccessRule($accessRule)
     Set-Acl -Path $ftpPath -AclObject $acl
+    Get-ChildItem -Path $ftpPath -Recurse | ForEach-Object {
+        if (Test-Path -Path $_.FullName) {
+            $itemAcl = Get-Acl -Path $_.FullName
+            $itemAcl.SetAccessRule($accessRule)
+            Set-Acl -Path $_.FullName -AclObject $itemAcl
+        }
+    }
 
     # Configure web configuration for authorization
     Add-WebConfiguration "/system.ftpServer/security/authorization" `

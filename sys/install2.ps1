@@ -84,10 +84,10 @@ Remove-Item -Path $msiPath -Force
 
 
 #iis hosting core
-$url = "https://dotnetcli.azureedge.net/dotnet/aspnetcore/Runtime/7.0.20/dotnet-hosting-7.0.20-win.exe"
-$output = "$env:TEMP\dotnet-hosting-7.0.20-win.exe"
+$url = "https://builds.dotnet.microsoft.com/dotnet/aspnetcore/Runtime/9.0.2/dotnet-hosting-9.0.2-win.exe"
+$output = "$env:TEMP\dotnet-hosting-9.0.2-win.exe"
 Invoke-WebRequest -Uri $url -OutFile $output
-$installerPath = "$env:TEMP\dotnet-hosting-7.0.20-win.exe"
+$installerPath = "$env:TEMP\dotnet-hosting-9.0.2-win.exe"
 Start-Process -FilePath $installerPath -ArgumentList "/quiet /norestart" -Wait
 Remove-Item $installerPath
 
