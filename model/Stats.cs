@@ -49,6 +49,15 @@ public class BotLogRequest
     public int ElevatedNumber { get; set; }
 }
 
+public class EnvelopeRequest
+{
+    [JsonPropertyName("json")]
+    public string Json { get; set; }
+    
+    [JsonPropertyName("hash")]
+    public string Hash { get; set; }
+}
+
 
 public class DownloadLog
 {

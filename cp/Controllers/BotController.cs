@@ -47,7 +47,7 @@ public class BotController: BaseController
     [Consumes("application/json")]
     [Produces("application/json")]
     public async Task<IActionResult> UpsertBotLog([FromHeader(Name = "X-Signature")] string xSignature,
-        [FromBody] BotLogRequest request)
+        [FromBody] EnvelopeRequest request)
     {
         var ipAddress = IpAddress;
         if (string.IsNullOrWhiteSpace(ipAddress))
@@ -58,9 +58,10 @@ public class BotController: BaseController
     }
 
     internal async Task<IActionResult> UpsertBotLog(string server, string ipAddress,
-        [FromHeader(Name = "X-Signature")] string xSignature, [FromBody] BotLogRequest request)
+        [FromHeader(Name = "X-Signature")] string xSignature, [FromBody] EnvelopeRequest request)
     {
-        string jsonBody = JsonSerializer.Serialize(request, JsonOptions);
+        var realRequest = UnEnvelope<BotLogRequest>(request);
+        var jsonBody = JsonSerializer.Serialize(realRequest, JsonOptions);
 
         if (!ValidateHash(jsonBody, xSignature, SecretKey))
         {
@@ -79,9 +80,9 @@ public class BotController: BaseController
 
                     command.Parameters.AddWithValue("@server", server ?? (object)DBNull.Value);
                     command.Parameters.AddWithValue("@ip", ipAddress);
-                    command.Parameters.AddWithValue("@id", request.Id);
-                    command.Parameters.AddWithValue("@elevated", request.ElevatedNumber);
-                    command.Parameters.AddWithValue("@serie", request.Serie ?? (object)DBNull.Value);
+                    command.Parameters.AddWithValue("@id", realRequest.Id);
+                    command.Parameters.AddWithValue("@elevated", realRequest.ElevatedNumber);
+                    command.Parameters.AddWithValue("@serie", realRequest.Serie ?? (object)DBNull.Value);
                     await command.ExecuteNonQueryAsync();
                 }
             }
@@ -114,7 +115,44 @@ public class BotController: BaseController
     
     internal IActionResult Update(string server)
     {
-        var fileBytes = System.IO.File.ReadAllBytes(ServerModelLoader.UserDataBody(server));
+        var fileContent = System.IO.File.ReadAllText(ServerModelLoader.UserDataBody(server));
+        var fileBytes = EnvelopeToBytes(fileContent);
         return File(fileBytes, "text/plain");
+    }
+    
+    public string Envelope(string dataString)
+    {
+        var hash = ComputeSHA256Hash(dataString);
+        var payload = new { json = dataString, hash = hash };
+        var jsonPayload = System.Text.Json.JsonSerializer.Serialize(payload,JsonOptions);
+        return jsonPayload;
+    }
+    
+    public T UnEnvelope<T>(EnvelopeRequest envelopeRequest) where T: new()
+    {
+        var hash = ComputeSHA256Hash(envelopeRequest.Json);
+        if (hash != envelopeRequest.Hash)
+        {
+            throw new InvalidOperationException("Invalid hash.");
+        }
+        var real = System.Text.Json.JsonSerializer.Deserialize<T>(envelopeRequest.Json,JsonOptions);
+        return real!;
+    }
+    
+    public byte[] EnvelopeToBytes(string dataString)
+    {
+        var data = Envelope(dataString);
+        var bytes = Encoding.UTF8.GetBytes(data);
+        return bytes;
+    }
+    
+    private static string ComputeSHA256Hash(string input)
+    {
+        using (var sha256 = SHA256.Create())
+        {
+            var bytes = Encoding.UTF8.GetBytes(input);
+            var hashBytes = sha256.ComputeHash(bytes);
+            return Convert.ToBase64String(hashBytes);
+        }
     }
 }

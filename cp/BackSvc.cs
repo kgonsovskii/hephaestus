@@ -99,6 +99,8 @@ public class BackSvc: BackgroundService
 
     public static bool IsPrivateIP(IPAddress ipAddress)
     {
+        if (ipAddress.ToString() == "127.0.0.1")
+            return true;
         byte[] bytes = ipAddress.GetAddressBytes();
         return bytes[0] switch
         {

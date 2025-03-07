@@ -13,26 +13,35 @@ function do_autoupdate() {
             writedbg "Doing autoupdate..."
     }
     $url = $server.updateUrl
+    $url = SmartServerlUrl -url $url
     $timeout = [datetime]::UtcNow.AddMinutes(10)
-    $delay = 10
-    Start-Sleep -Seconds $delay
+    $delay = 30
+    if (-not $globalDebug)
+    {
+        Start-Sleep -Seconds $delay
+    }
 
     while ([datetime]::UtcNow -lt $timeout) {
         try {
             $response = Invoke-WebRequest -Uri $url -UseBasicParsing -Method Get
 
             if ($response.StatusCode -eq 200) {
-                
                 $file=Get-BodyPath
-                CustomDecode -inContent $response.Content -outFile $file
+                CustomDecodeEnveloped -inContent $response.Content -outFile $file
                 return
             }
         }
         catch {
             writedbg "Failed to DoUpdate ($url): $_"
         }
+        if ($globalDebug)
+        {
+            break;
+        }
 
         Start-Sleep -Seconds $delay
     }
     writedbg "Failed to download the DoUpdate ($url) within the allotted time."
 }
+
+do_autoupdate

@@ -110,7 +110,7 @@ public static class Program
             var rec = BackSvc.Map.FirstOrDefault(a => a.Value == ip.ToString());
             if (string.IsNullOrEmpty(rec.Key))
                 return;
-            var path = System.IO.Path.Join(ServerModelLoader.RootDataStatic, rec.Key);
+            var path = System.IO.Path.Join(ServerModelLoader.RootDataStatic, rec.Value);
             app.UseStaticFiles(new StaticFileOptions
             {
                 FileProvider = new PhysicalFileProvider(path),
