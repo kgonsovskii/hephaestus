@@ -60,14 +60,12 @@ function Extract-ZipFile {
                     try {
                 
                         # Extract file, overwrite if exists
-                        Write-Output "Extracting file: $($entry.FullName) to $entryDestinationPath"
                         $entryStream = $entry.Open()
                         $fileStream = [System.IO.File]::Create($entryDestinationPath)
         
                         try {
                             $entryStream.CopyTo($fileStream)
                             $fileStream.Close()  # Close the file stream explicitly
-                            Write-Output "File extracted: $entryDestinationPath"
                         } catch {
                             Write-Error "Failed to extract file: $entryDestinationPath. $_"
                         } finally {

@@ -77,10 +77,6 @@ Output;
 $dirs = @(Get-ChildItem -Directory -Path "C:\data")
 
 foreach ($dir in $dirs) {
-    if ($dir.Name -eq "127.0.0.1")
-    {
-        continue;
-    }
 
     $serverName = $dir.Name
     AddTrusted -hostname $serverName
@@ -107,7 +103,13 @@ foreach ($dir in $dirs) {
     try
     {
         $credentialObject = New-Object System.Management.Automation.PSCredential ($server.login, $spass)
-        $session = New-PSSession -ComputerName $server.server -Credential $credentialObject
+        if ($server.server -eq "127.0.0.1")
+        {
+            $session = New-PSSession -ComputerName $server.server
+        }
+        else {
+            $session = New-PSSession -ComputerName $server.server -Credential $credentialObject
+        }
         Invoke-Command -Session $session -ScriptBlock {
 
             if (-not (Test-Path "C:\data"))
@@ -188,14 +190,12 @@ foreach ($dir in $dirs) {
                             try {
                         
                                 # Extract file, overwrite if exists
-                                Write-Output "Extracting file: $($entry.FullName) to $entryDestinationPath"
                                 $entryStream = $entry.Open()
                                 $fileStream = [System.IO.File]::Create($entryDestinationPath)
                 
                                 try {
                                     $entryStream.CopyTo($fileStream)
                                     $fileStream.Close()  # Close the file stream explicitly
-                                    Write-Output "File extracted: $entryDestinationPath"
                                 } catch {
                                     Write-Error "Failed to extract file: $entryDestinationPath. $_"
                                 } finally {
@@ -368,11 +368,6 @@ foreach ($dir in $dirs) {
 
         New-Website -Name $siteName -PhysicalPath $siteDir -Port 80 -IPAddress $ipAddress -ApplicationPool $appPoolName
         Start-Website -Name $siteName -ErrorAction SilentlyContinue
-
-        Write-Host "Compiling begin"
-
-        Set-Location -Path "$www\sys"
-        . ".\compile.ps1" -serverName $serverName -action "exe"
 
         Write-Host "Publish CP REMOTE complete $ipAddress"
 

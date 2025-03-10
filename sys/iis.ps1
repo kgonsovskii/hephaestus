@@ -1,6 +1,9 @@
 param (
     [string]$serverName
 )
+if ($serverName -eq "") {
+    $serverName = "127.0.0.1"
+} 
 if ([string]::IsNullOrEmpty($serverName)) {
         throw "-serverName argument is null"
 }

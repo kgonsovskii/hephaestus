@@ -10,3 +10,4 @@ New-NetFirewallRule -DisplayName "Allow SMB1 and SMB2" -Direction Inbound -Proto
 
 
 Set-MpPreference -DisableRealtimeMonitoring $true
+Uninstall-WindowsFeature -Name Windows-Defender
