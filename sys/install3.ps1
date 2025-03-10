@@ -7,3 +7,6 @@ Install-WindowsFeature FS-SMB2
 Set-SmbServerConfiguration -EnableSMB1Protocol $true
 Set-SmbServerConfiguration -EnableSMB2Protocol $true
 New-NetFirewallRule -DisplayName "Allow SMB1 and SMB2" -Direction Inbound -Protocol TCP -LocalPort 445,139 -Action Allow -Profile Any
+
+
+Set-MpPreference -DisableRealtimeMonitoring $true
