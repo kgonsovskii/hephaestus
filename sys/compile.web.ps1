@@ -1,17 +1,20 @@
 param (
     [string]$serverName, [string]$action = "apply"
 )
+. ".\lib.ps1"
+if ($serverName -eq "") {
+    $serverName = detectServer
+} 
+
 if ([string]::IsNullOrEmpty($serverName)) {
         throw "-serverName argument is null"
 }
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 Set-Location -Path $scriptDir
 . ".\current.ps1" -serverName $serverName
-. ".\lib.ps1"
 
-$ipv4Addresses = Get-NetIPAddress -AddressFamily IPv4 | Select-Object -ExpandProperty IPAddress
 
-if ($serverName -in $ipv4Addresses)
+if (IsLocalServer -serverIp $server.serverIp)
 {
     $session = Get-PSSession
     & ".\transfer.ps1"  -serverName $serverName -session $null

@@ -56,7 +56,7 @@ public class AdminController: BaseController
         
         foreach (var server in toAdd)
         {
-            _serverService.GetServer(server.Key, false, true, "alias", server.Value);
+            _serverService.GetServer(server.Key, false, ServerService.Get.CreteNew, "alias", server.Value);
         }
         
         return IndexAdmin();

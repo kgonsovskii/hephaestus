@@ -8,58 +8,7 @@ namespace model;
 
 public static class ServerModelLoader
 {
-    public static string ipFromHost(string host)
-    {
-        // Regular expression to match an IPv4 address
-        string ipv4Pattern = @"^(\d{1,3}\.){3}\d{1,3}$";
-
-        // Check if the host is already an IPv4 address
-        if (Regex.IsMatch(host, ipv4Pattern))
-        {
-            // Validate if the matched string is a valid IPv4 address
-            if (IPAddress.TryParse(host, out IPAddress ip))
-            {
-                return host;
-            }
-        }
-
-        try
-        {
-            // Get the IP addresses associated with the host
-            IPAddress[] addresses = Dns.GetHostAddresses(host);
-
-            // Return the first IPv4 address found
-            foreach (IPAddress address in addresses)
-            {
-                if (address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
-                {
-                    return address.ToString();
-                }
-            }
-
-            // If no addresses found, return the original host
-            return host;
-        }
-        catch (ArgumentException argEx)
-        {
-            // Handle specific exception for invalid host names
-            Console.WriteLine($"Argument error: {argEx.Message}");
-            return host;
-        }
-        catch (SocketException sockEx)
-        {
-            // Handle specific exception for DNS errors
-            Console.WriteLine($"DNS resolution error: {sockEx.Message}");
-            return host;
-        }
-        catch (Exception ex)
-        {
-            // Handle any other exceptions
-            Console.WriteLine($"General error: {ex.Message}");
-            return host;
-        }
-    }
-        
+       
     public static string SourceCertDirStatic
     {
         get

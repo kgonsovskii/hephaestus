@@ -2,8 +2,12 @@ param (
     [string]$serverName, [string]$action = "apply", [string]$kill="kill", [string]$refiner
 )
 
+$scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+Set-Location -Path $scriptDir
+. ".\lib.ps1"
+
 if ($serverName -eq "") {
-    $serverName = "127.0.0.1"
+    $serverName = detectServer
     $action = "apply"
 } 
 
@@ -19,11 +23,7 @@ if (-not (Test-Path "C:\data"))
     New-Item -Path "C:\data" -ItemType Directory -Force
 }
 
-if (-not (Test-Path "C:/data/$serverName"))
-{
-    $builderPath = Join-Path -Path $currentScriptPath -ChildPath "../TroyanBuilder/bin/debug/net9.0/TroyanBuilder.exe"
-    Start-Process -Wait $builderPath -ArgumentList $serverName
-}
+
 
 if ($refiner -ne "refiner")
 {

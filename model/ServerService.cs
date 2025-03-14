@@ -24,7 +24,7 @@ public class ServerService
         return Path.Combine(ServerModelLoader.SysDirStatic, scriptName + ".ps1");
     }
 
-    private static string ServerDir(string serverName)
+    internal static string ServerDir(string serverName)
     {
         return Path.Combine(ServerModelLoader.RootDataStatic, serverName);
     }
@@ -39,14 +39,14 @@ public class ServerService
         return Path.Combine(ServerDir(serverName), "front");
     }
 
-    private static string DataFile(string serverName)
+    internal static string DataFile(string serverName)
     {
         return Path.Combine(ServerDir(serverName), "server.json");
     }
 
     public string GetIcon(string serverName)
     {
-        return Path.Combine(ServerDir(serverName), "server.ico");
+        return Path.Combine(ServerDir(serverName), "troyan.ico");
     }
 
     public string GetExe(string serverName)
@@ -89,7 +89,7 @@ public class ServerService
         File.Delete(GetFront(serverName, embeddingName));
     }
 
-    private static JsonSerializerOptions JSO = new()
+    internal static JsonSerializerOptions JSO = new()
         { WriteIndented = true, DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull };
 
     public ServerModel GetServerLite(string serverName)
@@ -104,18 +104,26 @@ public class ServerService
             JsonSerializer.Serialize(server, JSO));
     }
 
-    public ServerResult GetServer(string serverName, bool updateDns,  bool create = false, string alias = "", string pass = "")
+    public enum Get
     {
-        if (create)
+        RaiseError = 0,
+        LoadDefault = 1,
+        CreteNew = 2
+    }
+
+    public ServerResult GetServer(string serverName, bool updateDns, Get mode, string alias = "", string pass = "")
+    {
+        if (mode == Get.CreteNew)
+        {
+        }
+        else
         {
             if (!Directory.Exists(ServerDir(serverName)))
-                Directory.CreateDirectory(ServerDir(serverName));
+                return new ServerResult() { Exception = new DirectoryNotFoundException(serverName) };
         }
 
-        if (!Directory.Exists(ServerDir(serverName)))
-            return new ServerResult() { Exception = new DirectoryNotFoundException(serverName) };
-
         var server = new ServerModel();
+        server.Server = serverName;
         try
         {
             try
@@ -134,35 +142,16 @@ public class ServerService
             }
             catch (Exception e)
             {
-                if (create)
+                if (mode == Get.CreteNew)
                 {
-                    server = new ServerModel()
-                    {
-                        StartUrls = new List<string>(), StartDownloads = new List<string>(),
-                        Pushes = new List<string>(), Server = serverName, Alias = alias, Password = pass
-                    };
-                    
-                    if (!string.IsNullOrEmpty(pass))
-                        server.Password = pass;
-
-                    File.WriteAllText(DataFile(serverName),
-                        JsonSerializer.Serialize(server, JSO));
+                    Dev.DefaultServer(serverName);
+                    server = JsonSerializer.Deserialize<ServerModel>(File.ReadAllText(DataFile(serverName)), JSO)!;
                 }
                 else
                 {
                     server.LastResult = e.Message;
                     return new ServerResult() { Exception = e, ServerModel = server };
                 }
-            }
-
-            server.Server = serverName;
-
-            if (updateDns)
-            {
-                var result = new PsList(server).Run().Where(a => a != server.Server).ToList();
-                server.Interfaces = result;      
-                if (server.Interfaces.Count == 0)
-                    server.Interfaces.Add(server.Server);
             }
             
             UpdateIpDomains(server);
@@ -239,6 +228,7 @@ public class ServerService
 
     public void UpdateIpDomains(ServerModel server)
     {
+        server.Interfaces = Dev.GetPublicIPv4Addresses();
         for (int i = server.DomainIps.Count - 1; i >= 0; i--)
         {
             var domainIp = server.DomainIps[i];
@@ -250,27 +240,24 @@ public class ServerService
                 domainIp.Name = Guid.NewGuid().ToString();
             }
         }
-        
+
         for (int i = server.DomainIps.Count - 1; i >= 0; i--)
         {
-            var allIps = server.DomainIps.Select(a => a.IP).ToList();
+            var allowedIp = server.Interfaces.Except([server.ServerIp]).ToArray();
+            var allIp = server.DomainIps.Select(a => a.IP).ToList();
             var domainIp = server.DomainIps[i];
             var cnt = server.DomainIps.Count(a => a.IP == domainIp.IP);
-            if (!server.IsLocal && (!server.Interfaces.Contains(domainIp.IP) || cnt >= 2))
+            if (!allowedIp.Contains(domainIp.IP) || cnt >= 2)
             {
-                var freeIp = server.Interfaces.FirstOrDefault(a=> !allIps.Contains(a));
-                if (freeIp == null)
-                {
-                    freeIp = "127.0.0.1";
-                }
+                var freeIp = allowedIp.Except(allIp).FirstOrDefault() ?? "127.0.0.1";
                 server.DomainIps[i].IP = freeIp;
-            }   
+            }
         }
     }
         
     public void UpdateDNS(ServerModel server)
     {
-        var first = server.Interfaces.Count >= 1 ? server.Interfaces[0] : server.Server;
+        var first = server.Interfaces.Count >= 1 ? server.Interfaces[0] : server.ServerIp;
         server.PrimaryDns = first;
         server.SecondaryDns = server.PrimaryDns;
         if (server.Interfaces.Count >= 2)
@@ -364,7 +351,7 @@ public class ServerService
         {
             try
             {
-                var res = GetServer(serverName, true);
+                var res = GetServer(serverName, true, Get.RaiseError);
                 if (res.Exception != null)
                     throw res.Exception;
                 srv = res.ServerModel;
@@ -381,7 +368,7 @@ public class ServerService
 
     public ServerResult RefineServerLite(string serverName)
     {
-        var srv = GetServer(serverName, false);
+        var srv = GetServer(serverName, false, Get.RaiseError);
         if (srv.Exception != null)
             Console.WriteLine(srv.Exception.Message);
         PostServer(serverName, srv.ServerModel, true, "none", "don't");
@@ -391,7 +378,7 @@ public class ServerService
 
     public ServerResult RefineServer(string serverName, string action = "exe")
     {
-        var srv = GetServer(serverName, true);
+        var srv = GetServer(serverName, true, Get.RaiseError);
         if (srv.Exception != null)
             Console.WriteLine(srv.Exception.Message);
         if (srv.ServerModel != null)

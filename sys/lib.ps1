@@ -1,5 +1,50 @@
 Write-Host "lib"
 
+$scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+
+function Defaults {
+
+    if (!(Test-Path -Path "C:\data")) {
+        New-Item -ItemType Directory -Path $dirPath | Out-Null
+    }
+    $subfolders = Get-ChildItem -Path "C:\data"-Directory
+    if ($subfolders.Count -eq 0) {
+        New-Item -ItemType Directory -Path "C:\data\default" | Out-Null
+    }
+
+    if (-not (Test-Path "C:/data/default/server.json"))
+    {
+        $builderPath = Join-Path -Path $scriptDir -ChildPath "../TroyanBuilder/bin/debug/net9.0/TroyanBuilder.exe"
+        Start-Process -Wait $builderPath -ArgumentList "default"
+    }
+
+    if (-not (Test-Path "C:/data/debug/server.json"))
+    {
+        $builderPath = Join-Path -Path $scriptDir -ChildPath "../TroyanBuilder/bin/debug/net9.0/TroyanBuilder.exe"
+        Start-Process -Wait $builderPath -ArgumentList "debug"
+    }
+}
+
+function IsLocalServer
+{
+    param ([string] $serverIp)
+    $ipv4Addresses = Get-NetIPAddress -AddressFamily IPv4 | Select-Object -ExpandProperty IPAddress
+
+    if ($serverIp -in $ipv4Addresses)
+    {
+        return $true;
+    }
+    return $false;
+}
+
+function detectServer()
+{
+    Defaults
+    return "debug"
+    #$path = "C:\data"
+    #$directories = Get-ChildItem -Path $Path -Directory | Select-Object -First 1
+    #return $directories.Name
+}
 
 $scriptBlock = {
     param (
@@ -207,7 +252,7 @@ function Create-FtpSite {
         else 
         {
             Write-Output "Creating new user..."
-            New-LocalUser -Name $username -Password $securePassword -PasswordNeverExpires ([bool]$true)
+            New-LocalUser -Name $username -Password $securePassword -PasswordNeverExpires
         }
   
     }
@@ -239,26 +284,63 @@ function Create-FtpSite {
     $inheritanceFlags = [System.Security.AccessControl.InheritanceFlags]::ContainerInherit -bor [System.Security.AccessControl.InheritanceFlags]::ObjectInherit
     $propagationFlags = [System.Security.AccessControl.PropagationFlags]::None
     $accessControlType = [System.Security.AccessControl.AccessControlType]::Allow
-    $accessRule = New-Object System.Security.AccessControl.FileSystemAccessRule($user, $permissions, $inheritanceFlags, $propagationFlags, $accessControlType)
+
+    $accessRule = New-Object System.Security.AccessControl.FileSystemAccessRule(
+        $user, $permissions, $inheritanceFlags, $propagationFlags, $accessControlType
+    )
+
     $acl.SetAccessRule($accessRule)
     Set-Acl -Path $ftpPath -AclObject $acl
+
+    # Apply permissions recursively
     Get-ChildItem -Path $ftpPath -Recurse | ForEach-Object {
         if (Test-Path -Path $_.FullName) {
             $itemAcl = Get-Acl -Path $_.FullName
-            $itemAcl.SetAccessRule($accessRule)
+
+            $fileRule = New-Object System.Security.AccessControl.FileSystemAccessRule(
+                $user, $permissions,
+                [System.Security.AccessControl.InheritanceFlags]::None,
+                [System.Security.AccessControl.PropagationFlags]::None,
+                [System.Security.AccessControl.AccessControlType]::Allow
+            )
+
+            $itemAcl.SetAccessRule($fileRule)
             Set-Acl -Path $_.FullName -AclObject $itemAcl
         }
     }
 
-    # Configure web configuration for authorization
-    Add-WebConfiguration "/system.ftpServer/security/authorization" `
-        -value @{accessType="Allow";roles="";permissions="Read,Write";users="$user"} `
-        -PSPath IIS:\ -location "$ftpSiteName"
+    # Configure FTP authorization in IIS
+    $authRule = @{
+        accessType  = "Allow"
+        roles       = ""
+        permissions = "Read,Write"
+        users       = $user
+    }
 
-        Set-WebConfigurationProperty -pspath 'MACHINE/WEBROOT/APPHOST'  -filter "system.applicationHost/sites/site[@name='$ftpSiteName']/ftpServer/security/authentication/anonymousAuthentication" -name "enabled" -value "False"
-        Set-WebConfigurationProperty -pspath 'MACHINE/WEBROOT/APPHOST'  -filter "system.applicationHost/sites/site[@name='$ftpSiteName']/ftpServer/security/authentication/basicAuthentication" -name "enabled" -value "True"
+    try {
+        Add-WebConfiguration -Filter "/system.ftpServer/security/authorization" `
+            -PSPath "IIS:\" -Value $authRule -Location "$ftpSiteName"
+    } catch {
+        Write-Host "Error configuring FTP authorization: $_" -ForegroundColor Red
+    }
+    
+    # 🔥 FIXED: Correct variable expansion in authentication properties 🔥
+    try {
+        Set-WebConfigurationProperty -pspath "MACHINE/WEBROOT/APPHOST" `
+            -filter ("system.applicationHost/sites/site[@name=`"" + $ftpSiteName + "`"]/ftpServer/security/authentication/anonymousAuthentication") `
+            -name "enabled" -value "False"
+    
+        Set-WebConfigurationProperty -pspath "MACHINE/WEBROOT/APPHOST" `
+            -filter ("system.applicationHost/sites/site[@name=`"" + $ftpSiteName + "`"]/ftpServer/security/authentication/basicAuthentication") `
+            -name "enabled" -value "True"
+    } catch {
+        Write-Host "Error setting authentication properties: $_" -ForegroundColor Red
+    }
+    
+    # Restart IIS and FTP services
+    Restart-Service W3SVC -Force
+    Restart-Service FTPSVC -Force
 
-    # Restart the FTP site
-    Restart-WebItem "IIS:\Sites\$ftpSiteName"
+    Write-Host "FTP site $ftpSiteName configured successfully!" -ForegroundColor Green
 }
 

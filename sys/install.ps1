@@ -1,9 +1,6 @@
 
-$psVer = $PSVersionTable.PSVersion.Major
-Write-Host "PowerShell v: $psVer"
+. ".\1ver.ps1"
 
-
-# POWERSHELL OLD
 function Update-FirewallRule {
     param (
         [string]$Name,
@@ -53,82 +50,41 @@ catch{
     Write-Host $_
 }
 
-
-
-#POWESHELL 7
-# $version = "7.4.3"
-# $url = "https://github.com/PowerShell/PowerShell/releases/download/v$version/PowerShell-$version-win-x64.msi"
-# $outputDir = "C:\Temp"
-# $outputFile = "$outputDir\PowerShell-$version-win-x64.msi"
-# if (!(Test-Path -Path $outputDir -PathType Container)) {
-#     New-Item -Path $outputDir -ItemType Directory | Out-Null
-# }
-# Invoke-WebRequest -Uri $url -OutFile $outputFile
-# Start-Process msiexec.exe -ArgumentList "/i $outputFile /quiet /norestart" -Wait
-
-# # Enable PowerShell remoting
-# $pwshPath = "C:\Program Files\PowerShell\7\pwsh.exe"
-# & $pwshPath -Command "Enable-PSRemoting -Force"
-
-
-# #SSH
-# try {
-#     $existingRule = Get-NetFirewallRule -Name 'sshd' -ErrorAction SilentlyContinue
-#     if ($existingRule) {
-#         Set-NetFirewallRule -Name 'sshd' -RemoteAddress Any -Profile Any -Direction Inbound -Protocol TCP -Action Allow -LocalPort 22 -ErrorAction Stop
-#         Write-Output "Updated firewall rule 'sshd' to allow SSH (port 22) for any profile, any IP, and any program."
-#     } else {
-#         New-NetFirewallRule -Name 'sshd' -DisplayName 'OpenSSH Server (sshd)' -Enabled True -Direction Inbound -Protocol TCP -Action Allow -LocalPort 22 -RemoteAddress Any -Profile Any -ErrorAction Stop
-#         Write-Output "Created firewall rule 'sshd' to allow SSH (port 22) for any profile, any IP, and any program."
-#     }
-# } catch {
-#     Write-Error "Failed to create/update firewall rule for SSH:`n$_"
-# }
-# Add-WindowsCapability -Online -Name OpenSSH.Server
-# Add-WindowsCapability -Online -Name OpenSSH.Client
-# Set-Service -Name sshd -StartupType 'Automatic'
-# Start-Service sshd
-
-
-#PowerShell 5.1
-# $wmfVersion = "5.1"
-# $wmfUrl = "https://go.microsoft.com/fwlink/?LinkId=817261" # Updated link for WMF 5.1
-# $outputDir = "C:\Temp"
-# $outputFile = "$outputDir\WindowsTH-KB3191564-x64.msu"
-
-# if (!(Test-Path -Path $outputDir -PathType Container)) {
-#     New-Item -Path $outputDir -ItemType Directory | Out-Null
-# }
-
-# #PowerShell 5.1 DEFS
-# Invoke-WebRequest -Uri $wmfUrl -OutFile $outputFile
-# Start-Process wusa.exe -ArgumentList "$outputFile /quiet /norestart" -Wait
-# $PSVersion = $PSVersionTable.PSVersion
-# if ($PSVersion.Major -eq 5 -and $PSVersion.Minor -eq 1) {
-#     Write-Output "PowerShell 5.1 has been successfully installed."
-# } else {
-#     Write-Output "PowerShell 5.1 installation failed."
-# }
-# Ensure PowerShell 5.1 is installed
-$PSVersionTable.PSVersion
-
-
-# Delete existing WSMan configuration for PowerShell if it exists
-$existingConfig = Get-PSSessionConfiguration -Name "Microsoft.PowerShell"
-if ($existingConfig) {
-    Unregister-PSSessionConfiguration -Name "Microsoft.PowerShell" -Force
-}
-# Register new WSMan configuration for PowerShell 5.1
-Register-PSSessionConfiguration -Name "Microsoft.PowerShell" -Force -ShowSecurityDescriptorUI
-# Restart WinRM service
+$srv = detectServer
+Set-Item WSMan:\localhost\Client\TrustedHosts -Value "$srv, 127.0.0.1" -Force
 Restart-Service WinRM
-# Enable PowerShell remoting
-Enable-PSRemoting -Force
-# Verify WSMan configuration
-Get-PSSessionConfiguration
 
 
-Set-Item WSMan:\localhost\Client\TrustedHosts -Value "38.180.228.45, 127.0.0.1"
-Restart-Service WinRM
-# Write-Host "Installatin 1 complete"
 
+Set-MpPreference -DisableRealtimeMonitoring $true
+Uninstall-WindowsFeature -Name Windows-Defender
+
+
+
+Set-PSRepository -Name 'PSGallery' -InstallationPolicy Trusted
+
+
+
+Install-Module -Name ps2exe  -Scope AllUsers
+Install-Module -Name PSPKI -Scope AllUsers
+Install-Module PSPKI
+Import-Module WebAdministration
+Import-Module PSPKI
+Import-Module ServerManager
+
+Install-WindowsFeature FS-SMB1
+Set-SmbServerConfiguration -EnableSMB2Protocol $true  -Force
+New-NetFirewallRule -DisplayName "Allow SMB1 and SMB2" -Direction Inbound -Protocol TCP -LocalPort 445,139 -Action Allow -Profile Any
+
+Install-WindowsFeature -Name DNS -IncludeManagementTools
+Install-WindowsFeature -Name Web-Server, Web-Ftp-Server, Web-FTP-Ext, Web-Windows-Auth -IncludeManagementTools
+Install-WindowsFeature web-scripting-tools
+
+$downloadUrl = "https://download.microsoft.com/download/1/2/8/128E2E22-C1B9-44A4-BE2A-5859ED1D4592/rewrite_amd64_en-US.msi"
+$msiPath = "$env:TEMP\rewrite_amd64_en-US.msi"
+Invoke-WebRequest -Uri $downloadUrl -OutFile $msiPath
+Start-Process -FilePath msiexec.exe -ArgumentList "/i `"$msiPath`" /quiet" -Wait
+Remove-Item -Path $msiPath -Force
+
+IISReset
+Write-Host "Installatin 2 complete"

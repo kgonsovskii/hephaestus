@@ -21,7 +21,7 @@ public class ManageController : BaseController
             return NotFound();
         try
         {
-            var serverResult = _serverService.GetServer(server, false);
+            var serverResult = _serverService.GetServer(server, false, ServerService.Get.RaiseError);
             var model = serverResult.ServerModel.DomainIps.First(a=> a.Name == name);
             return View("Index", model);
         }
@@ -38,7 +38,7 @@ public class ManageController : BaseController
         var server = Server;
         try
         {
-            var existingModel = _serverService.GetServer(server, true).ServerModel;
+            var existingModel = _serverService.GetServer(server, true, ServerService.Get.RaiseError).ServerModel;
             if (existingModel == null)
             {
                 return NotFound();
