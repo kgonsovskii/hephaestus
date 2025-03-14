@@ -73,42 +73,50 @@ function Output(){
 }
 
 Output;
+Defaults;
 
 $dirs = @(Get-ChildItem -Directory -Path "C:\data")
 
-foreach ($dir in $dirs) {
 
+foreach ($dir in $dirs) 
+{
     $serverName = $dir.Name
-    AddTrusted -hostname $serverName
+    if ($serverName -eq "debug")
+    {
+        continue;
+    }
     $serverPath = Resolve-Path -Path (Join-Path -Path "C:\data\$serverName" -ChildPath "server.json")
     $server = Get-Content -Path $serverPath -Raw | ConvertFrom-Json
+    $hostA = $server.serverIp;
+    AddTrusted -hostname $server.serverIp
+    AddTrusted -hostname $server.alias
     if ($server.disbaled -eq $true)
     {
         Write-Host "Skipping becasue disabled... $hostA"
         continue;
     }
-    $hostA = $server.server;
     Write-Host "Publish CP REMOTE begin $hostA"
     $password = $server.password;
     if ($password -eq "password" -or $null -eq $password -or $password -eq "")
     {
         $password = [System.Environment]::GetEnvironmentVariable("SuperPassword_$hostA", [System.EnvironmentVariableTarget]::Machine)
     }
-    if (-not $password) {
+    if (-not $password -and -not (IsLocalServer -serverIp $server.serverIp )) {
         Write-Host "Password cannot be null. See SuperPassword_$hostA env var."
         exit 1
     }
-    $spass = (ConvertTo-SecureString -String $password -AsPlainText -Force)
     
     try
     {
-        $credentialObject = New-Object System.Management.Automation.PSCredential ($server.login, $spass)
-        if ($server.server -eq "127.0.0.1")
+        if (IsLocalServer -serverIp $server.serverIp)
         {
-            $session = New-PSSession -ComputerName $server.server
+            $session = New-PSSession -ComputerName $server.serverIp
         }
-        else {
-            $session = New-PSSession -ComputerName $server.server -Credential $credentialObject
+        else 
+        {
+            $spass = (ConvertTo-SecureString -String $password -AsPlainText -Force)
+            $credentialObject = New-Object System.Management.Automation.PSCredential ($server.login, $spass)
+            $session = New-PSSession -ComputerName $server.serverIp -Credential $credentialObject
         }
         Invoke-Command -Session $session -ScriptBlock {
 
@@ -136,7 +144,7 @@ foreach ($dir in $dirs) {
     Copy-Item -Path "C:\_publish\wwwroot.zip" -Destination "C:\_publish\wwwroot2.zip" -ToSession $session -Force
     
     Invoke-Command -Session $session -ScriptBlock {
-        param ([string]$serverName, [string]$login, [string]$password)
+        param ([string]$serverIp, [string]$login, [string]$password)
      
         Stop-Service -Name W3SVC
         Import-Module WebAdministration
@@ -319,9 +327,9 @@ foreach ($dir in $dirs) {
             }
         }
         $www="C:\inetpub\wwwroot"    
-        $siteName = "cp"
+        $siteName = "Default Web Site"
         $username = "$env:COMPUTERNAME\$login"
-        $ipAddress = $serverName
+        $ipAddress = $serverIp
         $appPoolName = "DefaultAppPool"
         $siteDir = "$www\cp"
         #remove site
@@ -366,14 +374,16 @@ foreach ($dir in $dirs) {
 
         Start-Service -Name W3SVC
 
+        Start-WebAppPool -Name $appPoolName -ErrorAction SilentlyContinue
+
         New-Website -Name $siteName -PhysicalPath $siteDir -Port 80 -IPAddress $ipAddress -ApplicationPool $appPoolName
         Start-Website -Name $siteName -ErrorAction SilentlyContinue
 
         Write-Host "Publish CP REMOTE complete $ipAddress"
 
-    }  -ArgumentList $serverName, $server.login, $password
+    }  -ArgumentList $server.serverIp, $server.login, $password
 
-    Write-Host "Publish  $serverName is complete"
+    Write-Host "Publish $serverName is complete"
 }
 
 Start-Service -Name W3SVC

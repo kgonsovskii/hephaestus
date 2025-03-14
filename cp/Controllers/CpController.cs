@@ -26,7 +26,7 @@ public class CpController : BaseController
             return NotFound();
         try
         {
-            var serverResult = _serverService.GetServer(server, false, true, Dev.DevHost, Dev.DevPassword);
+            var serverResult = _serverService.GetServer(server, false, ServerService.Get.RaiseError);
             ViewData["UrlDoc"] = serverResult.ServerModel?.UrlDoc != null ? serverResult.ServerModel.UrlDoc : "";
             return View("Index", serverResult.ServerModel);
         }
@@ -119,7 +119,7 @@ public class CpController : BaseController
         var server = Server;
         try
         {
-            var existingModel = _serverService.GetServer(server, true).ServerModel;
+            var existingModel = _serverService.GetServer(server, true, ServerService.Get.RaiseError).ServerModel;
             if (existingModel == null)
             {
                 return NotFound();
@@ -212,6 +212,7 @@ public class CpController : BaseController
             //model
             existingModel.UrlDoc = updatedModel.UrlDoc;
             existingModel.Server = server;
+            existingModel.ServerIp = updatedModel.ServerIp;
             existingModel.Alias = updatedModel.Alias;
             existingModel.StrahServer = updatedModel.StrahServer;
             existingModel.Login = updatedModel.Login;

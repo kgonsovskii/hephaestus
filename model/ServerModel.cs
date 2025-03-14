@@ -57,6 +57,7 @@ public class ServerModel
 
 
     // server-depended
+    [JsonPropertyName("serverIp")] public string ServerIp{ get; set; } = "";
     [JsonPropertyName("server")] public string Server { get; set; } = "";
     [JsonPropertyName("alias")] public string Alias { get; set; }
     [JsonPropertyName("defaultIco")] public string DefaultIco => Path.Join(RootDir, "defaulticon.ico");
@@ -206,7 +207,7 @@ public class ServerModel
     
 
 
-    [JsonIgnore] public bool IsLocal => Server == "127.0.0.1";
+    [JsonIgnore] public bool IsLocal => ServerIp == "127.0.0.1";
 
     [JsonPropertyName("_operate_isValid")] public bool IsValid { get; set; }
 
@@ -266,10 +267,8 @@ public class ServerModel
     //constructor
     public ServerModel()
     {
-        Server =Dev.DevIp;
-        Alias = Dev.DevHost;
         Login = "Administrator";
-        Password = Dev.DevPassword;
+        Password = "Putin123";
         Track = true;
         AutoStart = true;
         AutoUpdate = true;

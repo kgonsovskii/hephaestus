@@ -20,6 +20,7 @@ if ([string]::IsNullOrEmpty($server.password) -or $server.password -eq "password
     }
 }
 
+
 function pfxFile {
     param (
         [string]$domain

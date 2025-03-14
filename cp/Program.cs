@@ -18,8 +18,7 @@ public static class Program
 
     public static async Task Main(string[] args)
     {
-        await BackSvc.DoWork();
-
+        BackSvc.Initialize();
         var builder = WebApplication.CreateBuilder(args);
 
         builder.Services.AddSingleton<ServerService>();
@@ -103,14 +102,9 @@ public static class Program
     
     public static void DataServe(WebApplication app)
     {
-        var allIps = BackSvc.GetPublicIPv4Addresses();
-
-        foreach (var ip in allIps)
+        foreach (var rec in BackSvc.Servers)
         {
-            var rec = BackSvc.Map.FirstOrDefault(a => a.Value == ip.ToString());
-            if (string.IsNullOrEmpty(rec.Key))
-                return;
-            var path = System.IO.Path.Join(ServerModelLoader.RootDataStatic, rec.Value);
+            var path = System.IO.Path.Join(ServerModelLoader.RootDataStatic, rec.Key);
             app.UseStaticFiles(new StaticFileOptions
             {
                 FileProvider = new PhysicalFileProvider(path),

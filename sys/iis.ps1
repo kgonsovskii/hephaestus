@@ -42,7 +42,11 @@ function Remove-AllIISWebsites {
         $websites = Get-Website
         foreach ($website in $websites) {
             $siteName = $website.Name
-            if ($siteName -eq "cp")
+            if ($siteName -eq "Default Web Site")
+            {
+                continue;
+            }
+            if ($siteName -notlike "*managed_*") 
             {
                 continue;
             }
@@ -172,7 +176,7 @@ function CreateWebsite {
     )
     
     $hostHeader = $domain
-    $siteName = $domain
+    $siteName = "managed_$domain"
 
     Write-Output "Start website $domain"
     

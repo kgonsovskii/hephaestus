@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System.ComponentModel;
+using System.Net;
 using System.Net.NetworkInformation;
 using model;
 
@@ -6,11 +7,16 @@ namespace cp;
 
 public class BackSvc: BackgroundService
 {
+    internal static void Initialize()
+    {
+        Dev.DefaultServer(Dev.Mode);
+        DoWork();
+    }
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         try
         {
-            await DoWork();
+            DoWork();
         }
         catch (Exception e)
         {
@@ -19,9 +25,8 @@ public class BackSvc: BackgroundService
         await Task.Delay(1 * 1000 * 60 * 7, stoppingToken);
     }
 
-    public static Dictionary<string, string> Map = new Dictionary<string, string >();
-    
-    public static List<string> Ips = new List<string>();
+    public static Dictionary<string, string> Servers = new Dictionary<string, string >();
+    private static List<string> Ips;
 
     public static string EvalServer(HttpRequest request)
     {
@@ -31,58 +36,33 @@ public class BackSvc: BackgroundService
             var server = serverFor.Split(',').Select(s => s.Trim()).FirstOrDefault().Trim();
             return server;
         }
-        
-        // if (request.Host.Host == "localhost")
-        //     return ServerModelLoader.ipFromHost(ServerModelLoader.DomainControllerStatic);
-
-        return ServerModelLoader.ipFromHost(request.Host.Host);
+        return Dev.Mode;
     }
-    
-    public static async Task DoWork()
-    {
-        var dirs = System.IO.Directory.GetDirectories(@"C:\data");
-        var result = new Dictionary<string, string>();
-        var ips = new List<string>();
-        foreach (var dir in dirs)
-        {
-            var x = new ServerService();
-            var serverFile = System.IO.Path.GetFileName(dir);
-            var a = x.GetServer(serverFile, false).ServerModel!;
-            result.Add(a.Alias, a.Server);
-            //ips.AddRange(a.Interfaces);
-            //ips.Add(a.Server);
-        }
-        Map = result;
-        //ips.Add("127.0.0.1");
-        //ips.Add("::1");
-        Ips = ips.Distinct().ToList();
-    }
-    
-    public static List<string> GetPublicIPv4Addresses()
-    {
-        List<string> ipv4Addresses = new List<string>();
 
-        foreach (NetworkInterface ni in NetworkInterface.GetAllNetworkInterfaces())
+    private static void DoWork()
+    {
+        try
         {
-            if (ni.OperationalStatus == OperationalStatus.Up)
+            var dirs = System.IO.Directory.GetDirectories(ServerModelLoader.RootDataStatic);
+            var result = new Dictionary<string, string>();
+            var ips = new List<string>();
+            foreach (var dir in dirs)
             {
-                foreach (UnicastIPAddressInformation ip in ni.GetIPProperties().UnicastAddresses)
-                {
-                    if (ip.Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork) // IPv4
-                    {
-                        // Filter out private IP ranges
-                        if (!IsPrivateIP(ip.Address))
-                        {
-                            ipv4Addresses.Add(ip.Address.ToString());
-                        }
-                    }
-                }
+                var x = new ServerService();
+                var serverFile = System.IO.Path.GetFileName(dir);
+                var a = x.GetServer(serverFile, false, ServerService.Get.RaiseError).ServerModel!;
+                result.Add(a.Server, a.Alias);
             }
+            Servers = result;
+            Ips = Servers.Values.ToList();
+            Ips.AddRange(GetPublicIPv4Addresses());
         }
-
-        return ipv4Addresses;
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
     }
-    
     public static bool IsIpAllowed(string remoteIp)
     {
         foreach (var range in Ips)
@@ -94,21 +74,6 @@ public class BackSvc: BackgroundService
         }
         return false;
     }
-    
-    
-
-    public static bool IsPrivateIP(IPAddress ipAddress)
-    {
-        if (ipAddress.ToString() == "127.0.0.1")
-            return true;
-        byte[] bytes = ipAddress.GetAddressBytes();
-        return bytes[0] switch
-        {
-            10 => true, // 10.0.0.0 - 10.255.255.255
-            172 => bytes[1] >= 16 && bytes[1] <= 31, // 172.16.0.0 - 172.31.255.255
-            192 => bytes[1] == 168, // 192.168.0.0 - 192.168.255.255
-            _ => false,
-        };
-    }
+    public static List<string> GetPublicIPv4Addresses() => Dev.GetPublicIPv4Addresses();
 
 }

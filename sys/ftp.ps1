@@ -1,9 +1,9 @@
 ﻿param (
     [string]$serverName
 )
-
+. ".\lib.ps1"
 if ($serverName -eq "") {
-    $serverName = "127.0.0.1"
+    $serverName = detectServer
 } 
 
 if ([string]::IsNullOrEmpty($serverName)) {
@@ -27,6 +27,7 @@ for ($i = 0; $i -lt $server.domainIps.Length; $i++) {
     $ftp = $domainIp.ftp
     $path = $domainIp.ads
     $name = $domainIp.name
+    $name = "managed_$name"
     foreach ($domain in $domainIp.domains) 
     {    
         Create-FtpSite -ftpUrl $ftp -ftpPath $path -ftpSiteName "_ftp_$name" -ApplicationPool $appPoolName

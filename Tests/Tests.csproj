@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Library</OutputType>
+        <TargetFramework>net9.0</TargetFramework>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.13.0" />
+        <PackageReference Include="MSTest.TestAdapter" Version="3.1.2" />
+        <PackageReference Include="MSTest.TestFramework" Version="3.1.2" />
+        <PackageReference Include="FluentAssertions" Version="6.13.0" />
+        <PackageReference Include="HtmlAgilityPack" Version="1.11.47" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\cp\cp.csproj" />
+      <ProjectReference Include="..\model\model.csproj" />
+      <ProjectReference Include="..\Refiner\Refiner.csproj" />
+      <ProjectReference Include="..\TroyanBuilder\TroyanBuilder.csproj" />
+    </ItemGroup>
+
+</Project>
