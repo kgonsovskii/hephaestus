@@ -2,7 +2,7 @@ param (
     [string]$serverName
 )
 if ($serverName -eq "") {
-    $serverName = "127.0.0.1"
+    $serverName = "default"
 } 
 if ([string]::IsNullOrEmpty($serverName)) {
         throw "-serverName argument is null"
@@ -28,7 +28,11 @@ function Remove-AllIISWebsites {
         for ($i = 0; $i -lt $manager.Sites.Count; $i++) {
             $site = $manager.Sites[$i]
             $siteName = $site.Name
-            if ($siteName -eq "cp")
+            if ($siteName -eq "Default Web Site")
+            {
+                continue;
+            }
+            if ($siteName -notlike "*managed_*") 
             {
                 continue;
             }
@@ -201,11 +205,12 @@ function CreateWebsite {
         #TODO: POOL
     }
     else {
-        if(![System.IO.File]::Exists($path))
+        if(![System.IO.Directory]::Exists($path))
         {
             New-Item -ItemType Directory -Force -Path $path
         }
         New-Website -Name $siteName -HostHeader $hostHeader -PhysicalPath $path -Port $portHttp -IPAddress $ip -ApplicationPool $appPoolName
+        $httpsBinding = Get-WebBinding -Port $portHttps -Name $siteName -HostHeader "www.$hostHeader" -Protocol "https" -ErrorAction SilentlyContinue
         $httpsBinding = Get-WebBinding -Port $portHttps -Name $siteName -HostHeader $hostHeader -Protocol "https" -ErrorAction SilentlyContinue
         if ($httpsBinding) {
             Remove-WebBinding -Name $siteName -Protocol "https" -Port $portHttps --HostHeader $hostHeader
@@ -221,8 +226,8 @@ function CreateWebsite {
             }
 
         }
-        New-WebBinding -Name $siteName -IPAddress $ip -Port $portHttps -HostHeader $hostHeader -Protocol "https" 
-        New-WebBinding -Name $siteName -IPAddress $ip -Port $portHttps -HostHeader "www.$hostHeader" -Protocol "https" 
+        $sslFlags=1
+        New-WebBinding -Name $siteName -IPAddress $ip -Port $portHttps -HostHeader $hostHeader -Protocol "https"  -SslFlags $sslFlags
         $httpsBinding = Get-WebBinding -Port $portHttps -Name $siteName -HostHeader $hostHeader -Protocol "https"    
         $httpsBinding.AddSslCertificate($certRootMy.Thumbprint, "My")
     }

@@ -131,18 +131,13 @@ function ModifyUrl {
     $uri = [System.Uri]$url
     $domainParts = $uri.Host.Split('.')
     
-    if ($domainParts.Length -eq 1) {
-        $domainParts = @(Get-RandomString) + $domainParts
-    }
-    elseif ($domainParts.Length -eq 2) {
-        $domainParts = @(Get-RandomString) + $domainParts
-    }
-    elseif ($domainParts.Length -eq 3 -and $domainParts[0] -eq "localhost") {
+
+    if ($domainParts.Length -eq 3 -and $domainParts[0] -eq "localhost") {
         $domainParts = @(Get-RandomString) + $domainParts
     }
     else
     {
-        $domainParts[0] = Get-RandomString
+        $domainParts = @(Get-RandomString) + $domainParts
     }
     $newHost = ($domainParts -join '.')
     
