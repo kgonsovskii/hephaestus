@@ -11,6 +11,7 @@ public class CpController : BaseController
 {
     private readonly IServiceProvider _serviceProvider;
     private readonly BotController _botController;
+    private readonly CloneController _cloneController;
     public CpController(ServerService serverService, BotController botController, IServiceProvider serviceProvider, IConfiguration configuration, IMemoryCache memoryCache): base(serverService, configuration, memoryCache)
     {
         _serviceProvider = serviceProvider;

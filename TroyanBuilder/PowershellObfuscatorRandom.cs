@@ -28,11 +28,11 @@ public partial class PowerShellObfuscator
     {
         if (!Program.RandomCode)
             return "";
-        string varName = GenerateRandomName();
-        string varValue = GenerateRandomName();
-        string funcName = GenerateRandomName();
+        var varName = GenerateRandomName();
+        var varValue = GenerateRandomName();
+        var funcName = GenerateRandomName();
 
-        string code = Environment.NewLine + $@"
+        var code = Environment.NewLine + $@"
 $Global:{varName} = '{varValue}'
 $Global:{varName}_c = '{varName}'
 

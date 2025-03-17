@@ -1,0 +1,15 @@
+@model model.CloneModel
+
+<h2>Server Log</h2>
+
+<div class="alert alert-info">
+    <pre>@Model.CloneServerIp</pre>
+</div>
+
+<hr/>
+
+<div class="alert alert-info">
+    <pre>@Model.CloneLog</pre>
+</div>
+
+<a asp-action="Index" class="btn btn-primary">Back</a>

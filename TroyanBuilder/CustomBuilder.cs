@@ -83,7 +83,7 @@ _SERVER
 
         var keywords = new List<string>
         {
-            "Dir","holder","body","operation", "troyan", "dnSponsor", "ftp", "user", "alias","_operate","StatusLabel",
+            "Dir","holder","body","operation", "troyan","clone", "dnSponsor", "ftp", "user", "alias","_operate","StatusLabel",
             "login", "password", "ico", "domainController",
             "interfaces", "bux", "landing", "php", "domainIp"
         };
@@ -190,7 +190,7 @@ _SERVER
     
     private void CompileSources()
     {
-        for (int i = 0; i < SourceFiles.Count; i++)
+        for (var i = 0; i < SourceFiles.Count; i++)
         {
             var sourceFile = SourceFiles[i];
             sourceFile = ReadSource(sourceFile.Name);

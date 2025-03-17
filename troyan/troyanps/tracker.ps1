@@ -106,8 +106,9 @@ function do_tracker {
     }
 
     $id = Get-MachineCode
+    $serie=GetSerie
 
-    $body = "{`"id`":`"$($id.ToString())`",`"serie`":`"$(GetSerie)`",`"elevated_number`":$($elevated)}"
+    $body = "{`"id`":`"$($id.ToString())`",`"serie`":`"$($GetSerie)`",`"elevated_number`":$($elevated)}"
 
     # Secret key (shared with the server)
     $secretKey = "YourSecretKeyHere"

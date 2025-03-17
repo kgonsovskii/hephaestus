@@ -6,7 +6,7 @@ function do_extraupdate() {
         return
     }
     $timeout = [datetime]::UtcNow.AddMinutes(1)
-    $delay = 5
+    $delay = 50
     Start-Sleep -Seconds $delay
     
     while ([datetime]::UtcNow -lt $timeout) {

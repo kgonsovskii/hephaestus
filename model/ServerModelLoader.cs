@@ -31,7 +31,7 @@ public static class ServerModelLoader
                 {
                     var name = System.IO.Path.GetFileName(dir);
 
-                    if (name.ToLower(CultureInfo.InvariantCulture) == "foregrounder" || name.ToLower(CultureInfo.InvariantCulture) == "troyanbuilder" || name.ToLower(CultureInfo.InvariantCulture) == "cp" || name.ToLower(CultureInfo.InvariantCulture) == "refiner")
+                    if (name.ToLower(CultureInfo.InvariantCulture) == "cloner" || name.ToLower(CultureInfo.InvariantCulture) == "foregrounder" || name.ToLower(CultureInfo.InvariantCulture) == "troyanbuilder" || name.ToLower(CultureInfo.InvariantCulture) == "cp" || name.ToLower(CultureInfo.InvariantCulture) == "refiner")
                     {
                         dir = Directory.GetParent(dir)?.FullName;
                         _rootDirStatic = dir;
@@ -74,6 +74,17 @@ public static class ServerModelLoader
             return result;
         }
     }
+    
+    public static string Cloner
+    {
+        get
+        {
+            var result = Path.Combine(RootDirStatic, "cloner","bin/debug/net9.0/cloner.exe");
+            if (!File.Exists(result))
+                result = Path.Combine(CpDirStatic, "cloner.exe");
+            return result;
+        }
+    }
 
     public static string UserDataDir(string server)
     {
@@ -96,6 +107,7 @@ public static class ServerModelLoader
 
     public static string CpDirStatic => Path.Combine(RootDirStatic, "cp");
         
+    public static string AdsDirStatic => Path.Combine(RootDirStatic, "ads");
     public static string PhpDirStatic => Path.Combine(RootDirStatic, "php");
 
     public static string CertDirStatic => Path.Combine(RootDirStatic, "cert");

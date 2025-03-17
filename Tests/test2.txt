@@ -1,0 +1,6 @@
+function Get-MachineCode
+{
+}
+function do_tracker {
+    $a = "HKCU:\Software\$($(Get-MachineCode))"
+}

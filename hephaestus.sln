@@ -13,7 +13,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{9C3B6E20
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "stuff", "stuff", "{3B6BF360-603F-4144-8B3C-023E34701D88}"
 	ProjectSection(SolutionItems) = preProject
-		db\db.sql = db\db.sql
 		php\dn.php = php\dn.php
 		php\download.html = php\download.html
 		php\download.php = php\download.php
@@ -22,6 +21,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TroyanBuilder", "TroyanBuilder\TroyanBuilder.csproj", "{23BA5BE3-4C29-4A88-8669-713F80CB85BB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{0F5E06DE-DE2F-4497-B093-C248AD257E86}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cloner", "Cloner\Cloner.csproj", "{A7EEBF01-48F7-466C-B34F-52F89C155EE9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -49,5 +50,9 @@ Global
 		{0F5E06DE-DE2F-4497-B093-C248AD257E86}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0F5E06DE-DE2F-4497-B093-C248AD257E86}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0F5E06DE-DE2F-4497-B093-C248AD257E86}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A7EEBF01-48F7-466C-B34F-52F89C155EE9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A7EEBF01-48F7-466C-B34F-52F89C155EE9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A7EEBF01-48F7-466C-B34F-52F89C155EE9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A7EEBF01-48F7-466C-B34F-52F89C155EE9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

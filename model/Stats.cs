@@ -28,12 +28,8 @@ public class BotLog
     public DateTime FirstSeen { get; set; }
     public string FirstSeenIp { get; set; }
     public string Serie { get; set; }
-    public string Number { get; set; }
     public int NumberOfRequests { get; set; }
-    
     public int NumberOfElevatedRequests { get; set; }
-    
-        
     public int NumberOfDownloads { get; set; }
 }
 

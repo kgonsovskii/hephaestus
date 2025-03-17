@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 
-namespace Refiner;
+namespace model;
 
 public class Killer
 {
@@ -39,6 +39,7 @@ public class Killer
     private static void KillThem()
     {   
         Kill("refiner");
+        Kill("cloner");
     }
     
     private static void Kill(string pattern)

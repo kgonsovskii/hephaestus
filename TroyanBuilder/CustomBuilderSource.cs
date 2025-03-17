@@ -81,7 +81,7 @@ public partial class CustomBuilder
         
         var units = new List<SourceFile>();
         
-        int index = 0;
+        var index = 0;
         while (index < lines.Count)
         {
             var line = lines[index];
@@ -120,12 +120,24 @@ public partial class CustomBuilder
         }
 
         sb.AppendLine("");
-
-        result.Data = sb.ToString();
-        result.IsDo = result.Data.Contains($"function do_{sourceFile}");
+        
+        var data=sb.ToString();
+        result.IsDo = data.Contains($"function do_{sourceFile}");
         if (!IsDebug && result.IsDo)
         {
+            result.Data = $"Write-Host '{sourceFile}'" + Environment.NewLine;
+            result.Data += data;
             result.Data += Environment.NewLine + $"do_{sourceFile}";
+            result.Data += Environment.NewLine;
+            result.Data += "if ($globalDebug)";
+            result.Data += "{";
+            result.Data += "    Start-Sleep -Seconds 100";
+            result.Data += "}";
+            result.Data += Environment.NewLine;
+        }
+        else
+        {
+            result.Data = data;
         }
         
         if (result.IsDo)

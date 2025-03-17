@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Security;
-using model;
+
+namespace model;
 
 public abstract class PsBase
 {

@@ -21,4 +21,13 @@
       <ProjectReference Include="..\TroyanBuilder\TroyanBuilder.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <None Update="test1.txt">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="test2.txt">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
 </Project>

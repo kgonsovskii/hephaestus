@@ -266,6 +266,90 @@ public class ServerService
             server.SecondaryDns = server.StrahServer;
     }
 
+    public string CloneServerRequest(string serverName, ServerModel serverModel)
+    {
+        SaveServerLite(serverName, serverModel);
+        var p = GetServerLite(serverName);
+        try
+        {
+            System.IO.File.Delete(p.UserCloneLog);
+        }
+        catch (Exception e)
+        {
+        }
+        var sa = new ProcessStartInfo
+        {
+            FileName = ServerModelLoader.Cloner,
+            Arguments = $"{serverName}",
+            CreateNoWindow = true,
+            UseShellExecute = false,
+            RedirectStandardOutput = false,
+            RedirectStandardError = false
+        };
+        Process process = new Process { StartInfo = sa };
+        process.Start();
+        return p.UserCloneLog;
+    }
+    
+    public string CloneServer(string serverName)
+    {
+        var p = GetServerLite(serverName);
+        (string, object)[] prms = [
+        new ValueTuple<string, string>("serverIp", p.CloneModel.CloneServerIp),
+        new ValueTuple<string, string>("user", p.CloneModel.CloneUser),
+        new ValueTuple<string, string>("password",p.CloneModel.ClonePassword),
+        ];
+        var sc = SysScript("install");
+        try
+        {
+            System.IO.File.Delete(p.UserCloneLog);
+        }
+        catch (Exception e)
+        {
+        }
+        using (Process process = new Process())
+        {
+            process.StartInfo.FileName = "powershell.exe";
+            process.StartInfo.Arguments = $"-NoProfile -ExecutionPolicy Bypass -file \"{sc}\" " +
+                                          string.Join(" ", prms.Select(p => $"-{p.Item1} {p.Item2}"));
+            process.StartInfo.RedirectStandardOutput = true;
+            process.StartInfo.RedirectStandardError = true;
+            process.StartInfo.UseShellExecute = false;
+            process.StartInfo.CreateNoWindow = true;
+            process.StartInfo.WorkingDirectory = ServerDir(serverName);
+
+            StringBuilder output = new StringBuilder();
+            StringBuilder error = new StringBuilder();
+
+            process.OutputDataReceived += (sender, e) =>
+            {
+                if (!string.IsNullOrEmpty(e.Data))
+                {
+                    System.IO.File.AppendAllLines(p.UserCloneLog, new []{ e.Data});
+                }
+            };
+
+            process.ErrorDataReceived += (sender, e) =>
+            {
+                if (!string.IsNullOrEmpty(e.Data))
+                {
+                    System.IO.File.AppendAllLines(p.UserCloneLog, new []{ e.Data});
+                }
+            };
+
+            process.Start();
+
+            process.BeginOutputReadLine();
+            process.BeginErrorReadLine();
+
+            process.WaitForExit();
+
+            var res = error.ToString() + "\r\n" + output.ToString();
+
+            return res;
+        }
+    }
+
     public string PostServer(string serverName, ServerModel serverModel, bool realWork, string action, string kill)
     {
         if (!Directory.Exists(ServerDir(serverName)))

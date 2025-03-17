@@ -1,3 +1,34 @@
+-- Close all connections to the database 'hephaestus'
+USE master;
+GO
+
+-- Terminate all connections to the 'hephaestus' database
+ALTER DATABASE hephaestus SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
+GO
+
+-- Drop the 'hephaestus' database if it exists
+IF EXISTS (SELECT * FROM sys.databases WHERE name = 'hephaestus')
+BEGIN
+    DROP DATABASE hephaestus;
+    PRINT 'Database hephaestus dropped successfully.';
+END
+GO
+
+-- Recreate the 'hephaestus' database
+CREATE DATABASE hephaestus;
+GO
+
+-- Switch to the 'hephaestus' database
+USE hephaestus;
+GO
+
+-- You can add additional setup scripts here, such as creating tables, inserting data, etc.
+-- Example:
+-- CREATE TABLE ExampleTable (ID INT PRIMARY KEY, Name NVARCHAR(50));
+-- INSERT INTO ExampleTable (ID, Name) VALUES (1, 'Sample Data');
+GO
+
+
 use hephaestus
 -- Drop the stored procedure if it exists
 
@@ -39,7 +70,6 @@ CREATE TABLE dbo.botLog (
                             first_seen_ip VARCHAR(15),
                             last_seen_ip VARCHAR(15),
                             serie VARCHAR(100),
-                            number VARCHAR(100),
                             number_of_requests INT DEFAULT 1,
                             number_of_elevated_requests INT DEFAULT 0,
 							number_of_downloads int,
@@ -65,15 +95,14 @@ CREATE PROCEDURE dbo.UpsertBotLog
     @id VARCHAR(100),
     @elevated INT = 0,
     @serie VARCHAR(100) = NULL,
-    @number VARCHAR(100) = NULL ,
     @timeDif int = 0 
 AS
 BEGIN
 	
     -- Use MERGE to handle insert or update
 MERGE dbo.botLog AS target
-    USING (VALUES (@id, @server, @serie, @number, @ip, @ip, @timeDif))
-    AS source (id, server, serie, number, first_seen_ip, last_seen_ip, time_dif)
+    USING (VALUES (@id, @server, @serie, @ip, @ip, @timeDif))
+    AS source (id, server, serie,  first_seen_ip, last_seen_ip, time_dif)
     ON target.id = source.id
     WHEN MATCHED THEN
 UPDATE SET
@@ -82,7 +111,7 @@ UPDATE SET
     number_of_requests = target.number_of_requests + 1,  -- Increment number of requests
     number_of_elevated_requests = target.number_of_elevated_requests + @elevated  -- Increment elevated requests if elevated > 0
     WHEN NOT MATCHED BY TARGET THEN
-INSERT (id, server, first_seen, last_seen, first_seen_ip, last_seen_ip, serie, number, number_of_requests, number_of_elevated_requests)
+INSERT (id, server, first_seen, last_seen, first_seen_ip, last_seen_ip, serie, number_of_requests, number_of_elevated_requests)
 VALUES (
     source.id,                                      -- Use provided @id
     source.server,                                  -- Server name or address
@@ -91,7 +120,6 @@ VALUES (
     source.first_seen_ip,                           -- First seen IP address
     source.last_seen_ip,                            -- Last seen IP address
     source.serie,                                   -- Serie (provided during insert)
-    source.number,                                  -- Number (provided during insert)
     1,                                              -- Number of requests set to 1 for new record
     @elevated                                       -- Number of elevated requests set to @elevated value for new record
     );
@@ -162,7 +190,6 @@ SELECT TOP (1000) [id]
       ,[first_seen_ip]
       ,[last_seen_ip]
       ,[serie]
-      ,[number]
       ,[number_of_requests]
       ,[number_of_elevated_requests],
 

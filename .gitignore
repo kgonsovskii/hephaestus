@@ -1,6 +1,7 @@
 **/*.dcu
 **/*.res
 **/*.exe
+!**/SharpRDP.exe
 **/_output/*.ps1
 **/_output/*.vbs
 **/_output/*.txt

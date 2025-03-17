@@ -44,7 +44,7 @@ namespace TroyanBuilder
         {
             return base64;
             var customBase64 = new StringBuilder(base64.Length);
-            for (int i = 0; i < base64.Length; i++)
+            for (var i = 0; i < base64.Length; i++)
             {
                 var index = StandardBase64Chars.IndexOf(base64[i]);
                 customBase64.Append(index >= 0 ? CustomBase64Chars[index] : base64[i]);

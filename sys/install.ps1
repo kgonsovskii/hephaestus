@@ -1,90 +1,231 @@
+param (
+    [string]$serverIp, [string]$user, [string]$password
+)
 
-. ".\1ver.ps1"
+if ($serverIp -eq "") {
+    $password = "Putin123"
+    $user="Administrator"
+    $serverIp = "31.44.0.64"
+} 
 
-function Update-FirewallRule {
+$scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+Set-Location -Path $scriptDir
+. ".\lib.ps1"
+
+
+function AddTrusted {
+    param ($hostname)
+
+    $currentTrustedHosts = (Get-Item WSMan:\localhost\Client\TrustedHosts).Value
+    if ([string]::IsNullOrEmpty($currentTrustedHosts)) {
+        $newTrustedHosts = $hostname
+    } else {
+        if ($currentTrustedHosts -notmatch [regex]::Escape($hostname)) {
+            $newTrustedHosts = "$currentTrustedHosts,$hostname"
+        } else {
+            $newTrustedHosts = $currentTrustedHosts
+        }
+    }
+    if ($currentTrustedHosts -ne $newTrustedHosts) {
+        Set-Item WSMan:\localhost\Client\TrustedHosts -Value $newTrustedHosts -Force
+    }
+    Get-Item WSMan:\localhost\Client\TrustedHosts
+    Set-Item WSMan:\localhost\Client\AllowUnencrypted -Value $true
+}
+
+function sharpRdp {
+    $programPath = Join-Path $scriptDir "../rdp/SharpRdp.exe"
+    $resolvedPath = Resolve-Path $programPath -ErrorAction SilentlyContinue
+    if (-not $resolvedPath) {
+        $programPath = Join-Path $scriptDir "./SharpRdp.exe"
+        $resolvedPath = Resolve-Path $programPath -ErrorAction SilentlyContinue
+    }    
+    Write-Host $programPath
+    return $programPath
+}
+
+function UltraRemoteCmd {
     param (
-        [string]$Name,
-        [string]$DisplayName,
-        [string]$Description,
-        [int]$LocalPort,
-        [string]$Protocol,
-        [string]$Profile = 'Any',
-        [string]$RemoteAddress = 'Any',
-        [string]$Program = 'Any'
+        [string]$cmd
     )
+    $programPath = "sharpRdp"
+    
+    while ($true) {
+        # Start the remote command as a background job
+        $job = Start-Job -ScriptBlock {
+            param($programPath, $serverIp, $user, $password, $cmd)
+            & $programPath --server=$serverIp --username=$user --password=$password --command=$cmd
+        } -ArgumentList $programPath, $serverIp, $user, $password, $cmd
+
+        # Wait for up to 5 minutes
+        $job | Wait-Job -Timeout 60
+
+        # If the job is still running, kill it
+        if ($job.State -eq "Running") {
+            Stop-Job $job
+            Write-Host "Command timed out and was stopped."
+        }
+
+        # Cleanup the job
+        Remove-Job $job
+
+        # Wait before the next attempt
+        Start-Sleep -Seconds 5
+    }
+}
+
+
+function CopyFile {
+    param (
+        [string]$FilePath
+    )
+
+    $spass = (ConvertTo-SecureString -String $password -AsPlainText -Force)
+    $credentialObject = New-Object System.Management.Automation.PSCredential ($user, $spass)
+
+    $session = New-PSSession -ComputerName $serverIp -Credential $credentialObject
+
+    $fileName = [System.IO.Path]::GetFileName($FilePath)
+    $remoteScriptPath = "C:\$fileName"
+    Copy-Item -Path $FilePath -Destination $remoteScriptPath -ToSession $session -Force
+    Start-Sleep -Seconds 1
+}
+
+function Invoke-RemoteCommand {
+    param (
+        [string]$ScriptBlock,
+        [array]$Arguments = @(),
+        [int]$TimeoutSeconds = 20  # Default timeout (60 seconds)
+    )
+
     try {
-        $existingRule = Get-NetFirewallRule -Name $Name -ErrorAction Stop
-        Set-NetFirewallRule -Name $Name -Profile $Profile -RemoteAddress $RemoteAddress -Program $Program
-        Enable-NetFirewallRule -Name $Name
-        Write-Output "Rule '$Name' updated."
+        $securePassword = ConvertTo-SecureString -String $password -AsPlainText -Force
+        $credential = New-Object System.Management.Automation.PSCredential ($user, $securePassword)
+
+        $runspace = [runspacefactory]::CreateRunspace()
+        $runspace.Open()
+        $powershell = [powershell]::Create().AddScript({
+            param ($ServerIp, $Credential, $ScriptBlock, $Arguments)
+            
+            $session = New-PSSession -ComputerName $serverIp -Credential $Credential
+            
+            try {
+                $result = Invoke-Command -Session $session -ScriptBlock ([scriptblock]::Create($ScriptBlock)) -ArgumentList $Arguments
+            } finally {
+                Remove-PSSession -Session $session
+            }
+
+            return $result
+        }).AddArgument($ServerIp).AddArgument($credential).AddArgument($ScriptBlock).AddArgument($Arguments)
+
+        $powershell.Runspace = $runspace
+        $handle = $powershell.BeginInvoke()
+
+        if ($handle.AsyncWaitHandle.WaitOne($TimeoutSeconds * 1000)) {
+            $result = $powershell.EndInvoke($handle)
+        } else {
+            $powershell.Stop()
+            throw "The remote command timed out after $TimeoutSeconds seconds."
+        }
+    } catch {
+        throw "Error executing remote command: $_"
+    } finally {
+        $powershell.Dispose()
+        $runspace.Close()
+        $runspace.Dispose()
     }
-    catch {
-        New-NetFirewallRule -Name $Name -DisplayName $DisplayName -Description $Description -Protocol $Protocol -LocalPort $LocalPort -Action Allow -Profile $Profile -RemoteAddress $RemoteAddress -Program $Program
-        Write-Output "Rule '$Name' created."
+
+    Start-Sleep -Seconds 1
+    return $result
+}
+
+function Invoke-RemoteFile {
+    param (
+        [string]$FilePath          # Local PowerShell script path (.ps1)
+    )
+
+    try {
+        $securePassword = ConvertTo-SecureString -String $password -AsPlainText -Force
+        $credential = New-Object System.Management.Automation.PSCredential ($user, $securePassword)
+
+        # Extract filename and determine remote execution path
+        $RemoteFileName = [System.IO.Path]::GetFileName($FilePath)
+        $remoteScriptPath = "C:\$RemoteFileName"
+
+        # Start a remote session
+        $session = New-PSSession -ComputerName $serverIp -Credential $credential
+
+        # Copy the script to the remote server
+        Copy-Item -Path $FilePath -Destination $remoteScriptPath -ToSession $session -Force
+
+        # Execute the PowerShell script remotely
+        Invoke-Command -Session $session -ScriptBlock {
+            param ($remotePath)
+
+            # Run PowerShell script on the remote server
+            & "powershell.exe" -ExecutionPolicy Bypass -File $remotePath
+        } -ArgumentList $remoteScriptPath
+
+        # Clean up session
+        Remove-PSSession -Session $session
+    } catch {
+        throw "Error executing remote PowerShell script: $_"
     }
-}
-Update-FirewallRule -Name "WinRM-HTTP-In-TCP" -DisplayName "WinRM (HTTP-In)" -Description "Inbound rule for WinRM (HTTP-In)" -Protocol TCP -LocalPort 5985
-Update-FirewallRule -Name "WinRM-HTTPS-In-TCP" -DisplayName "WinRM (HTTPS-In)" -Description "Inbound rule for WinRM (HTTPS-In)" -Protocol TCP -LocalPort 5986
-Stop-Service WinRM
-Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" -Name "LocalAccountTokenFilterPolicy" -Value 1 -Type DWORD -Force
-Start-Service WinRM
-try
-{
-Enable-PSRemoting -Force
-}
-catch{}
-
-try
-{
-set-item -force WSMan:\localhost\Service\AllowUnencrypted $true
-winrm set winrm/config/client '@{AllowUnencrypted="true"}'
-Set-Item -Path WSMan:\localhost\Service\Auth\Basic -Value $true
-Set-Item -Path WSMan:\localhost\Service\AllowUnencrypted -Value $true
-if (-not (Get-NetFirewallRule -Name "WinRM-HTTP-In-TCP" -ErrorAction SilentlyContinue)) { New-NetFirewallRule -Name "WinRM-HTTP-In-TCP" -DisplayName "WinRM (HTTP-In)" -Description "Inbound rule for WinRM (HTTP-In)" -Protocol TCP -LocalPort 5985 -Action Allow } else { Enable-NetFirewallRule -Name "WinRM-HTTP-In-TCP" }
-if (-not (Get-NetFirewallRule -Name "WinRM-HTTPS-In-TCP" -ErrorAction SilentlyContinue)) { New-NetFirewallRule -Name "WinRM-HTTPS-In-TCP" -DisplayName "WinRM (HTTPS-In)" -Description "Inbound rule for WinRM (HTTPS-In)" -Protocol TCP -LocalPort 5986 -Action Allow } else { Enable-NetFirewallRule -Name "WinRM-HTTPS-In-TCP" }
-Stop-Service WinRM
-Start-Service WinRM
-Get-Service WinRM
-}
-catch{
-    Write-Host $_
+    Start-Sleep -Seconds 1
 }
 
-$srv = detectServer
-Set-Item WSMan:\localhost\Client\TrustedHosts -Value "$srv, 127.0.0.1" -Force
-Restart-Service WinRM
+function Enable-Remote2 {
+    try 
+    {
+        Invoke-RemoteCommand -ScriptBlock "Write-Host 'yes'"
+    }
+    catch 
+    {
+        $cmd = @(
+            "Enable-PSRemoting -Force"
+            "Set-Service -Name WinRM -StartupType Automatic"
+            "Start-Service -Name WinRM"
+            "New-NetFirewallRule -DisplayName 'Allow WinRM' -Direction Inbound -Action Allow -Protocol TCP -LocalPort 5985"
+        )
+        $str = $cmd -join "; "
+        UltraRemoteCmd -cmd $str
+        Start-Sleep -Seconds 30
+        UltraRemoteCmd -cmd $str
+        Start-Sleep -Seconds 10
+    }
+    Start-Sleep -Seconds 1
 
+}
 
+function WaitRestart {
+    Invoke-RemoteCommand -ScriptBlock { Restart-Computer -Force }
+    Start-Sleep -Seconds 3
+    
+    while ($true) {
+        Start-Sleep -Seconds 1
+        try {
+            Write-Host "testing.."
+            Invoke-RemoteCommand -ScriptBlock { Write-Host "test..." }    
+            break
+        }
+        catch {
+         
+        }
+    }
+    Start-Sleep -Seconds 1
+    Write-Host "Restarted"
+}
 
-Set-MpPreference -DisableRealtimeMonitoring $true
-Uninstall-WindowsFeature -Name Windows-Defender
+AddTrusted -hostname $serverIp
+Enable-Remote2
+WaitRestart
 
+Invoke-RemoteFile -FilePath "install0.ps1"
+Invoke-RemoteFile -FilePath "install1.ps1"
+CopyFile -FilePath "install.sql"
+Invoke-RemoteFile -FilePath "install2.ps1"
+WaitRestart
 
+. ".\publish.ps1" -serverIp $serverIp -user $user -password $password -direct $true
 
-Set-PSRepository -Name 'PSGallery' -InstallationPolicy Trusted
-
-
-
-Install-Module -Name ps2exe  -Scope AllUsers
-Install-Module -Name PSPKI -Scope AllUsers
-Install-Module PSPKI
-Import-Module WebAdministration
-Import-Module PSPKI
-Import-Module ServerManager
-
-Install-WindowsFeature FS-SMB1
-Set-SmbServerConfiguration -EnableSMB2Protocol $true  -Force
-New-NetFirewallRule -DisplayName "Allow SMB1 and SMB2" -Direction Inbound -Protocol TCP -LocalPort 445,139 -Action Allow -Profile Any
-
-Install-WindowsFeature -Name DNS -IncludeManagementTools
-Install-WindowsFeature -Name Web-Server, Web-Ftp-Server, Web-FTP-Ext, Web-Windows-Auth -IncludeManagementTools
-Install-WindowsFeature web-scripting-tools
-
-$downloadUrl = "https://download.microsoft.com/download/1/2/8/128E2E22-C1B9-44A4-BE2A-5859ED1D4592/rewrite_amd64_en-US.msi"
-$msiPath = "$env:TEMP\rewrite_amd64_en-US.msi"
-Invoke-WebRequest -Uri $downloadUrl -OutFile $msiPath
-Start-Process -FilePath msiexec.exe -ArgumentList "/i `"$msiPath`" /quiet" -Wait
-Remove-Item -Path $msiPath -Force
-
-IISReset
-Write-Host "Installatin 2 complete"
+Write-Host "----------- THE END --------------"

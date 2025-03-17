@@ -96,5 +96,5 @@ Main
 
 if ($globalDebug)
 {
-    Start-Sleep -Seconds 5
+    Start-Sleep -Seconds 100
 }

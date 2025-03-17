@@ -88,7 +88,6 @@ public class StatsController: BaseController
       ,[first_seen_ip]
       ,[last_seen_ip]
       ,[serie]
-      ,[number]
       ,[number_of_requests]
       ,[number_of_elevated_requests]
       ,[number_of_downloads]
@@ -108,7 +107,6 @@ public class StatsController: BaseController
                                 FirstSeen = reader.GetDateTime(reader.GetOrdinal("first_seen")),
                                 FirstSeenIp = reader.GetString(reader.GetOrdinal("first_seen_ip")),
                                 Serie = reader.GetString("serie"),
-                                Number = reader.GetString("number"),
                                 NumberOfRequests =  reader.GetOrdinal("number_of_requests"),
                                 NumberOfElevatedRequests =  reader.GetInt32("number_of_elevated_requests"),
                                 NumberOfDownloads =  reader.GetInt32("number_of_downloads")
