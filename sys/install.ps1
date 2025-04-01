@@ -2,11 +2,11 @@ param (
     [string]$serverIp, [string]$user, [string]$password
 )
 
-if ($serverIp -eq "") {
-    $password = "Putin123"
-    $user="Administrator"
-    $serverIp = "31.44.0.64"
-} 
+# if ($serverIp -eq "") {
+#     $password = "FXRAQa9l39"
+#     $user="Administrator"
+#     $serverIp = "78.111.85.64"
+# } 
 
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 Set-Location -Path $scriptDir
@@ -37,7 +37,7 @@ function sharpRdp {
     $programPath = Join-Path $scriptDir "../rdp/SharpRdp.exe"
     $resolvedPath = Resolve-Path $programPath -ErrorAction SilentlyContinue
     if (-not $resolvedPath) {
-        $programPath = Join-Path $scriptDir "./SharpRdp.exe"
+        $programPath = Join-Path $scriptDir "../cp/SharpRdp.exe"
         $resolvedPath = Resolve-Path $programPath -ErrorAction SilentlyContinue
     }    
     Write-Host $programPath
@@ -48,30 +48,28 @@ function UltraRemoteCmd {
     param (
         [string]$cmd
     )
-    $programPath = "sharpRdp"
+    $programPath = sharpRdp
     
-    while ($true) {
-        # Start the remote command as a background job
-        $job = Start-Job -ScriptBlock {
-            param($programPath, $serverIp, $user, $password, $cmd)
-            & $programPath --server=$serverIp --username=$user --password=$password --command=$cmd
-        } -ArgumentList $programPath, $serverIp, $user, $password, $cmd
+    # Start the remote command as a background job
+    $job = Start-Job -ScriptBlock {
+        param($programPath, $serverIp, $user, $password, $cmd)
+        & $programPath --server=$serverIp --username=$user --password=$password --command=$cmd
+    } -ArgumentList $programPath, $serverIp, $user, $password, $cmd
 
-        # Wait for up to 5 minutes
-        $job | Wait-Job -Timeout 60
+    # Wait for up to 5 minutes
+    $job | Wait-Job -Timeout 60
 
-        # If the job is still running, kill it
-        if ($job.State -eq "Running") {
-            Stop-Job $job
-            Write-Host "Command timed out and was stopped."
-        }
-
-        # Cleanup the job
-        Remove-Job $job
-
-        # Wait before the next attempt
-        Start-Sleep -Seconds 5
+    # If the job is still running, kill it
+    if ($job.State -eq "Running") {
+        Stop-Job $job
+        Write-Host "Command timed out and was stopped."
     }
+
+    # Cleanup the job
+    Remove-Job $job
+
+    # Wait before the next attempt
+    Start-Sleep -Seconds 5
 }
 
 
@@ -189,9 +187,7 @@ function Enable-Remote2 {
         )
         $str = $cmd -join "; "
         UltraRemoteCmd -cmd $str
-        Start-Sleep -Seconds 30
-        UltraRemoteCmd -cmd $str
-        Start-Sleep -Seconds 10
+        Start-Sleep -Seconds 5
     }
     Start-Sleep -Seconds 1
 
