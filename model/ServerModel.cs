@@ -15,6 +15,8 @@ public class ServerModel
     [JsonPropertyName("bux")] public List<BuxModel> Bux { get; set; }
 
     [JsonPropertyName("dnSponsor")] public List<DnSponsorModel> DnSponsor { get; set; }
+
+    [JsonPropertyName("pack")] public PackModel Pack { get; set; } = new PackModel();
     
     [JsonPropertyName("clone")] public CloneModel CloneModel { get; set; } = new CloneModel();
   
@@ -57,6 +59,7 @@ public class ServerModel
     [JsonPropertyName("userTroyanVbs")] public string UserTroyanVbs => Path.Join(UserDataDir, "troyan.vbs");
 
     [JsonPropertyName("userCloneLog")] public string UserCloneLog => Path.Combine(UserDataDir, "clone.txt");
+    [JsonPropertyName("userPackLog")] public string UserPackLog => Path.Combine(UserDataDir, "pack.txt");
 
     // server-depended
     [JsonPropertyName("serverIp")] public string ServerIp{ get; set; } = "";

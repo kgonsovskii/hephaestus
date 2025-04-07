@@ -85,6 +85,17 @@ public static class ServerModelLoader
             return result;
         }
     }
+    
+    public static string Packer
+    {
+        get
+        {
+            var result = Path.Combine(RootDirStatic, "packer","bin/debug/net9.0/packer.exe");
+            if (!File.Exists(result))
+                result = Path.Combine(CpDirStatic, "packer.exe");
+            return result;
+        }
+    }
 
     public static string UserDataDir(string server)
     {

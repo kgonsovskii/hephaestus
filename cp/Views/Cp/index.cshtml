@@ -179,7 +179,7 @@ Layout = "~/Views/Shared/_Layout.cshtml";
                         <button class="nav-link" id="ad-scripts-tab" data-bs-toggle="tab" data-bs-target="#ad-scripts" type="button" role="tab" aria-controls="ad-scripts" aria-selected="false">Ad Scripts</button>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="zavorachivalka-tab" data-bs-toggle="tab" data-bs-target="#zavorachivalka" type="button" role="tab" aria-controls="zavorachivalka" aria-selected="false">Zavorachivalka</button>
+                        <button class="nav-link" id="pack-tab" data-bs-toggle="tab" data-bs-target="#pack" type="button" role="tab" aria-controls="zavorachivalka" aria-selected="false">Pack</button>
                     </li>
                     <li class="nav-item" role="docs">
                         <button class="nav-link" id="docs-tab" data-bs-toggle="tab" data-bs-target="#docs" type="button" role="tab" aria-controls="docs" aria-selected="false">Documents</button>
@@ -414,14 +414,13 @@ Layout = "~/Views/Shared/_Layout.cshtml";
                 </div>
             </div>
 
-        <div class="tab-pane fade" id="zavorachivalka" role="tabpanel" aria-labelledby="zavorachivalka-tab">
+        <div class="tab-pane fade" id="pack" role="packpanel" aria-labelledby="pack-tab">
             <div class="card">
                 <div class="card-header">
-                    <h2>Zavorachivalka</h2>
+                    <h2>Pack</h2>
                 </div>
                 <div class="card-body">
-                    <!-- Content for Zavorachivalka -->
-                    Your content here...
+                    @await Component.InvokeAsync("Pack", new { PackModel = Model.Pack })
                 </div>
             </div>
         </div>

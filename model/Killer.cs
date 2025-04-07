@@ -37,9 +37,9 @@ public class Killer
     }
 
     private static void KillThem()
-    {   
-        Kill("refiner");
-        Kill("cloner");
+    {
+        var name = System.IO.Path.GetFileNameWithoutExtension(Process.GetCurrentProcess().ProcessName);
+        Kill(name);
     }
     
     private static void Kill(string pattern)

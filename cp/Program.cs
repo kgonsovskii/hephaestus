@@ -39,6 +39,7 @@ public static class Program
             builder.Services.AddScoped<BotController>();
             builder.Services.AddScoped<StatsController>();
             builder.Services.AddScoped<CloneController>();
+            builder.Services.AddScoped<PackController>();
             builder.Services.AddControllersWithViews()
                 .AddRazorPagesOptions(options => { options.Conventions.AllowAnonymousToPage("/"); });
             builder.Services.AddHttpContextAccessor();

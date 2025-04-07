@@ -265,6 +265,88 @@ public class ServerService
         if (!string.IsNullOrEmpty(server.StrahServer))
             server.SecondaryDns = server.StrahServer;
     }
+    
+    public string PackServerRequest(string serverName, ServerModel serverModel)
+    {
+        SaveServerLite(serverName, serverModel);
+        var p = GetServerLite(serverName);
+        try
+        {
+            System.IO.File.Delete(p.UserPackLog);
+        }
+        catch (Exception e)
+        {
+        }
+        var sa = new ProcessStartInfo
+        {
+            FileName = ServerModelLoader.Packer,
+            Arguments = $"{serverName}",
+            CreateNoWindow = true,
+            UseShellExecute = false,
+            RedirectStandardOutput = false,
+            RedirectStandardError = false
+        };
+        Process process = new Process { StartInfo = sa };
+        process.Start();
+        return p.UserCloneLog;
+    }
+    
+    public string PackServer(string serverName)
+    {
+        var p = GetServerLite(serverName);
+        (string, object)[] prms = [
+        new ValueTuple<string, string>("serverName", serverName),
+        ];
+        var sc = SysScript("pack");
+        try
+        {
+            System.IO.File.Delete(p.UserPackLog);
+        }
+        catch (Exception e)
+        {
+        }
+        using (Process process = new Process())
+        {
+            process.StartInfo.FileName = "powershell.exe";
+            process.StartInfo.Arguments = $"-NoProfile -ExecutionPolicy Bypass -file \"{sc}\" " +
+                                          string.Join(" ", prms.Select(p => $"-{p.Item1} {p.Item2}"));
+            process.StartInfo.RedirectStandardOutput = true;
+            process.StartInfo.RedirectStandardError = true;
+            process.StartInfo.UseShellExecute = false;
+            process.StartInfo.CreateNoWindow = true;
+            process.StartInfo.WorkingDirectory = ServerDir(serverName);
+
+            StringBuilder output = new StringBuilder();
+            StringBuilder error = new StringBuilder();
+
+            process.OutputDataReceived += (sender, e) =>
+            {
+                if (!string.IsNullOrEmpty(e.Data))
+                {
+                    System.IO.File.AppendAllLines(p.UserCloneLog, new []{ e.Data});
+                }
+            };
+
+            process.ErrorDataReceived += (sender, e) =>
+            {
+                if (!string.IsNullOrEmpty(e.Data))
+                {
+                    System.IO.File.AppendAllLines(p.UserCloneLog, new []{ e.Data});
+                }
+            };
+
+            process.Start();
+
+            process.BeginOutputReadLine();
+            process.BeginErrorReadLine();
+
+            process.WaitForExit();
+
+            var res = error.ToString() + "\r\n" + output.ToString();
+
+            return res;
+        }
+    }
 
     public string CloneServerRequest(string serverName, ServerModel serverModel)
     {
