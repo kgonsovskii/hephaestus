@@ -34,14 +34,18 @@ public class Program
 
     static void Main(string[] args)
     {
+        string packId = "";
         Dev.DefaultServer(args.Length > 0 ? args[0] : Dev.Mode);
+        if (args.Length >= 2)
+        {
+            packId = args[1];
+        }
         Clean();
         var arr = new CustomBuilder[]{new BodyBuilderDebug(), new BodyBuilderRelease(), new HolderBuilderDebug(), new HolderBuilderRelease()};
-        //var arr = new CustomBuilder[] { new BodyBuilderRelease() };
         foreach (var cb in arr)
         {
             Console.WriteLine(cb);
-            var result = cb.Build(args.Length > 0 ? args[0] : Dev.Mode);
+            var result = cb.Build(args.Length > 0 ? args[0] : Dev.Mode, packId);
             foreach (var line in result)
             {
                 Console.WriteLine(line);    

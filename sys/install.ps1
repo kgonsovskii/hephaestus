@@ -1,17 +1,20 @@
 param (
-    [string]$serverIp, [string]$user, [string]$password
+    [string]$serverName
 )
 
-# if ($serverIp -eq "") {
-#     $password = "FXRAQa9l39"
-#     $user="Administrator"
-#     $serverIp = "78.111.85.64"
-# } 
+if ($serverName -eq "") {
+    $serverName = detectServer
+} 
 
+#currents
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 Set-Location -Path $scriptDir
 . ".\lib.ps1"
+. ".\current.ps1" -serverName $serverName
 
+$password = $server.clone.clonePassword
+$user=$server.clone.cloneUser
+$serverIp = $server.clone.cloneServerIp
 
 function AddTrusted {
     param ($hostname)
@@ -49,6 +52,10 @@ function UltraRemoteCmd {
         [string]$cmd
     )
     $programPath = sharpRdp
+
+    if (-not (Test-Path $programPath -PathType Leaf)) {
+        throw "File not found: $programPath"
+    }
     
     # Start the remote command as a background job
     $job = Start-Job -ScriptBlock {

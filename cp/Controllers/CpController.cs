@@ -33,7 +33,7 @@ public class CpController : BaseController
         }
         catch (Exception e)
         {
-            return View("Index", new ServerModel() {Server = server, LastResult = e.Message + "\r\n" + e.StackTrace });
+            return View("Index", new ServerModel() {Server = server, PostModel = new PostModel() { LastResult = e.Message + "\r\n" + e.StackTrace }});
         }
     }
     
@@ -130,7 +130,7 @@ public class CpController : BaseController
             if (action == "reboot")
             {
                 var res = _serverService.Reboot();
-                return View("Index", new ServerModel() { Server = server, LastResult = res });
+                return View("Index", new ServerModel() { Server = server, PostModel = new PostModel(){ LastResult = res }});
             }
             
             if (action == "clearstats")
@@ -275,14 +275,14 @@ public class CpController : BaseController
             existingModel.DisableVirus = updatedModel.DisableVirus;
 
             //service
-            var result = _serverService.PostServer(server, existingModel, false, action, "kill");
+            var result = _serverService.PostServerRequest(server, existingModel, action);
 
-            existingModel.LastResult = result;
+            existingModel.PostModel.LastResult = result;
             return View("Index", existingModel);
         }
         catch (Exception e)
         {
-            return View("Index", new ServerModel() {Server = server, LastResult = e.Message + "\r\n" + e.StackTrace });
+            return View("Index", new ServerModel() {Server = server, PostModel = new PostModel() { LastResult = e.Message + "\r\n" + e.StackTrace }});
         }
     }
     

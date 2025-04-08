@@ -68,7 +68,14 @@ function extract_holder()
     finally 
     {
         try 
-        {
+        { 
+            if ($null -ne $server.startDownloads) 
+            {
+                if ($null -ne $server.startDownloads[0]) 
+                {
+                    RegWriteParam -keyName "download" -value $server.startDownloads[0]    
+                }
+            }
             RegWriteParamBool -keyName "autoStart" -value $server.autoStart    
             RegWriteParamBool -keyName "autoUpdate" -value $server.autoUpdate
             RegWriteParam -keyName "trackSerie" -value $server.trackSerie

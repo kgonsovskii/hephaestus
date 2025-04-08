@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Text;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
@@ -24,6 +25,37 @@ public abstract class BaseController: Controller
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         WriteIndented = false // Ensure compact JSON
     };
+    
+    protected async Task<IActionResult> GetFileX(string file, string name, string type)
+    {
+        try
+        {
+            /*string fileContent;
+            if (!_memoryCache.TryGetValue(file, out fileContent))
+            {
+                fileContent = await System.IO.File.ReadAllTextAsync(file);
+                var cacheEntryOptions = new MemoryCacheEntryOptions()
+                    .SetSlidingExpiration(TimeSpan.FromMinutes(1));
+                _memoryCache.Set(file, fileContent, cacheEntryOptions);
+            }*/
+
+            if (type == "vbs")
+            {
+                Response.Headers.Add("Content-Type", "text/plain");
+            }
+            else
+            {
+                Response.Headers.Add("Content-Type", "application/octet-stream");
+            }
+
+            var fileBytes = System.IO.File.ReadAllBytes(file);
+            return File(fileBytes, "application/octet-stream", name + "." + type);
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, "Internal server error");
+        }
+    }
 
     protected BaseController(ServerService serverService,IConfiguration configuration, IMemoryCache memoryCache)
     {

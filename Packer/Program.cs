@@ -15,7 +15,7 @@ internal static class Program
             server = args[0].Trim();
         }
         var x = new ServerService();
-        x.PackServer(server);
+        x.PackServer(server, "");
         Killer.StopKilling();
     }
 }
