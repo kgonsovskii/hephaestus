@@ -73,23 +73,23 @@ function Install-Chocolatey {
     } else {
         Write-Host "Chocolatey is already installed."
     }
-  }
-  Install-Chocolatey
+}
+Install-Chocolatey
   
-  function Install-DotNet9 {
+function Install-DotNet9 {
     # Check if .NET 9 SDK is installed
     $dotnetInstalled = & dotnet --list-sdks | Select-String "^9\."
-  
+
     if ($dotnetInstalled) {
         Write-Host ".NET 9 SDK is already installed."
     } else {
         Write-Host ".NET 9 SDK is not installed. Proceeding with installation."
-  
+
         # Install .NET 9 SDK using Chocolatey silently
         choco install dotnet-9.0-sdk --yes --ignore-checksums --no-progress
-  
+
         # Wait for .NET 9 SDK installation to complete
         Write-Host ".NET 9 SDK installation is complete."
     }
-  }
-  Install-DotNet9
+}
+Install-DotNet9

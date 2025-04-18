@@ -3,16 +3,17 @@ param (
 )
 
 
+#currents
+$scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+Set-Location -Path $scriptDir
+. ".\lib.ps1"
+
+
 if ($serverName -eq "") {
     $serverName = detectServer
 } 
 
 
-
-#currents
-$scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-Set-Location -Path $scriptDir
-. ".\lib.ps1"
 . ".\current.ps1" -serverName $serverName
 
 $password = $server.clone.clonePassword
@@ -151,6 +152,7 @@ function Invoke-RemoteFile {
     param (
         [string]$FilePath          # Local PowerShell script path (.ps1)
     )
+    WaitRestart
 
     try {
         $securePassword = ConvertTo-SecureString -String $password -AsPlainText -Force
@@ -197,7 +199,7 @@ function Enable-Remote2 {
         )
         $str = $cmd -join "; "
         UltraRemoteCmd -cmd $str
-        Start-Sleep -Seconds 5
+        Start-Sleep -Seconds 35
     }
     Start-Sleep -Seconds 1
 
@@ -222,18 +224,18 @@ function WaitRestart {
     Write-Host "Restarted"
 }
 
+################
+
 AddTrusted -hostname $serverIp
 Enable-Remote2
-WaitRestart
 
 Invoke-RemoteFile -FilePath "install0.ps1"
-WaitRestart
 Invoke-RemoteFile -FilePath "install1.ps1"
-WaitRestart
 CopyFile -FilePath "install.sql"
 Invoke-RemoteFile -FilePath "install2.ps1"
-WaitRestart
+Invoke-RemoteFile -FilePath "install3.ps1"
 
+WaitRestart
 . ".\publish.ps1" -serverIp $serverIp -user $user -password $password -direct $true
 
 Write-Host "----------- THE END --------------"
