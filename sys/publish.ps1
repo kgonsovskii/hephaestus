@@ -3,9 +3,9 @@ param (
 )
 
 if ($serverIp -eq "") {
-    $password = "GXj2lW8ecf"
+    $password = "UaS6Ln5d9S"
     $user="Administrator"
-    $serverIp = "78.111.85.34"
+    $serverIp = "31.44.0.64"
 } 
 
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path

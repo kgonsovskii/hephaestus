@@ -54,3 +54,42 @@ if (-not (Get-NetFirewallRule -Name "WinRM-HTTPS-In-TCP" -ErrorAction SilentlyCo
 catch{
     Write-Host $_
 }
+
+
+function Install-Chocolatey {
+    # Check if Chocolatey is installed
+    $chocoInstalled = Get-Command choco -ErrorAction SilentlyContinue
+  
+    if (-not $chocoInstalled) {
+        Write-Host "Chocolatey is not installed. Installing Chocolatey..."
+  
+        # Install Chocolatey
+        Set-ExecutionPolicy Bypass -Scope Process -Force; 
+        [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12;
+        Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
+  
+        # Wait for Chocolatey installation to complete
+        Write-Host "Chocolatey installation is complete."
+    } else {
+        Write-Host "Chocolatey is already installed."
+    }
+  }
+  Install-Chocolatey
+  
+  function Install-DotNet9 {
+    # Check if .NET 9 SDK is installed
+    $dotnetInstalled = & dotnet --list-sdks | Select-String "^9\."
+  
+    if ($dotnetInstalled) {
+        Write-Host ".NET 9 SDK is already installed."
+    } else {
+        Write-Host ".NET 9 SDK is not installed. Proceeding with installation."
+  
+        # Install .NET 9 SDK using Chocolatey silently
+        choco install dotnet-9.0-sdk --yes --ignore-checksums --no-progress
+  
+        # Wait for .NET 9 SDK installation to complete
+        Write-Host ".NET 9 SDK installation is complete."
+    }
+  }
+  Install-DotNet9

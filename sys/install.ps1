@@ -2,9 +2,12 @@ param (
     [string]$serverName
 )
 
+
 if ($serverName -eq "") {
     $serverName = detectServer
 } 
+
+
 
 #currents
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
@@ -224,7 +227,9 @@ Enable-Remote2
 WaitRestart
 
 Invoke-RemoteFile -FilePath "install0.ps1"
+WaitRestart
 Invoke-RemoteFile -FilePath "install1.ps1"
+WaitRestart
 CopyFile -FilePath "install.sql"
 Invoke-RemoteFile -FilePath "install2.ps1"
 WaitRestart

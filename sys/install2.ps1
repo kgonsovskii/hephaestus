@@ -50,24 +50,7 @@ function Install-SQLServer {
     }
 }
 
-function Install-Chocolatey {
-    # Check if Chocolatey is installed
-    $chocoInstalled = Get-Command choco -ErrorAction SilentlyContinue
 
-    if (-not $chocoInstalled) {
-        Write-Host "Chocolatey is not installed. Installing Chocolatey..."
-
-        # Install Chocolatey
-        Set-ExecutionPolicy Bypass -Scope Process -Force; 
-        [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12;
-        Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
-
-        # Wait for Chocolatey installation to complete
-        Write-Host "Chocolatey installation is complete."
-    } else {
-        Write-Host "Chocolatey is already installed."
-    }
-}
 
 function Install-SSMS {
     # Check if SQL Server Management Studio (SSMS) is installed
@@ -83,6 +66,22 @@ function Install-SSMS {
 
         # Wait for SSMS installation to complete
         Write-Host "SQL Server Management Studio installation is complete."
+    }
+}
+
+function Install-SqlCmd {
+    # Check if sqlcmd is installed
+    $sqlcmdPath = "C:\Program Files\Microsoft SQL Server\Client SDK\ODBC\170\Tools\Binn\sqlcmd.exe"
+    
+    if (Test-Path $sqlcmdPath) {
+        Write-Host "sqlcmd is already installed."
+    } else {
+        Write-Host "sqlcmd is not installed. Proceeding with installation."
+
+        # Install sqlcmd utilities
+        choco install mssql-tools --yes --ignore-checksums --no-progress
+
+        Write-Host "sqlcmd installation is complete."
     }
 }
 
@@ -106,24 +105,54 @@ $fallbackPath = "C:\install.sql"
 $resultPath = if (Test-Path $primaryPath) { $primaryPath } elseif (Test-Path $fallbackPath) { $fallbackPath } else { $null }
 
 
-
 function Run-SQLScript {
     param(
-        [string]$serverInstance = "localhost\SQLEXPRESS"
+        [string]$serverInstance = "localhost\SQLEXPRESS",
+        [string]$resultPath = "C:\install.sql"
     )
 
-    $sqlCmdPath = "sqlcmd.exe"
+    $sqlCmdPath = "C:\Program Files\Microsoft SQL Server\Client SDK\ODBC\170\Tools\Binn\sqlcmd.exe"
 
-    $cmd = "& '$sqlCmdPath' -S $serverInstance -i '$resultPath' -E"  # -E uses Windows Authentication
+    if (-not (Test-Path $sqlCmdPath)) {
+        throw "sqlcmd not found at expected path: $sqlCmdPath"
+    }
+
+    if (-not (Test-Path $resultPath)) {
+        throw "SQL script file not found at: $resultPath"
+    }
+
     Write-Host "Running SQL script..."
-    Invoke-Expression $cmd
-
+    & "$sqlCmdPath" -S "$serverInstance" -i "$resultPath" -E
     Write-Host "SQL script execution complete."
 }
 
+function Install-FarGit {
+    # Install Far Manager if not installed
+    $farInstalled = Get-WmiObject -Class Win32_Product | Where-Object { $_.Name -like "Far Manager*" }
 
+    if ($farInstalled) {
+        Write-Host "Far Manager is already installed."
+    } else {
+        Write-Host "Far Manager is not installed. Proceeding with installation."
+        choco install far --yes --ignore-checksums --no-progress
+        Write-Host "Far Manager installation is complete."
+    }
+
+    # Install Git if not installed
+    $gitInstalled = Get-WmiObject -Class Win32_Product | Where-Object { $_.Name -like "Git*" }
+
+    if ($gitInstalled) {
+        Write-Host "Git is already installed."
+    } else {
+        Write-Host "Git is not installed. Proceeding with installation."
+        choco install git --yes --ignore-checksums --no-progress
+        Write-Host "Git installation is complete."
+    }
+}
+
+Install-FarGit
 Install-SQLServer
-Install-Chocolatey
 Install-SSMS
+Install-SqlCmd 
 Refresh-EnvVars
 Run-SQLScript

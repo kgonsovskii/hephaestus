@@ -21,27 +21,7 @@ function Download-File {
     }
 }
 
-function Check-DotNetVersion {
-    $installedVersion = & dotnet --version
-    return $installedVersion
-}
 
-$dotnetVersion = Check-DotNetVersion
-if ($dotnetVersion -notmatch "9\.0\.20") {
-    Write-Host ".NET 9 is not installed. Proceeding with installation..."
-
-    # Download and install .NET 9 SDK
-    $sdkUrl = "https://builds.dotnet.microsoft.com/dotnet/Sdk/9.0.200/dotnet-sdk-9.0.200-win-x64.exe"
-    $targetDir = "C:\Temp"
-    if (-Not (Test-Path -Path $targetDir)) {
-        New-Item -Path $targetDir -ItemType Directory
-    }
-    $sdkOutput = "$targetDir\dotnet-sdk-9.0.200-win-x64.exe"
-    Invoke-WebRequest -Uri $sdkUrl -OutFile $sdkOutput
-    Start-Process -FilePath $sdkOutput -ArgumentList '/quiet', '/norestart' -Wait
-} else {
-    Write-Host ".NET 9 is already installed."
-}
 
 try {
   Uninstall-WindowsFeature -Name Windows-Defender

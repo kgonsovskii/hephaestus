@@ -40,7 +40,7 @@ function IsLocalServer
 function detectServer()
 {
     Defaults
-    return "debug"
+    return "default"
     #$path = "C:\data"
     #$directories = Get-ChildItem -Path $Path -Directory | Select-Object -First 1
     #return $directories.Name

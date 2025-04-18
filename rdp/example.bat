@@ -1,1 +1,1 @@
-SharpRDP.exe --server=31.44.0.64 --username=Administrator --password=Putin123 --command="notepad.exe"
+SharpRDP.exe --server=server --username=Administrator --password=server123 --command="notepad.exe"
