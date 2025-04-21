@@ -64,4 +64,3 @@ $TaskXML = @"
 }
   
 Trigger
-  

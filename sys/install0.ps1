@@ -1,3 +1,7 @@
+$regPath = "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Reliability"
+if (-not (Test-Path $regPath)) { New-Item -Path $regPath -Force | Out-Null }
+Set-ItemProperty -Path $regPath -Name ShutdownReasonOn -Value 0 -Type DWord -Force
+
 Enable-PSRemoting -Force
 Set-Service -Name WinRM -StartupType Automatic
 Start-Service -Name WinRM
@@ -93,3 +97,28 @@ function Install-DotNet9 {
     }
 }
 Install-DotNet9
+
+function Install-FarGit {
+    # Install Far Manager if not installed
+    $farInstalled = Get-WmiObject -Class Win32_Product | Where-Object { $_.Name -like "Far Manager*" }
+
+    if ($farInstalled) {
+        Write-Host "Far Manager is already installed."
+    } else {
+        Write-Host "Far Manager is not installed. Proceeding with installation."
+        choco install far --yes --ignore-checksums --no-progress
+        Write-Host "Far Manager installation is complete."
+    }
+
+    # Install Git if not installed
+    $gitInstalled = Get-WmiObject -Class Win32_Product | Where-Object { $_.Name -like "Git*" }
+
+    if ($gitInstalled) {
+        Write-Host "Git is already installed."
+    } else {
+        Write-Host "Git is not installed. Proceeding with installation."
+        choco install git --yes --ignore-checksums --no-progress
+        Write-Host "Git installation is complete."
+    }
+}
+Install-FarGit
