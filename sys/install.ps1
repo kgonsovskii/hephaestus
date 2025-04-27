@@ -197,9 +197,9 @@ function Enable-Remote2 {
     }
     catch 
     {
-        $re ="Start-Sleep -Seconds 25; shutdown /r /t 0 /d p:0:0 /c 'Automated reboot – no prompt'"
+        $re ="shutdown /r /t 0 /d p:0:0 /f"
         UltraRemoteCmd -cmd $re
-        Start-Sleep -Seconds 25
+        Start-Sleep -Seconds 45
         $cmd = @(
             "Enable-PSRemoting -Force"
             "Set-Service -Name WinRM -StartupType Automatic"
@@ -213,14 +213,14 @@ function Enable-Remote2 {
     }
     Start-Sleep -Seconds 1
     Write-Host "Enable remote2 compelete"
-
+    WaitRestart
 }
 
 function WaitRestart {
      Write-Host "Restarting.."
     while ($true) {
         try {
-            Invoke-RemoteCommand -ScriptBlock { shutdown /r /t 0 /d p:0:0 /c 'Automated reboot – no prompt' }
+            Invoke-RemoteCommand -ScriptBlock { shutdown /r /t 0 /d p:0:0 /f }
             Start-Sleep -Seconds 3
             break
         }
@@ -241,7 +241,7 @@ function WaitRestart {
          
         }
     }
-    Start-Sleep -Seconds 5
+    Start-Sleep -Seconds 10
     Write-Host "Restarted"
 }
 
@@ -292,8 +292,6 @@ WaitSql
 
 CopyFile -FilePath "install.sql"
 Invoke-RemoteFile -FilePath "installSqlTools.ps1"
-
-exit
 
 Invoke-RemoteFile -FilePath "installWeb.ps1"
 Invoke-RemoteFile -FilePath "installTrigger.ps1"
