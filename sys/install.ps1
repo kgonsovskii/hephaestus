@@ -98,6 +98,7 @@ function WaitForTag {
                 param (
                     [string]$tag
                 )
+                Write-Host "Waiting for tag $tag ..."
                 Set-Content -Path 'C:\tagR.txt' -Value $tag
                 $filePath = "C:\tag1.txt"
                 function IsTag() {
@@ -111,10 +112,10 @@ function WaitForTag {
                 }
                 while ($true) {
                     if (IsTag) {
-                        Write-Host "Tag '$expectedTag' detected!"
+                        Write-Host "Tag '$tag' detected!"
                         break
                     }
-                    Start-Sleep -Seconds 1
+                    Start-Sleep -Seconds 3
                 }
         
             } -Arguments @($tag)   
@@ -122,7 +123,7 @@ function WaitForTag {
        }
        catch {
           Write-Host $_
-          Start-Sleep -Seconds 1
+          Start-Sleep -Seconds 3
        }
        Start-Sleep -Seconds 1
    }
@@ -155,7 +156,7 @@ function WaitRestart {
         
        }
    }
-   Start-Sleep -Seconds 5
+   Start-Sleep -Seconds 2
    Write-Host "Restarted"
 }
 
@@ -183,36 +184,58 @@ function Invoke-RemoteCommand {
         [array]$Arguments = @(),
         [int]$TimeoutSeconds = 20
     )
+    $waitScriptPath = Join-Path -Path $scriptDir -ChildPath "wait.ps1"
+    $tempScriptPath = "C:\temp.ps1"
+    $outFile = "C:\out.log"
+    $errFile = "C:\err.log"
 
-    $job = Start-Job -ScriptBlock {
-        param ($serverIp, $user, $password, $ScriptBlock, $Arguments)
-
-        $securePassword = ConvertTo-SecureString -String $password -AsPlainText -Force
-        $credential = New-Object System.Management.Automation.PSCredential ($user, $securePassword)
-        $session = New-PSSession -ComputerName $serverIp -Credential $credential
-
-        Invoke-Command -Session $session -ScriptBlock ([scriptblock]::Create($ScriptBlock)) -ArgumentList $Arguments -Verbose
-
-        Remove-PSSession $session
-    } -ArgumentList $serverIp, $user, $password, $ScriptBlock, $Arguments
-
-    $startTime = Get-Date
-
-    while ($true) {
-        Receive-Job -Job $job -Keep | Write-Host
-        if ($job.State -ne 'Running') { break }
-        if ((Get-Date) -gt $startTime.AddSeconds($TimeoutSeconds)) {
-            Write-Warning "Timeout reached after $TimeoutSeconds seconds. Stopping job."
-            Stop-Job -Job $job -Force
-            Remove-Job -Job $job
-            throw "Remote command timed out after $TimeoutSeconds seconds."
-        }
-        Start-Sleep -Milliseconds 500
+    if (-not (Test-Path $waitScriptPath)) {
+        throw "Required script 'wait.ps1' not found in current directory."
     }
 
-    $result = Receive-Job -Job $job
-    Remove-Job -Job $job
-    return $result
+    # Create local temp.ps1 file from ScriptBlock
+    Set-Content -Path $tempScriptPath -Value $ScriptBlock -Encoding UTF8
+
+    $startArgs = @(
+        "-NoProfile",
+        "-ExecutionPolicy", "Bypass",
+        "-File", "`"$waitScriptPath`"",
+        "-serverIp", "`"$serverIp`"",
+        "-user", "`"$user`"",
+        "-password", "`"$password`"",
+        "-tempScriptPath", "`"$tempScriptPath`"",
+        "-remoteScriptPath", "`"C:\temp.ps1`"",
+        "-arguments", "`"$($Arguments -join ',')`""
+    ) -join ' '
+
+    try {
+        $process = Start-Process -FilePath "powershell.exe" `
+                                 -ArgumentList $startArgs `
+                                 -RedirectStandardOutput $outFile `
+                                 -RedirectStandardError $errFile `
+                                 -PassThru -NoNewWindow
+
+        if (-not $process.WaitForExit($TimeoutSeconds * 1000)) {
+            try { $process | Stop-Process -Force } catch {}
+            throw "Invoke-Remote timeOut: $ScriptBlock"
+        }
+
+        Start-Sleep -Milliseconds 200
+
+        if (Test-Path $outFile) {
+            [System.IO.File]::ReadAllLines($outFile) | ForEach-Object { Write-Host $_ }
+        }
+
+        if (Test-Path $errFile) {
+            [System.IO.File]::ReadAllLines($errFile) | ForEach-Object { Write-Host $_ -ForegroundColor Red }
+        }
+    }
+    finally {
+        Start-Sleep -Milliseconds 100
+        if (Test-Path $tempScriptPath) { Remove-Item $tempScriptPath -Force -ErrorAction SilentlyContinue }
+        if (Test-Path $outFile) { Remove-Item $outFile -Force -ErrorAction SilentlyContinue }
+        if (Test-Path $errFile) { Remove-Item $errFile -Force -ErrorAction SilentlyContinue }
+    }
 }
 
 function Invoke-RemoteFile {
@@ -260,15 +283,18 @@ function Enable-Remote2 {
     catch 
     {
         UltraRemoteCmd -cmd "Start-Sleep -Seconds 20" -forever $false
-        Start-Sleep -Seconds 60
+        Start-Sleep -Seconds 20
         $cmd = @(
             "Enable-PSRemoting -Force"
             "Set-Service -Name WinRM -StartupType Automatic"
             "New-NetFirewallRule -DisplayName 'Allow WinRM' -Direction Inbound -Action Allow -Protocol TCP -LocalPort 5985"
             "Start-Service -Name WinRM"
         )
-        $str = $cmd -join "; "
-        UltraRemoteCmd -cmd $str -forever $true
+        foreach  ($c in $cmd)
+        {
+            UltraRemoteCmd -cmd $c -forever $false
+            Start-Sleep -Seconds 5
+        }
     }
     Start-Sleep -Seconds 1
     Write-Host "Enable remote2 compelete"
