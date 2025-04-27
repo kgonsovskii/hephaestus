@@ -90,7 +90,7 @@ function Install-DotNet9 {
         Write-Host ".NET 9 SDK is not installed. Proceeding with installation."
 
         # Install .NET 9 SDK using Chocolatey silently
-        choco install dotnet-9.0-sdk --yes --ignore-checksums --no-progress
+        choco install dotnet-9.0-sdk --version=9.0.200 --yes --ignore-checksums --no-progress
 
         # Wait for .NET 9 SDK installation to complete
         Write-Host ".NET 9 SDK installation is complete."

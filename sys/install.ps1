@@ -2,7 +2,18 @@ param (
     [string]$serverName
 )
 
-Set-WinUserLanguageList -LanguageList en-US -Force
+function Set-KeyboardLayouts {
+    $langlist = New-WinUserLanguageList en-US
+    $langlist[0].InputMethodTips.Clear()
+    $langlist[0].InputMethodTips.Add('0409:00000409')
+    $langlist.Add((New-WinUserLanguageList ru-RU)[0])
+    $langlist[1].InputMethodTips.Clear()
+    $langlist[1].InputMethodTips.Add('0419:00000419')
+    Set-WinUserLanguageList $langlist -Force
+    Set-WinUILanguageOverride -Language en-US
+}
+Set-KeyboardLayouts
+Start-Sleep -Seconds 1
 
 #currents
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
@@ -55,38 +66,99 @@ function sharpRdp {
 function UltraRemoteCmd {
     param (
         [string]$cmd,
-        [int]$timeout = 60
+        [int]$timeout = 60,
+        [bool]$forever
     )
     Write-Host "UltraRemoteCmd $cmd ..."
     $programPath = sharpRdp
-
     if (-not (Test-Path $programPath -PathType Leaf)) {
         throw "File not found: $programPath"
     }
-
-    while ($true) {
-        # Start the remote command as a background job
-        $job = Start-Job -ScriptBlock {
-            param($programPath, $serverIp, $user, $password, $cmd)
-            & $programPath --server=$serverIp --username=$user --password=$password --command=$cmd
-        } -ArgumentList $programPath, $serverIp, $user, $password, $cmd
-
-        $completed = $job | Wait-Job -Timeout $timeout
-
-        if ($null -eq $completed) {
-            # Job timed out
-            Stop-Job $job
-            Write-Host "UltraRemoteCmd $cmd - Command timed out. Retrying in 5 seconds..."
-            Remove-Job $job
-            Start-Sleep -Seconds 5
-        } else {
-            # Job completed successfully
-            Write-Host "UltraRemoteCmd - Command completed successfully."
-            Remove-Job $job
-            break
-        }
+    $tag = Get-Date -Format "yyyyMMdd-HHmmssfff"
+    if ($forever -eq $true -and [string]::IsNullOrEmpty($cmd) -eq $false)
+    {
+        $cmd =  $cmd + "; Set-Content -Path 'C:\tag1.txt' -Value '$tag'" + "; "
+    }
+    & $programPath --server=$serverIp --username=$user --password=$password --command=$cmd
+   Write-Host "UltraRemoteCmd complete $cmd."
+    if ($forever -eq $true)
+    {
+        WaitForTag -tag $tag
     }
 }
+
+function WaitForTag {
+    param (
+        [string]$tag
+    )
+   while ($true) {
+       Start-Sleep -Seconds 1
+       try {
+           Invoke-RemoteCommand -ScriptBlock {
+                param (
+                    [string]$tag
+                )
+                Set-Content -Path 'C:\tagR.txt' -Value $tag
+                $filePath = "C:\tag1.txt"
+                function IsTag() {
+                    if (Test-Path $filePath) {
+                        $content = Get-Content -Path $filePath -Raw
+                        $co = $content  -like "*$tag*"
+                        return $co
+                    } else {
+                        return $false
+                    }
+                }
+                while ($true) {
+                    if (IsTag) {
+                        Write-Host "Tag '$expectedTag' detected!"
+                        break
+                    }
+                    Start-Sleep -Seconds 1
+                }
+        
+            } -Arguments @($tag)   
+           break
+       }
+       catch {
+          Write-Host $_
+          Start-Sleep -Seconds 1
+       }
+       Start-Sleep -Seconds 1
+   }
+   Start-Sleep -Seconds 1
+   Write-Host "Tag found"
+}
+
+function WaitRestart {
+    Write-Host "Restarting.."
+   while ($true) {
+       try {
+           Invoke-RemoteCommand -ScriptBlock { shutdown /r /t 0 /f }
+           Start-Sleep -Seconds 3
+           break
+       }
+       catch {
+           Start-Sleep -Seconds 3
+       }
+       Write-Host "Restarting attempt.."
+   }
+   
+   while ($true) {
+       Start-Sleep -Seconds 1
+       try {
+           Write-Host "testing.."
+           Invoke-RemoteCommand -ScriptBlock { Write-Host "test..." }    
+           break
+       }
+       catch {
+        
+       }
+   }
+   Start-Sleep -Seconds 5
+   Write-Host "Restarted"
+}
+
 
 
 function CopyFile {
@@ -109,47 +181,37 @@ function Invoke-RemoteCommand {
     param (
         [string]$ScriptBlock,
         [array]$Arguments = @(),
-        [int]$TimeoutSeconds = 20  # Default timeout (60 seconds)
+        [int]$TimeoutSeconds = 20
     )
 
-    try {
+    $job = Start-Job -ScriptBlock {
+        param ($serverIp, $user, $password, $ScriptBlock, $Arguments)
+
         $securePassword = ConvertTo-SecureString -String $password -AsPlainText -Force
         $credential = New-Object System.Management.Automation.PSCredential ($user, $securePassword)
+        $session = New-PSSession -ComputerName $serverIp -Credential $credential
 
-        $runspace = [runspacefactory]::CreateRunspace()
-        $runspace.Open()
-        $powershell = [powershell]::Create().AddScript({
-            param ($ServerIp, $Credential, $ScriptBlock, $Arguments)
-            
-            $session = New-PSSession -ComputerName $serverIp -Credential $Credential
-            
-            try {
-                $result = Invoke-Command -Session $session -ScriptBlock ([scriptblock]::Create($ScriptBlock)) -ArgumentList $Arguments
-            } finally {
-                Remove-PSSession -Session $session
-            }
+        Invoke-Command -Session $session -ScriptBlock ([scriptblock]::Create($ScriptBlock)) -ArgumentList $Arguments -Verbose
 
-            return $result
-        }).AddArgument($ServerIp).AddArgument($credential).AddArgument($ScriptBlock).AddArgument($Arguments)
+        Remove-PSSession $session
+    } -ArgumentList $serverIp, $user, $password, $ScriptBlock, $Arguments
 
-        $powershell.Runspace = $runspace
-        $handle = $powershell.BeginInvoke()
+    $startTime = Get-Date
 
-        if ($handle.AsyncWaitHandle.WaitOne($TimeoutSeconds * 1000)) {
-            $result = $powershell.EndInvoke($handle)
-        } else {
-            $powershell.Stop()
-            throw "The remote command timed out after $TimeoutSeconds seconds."
+    while ($true) {
+        Receive-Job -Job $job -Keep | Write-Host
+        if ($job.State -ne 'Running') { break }
+        if ((Get-Date) -gt $startTime.AddSeconds($TimeoutSeconds)) {
+            Write-Warning "Timeout reached after $TimeoutSeconds seconds. Stopping job."
+            Stop-Job -Job $job -Force
+            Remove-Job -Job $job
+            throw "Remote command timed out after $TimeoutSeconds seconds."
         }
-    } catch {
-        throw "Error executing remote command: $_"
-    } finally {
-        $powershell.Dispose()
-        $runspace.Close()
-        $runspace.Dispose()
+        Start-Sleep -Milliseconds 500
     }
 
-    Start-Sleep -Seconds 1
+    $result = Receive-Job -Job $job
+    Remove-Job -Job $job
     return $result
 }
 
@@ -197,53 +259,21 @@ function Enable-Remote2 {
     }
     catch 
     {
-        $re ="shutdown /r /t 0 /d p:0:0 /f"
-        UltraRemoteCmd -cmd $re
-        Start-Sleep -Seconds 45
+        UltraRemoteCmd -cmd "Start-Sleep -Seconds 20" -forever $false
+        Start-Sleep -Seconds 60
         $cmd = @(
             "Enable-PSRemoting -Force"
             "Set-Service -Name WinRM -StartupType Automatic"
-            "Start-Service -Name WinRM"
             "New-NetFirewallRule -DisplayName 'Allow WinRM' -Direction Inbound -Action Allow -Protocol TCP -LocalPort 5985"
+            "Start-Service -Name WinRM"
         )
         $str = $cmd -join "; "
-        UltraRemoteCmd -cmd $str
-        Write-Host "Start sleeping 30 sec"
-        Start-Sleep -Seconds 35
+        UltraRemoteCmd -cmd $str -forever $true
     }
     Start-Sleep -Seconds 1
     Write-Host "Enable remote2 compelete"
-    WaitRestart
 }
 
-function WaitRestart {
-     Write-Host "Restarting.."
-    while ($true) {
-        try {
-            Invoke-RemoteCommand -ScriptBlock { shutdown /r /t 0 /d p:0:0 /f }
-            Start-Sleep -Seconds 3
-            break
-        }
-        catch {
-            Start-Sleep -Seconds 3
-        }
-        Write-Host "Restarting attempt.."
-    }
-    
-    while ($true) {
-        Start-Sleep -Seconds 1
-        try {
-            Write-Host "testing.."
-            Invoke-RemoteCommand -ScriptBlock { Write-Host "test..." }    
-            break
-        }
-        catch {
-         
-        }
-    }
-    Start-Sleep -Seconds 10
-    Write-Host "Restarted"
-}
 
 
 function WaitSql {
@@ -275,7 +305,7 @@ function WaitSql {
         }
     }
     Write-Host "SQL SETUPED"
-    Start-Sleep -Seconds 5
+    Start-Sleep -Seconds 1
 }
 
 ################
@@ -287,13 +317,15 @@ Invoke-RemoteFile -FilePath "install0.ps1"
 
 WaitRestart
 CopyFile -FilePath "installSql.ps1"
-UltraRemoteCmd -cmd  "powershell.exe -ExecutionPolicy Bypass -File 'C:\installSql.ps1'" -timeout 800
+UltraRemoteCmd -cmd  "powershell.exe -ExecutionPolicy Bypass -File 'C:\installSql.ps1'" -timeout 800 -forever $true
 WaitSql
 
 CopyFile -FilePath "install.sql"
 Invoke-RemoteFile -FilePath "installSqlTools.ps1"
 
 Invoke-RemoteFile -FilePath "installWeb.ps1"
+UltraRemoteCmd -cmd  "powershell.exe -ExecutionPolicy Bypass -File 'C:\installWeb.ps1'" -timeout 800 -forever $true
+
 Invoke-RemoteFile -FilePath "installTrigger.ps1"
 
 WaitRestart

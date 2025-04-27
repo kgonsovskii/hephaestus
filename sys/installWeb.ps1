@@ -35,7 +35,7 @@ try {
 }
 
 # Install .NET 9.0 ASP.NET Core Hosting bundle using Chocolatey
-choco install dotnet-9.0-aspnetcore-hosting --yes --ignore-checksums --no-progress
+choco install dotnet-9.0-aspnetcore-hosting --version=9.0.200 --yes --ignore-checksums --no-progress
 
 Write-Host "Installing required IIS components..."
 
@@ -80,8 +80,8 @@ function Download-File {
 }
 
 function Install-DotNetHosting {
-  $url = "https://builds.dotnet.microsoft.com/dotnet/aspnetcore/Runtime/9.0.4/dotnet-hosting-9.0.4-win.exe"
-  $path = "$env:TEMP\dotnet-hosting-9.0.4-win.exe"
+  $url = "https://builds.dotnet.microsoft.com/dotnet/aspnetcore/Runtime/9.0.2/dotnet-hosting-9.0.2-win.exe"
+  $path = "$env:TEMP\dotnet-hosting-9.0.2-win.exe"
   Download-File -Uri $url -OutFile $path
   Start-Process -FilePath $path -ArgumentList "/quiet", "/norestart" -Wait
   Remove-Item $path -Force
