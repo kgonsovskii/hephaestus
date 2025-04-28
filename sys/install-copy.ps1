@@ -6,7 +6,6 @@ param (
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 Set-Location -Path $scriptDir
 . ".\lib.ps1"
-. ".\install-lib.ps1" -serverName $serverName
 
 
 if ($serverName -eq "") {
@@ -14,6 +13,7 @@ if ($serverName -eq "") {
 } 
 
 . ".\current.ps1" -serverName $serverName
+. ".\install-lib.ps1" -serverName $serverName
 
 $password = $server.clone.clonePassword
 $user=$server.clone.cloneUser
@@ -107,9 +107,10 @@ function Enable-Remote2 {
 
 ################
 
+AddTrusted -hostname $serverIp
+
 WaitRestart -once $true
 
-AddTrusted -hostname $serverIp
 Enable-Remote2
 
 CopyItems -FileMask "install*.*"

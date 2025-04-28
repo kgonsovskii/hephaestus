@@ -6,12 +6,6 @@ param (
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 Set-Location -Path $scriptDir
 . ".\lib.ps1"
-
-
-if ($serverName -eq "") {
-    $serverName = detectServer
-} 
-
 . ".\current.ps1" -serverName $serverName
 
 $password = $server.clone.clonePassword
@@ -156,7 +150,6 @@ function WaitForTag {
    Start-Sleep -Seconds 1
    Write-Host "Tag found"
 }
-
 
 function WaitRestart {
     param (
