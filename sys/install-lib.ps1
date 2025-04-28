@@ -6,12 +6,6 @@ param (
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 Set-Location -Path $scriptDir
 . ".\lib.ps1"
-
-
-if ($serverName -eq "") {
-    $serverName = detectServer
-} 
-
 . ".\current.ps1" -serverName $serverName
 
 $password = $server.clone.clonePassword
@@ -57,60 +51,22 @@ function Invoke-RemoteCommand {
     param (
         [string]$ScriptBlock,
         [array]$Arguments = @(),
-        [int]$TimeoutSeconds = 20
+        [int]$TimeoutSeconds = 17
     )
-    $waitScriptPath = Join-Path -Path $scriptDir -ChildPath "wait.ps1"
-    $tempScriptPath = "C:\temp.ps1"
-    $outFile = "C:\out.log"
-    $errFile = "C:\err.log"
 
-    if (-not (Test-Path $waitScriptPath)) {
-        throw "Required script 'wait.ps1' not found in current directory."
-    }
+    $securePassword = ConvertTo-SecureString -String $password -AsPlainText -Force
+    $credential = New-Object System.Management.Automation.PSCredential ($user, $securePassword)
+    $session = New-PSSession -ComputerName $serverIp -Credential $credential
 
-    # Create local temp.ps1 file from ScriptBlock
-    Set-Content -Path $tempScriptPath -Value $ScriptBlock -Encoding UTF8
+    $jobResult = Invoke-Command -Session $session -ScriptBlock {
+        param ($ScriptBlockText, $Arguments)
+        $ScriptBlockObject = [ScriptBlock]::Create($ScriptBlockText)
+        & $ScriptBlockObject @Arguments
+    } -ArgumentList $ScriptBlock, $Arguments
 
-    $startArgs = @(
-        "-NoProfile",
-        "-ExecutionPolicy", "Bypass",
-        "-File", "`"$waitScriptPath`"",
-        "-serverIp", "`"$serverIp`"",
-        "-user", "`"$user`"",
-        "-password", "`"$password`"",
-        "-tempScriptPath", "`"$tempScriptPath`"",
-        "-remoteScriptPath", "`"C:\temp.ps1`"",
-        "-arguments", "`"$($Arguments -join ',')`""
-    ) -join ' '
+    Remove-PSSession -Session $session
 
-    try {
-        $process = Start-Process -FilePath "powershell.exe" `
-                                 -ArgumentList $startArgs `
-                                 -RedirectStandardOutput $outFile `
-                                 -RedirectStandardError $errFile `
-                                 -PassThru -NoNewWindow
-
-        if (-not $process.WaitForExit($TimeoutSeconds * 1000)) {
-            try { $process | Stop-Process -Force } catch {}
-            throw "Invoke-Remote timeOut: $ScriptBlock"
-        }
-
-        Start-Sleep -Milliseconds 200
-
-        if (Test-Path $outFile) {
-            [System.IO.File]::ReadAllLines($outFile) | ForEach-Object { Write-Host $_ }
-        }
-
-        if (Test-Path $errFile) {
-            [System.IO.File]::ReadAllLines($errFile) | ForEach-Object { Write-Host $_ -ForegroundColor Red }
-        }
-    }
-    finally {
-        Start-Sleep -Milliseconds 100
-        if (Test-Path $tempScriptPath) { Remove-Item $tempScriptPath -Force -ErrorAction SilentlyContinue }
-        if (Test-Path $outFile) { Remove-Item $outFile -Force -ErrorAction SilentlyContinue }
-        if (Test-Path $errFile) { Remove-Item $errFile -Force -ErrorAction SilentlyContinue }
-    }
+    return $jobResult
 }
 
 function WaitForTag {
@@ -157,10 +113,9 @@ function WaitForTag {
    Write-Host "Tag found"
 }
 
-
 function WaitRestart {
     param (
-        [bool]$once
+        [bool]$once=$false
     )
     Write-Host "Restarting.."
    while ($true) {
@@ -169,17 +124,28 @@ function WaitRestart {
            Start-Sleep -Seconds 3
            break
        }
-       catch {
+       catch { 
         if ($once)
         {
             return
         }
-        Start-Sleep -Seconds 3
+        Write-Host $_
+        Start-Sleep -Seconds 3    
        }
        Write-Host "Restarting attempt.."
    }
+
+   while ($true) 
+   {
+        if (Test-Connection -ComputerName $serverIp -Count 1 -Quiet) {
+            break
+        }
+        Write-Host "Ping attempt.."
+        Start-Sleep -Seconds 3
+    }
+    Start-Sleep -Seconds 3
    
-   while ($true) {
+    while ($true) {
        Start-Sleep -Seconds 1
        try {
            Write-Host "check restarted..."

@@ -6,7 +6,6 @@ param (
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 Set-Location -Path $scriptDir
 . ".\lib.ps1"
-. ".\install-lib.ps1" -serverName $serverName
 
 
 if ($serverName -eq "") {
@@ -14,6 +13,7 @@ if ($serverName -eq "") {
 } 
 
 . ".\current.ps1" -serverName $serverName
+. ".\install-lib.ps1" -serverName $serverName
 
 $password = $server.clone.clonePassword
 $user=$server.clone.cloneUser
@@ -83,23 +83,23 @@ function CopyItems {
 function Enable-Remote2 {
     try 
     {
-        Invoke-RemoteCommand -ScriptBlock "Write-Host 'yes'"
+        Invoke-RemoteCommand -ScriptBlock { Write-Host 'yes' }
     }
     catch 
     {
-        UltraRemoteCmd -cmd "Start-Sleep -Seconds 1" -forever $false
-        Start-Sleep -Seconds 1
+        Write-Host $_
         $cmd = @(
             "Enable-PSRemoting -Force"
             "Set-Service -Name WinRM -StartupType Automatic"
             "New-NetFirewallRule -DisplayName 'Allow WinRM' -Direction Inbound -Action Allow -Protocol TCP -LocalPort 5985"
-            "Start-Service -Name WinRM"
         )
         foreach  ($c in $cmd)
         {
             UltraRemoteCmd -cmd $c -forever $false
             Start-Sleep -Seconds 1
         }
+        Start-Sleep -Seconds 1
+        WaitRestart
     }
     Write-Host "Enable remote2 compelete"
     Start-Sleep -Seconds 1
@@ -107,11 +107,11 @@ function Enable-Remote2 {
 
 ################
 
+AddTrusted -hostname $serverIp
+
 WaitRestart -once $true
 
-AddTrusted -hostname $serverIp
 Enable-Remote2
 
 CopyItems -FileMask "install*.*"
 
-WaitRestart  -once $false

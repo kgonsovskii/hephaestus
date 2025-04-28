@@ -60,12 +60,6 @@ foreach ($feature in $features) {
     Enable-WindowsOptionalFeature -Online -FeatureName $feature -All -NoRestart -ErrorAction SilentlyContinue
 }
 
-# Install IIS URL Rewrite Module
-function Install-UrlRewrite {
-    choco install urlrewrite --yes --ignore-checksums --no-progress
-}
-Install-UrlRewrite
-
 function Download-File {
   param (
       [Parameter(Mandatory)]

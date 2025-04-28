@@ -1,13 +1,12 @@
 param (
     [string]$serverIp,
     [string]$user,
-    [string]$password,
+    [string]$securePassword,
     [string]$tempScriptPath,
     [string]$remoteScriptPath,
     [string]$arguments
 )
 
-$securePassword = ConvertTo-SecureString -String $password -AsPlainText -Force
 $credential = New-Object System.Management.Automation.PSCredential ($user, $securePassword)
 $session = New-PSSession -ComputerName $serverIp -Credential $credential
 
