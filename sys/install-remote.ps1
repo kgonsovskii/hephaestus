@@ -13,6 +13,7 @@ if ($serverName -eq "") {
 } 
 
 . ".\current.ps1" -serverName $serverName
+. ".\install-lib.ps1" -serverName $serverName
 
 $password = $server.clone.clonePassword
 $user=$server.clone.cloneUser
@@ -49,13 +50,52 @@ function Invoke-RemoteFile {
     Write-Host "Invoke-RemoteFile Complete $filePath .."
 }
 
+function UltraRemoteCmdFile {
+    param (
+        [string]$cmd,
+        [int]$timeout = 60,
+        [bool]$forever
+    )
+
+    Write-Host "UltraRemoteCmd $cmd ..."
+    $programPath = sharpRdp
+    if (-not (Test-Path $programPath -PathType Leaf)) {
+        throw "File not found: $programPath"
+    }
+
+    $tag = Get-Date -Format "yyyyMMdd-HHmmssfff"
+
+    $scriptLines = @()
+    if (-not [string]::IsNullOrEmpty($cmd)) {
+        $scriptLines += $cmd
+    }
+
+    if ($forever -eq $true) {
+        $scriptLines += "Set-Content -Path 'C:\tag1.txt' -Value '$tag'"
+    }
+
+    $scriptContent = [string]::Join([Environment]::NewLine, $scriptLines)
+    $tempScriptPath = "C:\temp.ps1"
+    Set-Content -Path $tempScriptPath -Value $scriptContent -Encoding UTF8
+
+    $execCmd = "powershell.exe -ExecutionPolicy Bypass -File `"$tempScriptPath`""
+
+    & $programPath --server=$serverIp --username=$user --password=$password --command=$execCmd
+
+    Write-Host "UltraRemoteCmd complete $cmd."
+
+    if ($forever -eq $true) {
+        WaitForTag -tag $tag
+    }
+}
+
 function Ultra-RemoteFile {
     param (
-        [string]$FilePath          # Local PowerShell script path (.ps1)
+        [string]$FilePath
     )
    WaitRestart
    Write-Host "Ultra-RemoteFile $filePath .."
-   UltraRemoteCmd -cmd  "powershell.exe -ExecutionPolicy Bypass -File 'C:\$FilePath'" -timeout 800 -forever $true
+   UltraRemoteCmdFile -cmd  "powershell.exe -ExecutionPolicy Bypass -File 'C:\$FilePath'" -timeout 800 -forever $true
 }
 
 
@@ -68,7 +108,7 @@ Invoke-RemoteFile -FilePath "installWeb2.ps1"
 Invoke-RemoteFile -FilePath "installTrigger.ps1"
 
 
-# WaitRestart
-# . ".\publish.ps1" -serverIp $serverIp -user $user -password $password -direct $true
+WaitRestart
+. ".\publish.ps1" -serverIp $serverIp -user $user -password $password -direct $true
 
 Write-Host "----------- THE END --------------"

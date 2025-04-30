@@ -7,7 +7,6 @@ param (
     [string]$arguments
 )
 
-
 $credential = New-Object System.Management.Automation.PSCredential ($user, $securePassword)
 $session = New-PSSession -ComputerName $serverIp -Credential $credential
 
