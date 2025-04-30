@@ -23,30 +23,6 @@ function sharpRdp {
     return $programPath
 }
 
-function UltraRemoteCmd {
-    param (
-        [string]$cmd,
-        [int]$timeout = 60,
-        [bool]$forever
-    )
-    Write-Host "UltraRemoteCmd $cmd ..."
-    $programPath = sharpRdp
-    if (-not (Test-Path $programPath -PathType Leaf)) {
-        throw "File not found: $programPath"
-    }
-    $tag = Get-Date -Format "yyyyMMdd-HHmmssfff"
-    if ($forever -eq $true -and [string]::IsNullOrEmpty($cmd) -eq $false)
-    {
-        $cmd =  $cmd + "; Set-Content -Path 'C:\tag1.txt' -Value '$tag'" + "; "
-    }
-    & $programPath --server=$serverIp --username=$user --password=$password --command=$cmd\ 
-    Write-Host "UltraRemoteCmd complete $cmd."
-    if ($forever -eq $true)
-    {
-        WaitForTag -tag $tag
-    }
-}
-
 function Invoke-RemoteCommand {
     param (
         [string]$ScriptBlock,
