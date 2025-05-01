@@ -1,4 +1,9 @@
-
+# Stop IIS service if it exists
+if (Get-Service -Name W3SVC -ErrorAction SilentlyContinue) {
+    Stop-Service -Name W3SVC
+} else {
+    Write-Host "Service W3SVC does not exist."
+}
 function Install-SQLServer {
     # Check if SQL Server is installed using the registry instead of WMI for better accuracy
     $installedSQL = Get-WmiObject -Class Win32_Product | Where-Object { $_.Name -like "Microsoft SQL Server 2019*" }

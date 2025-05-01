@@ -1,5 +1,3 @@
-using System.Diagnostics;
-
 namespace model;
 
 public partial class ServerService
@@ -53,10 +51,10 @@ public partial class ServerService
         return RunExe(ServerModelLoader.Packer, serverName);
     }
 
-    public string PackServer(string serverName, string packId)
+    public string PackServer(string serverName, string packId, Action<string>? logger)
     {
         var p = GetServerLite(serverName);
-        var result = RunScript(p.Server, "pack",p.UserPackLog,
+        var result = RunScript(p.Server, "pack",p.UserPackLog, logger,
             new ValueTuple<string, object>("serverName", p.Server),
             new ValueTuple<string, object>("packId", packId));
         p = GetServerLite(serverName);

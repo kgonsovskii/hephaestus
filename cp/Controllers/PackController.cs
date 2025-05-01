@@ -1,4 +1,3 @@
-using System.Net;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 using model;
@@ -57,7 +56,7 @@ namespace cp.Controllers
                 var x = new ServerService();
                 x.UpdatePacks(model);
                 ServerService.SaveServerLite(server, model);
-                x.PackServer(server, pack.Index);
+                x.PackServer(server, pack.Index, null);
                 model = _serverService.GetServer(server, false, ServerService.Get.RaiseError).ServerModel;
                 pack = model.Pack.Items.FirstOrDefault(a => a.OriginalUrl == url);
             }

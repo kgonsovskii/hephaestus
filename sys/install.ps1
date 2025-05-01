@@ -19,24 +19,22 @@ $password = $server.clone.clonePassword
 $user=$server.clone.cloneUser
 $serverIp = $server.clone.cloneServerIp
 
-function Set-KeyboardLayouts {
-    $langlist = New-WinUserLanguageList en-US
-    $langlist[0].InputMethodTips.Clear()
-    $langlist[0].InputMethodTips.Add('0409:00000409')
-    $langlist.Add((New-WinUserLanguageList ru-RU)[0])
-    $langlist[1].InputMethodTips.Clear()
-    $langlist[1].InputMethodTips.Add('0419:00000419')
-    Set-WinUserLanguageList $langlist -Force
-    Set-WinUILanguageOverride -Language en-US
+
+if ([string]::IsNullOrEmpty($serverIp))
+{
+    throw "No Server Ip defined"
 }
+
 Set-KeyboardLayouts
 Start-Sleep -Seconds 1
+
+
+
 
 function UltraRemoteCmd {
     param (
         [string]$cmd,
-        [int]$timeout = 60,
-        [bool]$forever
+        [int]$timeout = 60
     )
     Write-Host "UltraRemoteCmd $cmd ..."
     $programPath = sharpRdp
@@ -44,16 +42,16 @@ function UltraRemoteCmd {
         throw "File not found: $programPath"
     }
     $tag = Get-Date -Format "yyyyMMdd-HHmmssfff"
-    if ($forever -eq $true -and [string]::IsNullOrEmpty($cmd) -eq $false)
+    & $programPath --server=$serverIp --username=$user --password=$password --command=$cmd --tag=$tag --timeout=$timeout
+    Write-Host "UltraRemoteCmd complete $cmd. Awaiting tag..."
+    $result = WaitForLocalTag -tag $tag -timeout $timeout
+    if ($result -eq -1)
     {
-        $cmd =  $cmd + "; Set-Content -Path 'C:\tag1.txt' -Value '$tag'" + "; "
-    }
-    & $programPath --server=$serverIp --username=$user --password=$password --command=$cmd\ 
-    Write-Host "UltraRemoteCmd complete $cmd."
-    if ($forever -eq $true)
-    {
-        WaitForTag -tag $tag
-    }
+        Write-Host "UltraRemoteCmd TimeOut $cmd ..."
+        Start-Sleep 1
+        UltraRemoteCmd -cmd $cmd -timeout $timeout
+    }    
+    Write-Host "UltraRemoteCmd complete $cmd. And Tag."
 }
 
 function AddTrusted {
@@ -87,7 +85,6 @@ function CopyItems {
 
     $session = New-PSSession -ComputerName $serverIp -Credential $credentialObject
 
-    # Always use the current directory as base if no path is included
     $currentDir = $scriptDir
     $fullPath = Join-Path -Path $currentDir -ChildPath $FileMask
 
@@ -113,15 +110,18 @@ function Enable-Remote2 {
         Write-Host $_
         $cmd = @(
             "Enable-PSRemoting -Force"
+            "Enable-PSRemoting -Force"
             "Set-Service -Name WinRM -StartupType Automatic"
             "New-NetFirewallRule -DisplayName 'Allow WinRM' -Direction Inbound -Action Allow -Protocol TCP -LocalPort 5985"
+            "Start-Service -Name WinRM"
         )
         foreach  ($c in $cmd)
         {
-            UltraRemoteCmd -cmd $c -forever $false
             Start-Sleep -Seconds 1
+            UltraRemoteCmd -cmd $c
+            Start-Sleep -Seconds 3
         }
-        Start-Sleep -Seconds 1
+        Start-Sleep -Seconds 3
         WaitRestart
     }
     Write-Host "Enable remote2 compelete"
@@ -138,3 +138,4 @@ Enable-Remote2
 
 CopyItems -FileMask "install*.*"
 
+. ".\install-remote.ps1" -serverName $serverName

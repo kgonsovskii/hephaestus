@@ -28,7 +28,7 @@ public class Dev
     private static string DevHost = "localhost.masterhost.online:5000";
     private static string DevPassword = "Putin123";
 
-    public static void DefaultServer(string serverName)
+    public static void DefaultServerRefiner(string serverName, string? serverIp = null)
     {
         if (!Directory.Exists(ServerModelLoader.RootDataStatic))
             Directory.CreateDirectory(ServerModelLoader.RootDataStatic);
@@ -41,62 +41,12 @@ public class Dev
             StartUrls = new List<string>(), StartDownloads = new List<string>(),
             Pushes = new List<string>(), Server = serverName, ServerIp = serverName
         };
-        if (serverName == ModeDefault)
+        if (!string.IsNullOrEmpty(serverIp))
         {
-            DefaultEndPoint(server);
+            server.ServerIp = serverIp;
         }
-        if (serverName == ModeDebug)
-        {
-            DebugEndPoint(server);
-        }
-        
         File.WriteAllText(  ServerService.DataFile(serverName),
             JsonSerializer.Serialize(server, ServerService.JSO));
-    }
-
-    private static void DebugEndPoint(ServerModel server)
-    {
-        server.Alias = DevHost;
-        server.ServerIp = DevIp;
-    }
-
-    private static void DefaultEndPoint(ServerModel server)
-    {
-        var ips = GetPublicIPv4Addresses();
-        if (ips.Count > 0)
-        {
-            var results = new List<(string, string)>();
-            foreach (var rootIp in ips)
-            {
-                foreach (var rootDomain in KnownDomains)
-                {
-                    foreach (var sub in KnownSubs)
-                    {
-                        var domain = rootDomain;
-                        if (!string.IsNullOrEmpty(sub))
-                            domain = sub + '.' + rootDomain;
-                        var ip = ResolveDomainToIP(domain);
-                        if (rootIp == ip)
-                        {
-                            results.Add((domain, rootIp));
-                        }
-                    }
-                }
-            }
-            var result  = results.FirstOrDefault(a=> CountDots(a.Item1) == 2);
-            if (string.IsNullOrEmpty(result.Item1))
-                result  = results.FirstOrDefault(a=> CountDots(a.Item1) == 1);
-            if (!string.IsNullOrEmpty(result.Item1))
-            {
-                server.Alias = result.Item1;
-                server.ServerIp = result.Item2;
-            }
-        }
-        else
-        {
-            server.Alias = DevHost;
-            server.ServerIp = DevHost;
-        }
     }
     
     static int CountDots(string input)

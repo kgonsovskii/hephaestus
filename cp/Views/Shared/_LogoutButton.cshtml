@@ -1,4 +1,5 @@
-﻿@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+﻿@using model
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
 
 @if (HttpContextAccessor.HttpContext?.User?.Identity?.IsAuthenticated == true)
 {
@@ -8,7 +9,7 @@
                 <td>
                     Welcome, @HttpContextAccessor.HttpContext.User.Identity.Name!
                 </td>
-                <td>&nbsp;&nbsp;&nbsp;</td>
+                <td>&nbsp;Version: @VersionFetcher.Version() &nbsp;</td>
                 <td>
                     <a href='@ViewData["UrlDoc"]' target="_blank">Goto Google Document</a>&nbsp;&nbsp;&nbsp;
                 </td>

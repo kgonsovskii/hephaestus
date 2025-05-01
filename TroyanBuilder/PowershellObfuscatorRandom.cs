@@ -1,6 +1,4 @@
-﻿using System.Management.Automation.Language;
-
-namespace TroyanBuilder;
+﻿namespace TroyanBuilder;
 
 public partial class PowerShellObfuscator
 {

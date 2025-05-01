@@ -4,6 +4,7 @@ namespace model;
 
 public class ServerModel
 {
+    [JsonPropertyName("version")] public string Version { get; set; } = "";
     [JsonPropertyName("urlDoc")] public string UrlDoc { get; set; } = "";
 
     [JsonPropertyName("disabled")] public bool Disabled { get; set; } = false;
@@ -243,5 +244,6 @@ public class ServerModel
         Tabs = new List<TabModel>();
         Bux = new List<BuxModel>();
         DnSponsor = new List<DnSponsorModel>();
+        Version = VersionFetcher.Version();
     }
 }

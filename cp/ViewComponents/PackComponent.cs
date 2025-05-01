@@ -1,4 +1,3 @@
-using cp.Controllers;
 using Microsoft.AspNetCore.Mvc;
 using model;
 

@@ -35,7 +35,6 @@ public class Program
     static void Main(string[] args)
     {
         string packId = "";
-        Dev.DefaultServer(args.Length > 0 ? args[0] : Dev.Mode);
         if (args.Length >= 2)
         {
             packId = args[1];

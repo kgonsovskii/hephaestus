@@ -1,7 +1,4 @@
-﻿using System.ComponentModel;
-using System.Net;
-using System.Net.NetworkInformation;
-using model;
+﻿using model;
 
 namespace cp;
 
@@ -9,7 +6,6 @@ public class BackSvc: BackgroundService
 {
     internal static void Initialize()
     {
-        Dev.DefaultServer(Dev.Mode);
         DoWork();
     }
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)

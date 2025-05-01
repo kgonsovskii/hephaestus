@@ -1,5 +1,3 @@
-using System.Diagnostics;
-
 namespace model;
 
 public partial class ServerService
@@ -26,13 +24,13 @@ public partial class ServerService
         return RunExe(ServerModelLoader.Refiner, serverName);
     }
 
-    public string PostServerAction(string serverName, ServerModel serverModel)
+    public string PostServerAction(string serverName, ServerModel serverModel, Action<string> logger)
     {
         if (string.IsNullOrEmpty(serverModel.PostModel.Operation))
             serverModel.PostModel.Operation = "exe";
         ServerCommons(serverName, serverModel);
         
-        var result = RunScript(serverModel.Server, "compile", serverModel.UserPostLog,
+        var result = RunScript(serverModel.Server, "compile", serverModel.UserPostLog, logger,
             new ValueTuple<string, object>("serverName", serverModel.Server),
             new ValueTuple<string, object>("action", serverModel.PostModel.Operation));
         serverModel.PostModel.LastResult = result;

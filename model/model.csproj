@@ -1,5 +1,23 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
+    <Target Name="GenerateBuildInfo" BeforeTargets="BeforeBuild">
+        <ItemGroup>
+            <AssemblyAttribute Include="System.Reflection.AssemblyMetadata">
+                <_Parameter1>BuildVersion</_Parameter1>
+                <_Parameter2>$([System.DateTime]::Now.ToString("yyyy.MM.dd HH:mm:ss"))</_Parameter2>
+            </AssemblyAttribute>
+        </ItemGroup>
+
+        <WriteCodeFragment
+                Language="C#"
+                OutputFile="$(IntermediateOutputPath)Generated\BuildInfo.cs"
+                AssemblyAttributes="@(AssemblyAttribute)" />
+
+        <ItemGroup>
+            <Compile Include="$(IntermediateOutputPath)Generated\BuildInfo.cs" />
+        </ItemGroup>
+    </Target>
+    
     <PropertyGroup>
         <TargetFramework>net9.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
