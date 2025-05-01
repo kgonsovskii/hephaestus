@@ -35,7 +35,7 @@ try {
 }
 
 # Install .NET 9.0 ASP.NET Core Hosting bundle using Chocolatey
-choco install dotnet-9.0-aspnetcore-hosting --version=9.0.200 --yes --ignore-checksums --no-progress
+choco install dotnet-windowshosting --version=9.0.2 --yes --ignore-checksums --no-progress
 
 Write-Host "Installing required IIS components..."
 

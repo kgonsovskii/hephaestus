@@ -253,7 +253,10 @@ namespace SharpRDP
             {
                 Console.WriteLine("[-] Disconnection Reason  :  {0} - {1}", DisconnectCode, dire);
             }
-            Environment.Exit(0);
+
+            Program.completed = true;
+           Program.Report();
+           Environment.Exit(0);
         }
 
         private void RunRun()
@@ -342,7 +345,7 @@ namespace SharpRDP
                 Console.WriteLine("[+] Executing task manager");
                 Thread.Sleep(500);
                 SendText("taskmgr");
-                Thread.Sleep(1000);
+                Thread.Sleep(3000);
 
                 Thread.Sleep(500);
                 SendElement("Enter+down");
@@ -420,7 +423,7 @@ namespace SharpRDP
             {
                 var symbol = t.ToString();
                 keydata.SendKeys(keycode[symbol].length, ref keycode[symbol].bools[0], ref keycode[symbol].ints[0]);
-                Thread.Sleep(10);
+                Thread.Sleep(20);
             }
         }
 
@@ -428,7 +431,7 @@ namespace SharpRDP
         {
             var current = keycode[curchars];
             keydata.SendKeys(current.length, ref current.bools[0], ref current.ints[0]);
-            Thread.Sleep(10);
+            Thread.Sleep(20);
         }
 
         private void KeyCodes()

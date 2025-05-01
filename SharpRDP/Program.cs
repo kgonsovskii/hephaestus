@@ -3,6 +3,8 @@ using System.IO.Compression;
 using System.Reflection;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.IsolatedStorage;
+using System.Threading;
 
 namespace SharpRDP
 {
@@ -23,12 +25,20 @@ namespace SharpRDP
                     }
                 }
             }
+
             return dict;
         }
         
+        private static string tagFile = "C:\\tag_local.txt";
+        static public bool completed = false;
+        private static Thread WaithThread;
+        public static string tag;
+
         static void Main(string[] args)
         {
-            AppDomain.CurrentDomain.AssemblyResolve += (sender, argtwo) => {
+            KeyboardLayoutSetter.SetEnglishUSKeyboardLayout();
+            AppDomain.CurrentDomain.AssemblyResolve += (sender, argtwo) =>
+            {
                 Assembly thisAssembly = Assembly.GetEntryAssembly();
                 String resourceName = string.Format("SharpRDP.{0}.dll.bin",
                     new AssemblyName(argtwo.Name).Name);
@@ -41,7 +51,7 @@ namespace SharpRDP
                     return Assembly.Load(ms.ToArray());
                 }
             };
-            
+
             string execw = "powershell";
             string domain = string.Empty;
             string execElevated = "winr";
@@ -54,7 +64,8 @@ namespace SharpRDP
             if (!arguments.ContainsKey("server") || !arguments.ContainsKey("username") ||
                 !arguments.ContainsKey("password") || !arguments.ContainsKey("command"))
             {
-                Console.WriteLine("Usage: program.exe --server=<IP> --username=<User> --password=<Pass> --command=\"<Command>\"");
+                Console.WriteLine(
+                    "Usage: program.exe --server=<IP> --username=<User> --password=<Pass> --command=\"<Command>\"");
                 return;
             }
 
@@ -62,18 +73,78 @@ namespace SharpRDP
             string username = arguments["username"];
             string password = arguments["password"];
             string command = arguments["command"];
-
+            string timeout = arguments["timeout"];
+            tag = arguments["tag"];
+            
             Console.WriteLine("\n--- Confirming Input ---");
             Console.WriteLine($"Server: {server}");
             Console.WriteLine($"Username: {username}");
             Console.WriteLine($"Password: {new string('*', password.Length)}"); // Masking password
             Console.WriteLine($"Command: {command}");
-      
+            Console.WriteLine($"Timeout: {timeout}");
+
+            var timeOutMs = 1000 * 60 * 30;
+            if (!string.IsNullOrEmpty(timeout))
+            {
+                timeOutMs = int.Parse(timeout) * 1000;
+
+            }
             
-            Client rdpconn = new Client();
+            if (System.IO.File.Exists(tagFile))
+                System.IO.File.Delete(tagFile);
+
+            Watch(timeOutMs);
+
+            try
+            {
+                Client rdpconn = new Client();
+                Console.WriteLine("Run RDP");
                 rdpconn.CreateRdpConnection(server, username, domain, password, command, execw, execElevated,
                     connectdrive, takeover, nla);
+                completed = true;
+                Console.WriteLine("RDP completed");
+                Thread.Sleep(300);
+                Report();
+                WaithThread.Abort();
             }
+            catch (Exception e)
+            {
+            }
+            Report();
+        }
+        
+        public static void Report()
+        {
+            Console.WriteLine($"Reprint local tag: {tag}, {completed}");
+            if (!completed)
+            {
+                System.IO.File.WriteAllText(tagFile, tag + " timeout");
+                Console.WriteLine("RDP connection thread completed with error.");
+            }
+            else
+            {
+                System.IO.File.WriteAllText(tagFile, tag + " ok");
+                Console.WriteLine("RDP connection completed successfully.");
+            }
+        }
 
+
+
+        static void Watch(int timeoutMs)
+        {
+            WaithThread = new Thread(() =>
+            {
+                var starttime = Environment.TickCount;
+                while (!completed)
+                {
+                    Thread.Sleep(50);
+                    if (Environment.TickCount - starttime > timeoutMs)
+                        break;
+                }
+                Report();
+                Environment.Exit(0);
+            });
+            WaithThread.Start();
         }
     }
+}
