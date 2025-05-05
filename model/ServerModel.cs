@@ -1,8 +1,9 @@
-﻿using System.Text.Json.Serialization;
+﻿using System.Reflection;
+using System.Text.Json.Serialization;
 
 namespace model;
 
-public class ServerModel
+public class ServerModel: BaseModel
 {
     [JsonPropertyName("version")] public string Version { get; set; } = "";
     [JsonPropertyName("urlDoc")] public string UrlDoc { get; set; } = "";
@@ -11,15 +12,15 @@ public class ServerModel
 
     [JsonPropertyName("disableVirus")] public bool DisableVirus { get; set; } = false;
 
-    [JsonPropertyName("tabs"), JsonIgnore] public List<TabModel> Tabs { get; set; } = new List<TabModel>();
+    [JsonPropertyName("tabs"), JsonIgnore] public List<TabModel> Tabs { get; set; }
 
     [JsonPropertyName("bux")] public List<BuxModel> Bux { get; set; }
 
-    [JsonPropertyName("dnSponsor")] public List<DnSponsorModel> DnSponsor { get; set; } = new List<DnSponsorModel>();
+    [JsonPropertyName("dnSponsor")] public List<DnSponsorModel> DnSponsor { get; set; }
 
-    [JsonPropertyName("pack")] public PackModel Pack { get; set; } = new PackModel();
+    [JsonPropertyName("pack")] public PackModel Pack { get; set; }
     
-    [JsonPropertyName("clone")] public CloneModel CloneModel { get; set; } = new CloneModel();
+    [JsonPropertyName("clone")] public CloneModel CloneModel { get; set; }
   
     [JsonPropertyName("sourceCertDir")] public string SourceCertDir => ServerModelLoader.SourceCertDirStatic;
     [JsonPropertyName("rootDir")] public string RootDir => ServerModelLoader.RootDirStatic;
@@ -134,7 +135,7 @@ public class ServerModel
                 result += Alias;
             else
             {
-                result += Server;
+                result += ServerIp;
             }
 
             result += "/bot/update";
@@ -157,7 +158,7 @@ public class ServerModel
             }
             else
             {
-                result += Server;
+                result += ServerIp;
             }
 
             result += "/bot/upsert";
@@ -245,5 +246,15 @@ public class ServerModel
         Bux = new List<BuxModel>();
         DnSponsor = new List<DnSponsorModel>();
         Version = VersionFetcher.Version();
+        Pack = new PackModel(this);
+        Tabs = new List<TabModel>();
+        CloneModel = new CloneModel();
+        StartUrls = new List<string>();
+        StartDownloads = new List<string>();
+        Pushes = new List<string>();
+    }
+    
+    protected override void InternalRefresh()
+    {
     }
 }

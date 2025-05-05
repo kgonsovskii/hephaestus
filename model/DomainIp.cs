@@ -2,7 +2,7 @@
 
 namespace model;
 
-public class DomainIp
+public class DomainIp: BaseModel
 {
     [JsonPropertyName("index")]
     public string Index { get; set; }
@@ -32,10 +32,14 @@ public class DomainIp
 
     public void Assign(DomainIp domainIp, bool withDomains)
     {
-        this.Name = domainIp.Name;
-        this.IP = domainIp.IP;
-        this.Enabled = domainIp.Enabled;
+        Name = domainIp.Name;
+        IP = domainIp.IP;
+        Enabled = domainIp.Enabled;
         if (withDomains)
-            this.Domains = domainIp.Domains;
+            Domains = domainIp.Domains;
+    }
+    
+    protected override void InternalRefresh()
+    {
     }
 }

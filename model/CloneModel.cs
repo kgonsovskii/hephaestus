@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 
 namespace model;
 
-public class CloneModel
+public class CloneModel: BaseModel
 {
     [JsonPropertyName("cloneLog")]
     public string CloneLog { get; set; } = "";
@@ -15,4 +15,8 @@ public class CloneModel
     
     [JsonPropertyName("clonePassword")]
     public string ClonePassword { get; set; } = "";
+    
+    protected override void InternalRefresh()
+    {
+    }
 }

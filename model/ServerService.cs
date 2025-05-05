@@ -31,7 +31,7 @@ public partial class ServerService
     
     internal static string ServerDir(string serverName)
     {
-        return Path.Combine(ServerModelLoader.RootDataStatic, serverName);
+        return ServerModelLoader.ServerDir(serverName);
     }
 
     public string EmbeddingsDir(string serverName)
@@ -46,7 +46,7 @@ public partial class ServerService
 
     internal static string DataFile(string serverName)
     {
-        return Path.Combine(ServerDir(serverName), "server.json");
+        return ServerModelLoader.DataFile(serverName);
     }
 
     public string GetIcon(string serverName)
@@ -79,61 +79,23 @@ public partial class ServerService
         File.Delete(GetFront(serverName, embeddingName));
     }
 
-    public static JsonSerializerOptions JSO = new()
-        { WriteIndented = true, DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull };
+    public static JsonSerializerOptions JSO => ServerModelLoader.JSO;
 
     public static ServerModel GetServerLite(string serverName)
     {
-        var server = JsonSerializer.Deserialize<ServerModel>(File.ReadAllText(DataFile(serverName)), JSO)!;
-        return server;
+        return ServerModelLoader.LoadServer(serverName);
     }
 
     public static void SaveServerLite(string serverName, ServerModel server)
     {
-        File.WriteAllText(DataFile(serverName),
-            JsonSerializer.Serialize(server, JSO));
+        ServerModelLoader.SaveServer(serverName, server);
     }
 
-    public enum Get
+    public ServerResult GetServerHard(string serverName)
     {
-        RaiseError = 0,
-        LoadDefault = 1,
-        CreteNew = 2
-    }
-
-    public ServerResult GetServer(string serverName, bool updateDns, Get mode, string alias = "", string pass = "")
-    {
-        if (mode == Get.CreteNew)
-        {
-        }
-        else
-        {
-            if (!Directory.Exists(ServerDir(serverName)))
-                return new ServerResult() { Exception = new DirectoryNotFoundException(serverName) };
-        }
-
-        var server = new ServerModel();
-        server.Server = serverName;
+        var server = GetServerLite(serverName);
         try
         {
-            try
-            {
-                server = JsonSerializer.Deserialize<ServerModel>(File.ReadAllText(DataFile(serverName)), JSO)!;
-            }
-            catch (Exception e)
-            {
-                if (mode == Get.CreteNew)
-                {
-                    Dev.DefaultServerRefiner(serverName);
-                    server = JsonSerializer.Deserialize<ServerModel>(File.ReadAllText(DataFile(serverName)), JSO)!;
-                }
-                else
-                {
-                    server.PostModel.LastResult = e.Message;
-                    return new ServerResult() { Exception = e, ServerModel = server };
-                }
-            }
-
             ServerCommons(serverName, server);
 
             server.Embeddings = new List<string>();
@@ -160,12 +122,12 @@ public partial class ServerService
     public string Reboot()
     {
         var result = "";
-        var dirs = System.IO.Directory.GetDirectories(@"C:\data");
+        var dirs = Directory.GetDirectories(@"C:\data");
         foreach (var dir in dirs)
         {
             try
             {
-                var server = System.IO.Path.GetFileName(dir);
+                var server = Path.GetFileName(dir);
                 result += RunScript(server, "reboot","nolog", null,
                     new ValueTuple<string, object>("serverName", server));
             }
@@ -177,12 +139,15 @@ public partial class ServerService
         return result;
     }
 
-    public string RunExe(string exe, string serverName)
+    public string RunExe(string exe, string serverName, string? arguments = null)
     {
+        var args = $"{serverName}";
+        if (!string.IsNullOrEmpty(arguments))
+            args += $" {arguments}";
         var sa = new ProcessStartInfo
         {
             FileName = exe,
-            Arguments = $"{serverName}",
+            Arguments = args,
             CreateNoWindow = true,
             UseShellExecute = false,
             RedirectStandardOutput = false,
@@ -203,7 +168,7 @@ public partial class ServerService
     {
         try
         {
-            System.IO.File.Delete(LogFile);
+            File.Delete(LogFile);
         }
         catch (Exception e)
         {
@@ -281,7 +246,7 @@ public partial class ServerService
     {
         try
         {
-            System.IO.File.Delete(LogFile);
+            File.Delete(LogFile);
         }
         catch (Exception e)
         {

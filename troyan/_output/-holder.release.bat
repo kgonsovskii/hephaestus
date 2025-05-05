@@ -1,1 +1,0 @@
-powershell.exe -executionpolicy unrestricted ./holder.release.ps1

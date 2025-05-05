@@ -8,7 +8,7 @@ namespace cp;
 
 public static class Program
 {
-    public static string SuperHost => System.Environment.GetEnvironmentVariable("SuperHost", EnvironmentVariableTarget.Machine)!;
+    public static string SuperHost => Environment.GetEnvironmentVariable("SuperHost", EnvironmentVariableTarget.Machine)!;
 
     //public static string SuperHost => "185.247.141.76";
 
@@ -106,7 +106,7 @@ public static class Program
     {
         foreach (var rec in BackSvc.Servers)
         {
-            var path = System.IO.Path.Join(ServerModelLoader.RootDataStatic, rec.Key);
+            var path = Path.Join(ServerModelLoader.RootDataStatic, rec.Key);
             app.UseStaticFiles(new StaticFileOptions
             {
                 FileProvider = new PhysicalFileProvider(path),

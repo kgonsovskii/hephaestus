@@ -38,7 +38,7 @@ public class Killer
 
     private static void KillThem()
     {
-        var name = System.IO.Path.GetFileNameWithoutExtension(Process.GetCurrentProcess().ProcessName);
+        var name = Path.GetFileNameWithoutExtension(Process.GetCurrentProcess().ProcessName);
         Kill(name);
     }
     

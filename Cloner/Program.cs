@@ -18,7 +18,7 @@ internal static class Program
             server = args[0].Trim();
         }
         Console.WriteLine($"Cloning server {server}");
-        Thread.Sleep(1000);
+        Thread.Sleep(100);
 
         var x = new ServerService();
         x.CloneServer(server, Log);
