@@ -19,6 +19,8 @@ $password = $server.clone.clonePassword
 $user=$server.clone.cloneUser
 $serverIp = $server.clone.cloneServerIp
 
+Write-Host "Cloning $serverName, serverIp $serverIp"
+
 
 if ([string]::IsNullOrEmpty($serverIp))
 {

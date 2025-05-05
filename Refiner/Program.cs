@@ -31,7 +31,7 @@ internal static class Program
         {
             forceIp = args[2].Trim();
         }
-        Dev.DefaultServerRefiner(args.Length > 0 ? args[0] : Dev.Mode, forceIp);
+        Dev.DefaultServer(args.Length > 0 ? args[0] : Dev.Mode, forceIp);
         if (!string.IsNullOrEmpty(server))
         {
             Console.WriteLine($"Working direct server: {server}, {action}");
@@ -48,7 +48,7 @@ internal static class Program
             try
             {
                 var x = new ServerService();
-                var serverFile = System.IO.Path.GetFileName(dir);
+                var serverFile = Path.GetFileName(dir);
   
                 var result = ServerService.GetServerLite(serverFile);
                 Console.WriteLine($"Starting maintaince: {serverFile}");

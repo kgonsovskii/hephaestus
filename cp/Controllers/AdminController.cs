@@ -36,7 +36,7 @@ public class AdminController: BaseController
     [HttpPost] [Route("/admin")]
     private IActionResult IndexAdmin(ServerModel updatedModel)
     {
-        if (updatedModel.AdminPassword != System.Environment.GetEnvironmentVariable("SuperPassword", EnvironmentVariableTarget.Machine))
+        if (updatedModel.AdminPassword != Environment.GetEnvironmentVariable("SuperPassword", EnvironmentVariableTarget.Machine))
         {
             return Unauthorized();
         }
@@ -56,7 +56,7 @@ public class AdminController: BaseController
         
         foreach (var server in toAdd)
         {
-            _serverService.GetServer(server.Key, false, ServerService.Get.CreteNew, "alias", server.Value);
+            _serverService.GetServerHard(server.Key);
         }
         
         return IndexAdmin();

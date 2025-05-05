@@ -66,9 +66,9 @@ $result = $result -replace '0102', $holderPs
 $outputFile = $server.userTroyanVbs  
  
 if ([string]::IsNullOrEmpty($packId) -eq $false) {
-    $pack = $server.pack.items | Where-Object { $_.index -eq $packId }
+    $pack = $server.pack.items | Where-Object { $_.id -eq $packId }
     if (-not $pack) {
-        throw "Item with index '$packId' not found in pack items."
+        throw "Item with id '$packId' not found in pack items."
     }
     $outputFile= $pack.packFileVbs
 }   

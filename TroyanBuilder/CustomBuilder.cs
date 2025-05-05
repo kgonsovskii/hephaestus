@@ -39,10 +39,10 @@ public abstract partial class CustomBuilder
     public virtual List<string> Build(string server, string packId)
     {
         Svc = new ServerService();
-        var srv = Svc.GetServer(server, true, ServerService.Get.RaiseError, "", "");
-        Model = srv.ServerModel!;
+        var srv = ServerModelLoader.LoadServer(server);
+        Model = srv;
         if (!string.IsNullOrWhiteSpace(packId))
-            PackItem = Model.Pack.Items.FirstOrDefault(a=> a.Index == packId);
+            PackItem = Model.Pack.Items.FirstOrDefault(a=> a.Id == packId);
         MakeConsts();
         InternalBuild(server);
         SourceFiles = GetSourceFiles();
@@ -92,14 +92,13 @@ _SERVER
         };
         
         var tempFile = Path.GetTempFileName();
-        System.IO.File.Copy(Model.UserServerFile, tempFile, true);
-        if (this.PackItem != null)
+        File.Copy(Model.UserServerFile, tempFile, true);
+        if (PackItem != null)
         {
-            var m = JsonSerializer.Deserialize<ServerModel>(File.ReadAllText(tempFile), ServerService.JSO)!;
+            var m = ServerModelLoader.LoadServerFile(tempFile);
             m.StartDownloadsForce = true;
-            m.StartDownloads = new List<string>() { this.PackItem.OriginalUrl };
-            File.WriteAllText(tempFile,
-                JsonSerializer.Serialize(m, ServerService.JSO));
+            m.StartDownloads = new List<string>() { PackItem.OriginalUrl };
+            ServerModelLoader.SaveServerFile(tempFile, m);
         }
 
         var serverFilePath = tempFile;
@@ -125,7 +124,7 @@ _SERVER
         File.WriteAllText(outputPath, template);
     }
     
-    private bool IsDebug => this.GetType().Name.Contains("Debug");
+    private bool IsDebug => GetType().Name.Contains("Debug");
 
     private void Build()
     {
@@ -276,6 +275,6 @@ _SERVER
     {
         var data = File.ReadAllText(inFile);
         data = GeneratePowerShellScript(data, attachEncoded);
-        System.IO.File.WriteAllText(outFile, data);
+        File.WriteAllText(outFile, data);
     }
 }

@@ -16,6 +16,8 @@ if ([string]::IsNullOrEmpty($serverName))
     throw "compile.ps1 -serverName argument is null"
 }
 
+Write-Host "Compiling server $serverName, action $action, pack $packId"
+
 #currents
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 Set-Location -Path $scriptDir
@@ -36,9 +38,9 @@ if ([string]::IsNullOrEmpty($hep) -eq $false)
 
 if ([string]::IsNullOrEmpty($packId) -eq $false)
 {
-    $pack = $server.pack.items | Where-Object { $_.index -eq $packId }
+    $pack = $server.pack.items | Where-Object { $_.id -eq $packId }
     if (-not $pack) {
-        throw "Item with index '$packId' not found in pack items."
+        throw "Item with id '$packId' not found in pack items."
     }
     #general script
     & (Join-Path -Path $server.troyanDir -ChildPath "./troyancompile.ps1") -serverName $serverName -packId $packId

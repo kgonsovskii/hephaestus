@@ -28,7 +28,7 @@ public class Dev
     private static string DevHost = "localhost.masterhost.online:5000";
     private static string DevPassword = "Putin123";
 
-    public static void DefaultServerRefiner(string serverName, string? serverIp = null)
+    public static void DefaultServer(string serverName, string? serverIp = null)
     {
         if (!Directory.Exists(ServerModelLoader.RootDataStatic))
             Directory.CreateDirectory(ServerModelLoader.RootDataStatic);
@@ -36,17 +36,20 @@ public class Dev
             Directory.CreateDirectory(ServerService.ServerDir(serverName));
         if (File.Exists(ServerService.DataFile(serverName)))
             return;
-        var server = new ServerModel()
+        ServerModel server = null;
+        try
         {
-            StartUrls = new List<string>(), StartDownloads = new List<string>(),
-            Pushes = new List<string>(), Server = serverName, ServerIp = serverName
-        };
+            server = ServerModelLoader.LoadServerFileInternal(ServerService.DataFile(serverName));
+        }
+        catch (Exception e)
+        {
+            server = new ServerModel() { Server = serverName };
+        }
         if (!string.IsNullOrEmpty(serverIp))
         {
             server.ServerIp = serverIp;
         }
-        File.WriteAllText(  ServerService.DataFile(serverName),
-            JsonSerializer.Serialize(server, ServerService.JSO));
+        ServerModelLoader.SaveServer(serverName, server);
     }
     
     static int CountDots(string input)

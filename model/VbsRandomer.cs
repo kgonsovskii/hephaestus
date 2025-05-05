@@ -9,7 +9,7 @@ public static class VbsRandomer
         {
             try
             {
-                return await System.IO.File.ReadAllTextAsync(filePath);
+                return await File.ReadAllTextAsync(filePath);
             }
             catch (Exception ex)
             {

@@ -124,7 +124,7 @@ public class BotController: BaseController
     {
         var hash = ComputeSHA256Hash(dataString);
         var payload = new { json = dataString, hash = hash };
-        var jsonPayload = System.Text.Json.JsonSerializer.Serialize(payload,JsonOptions);
+        var jsonPayload = JsonSerializer.Serialize(payload,JsonOptions);
         return jsonPayload;
     }
     
@@ -135,7 +135,7 @@ public class BotController: BaseController
         {
             throw new InvalidOperationException("Invalid hash.");
         }
-        var real = System.Text.Json.JsonSerializer.Deserialize<T>(envelopeRequest.Json,JsonOptions);
+        var real = JsonSerializer.Deserialize<T>(envelopeRequest.Json,JsonOptions);
         return real!;
     }
     

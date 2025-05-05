@@ -15,7 +15,7 @@ namespace cp.Controllers
 
         public IActionResult Index()
         {
-            var existingModel = _serverService.GetServer(Server, false, ServerService.Get.RaiseError).ServerModel;
+            var existingModel = ServerService.GetServerLite(Server);
             return View("Components/Pack/Default", existingModel.Pack);
         }
         
@@ -23,9 +23,10 @@ namespace cp.Controllers
         public IActionResult Pack(PackModel model)
         {
             var server = Server;
-            var existingModel = _serverService.GetServer(server, false, ServerService.Get.RaiseError).ServerModel;
+            var existingModel = ServerService.GetServerLite(server);
 
             existingModel.Pack.Items = model.Items;
+            existingModel.Pack.Refresh();
             _serverService.PackServerRequest(Server, existingModel);
 
             _logData = $"Packing server at {DateTime.Now}";
@@ -37,27 +38,26 @@ namespace cp.Controllers
         [HttpGet("envelope")]
         public async Task<IActionResult> Envelope([FromQuery]string type, [FromQuery] string url)
         {
+            url = UrlHelper.NormalizeUri(url);
             var server = Server;
-            url = UrlHelper.NormalizeUrl(url);
-            var model = _serverService.GetServer(server, false, ServerService.Get.RaiseError).ServerModel;
+            var model = ServerService.GetServerLite(server);
             var pack = model.Pack.Items.FirstOrDefault(a => a.OriginalUrl == url);
             if (pack == null || (!System.IO.File.Exists(pack.PackFileExe) || !System.IO.File.Exists(pack.PackFileVbs)))
             {
                 if (pack == null)
                 {
-                    pack =new PackItem()
+                    pack =new PackItem(model.Pack)
                     {
-                        OriginalUrl = url, Enabled = true, Index = Guid.NewGuid().ToString()
+                        OriginalUrl = url, Enabled = true
                     };
                     model.Pack.Items.Add(pack);
                 }
-                if (!Directory.Exists(model.Pack.PackRootFolder))
-                    Directory.CreateDirectory(model.Pack.PackRootFolder);
+                
                 var x = new ServerService();
                 x.UpdatePacks(model);
                 ServerService.SaveServerLite(server, model);
-                x.PackServer(server, pack.Index, null);
-                model = _serverService.GetServer(server, false, ServerService.Get.RaiseError).ServerModel;
+                x.PackServer(server, pack.Id, null);
+                model = ServerService.GetServerLite(server);
                 pack = model.Pack.Items.FirstOrDefault(a => a.OriginalUrl == url);
             }
             if (type == "vbs")
@@ -73,7 +73,7 @@ namespace cp.Controllers
         public IActionResult ViewLog()
         {
             var server = Server;
-            var model = _serverService.GetServer(server, false, ServerService.Get.RaiseError).ServerModel;
+            var model = ServerService.GetServerLite(server);
             try
             {
                 model.Pack.PackLog = System.IO.File.ReadAllText(model.UserPackLog);

@@ -27,7 +27,7 @@ public class CpController : BaseController
             return NotFound();
         try
         {
-            var serverResult = _serverService.GetServer(server, false, ServerService.Get.RaiseError);
+            var serverResult = _serverService.GetServerHard(server);
             ViewData["UrlDoc"] = serverResult.ServerModel?.UrlDoc != null ? serverResult.ServerModel.UrlDoc : "";
             return View("Index", serverResult.ServerModel);
         }
@@ -63,7 +63,7 @@ public class CpController : BaseController
                 return NotFound();
             var fileBytes = System.IO.File.ReadAllBytes(serverFile);
             Response.Headers.Add("Content-Type", "application/octet-stream");
-            return File(fileBytes, "application/octet-stream", fileName.Split(".")[0] + "_" + System.Environment.TickCount.ToString() + "." + fileName.Split(".")[1] );
+            return File(fileBytes, "application/octet-stream", fileName.Split(".")[0] + "_" + Environment.TickCount.ToString() + "." + fileName.Split(".")[1] );
         }
         catch (Exception)
         {
@@ -93,7 +93,7 @@ public class CpController : BaseController
             Response.Headers.Add("Content-Type", "text/plain");
             if (nofile == "nofile")
                 return Ok(fileContent);
-            return File(fileBytes, "text/plain", name.Split(".")[0] + "_" + System.Environment.TickCount.ToString() + "." + name.Split(".")[1] );
+            return File(fileBytes, "text/plain", name.Split(".")[0] + "_" + Environment.TickCount.ToString() + "." + name.Split(".")[1] );
         }
         catch (Exception)
         {
@@ -120,7 +120,7 @@ public class CpController : BaseController
         var server = Server;
         try
         {
-            var existingModel = _serverService.GetServer(server, true, ServerService.Get.RaiseError).ServerModel;
+            var existingModel = _serverService.GetServerHard(server).ServerModel;
             if (existingModel == null)
             {
                 return NotFound();

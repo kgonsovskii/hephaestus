@@ -1,1 +1,0 @@
-cscript ./troyan.release.bat

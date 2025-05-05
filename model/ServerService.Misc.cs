@@ -21,18 +21,17 @@ public partial class ServerService
     public void UpdateTabs(ServerModel server)
     {
         var profilesDir = Path.Combine(server.UserDataDir, "profiles");
-        if (System.IO.Directory.Exists(profilesDir) == false)
+        if (Directory.Exists(profilesDir) == false)
         {
-            System.IO.Directory.CreateDirectory(profilesDir);
+            Directory.CreateDirectory(profilesDir);
         }
 
-        var profs = System.IO.Directory.GetDirectories(profilesDir);
+        var profs = Directory.GetDirectories(profilesDir);
         var result = new List<TabModel>();
         foreach (var profile in profs)
         {
             var tab = new TabModel(server);
-            tab.Id = System.IO.Path.GetFileName(profile);
-            tab._server = server;
+            tab.Id = Path.GetFileName(profile);
             result.Add(tab);
         }
 
