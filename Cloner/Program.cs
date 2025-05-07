@@ -12,7 +12,7 @@ internal static class Program
     private static async Task Main(string[] args)
     {
         Killer.StartKilling();
-        var server = "debug";
+        var server = "default";
         if (args.Length >= 1)
         {
             server = args[0].Trim();

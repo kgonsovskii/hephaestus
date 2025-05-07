@@ -3,9 +3,9 @@ param (
 )
 
 if ($serverIp -eq "") {
-    $password = "UaS6Ln5d9S"
-    $user="Administrator"
-    $serverIp = "31.44.0.64"
+    # $password = "UaS6Ln5d9S"
+    # $user="Administrator"
+    # $serverIp = "31.44.0.64"
 } 
 
 choco install dotnet-9.0-sdk --yes --ignore-checksums --no-progress

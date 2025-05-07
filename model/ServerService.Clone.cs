@@ -13,7 +13,7 @@ public partial class ServerService
     {
         var p = GetServerLite(serverName);
         Console.WriteLine(p.Server +":" + p.ServerIp + "/" + p.Alias + ">> " + p.CloneModel.CloneServerIp);
-        var result = RunScriptDesktop(p.Server, "install", p.UserCloneLog, logger,
+        var result = RunScriptDesktop(p.Server, "install", p.UserCloneLog, logger, 50,
             new ValueTuple<string, object>("serverName", p.Server));
 
         return result;

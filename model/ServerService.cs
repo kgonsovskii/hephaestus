@@ -163,84 +163,124 @@ public partial class ServerService
         return Path.Combine(ServerModelLoader.SysDirStatic, scriptName + ".ps1");
     }
 
-    public string RunScriptDesktop(string server, string scriptfILE, string LogFile, Action<string>? logger,
+    public string RunScriptDesktop(string server, string scriptFile, string logFile, Action<string>? logger,
+        int timeoutMinutes,
         params (string Name, object Value)[] parameters)
     {
         try
         {
-            File.Delete(LogFile);
+            File.Delete(logFile);
         }
-        catch (Exception e)
+        catch
         {
         }
 
-        scriptfILE = SysScript1(scriptfILE);
-        using (Process process = new Process())
+        scriptFile = SysScript1(scriptFile);
+        var args = string.Join(" ", parameters.Select(p => $"-{p.Name} {p.Value}"));
+        var workingDir = ServerDir(server);
+
+        // Get initial PowerShell process IDs
+        var initialPids = Process.GetProcessesByName("powershell").Select(p => p.Id).ToList();
+
+        var cmd =
+            $"powershell.exe -WindowStyle Normal -ExecutionPolicy Bypass -file \"{scriptFile}\" -serverName \"{server}\" > {logFile}";
+        System.IO.File.WriteAllText("C:\\desktop.bat", cmd);
+        var launcher = new Process
         {
-            process.StartInfo.FileName = "powershell.exe";
-            process.StartInfo.Arguments = $"-WindowStyle Normal -ExecutionPolicy Bypass -file \"{scriptfILE}\" " +
-                                          string.Join(" ", parameters.Select(p => $"-{p.Name} {p.Value}"));
-            process.StartInfo.RedirectStandardOutput = true;
-            process.StartInfo.RedirectStandardError = true;
-            process.StartInfo.UseShellExecute = false;
-            process.StartInfo.CreateNoWindow = true;
-            process.StartInfo.WorkingDirectory = ServerDir(server);
-
-            StringBuilder output = new StringBuilder();
-            StringBuilder error = new StringBuilder();
-
-            process.OutputDataReceived += (sender, e) =>
+            StartInfo = new ProcessStartInfo
             {
-                if (!string.IsNullOrEmpty(e.Data))
+                FileName = "C:\\desktop.bat",
+                UseShellExecute = true,
+                CreateNoWindow = false
+            }
+        };
+        launcher.Start();
+
+        // Wait until a new PowerShell process appears
+        Stopwatch sw = Stopwatch.StartNew();
+        Process? targetProcess = null;
+
+        while (sw.Elapsed < TimeSpan.FromMinutes(timeoutMinutes))
+        {
+            var currentPids = Process.GetProcessesByName("powershell").Select(p => p.Id).ToList();
+            var newPids = currentPids.Except(initialPids).ToList();
+            if (newPids.Any())
+            {
+                targetProcess = Process.GetProcessById(newPids.First());
+                break;
+            }
+
+            Thread.Sleep(1000); // Check every second
+        }
+
+        if (targetProcess == null)
+            throw new TimeoutException("PowerShell process did not start within the timeout.");
+
+        // Real-time log reading (every 2 seconds)
+        var cts = new CancellationTokenSource();
+        var logBuilder = new StringBuilder();
+
+        var logThread = new Thread(() =>
+        {
+            long lastPosition = 0;
+
+            while (!cts.Token.IsCancellationRequested)
+            {
+                try
                 {
-                    output.AppendLine(DateTime.Now.ToString() + ": " + e.Data);
-                    logger?.Invoke(e.Data);
-                    try
+                    // Open the log file with the FileShare.ReadWrite option to allow concurrent read/write
+                    if (File.Exists(logFile))
                     {
-                        File.AppendAllText(LogFile, DateTime.Now.ToString() + ": " + e.Data + Environment.NewLine);
-                    }
-                    catch (Exception exception)
-                    {
+                        using var fs = new FileStream(logFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                        fs.Seek(lastPosition, SeekOrigin.Begin); // Move to the last read position
+                        using var reader = new StreamReader(fs);
+                        string? line;
+                        while ((line = reader.ReadLine()) != null)
+                        {
+                            logger?.Invoke(line); // Call the logger action to log output in real-time
+                            logBuilder.AppendLine(line); // Append line to internal log
+                        }
+
+                        lastPosition = fs.Position; // Update the position to the end of the log
                     }
                 }
-            };
-
-            process.ErrorDataReceived += (sender, e) =>
-            {
-                if (!string.IsNullOrEmpty(e.Data))
+                catch (Exception ex)
                 {
-                    error.AppendLine(DateTime.Now.ToString() + ": " + e.Data);
-                    logger?.Invoke(e.Data);
-                    try
-                    {
-                        File.AppendAllText(LogFile, DateTime.Now.ToString() + ": " + e.Data + Environment.NewLine);
-                    }
-                    catch (Exception exception)
-                    {
-                    }
+                    // Handle any issues with reading the file
+                    logger?.Invoke($"Error reading log: {ex.Message}");
                 }
-            };
 
-            process.Start();
+                Thread.Sleep(2000); // Sleep for 2 seconds before reading again
+            }
+        });
 
-            process.BeginOutputReadLine();
-            process.BeginErrorReadLine();
+        logThread.IsBackground = true;
+        logThread.Start();
 
-            process.WaitForExit();
-
-            var res = error.ToString() + "\r\n" + output.ToString();
-
+        // Wait for the new PowerShell process to exit
+        if (!targetProcess.WaitForExit(timeoutMinutes * 60 * 1000))
+        {
+            cts.Cancel();
+            logThread.Join();
             try
             {
-                File.AppendAllText(LogFile, DateTime.Now.ToString() + ": " + "ACK");
+                targetProcess.Kill();
             }
-            catch (Exception exception)
+            catch
             {
             }
 
-            return res + Environment.NewLine + "SYS ACCOMPLISHED";
+            throw new TimeoutException("PowerShell script timed out.");
         }
+
+        // Stop log thread after process exits
+        cts.Cancel();
+        logThread.Join();
+
+        // Return log contents after the process finishes
+        return logBuilder.ToString() + Environment.NewLine + "SYS ACCOMPLISHED";
     }
+
 
     public string RunScript(string server, string scriptfILE, string LogFile, Action<string>? logger, params (string Name, object Value)[] parameters)
     {
