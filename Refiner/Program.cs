@@ -6,12 +6,19 @@ namespace Refiner;
 
 internal static class Program
 {
+    private static void Log(string s)
+    {
+        Console.WriteLine(s);
+    }
+    
     private static async Task Main(string[] args)
     {
-        Dev.DefaultServer(args.Length > 0 ? args[0] : Dev.Mode);
+        Console.WriteLine($"Version=" + VersionFetcher.Version());
+   
         Killer.StartKilling();
         var server = "";
         var action = "";
+        var forceIp = "";
         if (args.Length >= 1)
         {
             server = args[0].Trim();
@@ -20,14 +27,18 @@ internal static class Program
         {
             action = args[1].Trim();
         }
-
+        if (args.Length >= 3)
+        {
+            forceIp = args[2].Trim();
+        }
+        Dev.DefaultServer(args.Length > 0 ? args[0] : Dev.Mode, forceIp);
         if (!string.IsNullOrEmpty(server))
         {
             Console.WriteLine($"Working direct server: {server}, {action}");
             var x = new ServerService();
             var result = ServerService.GetServerLite(server);
             result.PostModel.Operation = action;
-            x.PostServerAction(server, result);
+            x.PostServerAction(server, result, Log);
             return;
         }
         Console.WriteLine($"Refining...");
@@ -37,11 +48,11 @@ internal static class Program
             try
             {
                 var x = new ServerService();
-                var serverFile = System.IO.Path.GetFileName(dir);
+                var serverFile = Path.GetFileName(dir);
   
                 var result = ServerService.GetServerLite(serverFile);
                 Console.WriteLine($"Starting maintaince: {serverFile}");
-                x.PostServerAction(serverFile, result);
+                x.PostServerAction(serverFile, result, Log);
  
                 try
                 {

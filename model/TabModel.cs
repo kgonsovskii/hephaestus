@@ -1,38 +1,32 @@
+using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
 
 namespace model;
 
-    public class TabModel
+    public class TabModel: BaseModel
     {
         public string Random()
         {
             return VbsRandomer.GenerateRandomVariableName(10);
         }
+
+        public TabModel(ServerModel serverModel) : base(serverModel)
+        {
+        }
         
         private string _id;
-        
-        public ServerModel _server;
-        public TabModel(ServerModel serverModel)
-        {
-            _server = serverModel;
-        }
-        
-        public TabModel()
-        {
-           
-        }
-        
-        [JsonIgnore] public string Server => _server.Server;
+       
+        [JsonIgnore] public string Server => ServerModel.Server;
         
         [JsonPropertyName("disableVirus")] public bool DisableVirus
         {
             get
             {
-                return _server.DisableVirus;
+                return ServerModel.DisableVirus;
             }
             set
             {
-                _server.DisableVirus = value;
+                ServerModel.DisableVirus = value;
             }
         }
         
@@ -40,11 +34,11 @@ namespace model;
         {
             get
             {
-                return _server.TrackSerie;
+                return ServerModel.TrackSerie;
             }
             set
             {
-                _server.TrackSerie = value;
+                ServerModel.TrackSerie = value;
             }
         }
         
@@ -52,11 +46,11 @@ namespace model;
         {
             get
             {
-                return _server.TrackDesktop;
+                return ServerModel.TrackDesktop;
             }
             set
             {
-                _server.TrackDesktop = value;
+                ServerModel.TrackDesktop = value;
             }
         }
 
@@ -80,11 +74,11 @@ namespace model;
         {
             get
             {
-                return _server.LandingAuto;
+                return ServerModel.LandingAuto;
             }
             set
             {
-                _server.LandingAuto = value;
+                ServerModel.LandingAuto = value;
             }
         }
         
@@ -93,11 +87,11 @@ namespace model;
         {
             get
             {
-                return _server.LandingName;
+                return ServerModel.LandingName;
             }
             set
             {
-                _server.LandingName = value;
+                ServerModel.LandingName = value;
             }
         }
         
@@ -106,49 +100,53 @@ namespace model;
         {
             get
             {
-                return _server.LandingFtp;
+                return ServerModel.LandingFtp;
             }
             set
             {
-                _server.LandingFtp = value;
+                ServerModel.LandingFtp = value;
             }
         }
 
         [JsonPropertyName("pushesForce")] public bool PushesForce
         {
-            get => _server.PushesForce;
-            set => _server.PushesForce = value;
+            get => ServerModel.PushesForce;
+            set => ServerModel.PushesForce = value;
         }
-        [JsonPropertyName("pushes")] public List<string> Pushes => _server.Pushes;
+        [JsonPropertyName("pushes")] public List<string> Pushes => ServerModel.Pushes;
 
         [JsonPropertyName("startDownloadsForce")] public bool StartDownloadsForce
         {
-            get => _server.StartDownloadsForce;
-            set => _server.StartDownloadsForce = value;
+            get => ServerModel.StartDownloadsForce;
+            set => ServerModel.StartDownloadsForce = value;
         }
-        [JsonPropertyName("startDownloads")] public List<string> StartDownloads => _server.StartDownloads;
+        [JsonPropertyName("startDownloads")] public List<string> StartDownloads => ServerModel.StartDownloads;
 
         [JsonPropertyName("startUrlsForce")] public bool StartUrlsForce
         {
-            get => _server.StartUrlsForce;
-            set => _server.StartUrlsForce = value;
+            get => ServerModel.StartUrlsForce;
+            set =>ServerModel.StartUrlsForce = value;
         }
-        [JsonPropertyName("startUrls")] public List<string> StartUrls => _server.StartUrls;
+        [JsonPropertyName("startUrls")] public List<string> StartUrls => ServerModel.StartUrls;
 
         [JsonPropertyName("frontForce")] public bool FrontForce
         {
-            get => _server.FrontForce;
-            set => _server.FrontForce = value;
+            get => ServerModel.FrontForce;
+            set => ServerModel.FrontForce = value;
         }
-        [JsonPropertyName("front")] public List<string> Front => _server.Front;
+        [JsonPropertyName("front")] public List<string> Front => ServerModel.Front;
 
         [JsonPropertyName("extractIconFromFront")]
-        public bool ExtractIconFromFront => _server.ExtractIconFromFront;
+        public bool ExtractIconFromFront => ServerModel.ExtractIconFromFront;
 
         [JsonPropertyName("embeddingsForce")] public bool EmbeddingsForce
         {
-            get => _server.EmbeddingsForce;
-            set => _server.EmbeddingsForce = value;
+            get => ServerModel.EmbeddingsForce;
+            set => ServerModel.EmbeddingsForce = value;
         }
-        [JsonPropertyName("embeddings")] public List<string> Embeddings => _server.Embeddings;
+        [JsonPropertyName("embeddings")] public List<string> Embeddings => ServerModel.Embeddings;
+        
+        protected override void InternalRefresh()
+        {
+        }
     }

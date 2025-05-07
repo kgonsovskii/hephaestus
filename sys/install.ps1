@@ -19,6 +19,12 @@ $password = $server.clone.clonePassword
 $user=$server.clone.cloneUser
 $serverIp = $server.clone.cloneServerIp
 
+
+if ([string]::IsNullOrEmpty($serverIp))
+{
+    throw "No Server Ip defined"
+}
+
 Set-KeyboardLayouts
 Start-Sleep -Seconds 1
 

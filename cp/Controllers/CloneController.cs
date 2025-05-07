@@ -26,7 +26,7 @@ namespace cp.Controllers
             if (ModelState.IsValid)
             {
                 var server = Server;
-                var existingModel = _serverService.GetServer(server, true, ServerService.Get.RaiseError).ServerModel;
+                var existingModel = ServerService.GetServerLite(server);
                 
                 existingModel.CloneModel = model;
                 _serverService.CloneServerRequest(Server, existingModel);
@@ -45,7 +45,7 @@ namespace cp.Controllers
         public IActionResult ViewLog()
         {
             var server = Server;
-            var model = _serverService.GetServer(server, true, ServerService.Get.RaiseError).ServerModel;
+            var model = ServerService.GetServerLite(server);
             try
             {
                 model.CloneModel.CloneLog = System.IO.File.ReadAllText(model.UserCloneLog);

@@ -2,20 +2,8 @@ using System.Text.Json.Serialization;
 
 namespace model;
 
-    public class BuxModel
+    public class BuxModel: BaseModel
     {
-        public ServerModel _server;
-        
-        public BuxModel(ServerModel serverModel)
-        {
-            _server = serverModel;
-        }
-        
-        public BuxModel()
-        {
-           
-        }
-
         [JsonPropertyName("enabled")] public bool Enabled { get; set; } = false;
         
         [JsonPropertyName("id")] public string Id { get; set; } = "";
@@ -23,4 +11,8 @@ namespace model;
         [JsonPropertyName("apiKey")] public string ApiKey { get; set; } = "";
 
         [JsonPropertyName("apiUrl")] public string ApiUrl { get; set; } = "";
+        
+        protected override void InternalRefresh()
+        {
+        }
     }

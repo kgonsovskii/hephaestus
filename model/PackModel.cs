@@ -2,50 +2,99 @@ using System.Text.Json.Serialization;
 
 namespace model;
 
-public class PackModel
+public class PackModel: BaseModel
 {
-    [JsonPropertyName("packRootFolder")]
-    public string PackRootFolder{ get; set; } = string.Empty;
-    
+    public PackModel(ServerModel serverModel) : base(serverModel)
+    {
+    }
+
+    public PackModel()
+    {
+    }
+
+    [JsonPropertyName("packFolder")]
+    public string PackFolder => Path.Combine(ServerModel?.UserDataDir, "packs");
+
     [JsonPropertyName("packTemplateUrl")]
-    public string PackTemplateUrl { get; set; } = string.Empty;
-    
-    [JsonPropertyName("packLog")]
+    public string PackTemplateUrl
+    {
+        get
+        {
+            var url = ServerModel.Alias;
+            if (string.IsNullOrEmpty(url))
+                url = ServerModel.ServerIp;
+            url = "http://" + url + "/pack/envelope";
+            return url;
+        }
+    }
+
+    [JsonIgnore]
     public string PackLog { get; set; } = string.Empty;
 
     [JsonPropertyName("items")] public List<PackItem> Items { get; set; } = new List<PackItem>() { };
+
+    protected override void InternalRefresh()
+    {
+    }
 }
 
-public class PackItem
+public class PackItem: BaseModel
 {
+    protected PackModel PackModel => (PackModel) Parent ?? new PackModel();
+    public PackItem(PackModel packModel) : base(packModel)
+    {
+    }
+    public PackItem() : base()
+    {
+    }
     [JsonPropertyName("packFolder")]
-    public string PackFolder{ get; set; } = string.Empty;
+    public string PackFolder => Path.Combine(PackModel.PackFolder, Id);
     
     [JsonPropertyName("packFileVbs")]
-    public string PackFileVbs{ get; set; } = string.Empty;
+    public string PackFileVbs => Path.Combine(PackFolder, Name + ".vbs");
     
     [JsonPropertyName("packFileExe")]
-    public string PackFileExe{ get; set; } = string.Empty;
+    public string PackFileExe => Path.Combine(PackFolder, Name + ".exe");
 
+
+    [JsonPropertyName("id")]
+    public string Id => UrlHelper.HashUrlTo5Chars(OriginalUrl);
+
+
+    [JsonPropertyName("name")] public string Name => UrlHelper.GetFileNameFromUrl(OriginalUrl, PackModel.PackTemplateUrl);
     
-    [JsonPropertyName("index")] public string Index { get; set; }
-    [JsonPropertyName("name")] public string Name { get; set; } = "";
+    [JsonPropertyName("originalUrl")]
+    public string OriginalUrl { get; set; }
     
-    [JsonPropertyName("originalUrl")] public string OriginalUrl { get; set; } = "";
+    [JsonPropertyName("icon")]
+    public string Icon { get; set; }
     
-    [JsonPropertyName("urlExe")] public string UrlExe { get; set; } = "";
-    [JsonPropertyName("urlVbs")] public string UrlVbs { get; set; } = "";
+    [JsonPropertyName("iconFile")]
+    public string IconFile => Path.Combine(PackFolder, Name + ".ico");
+
+    [JsonPropertyName("urlExe")] public string UrlExe => PackModel.PackTemplateUrl + "?type=exe&url=" + OriginalUrl;
+    [JsonPropertyName("urlVbs")] public string UrlVbs => PackModel.PackTemplateUrl + "?type=vbs&url=" + OriginalUrl;
 
     [JsonPropertyName("enabled")] public bool Enabled { get; set; } = false;
     
     [JsonPropertyName("date")] public string Date { get; set; } = "";
 
+    protected override void InternalRefresh()
+    {
+    }
+
+
     public void Validate()
     {
-        if (!System.IO.File.Exists(PackFileExe) || !System.IO.File.Exists(PackFileVbs))
+        Refresh();
+        if (!File.Exists(PackFileExe) || !File.Exists(PackFileVbs))
         {
             if (!Directory.Exists(PackFolder))
                 Directory.CreateDirectory(PackFolder);
+        }
+        if (!string.IsNullOrEmpty(Icon) && !File.Exists(IconFile))
+        {
+            UrlHelper.DownloadFile(Icon, IconFile);
         }
     }
 }

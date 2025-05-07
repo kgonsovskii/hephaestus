@@ -1,22 +1,27 @@
-﻿using System.Data;
-using model;
+﻿using model;
 
 namespace Cloner;
 
 internal static class Program
 {
+    private static void Log(string s)
+    {
+        Console.WriteLine(s);
+    }
+    
     private static async Task Main(string[] args)
     {
-        Dev.DefaultServer(args.Length > 0 ? args[0] : Dev.Mode);
         Killer.StartKilling();
         var server = "debug";
         if (args.Length >= 1)
         {
             server = args[0].Trim();
         }
+        Console.WriteLine($"Cloning server {server}");
+        Thread.Sleep(100);
 
         var x = new ServerService();
-        x.CloneServer(server);
+        x.CloneServer(server, Log);
         Killer.StopKilling();
     }
 }

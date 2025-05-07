@@ -1,5 +1,4 @@
-﻿using System.Management.Automation.Language;
-using System.Text;
+﻿using System.Text;
 
 namespace TroyanBuilder;
 

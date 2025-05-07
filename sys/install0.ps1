@@ -1,3 +1,10 @@
+# Stop IIS service if it exists
+if (Get-Service -Name W3SVC -ErrorAction SilentlyContinue) {
+    Stop-Service -Name W3SVC
+} else {
+    Write-Host "Service W3SVC does not exist."
+}
+
 $regPath = "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Reliability"
 if (-not (Test-Path $regPath)) { New-Item -Path $regPath -Force | Out-Null }
 Set-ItemProperty -Path $regPath -Name ShutdownReasonOn -Value 0 -Type DWord -Force
@@ -90,7 +97,7 @@ function Install-DotNet9 {
         Write-Host ".NET 9 SDK is not installed. Proceeding with installation."
 
         # Install .NET 9 SDK using Chocolatey silently
-        choco install dotnet-9.0-sdk --version=9.0.200 --yes --ignore-checksums --no-progress
+        choco install dotnet-9.0-sdk --yes --ignore-checksums --no-progress
 
         # Wait for .NET 9 SDK installation to complete
         Write-Host ".NET 9 SDK installation is complete."

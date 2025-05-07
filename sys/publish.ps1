@@ -8,6 +8,10 @@ if ($serverIp -eq "") {
     $serverIp = "31.44.0.64"
 } 
 
+choco install dotnet-9.0-sdk --yes --ignore-checksums --no-progress
+choco install dotnet-windowshosting --yes --ignore-checksums --no-progress
+choco install dotnet-runtime --yes --ignore-checksums --no-progress
+
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 Set-Location -Path $scriptDir
 . ".\lib.ps1"
@@ -59,6 +63,7 @@ catch {
 
 function Output(){
     Set-Location -Path $scriptDir
+    Write-Host $scriptDir
     Clear-Folder -FolderPath "C:\inetpub\wwwroot\cp"
 
     Set-Location -Path $scriptDir
@@ -390,6 +395,8 @@ function Install{
 
         New-Website -Name $siteName -PhysicalPath $siteDir -Port 80 -IPAddress $ipAddress -ApplicationPool $appPoolName
         Start-Website -Name $siteName -ErrorAction SilentlyContinue
+
+        Start-Process -FilePath "C:\inetpub\wwwroot\cp\Refiner.exe" -ArgumentList "default", "apply", $serverIp -Wait
 
         Write-Host "Publish CP REMOTE complete $ipAddress"
 

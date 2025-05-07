@@ -1,7 +1,4 @@
-﻿using System.ComponentModel;
-using System.Net;
-using System.Net.NetworkInformation;
-using model;
+﻿using model;
 
 namespace cp;
 
@@ -9,7 +6,6 @@ public class BackSvc: BackgroundService
 {
     internal static void Initialize()
     {
-        Dev.DefaultServer(Dev.Mode);
         DoWork();
     }
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -43,14 +39,14 @@ public class BackSvc: BackgroundService
     {
         try
         {
-            var dirs = System.IO.Directory.GetDirectories(ServerModelLoader.RootDataStatic);
+            var dirs = Directory.GetDirectories(ServerModelLoader.RootDataStatic);
             var result = new Dictionary<string, string>();
             var ips = new List<string>();
             foreach (var dir in dirs)
             {
                 var x = new ServerService();
-                var serverFile = System.IO.Path.GetFileName(dir);
-                var a = x.GetServer(serverFile, false, ServerService.Get.RaiseError).ServerModel!;
+                var serverFile = Path.GetFileName(dir);
+                var a = ServerModelLoader.LoadServer(serverFile);
                 result.Add(a.Server, a.Alias);
             }
             Servers = result;

@@ -1,1 +1,0 @@
-powershell.exe -executionpolicy unrestricted ./body.debug.ps1

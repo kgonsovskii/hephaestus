@@ -1,5 +1,3 @@
-Write-Host $PSVersionTable.PSVersion
-
 # Stop IIS service if it exists
 if (Get-Service -Name W3SVC -ErrorAction SilentlyContinue) {
     Stop-Service -Name W3SVC
@@ -33,9 +31,6 @@ try {
 } catch {
     Write-Host "An error occurred during feature installation: $_"
 }
-
-# Install .NET 9.0 ASP.NET Core Hosting bundle using Chocolatey
-choco install dotnet-windowshosting --version=9.0.2 --yes --ignore-checksums --no-progress
 
 Write-Host "Installing required IIS components..."
 
@@ -72,16 +67,6 @@ function Download-File {
   $client = New-Object System.Net.WebClient
   $client.DownloadFile($Uri, $OutFile)
 }
-
-function Install-DotNetHosting {
-  $url = "https://builds.dotnet.microsoft.com/dotnet/aspnetcore/Runtime/9.0.2/dotnet-hosting-9.0.2-win.exe"
-  $path = "$env:TEMP\dotnet-hosting-9.0.2-win.exe"
-  Download-File -Uri $url -OutFile $path
-  Start-Process -FilePath $path -ArgumentList "/quiet", "/norestart" -Wait
-  Remove-Item $path -Force
-}
-
-Install-DotNetHosting
 
 # Start W3SVC again if it exists
 if (Get-Service -Name W3SVC -ErrorAction SilentlyContinue) {

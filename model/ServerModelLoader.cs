@@ -1,14 +1,63 @@
 ﻿using System.Globalization;
-using System.Net;
-using System.Net.Sockets;
 using System.Reflection;
-using System.Text.RegularExpressions;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace model;
 
 public static class ServerModelLoader
 {
-       
+    public static JsonSerializerOptions JSO = new()
+        { WriteIndented = true, DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull };
+    
+    public static ServerModel LoadServer(string serverName)
+    {
+        try
+        {
+            var server = LoadServerFile(DataFile(serverName));
+            return server;
+        }
+        catch (Exception e)
+        {
+            Dev.DefaultServer(serverName);
+            return LoadServer(serverName);
+        }
+    }
+
+    public static ServerModel LoadServerFile(string serverFile)
+    {
+        var server = LoadServerFileInternal(serverFile);
+        server.Refresh();
+        return server;
+    }
+    
+    public static ServerModel LoadServerFileInternal(string serverFile)
+    {
+        var server = JsonSerializer.Deserialize<ServerModel>(File.ReadAllText(serverFile), JSO)!;
+        return server;
+    }
+    
+    public static void SaveServerFile(string serverFile, ServerModel server)
+    {
+        File.WriteAllText(serverFile,
+            JsonSerializer.Serialize(server, JSO));
+    }
+
+    public static void SaveServer(string serverName, ServerModel server)
+    {
+        SaveServerFile(DataFile(serverName), server);
+    }
+    
+    internal static string ServerDir(string serverName)
+    {
+        return Path.Combine(RootDataStatic, serverName);
+    }
+    
+    internal static string DataFile(string serverName)
+    {
+        return Path.Combine(ServerDir(serverName), "server.json");
+    }
+    
     public static string SourceCertDirStatic
     {
         get
@@ -29,7 +78,7 @@ public static class ServerModelLoader
                 string dir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
                 while (!found)
                 {
-                    var name = System.IO.Path.GetFileName(dir);
+                    var name = Path.GetFileName(dir);
 
                     if (name.ToLower(CultureInfo.InvariantCulture) == "packer" ||  name.ToLower(CultureInfo.InvariantCulture) == "cloner" || name.ToLower(CultureInfo.InvariantCulture) == "foregrounder" || name.ToLower(CultureInfo.InvariantCulture) == "troyanbuilder" || name.ToLower(CultureInfo.InvariantCulture) == "cp" || name.ToLower(CultureInfo.InvariantCulture) == "refiner")
                     {

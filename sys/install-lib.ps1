@@ -1,7 +1,6 @@
 param (
-    [string]$serverName
+    [string]$serverName = 'default'
 )
-
 
 function Set-KeyboardLayouts {
     $langlist = New-WinUserLanguageList en-US
@@ -23,6 +22,24 @@ Set-Location -Path $scriptDir
 $password = $server.clone.clonePassword
 $user=$server.clone.cloneUser
 $serverIp = $server.clone.cloneServerIp
+
+function Test {
+    $client = New-Object System.Net.Sockets.TcpClient
+    try {
+        $async = $client.BeginConnect($serverIp, 5985, $null, $null)
+        $wait = $async.AsyncWaitHandle.WaitOne(4000, $false) # 4000 ms = 3 seconds timeout
+        if ($wait -and $client.Connected) {
+            $client.EndConnect($async)
+            return $true
+        } else {
+            return $false
+        }
+    } catch {
+        return $false
+    } finally {
+        $client.Close()
+    }
+}
 
 function sharpRdp {
     $programPath = Join-Path $scriptDir "../rdp/SharpRdp.exe"
@@ -120,11 +137,12 @@ function WaitForTag {
         }
 
         try {
-            if (Test-Connection -ComputerName $serverIp -Count 1 -Quiet) {
-            } else {
+            $tested = Test
+            if ($tested -eq $false)
+            {
                 Start-Sleep -Seconds 1
                 continue
-            }
+            } 
 
            $result = Invoke-RemoteCommand -ScriptBlock {
                 param (
@@ -189,6 +207,16 @@ function WaitRestart {
     )
     Write-Host "Restarting.."
    while ($true) {
+        $tested = Test
+        if ($tested -eq $false)
+        {
+            if ($once)
+            {
+                return
+            }
+            Start-Sleep -Seconds 1    
+            continue
+        }
        try {
            Invoke-RemoteCommand -ScriptBlock { shutdown /r /t 0 /f }
            Start-Sleep -Seconds 3
@@ -207,7 +235,9 @@ function WaitRestart {
 
    while ($true) 
    {
-        if (Test-Connection -ComputerName $serverIp -Count 1 -Quiet) {
+        $tested = Test
+        if ($tested -eq $true)
+        {
             break
         }
         Write-Host "Ping attempt.."

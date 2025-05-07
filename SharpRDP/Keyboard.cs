@@ -15,16 +15,23 @@ namespace SharpRDP
 
         public static void SetEnglishUSKeyboardLayout()
         {
-            // "00000409" is the KLID for English (United States)
-            IntPtr hkl = LoadKeyboardLayout("00000409", KLF_ACTIVATE);
-            if (hkl == IntPtr.Zero)
+            try
             {
-                Console.WriteLine("Failed to load keyboard layout.");
+                // "00000409" is the KLID for English (United States)
+                IntPtr hkl = LoadKeyboardLayout("00000409", KLF_ACTIVATE);
+                if (hkl == IntPtr.Zero)
+                {
+                    Console.WriteLine("X Failed to load keyboard layout.");
+                }
+                else
+                {
+                    ActivateKeyboardLayout(hkl, KLF_ACTIVATE);
+                    Console.WriteLine("X Keyboard layout set to English (US).");
+                }
             }
-            else
+            catch (Exception e)
             {
-                ActivateKeyboardLayout(hkl, KLF_ACTIVATE);
-                Console.WriteLine("Keyboard layout set to English (US).");
+                Console.WriteLine(e);
             }
         }
     }

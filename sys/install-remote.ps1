@@ -19,6 +19,11 @@ $password = $server.clone.clonePassword
 $user=$server.clone.cloneUser
 $serverIp = $server.clone.cloneServerIp
 
+if ([string]::IsNullOrEmpty($serverIp))
+{
+    throw "No Server Ip defined"
+}
+
 Set-KeyboardLayouts
 Start-Sleep -Seconds 1
 
@@ -76,7 +81,7 @@ function Ultra-RemoteFile {
    )
 
    $scriptContent = [string]::Join([Environment]::NewLine, $scriptLines)
-   $tempScriptPath = "C:\tempFile.ps1"
+   $tempScriptPath = "C:\t.ps1"
    Set-Content -Path $tempScriptPath -Value $scriptContent -Encoding UTF8
 
    $securePassword = ConvertTo-SecureString -String $password -AsPlainText -Force
@@ -85,7 +90,7 @@ function Ultra-RemoteFile {
    Copy-Item -Path $tempScriptPath -Destination $tempScriptPath -ToSession $session -Force
    Remove-PSSession -Session $session
 
-   $cmd = """& '$tempScriptPath'"""
+   $cmd = "& '$tempScriptPath'"
 
    & $programPath --server=$serverIp --username=$user --password=$password --command=$cmd --tag=$tag --timeout=$timeout
 
@@ -130,36 +135,31 @@ function WaitSql {
                     }
                 }
             }
-            Start-Sleep -Seconds 3
+            Start-Sleep -Seconds 1
             break
         }
         catch {
             Write-Host $_
-            Start-Sleep -Seconds 3
+            Start-Sleep -Seconds 1
         }
     }
     Write-Host "SQL SETUPED"
     Start-Sleep -Seconds 1
 }
 
-
 Invoke-RemoteFile -FilePath "install0.ps1" 
-
 
 Ultra-RemoteFile -FilePath "installNop.ps1" -timeout 90
 Ultra-RemoteFile -FilePath "installSql.ps1"
 Invoke-RemoteFile -FilePath "installSqlTools.ps1"
 WaitSql
 
-Ultra-RemoteFile -FilePath "installNop.ps1" -timeout 90
-Ultra-RemoteFile -FilePath "installWeb.ps1"
-
-Ultra-RemoteFile -FilePath "installNop.ps1" -timeout 90
+Invoke-RemoteFile -FilePath "installWeb.ps1"
 Invoke-RemoteFile -FilePath "installWeb2.ps1"
 Invoke-RemoteFile -FilePath "installTrigger.ps1"
 
-
 WaitRestart
-. ".\publish.ps1" -serverIp $serverIp -user $user -password $password -direct $true
 
+. ".\publish.ps1" -serverIp $serverIp -user $user -password $password -direct $true
+WaitRestart
 Write-Host "----------- THE END --------------"

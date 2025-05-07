@@ -1,2 +1,2 @@
+Start-Sleep -Seconds 1
 Write-Host "nop"
-Start-Sleep -Seconds 7
