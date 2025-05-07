@@ -138,6 +138,25 @@ public partial class ServerService
         }
         return result;
     }
+    
+    public string RunExeDesktop(string exe, string serverName, string? arguments = null)
+    {
+        var args = $"{serverName}";
+        if (!string.IsNullOrEmpty(arguments))
+            args += $" {arguments}";
+        var sa = new ProcessStartInfo
+        {
+            FileName = exe,
+            Arguments = args,
+            CreateNoWindow = false,
+            UseShellExecute = true,
+            RedirectStandardOutput = false,
+            RedirectStandardError = false
+        };
+        Process process = new Process { StartInfo = sa };
+        process.Start();
+        return "OK";
+    }
 
     public string RunExe(string exe, string serverName, string? arguments = null)
     {

@@ -15,7 +15,7 @@ internal static class Program
     {
         Console.WriteLine($"Version=" + VersionFetcher.Version());
    
-        Killer.StartKilling();
+        Killer.StartKilling(false);
         var server = "";
         var action = "";
         var forceIp = "";

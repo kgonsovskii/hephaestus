@@ -6,7 +6,7 @@ public partial class ServerService
     {
         SaveServerLite(serverName, serverModel);
         var p = GetServerLite(serverName);
-        return RunExe(ServerModelLoader.Cloner, serverName);
+        return RunExeDesktop(ServerModelLoader.Cloner, serverName);
     }
 
     public string CloneServer(string serverName, Action<string> logger)

@@ -396,6 +396,7 @@ function Install{
         New-Website -Name $siteName -PhysicalPath $siteDir -Port 80 -IPAddress $ipAddress -ApplicationPool $appPoolName
         Start-Website -Name $siteName -ErrorAction SilentlyContinue
 
+        Write-Host "Starting refiner..."
         Start-Process -FilePath "C:\inetpub\wwwroot\cp\Refiner.exe" -ArgumentList "default", "apply", $serverIp -Wait
 
         Write-Host "Publish CP REMOTE complete $ipAddress"

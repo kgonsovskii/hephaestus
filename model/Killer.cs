@@ -6,16 +6,16 @@ public class Killer
 {
     private static Task foregroundThread;
     private static CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
-    public static void StartKilling()
+    public static void StartKilling(bool all)
     {
-        KillThem();
+        KillThem(all, true);
         foregroundThread = new Task(() =>
         {
             while (true)
             {
                 try
                 {
-                    KillThem();
+                    KillThem(all, false);
                 }
                 catch (Exception)
                 {
@@ -36,10 +36,21 @@ public class Killer
         cancellationTokenSource.Cancel();
     }
 
-    private static void KillThem()
+    private static void KillThem(bool all, bool ps)
     {
         var name = Path.GetFileNameWithoutExtension(Process.GetCurrentProcess().ProcessName);
         Kill(name);
+        if (all)
+        {
+            Kill("refiner");
+            Kill("cloner");
+            Kill("packer");
+            Kill("desktop.bat");
+            Kill("SharpRdp");
+            if (ps)
+                Kill("powershell");
+        }
+        Thread.Sleep(500);
     }
     
     private static void Kill(string pattern)

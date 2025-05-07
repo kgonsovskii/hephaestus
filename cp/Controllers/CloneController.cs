@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 using model;
@@ -56,13 +57,22 @@ namespace cp.Controllers
         {
             var server = Server;
             var model = ServerService.GetServerLite(server);
+
+            var processesToKill = Process.GetProcesses()
+                .Where(p => p.ProcessName.IndexOf("cloner", StringComparison.OrdinalIgnoreCase) >= 0).ToArray();
             try
             {
-                model.CloneModel.CloneLog =read(model.UserCloneLog);
+                model.CloneModel.CloneLog += "Running cloners:";
+                foreach (var p in processesToKill)
+                    model.CloneModel.CloneLog += p.ProcessName + ", started earlier at: " + (DateTime.Now - p.StartTime).TotalSeconds + " sec." + Environment.NewLine;
+                model.CloneModel.CloneLog += Environment.NewLine;
+                model.CloneModel.CloneLog += "---";
+                model.CloneModel.CloneLog += Environment.NewLine;
+                model.CloneModel.CloneLog +=read(model.UserCloneLog);
             }
             catch (Exception e)
             {
-                model.CloneModel.CloneLog = "Empty";
+                model.CloneModel.CloneLog = "Empty: " + e.Message + " " + e.StackTrace;
             }
 
             return View("Components/Clone/Viewlog", model.CloneModel);

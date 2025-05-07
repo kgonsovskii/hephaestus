@@ -11,8 +11,8 @@ internal static class Program
     
     private static async Task Main(string[] args)
     {
-        Killer.StartKilling();
-        var server = "default";
+        Killer.StartKilling(true);
+        var server = args.Length > 0 ? args[0] : Dev.Mode;
         if (args.Length >= 1)
         {
             server = args[0].Trim();

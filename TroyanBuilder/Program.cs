@@ -34,7 +34,7 @@ public class Program
 
     static void Main(string[] args)
     {
-        string server = "default";
+        string server = args.Length > 0 ? args[0] : Dev.Mode;
         if (args.Length >= 1)
         {
             server = args[0];
