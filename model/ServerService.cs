@@ -250,7 +250,7 @@ public partial class ServerService
                     logger?.Invoke($"Error reading log: {ex.Message}");
                 }
 
-                Thread.Sleep(2000); // Sleep for 2 seconds before reading again
+                Thread.Sleep(3000); // Sleep for 2 seconds before reading again
             }
         });
 

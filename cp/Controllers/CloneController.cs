@@ -40,6 +40,16 @@ namespace cp.Controllers
             return Ok("FAILED");
         }
 
+        private static string read(string file)
+        {
+            using (var fileStream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+            using (var reader = new StreamReader(fileStream))
+            {
+                string content = reader.ReadToEnd();
+                return content;
+            }
+        }
+
         // GET: View Log (Displays log details)
         [HttpGet("ViewLog")]
         public IActionResult ViewLog()
@@ -48,7 +58,7 @@ namespace cp.Controllers
             var model = ServerService.GetServerLite(server);
             try
             {
-                model.CloneModel.CloneLog = System.IO.File.ReadAllText(model.UserCloneLog);
+                model.CloneModel.CloneLog =read(model.UserCloneLog);
             }
             catch (Exception e)
             {
