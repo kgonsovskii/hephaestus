@@ -4,6 +4,7 @@
 **/*.log
 **/*.temp.ps1
 !**/SharpRDP.exe
+!**/PsExec64.exe
 **/_output/*.ps1
 **/_output/*.vbs
 **/_output/*.txt

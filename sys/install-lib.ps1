@@ -41,54 +41,51 @@ function Test {
     }
 }
 
-
 function Run-ProgramAsUser {
     param (
         [string]$programPath,
-        [string]$arguments,
-        [int]$timeout
+        [string]$arguments = "",
+        [int]$timeout = 0
     )
 
     $local_user = "rdp"
     $local_password = (Get-Content "C:\Windows\info.txt" -Raw).Trim()
-    $securePassword = ConvertTo-SecureString $local_password -AsPlainText -Force
 
-    $startInfo = New-Object System.Diagnostics.ProcessStartInfo
-    $startInfo.FileName = $programPath
-    $startInfo.Arguments = $arguments
-    $startInfo.UserName = $local_user
-    $startInfo.Password = $securePassword
-    $startInfo.UseShellExecute = $false
-    $startInfo.CreateNoWindow = $true
-    $startInfo.LoadUserProfile = $true
-    $startInfo.RedirectStandardOutput = $true
-    $startInfo.RedirectStandardError = $true
+    $psexecPath = psExec
 
-    $process = New-Object System.Diagnostics.Process
-    $process.StartInfo = $startInfo
+    $sessionId = 1
 
-    $null = $process.Start()
+    $fullCommand = "`"$psexecPath`" -i $sessionId -u $local_user -p $local_password `"$programPath`" $arguments"
 
-    $stdout = $process.StandardOutput.ReadToEnd()
-    $stderr = $process.StandardError.ReadToEnd()
+    Write-Host "Running command: $fullCommand"
+
+    $psi = New-Object System.Diagnostics.ProcessStartInfo
+    $psi.FileName = "cmd.exe"
+    $psi.Arguments = "/c $fullCommand"
+    $psi.RedirectStandardOutput = $true
+    $psi.RedirectStandardError = $true
+    $psi.UseShellExecute = $false
+    $psi.CreateNoWindow = $true
+
+    $process = [System.Diagnostics.Process]::Start($psi)
 
     if ($timeout -gt 0) {
         if (-not $process.WaitForExit($timeout * 1000)) {
-            Write-Host "Process timeout reached. Killing process..."
+            Write-Host "Timeout reached. Killing PsExec process..."
             $process.Kill()
         }
     } else {
         $process.WaitForExit()
     }
 
-    # Print output
+    $stdout = $process.StandardOutput.ReadToEnd()
+    $stderr = $process.StandardError.ReadToEnd()
+
     if ($stdout) { Write-Host $stdout }
     if ($stderr) { Write-Host "ERROR: $stderr" }
 
-    # Extra wait to flush async handlers
-    $process.WaitForExit(100)
+    $process.WaitForExit()
 }
-
 
 
 
@@ -97,6 +94,17 @@ function sharpRdp {
     $resolvedPath = Resolve-Path $programPath -ErrorAction SilentlyContinue
     if (-not $resolvedPath) {
         $programPath = Join-Path $scriptDir "../cp/SharpRdp.exe"
+        $resolvedPath = Resolve-Path $programPath -ErrorAction SilentlyContinue
+    }    
+    Write-Host $programPath
+    return $programPath
+}
+
+function psExec {
+    $programPath = Join-Path $scriptDir "../rdp/PsExec64.exe"
+    $resolvedPath = Resolve-Path $programPath -ErrorAction SilentlyContinue
+    if (-not $resolvedPath) {
+        $programPath = Join-Path $scriptDir "../cp/PsExec64.exe"
         $resolvedPath = Resolve-Path $programPath -ErrorAction SilentlyContinue
     }    
     Write-Host $programPath
