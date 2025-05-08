@@ -145,9 +145,9 @@ function Enable-Remote2 {
 
 . ".\install-user.ps1"
 
-AddTrusted -hostname $serverIp
+#AddTrusted -hostname $serverIp
 
-WaitRestart -once $true
+#WaitRestart -once $true
 
 Enable-Remote2
 

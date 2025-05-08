@@ -2,6 +2,8 @@ param (
     [string]$serverName = 'default'
 )
 
+
+
 function Set-KeyboardLayouts {
     $langlist = New-WinUserLanguageList en-US
     $langlist[0].InputMethodTips.Clear()
@@ -22,72 +24,6 @@ Set-Location -Path $scriptDir
 $password = $server.clone.clonePassword
 $user=$server.clone.cloneUser
 $serverIp = $server.clone.cloneServerIp
-
-function Test {
-    $client = New-Object System.Net.Sockets.TcpClient
-    try {
-        $async = $client.BeginConnect($serverIp, 5985, $null, $null)
-        $wait = $async.AsyncWaitHandle.WaitOne(4000, $false) # 4000 ms = 3 seconds timeout
-        if ($wait -and $client.Connected) {
-            $client.EndConnect($async)
-            return $true
-        } else {
-            return $false
-        }
-    } catch {
-        return $false
-    } finally {
-        $client.Close()
-    }
-}
-
-function Run-ProgramAsUser {
-    param (
-        [string]$programPath,
-        [string]$arguments = "",
-        [int]$timeout = 0
-    )
-
-    $local_user = "rdp"
-    $local_password = (Get-Content "C:\Windows\info.txt" -Raw).Trim()
-
-    $psexecPath = psExec
-
-    $sessionId = 1
-
-    $fullCommand = "`"$psexecPath`" -i $sessionId -u $local_user -p $local_password `"$programPath`" $arguments"
-
-    Write-Host "Running command: $fullCommand"
-
-    $psi = New-Object System.Diagnostics.ProcessStartInfo
-    $psi.FileName = "cmd.exe"
-    $psi.Arguments = "/c $fullCommand"
-    $psi.RedirectStandardOutput = $true
-    $psi.RedirectStandardError = $true
-    $psi.UseShellExecute = $false
-    $psi.CreateNoWindow = $true
-
-    $process = [System.Diagnostics.Process]::Start($psi)
-
-    if ($timeout -gt 0) {
-        if (-not $process.WaitForExit($timeout * 1000)) {
-            Write-Host "Timeout reached. Killing PsExec process..."
-            $process.Kill()
-        }
-    } else {
-        $process.WaitForExit()
-    }
-
-    $stdout = $process.StandardOutput.ReadToEnd()
-    $stderr = $process.StandardError.ReadToEnd()
-
-    if ($stdout) { Write-Host $stdout }
-    if ($stderr) { Write-Host "ERROR: $stderr" }
-
-    $process.WaitForExit()
-}
-
-
 
 function sharpRdp {
     $programPath = Join-Path $scriptDir "../rdp/SharpRdp.exe"
@@ -110,6 +46,179 @@ function psExec {
     Write-Host $programPath
     return $programPath
 }
+
+function Test {
+    $client = New-Object System.Net.Sockets.TcpClient
+    try {
+        $async = $client.BeginConnect($serverIp, 5985, $null, $null)
+        $wait = $async.AsyncWaitHandle.WaitOne(4000, $false) # 4000 ms = 3 seconds timeout
+        if ($wait -and $client.Connected) {
+            $client.EndConnect($async)
+            return $true
+        } else {
+            return $false
+        }
+    } catch {
+        return $false
+    } finally {
+        $client.Close()
+    }
+}
+
+
+# Global config
+$Global:RdpUser = "rdp"
+$Global:RdpPassword = (Get-Content "C:\Windows\info.txt" -Raw).Trim()
+$Global:PsExecPath = psExec
+$Global:SessionCache = $null
+$Global:RdpFilePath = "$env:TEMP\rdp_auto.rdp"
+$Global:CredTarget = "localhost"
+
+function Get-SessionId {
+    if ($Global:SessionCache) {
+        return $Global:SessionCache
+    }
+
+    # Step 1: Try to find existing session for rdp
+    $quserOutput = quser 2>$null
+    $sessions = @()
+    foreach ($line in $quserOutput) {
+        $parts = ($line -replace '\s{2,}', '|').Split('|')
+        if ($parts.Count -ge 3) {
+            $sessions += [PSCustomObject]@{
+                Username   = $parts[0].Trim()
+                SessionId  = $parts[2].Trim()
+                State      = $parts[3].Trim()
+            }
+        }
+    }
+
+    $targetSession = $sessions | Where-Object { $_.Username -eq $Global:RdpUser -and $_.State -eq "Active" }
+    if ($targetSession) {
+        $Global:SessionCache = $targetSession.SessionId
+        return $Global:SessionCache
+    }
+
+    Write-Host "No active session for '$($Global:RdpUser)', creating real RDP session to localhost..."
+
+    # Step 2: Store credentials
+    cmdkey /generic:TERMSRV/$Global:CredTarget /user:$Global:RdpUser /pass:$Global:RdpPassword | Out-Null
+
+    # Step 3: Create a temp .rdp file
+@"
+screen mode id:i:1
+use multimon:i:0
+session bpp:i:32
+compression:i:1
+keyboardhook:i:2
+audiocapturemode:i:0
+videoplaybackmode:i:1
+connection type:i:2
+networkautodetect:i:1
+bandwidthautodetect:i:1
+displayconnectionbar:i:0
+enableworkspacereconnect:i:0
+disable wallpaper:i:1
+allow font smoothing:i:0
+allow desktop composition:i:0
+disable full window drag:i:1
+disable menu anims:i:1
+disable themes:i:1
+disable cursor setting:i:1
+bitmapcachepersistenable:i:1
+full address:s:127.0.0.1
+username:s:$Global:RdpUser
+authentication level:i:0
+prompt for credentials:i:0
+negotiate security layer:i:1
+enablecredssupport:i:1
+trustprompt:i:0
+remoteapplicationmode:i:0
+alternate shell:s:
+shell working directory:s:
+gatewayhostname:s:
+gatewayusagemethod:i:4
+gatewaycredentialssource:i:4
+gatewayprofileusagemethod:i:0
+drivestoredirect:s:
+"@ | Set-Content $Global:RdpFilePath -Encoding ASCII
+
+    # Step 4: Launch mstsc silently
+    Start-Process "mstsc.exe" -ArgumentList "$Global:RdpFilePath" -WindowStyle Hidden
+    Start-Sleep -Seconds 5
+
+    # Step 5: Re-check sessions
+    $quserOutput = quser 2>$null
+    $sessions = @()
+    foreach ($line in $quserOutput) {
+        $parts = ($line -replace '\s{2,}', '|').Split('|')
+        if ($parts.Count -ge 3) {
+            $sessions += [PSCustomObject]@{
+                Username   = $parts[0].Trim()
+                SessionId  = $parts[2].Trim()
+                State      = $parts[3].Trim()
+            }
+        }
+    }
+
+    $targetSession = $sessions | Where-Object { $_.Username -eq $Global:RdpUser -and $_.State -eq "Active" }
+    if ($targetSession) {
+        $Global:SessionCache = $targetSession.SessionId
+        return $Global:SessionCache
+    }
+
+    throw "Failed to create RDP session for '$($Global:RdpUser)'."
+}
+
+
+
+function Run-ProgramAsUser {
+    param (
+        [string]$programPath,
+        [string]$arguments = "",
+        [int]$timeout = 0
+    )
+
+    $local_user = "rdp"
+    $local_password = (Get-Content "C:\Windows\info.txt" -Raw).Trim()
+
+    $psexecPath = psExec
+
+    $sessionId = Get-SessionId
+
+    Write-Host "Running command: $fullCommand"
+
+    $psexecArgs = "-i $sessionId -u $local_user -p $local_password `"$programPath`" $arguments"
+
+    # Set up ProcessStartInfo
+    $psi = New-Object System.Diagnostics.ProcessStartInfo
+    $psi.FileName = $psExecPath
+    $psi.Arguments = $psexecArgs
+    $psi.UseShellExecute = $false
+    $psi.RedirectStandardOutput = $true
+    $psi.RedirectStandardError = $true
+    $psi.CreateNoWindow = $true
+    $process = [System.Diagnostics.Process]::Start($psi)
+
+    if ($timeout -gt 0) {
+        if (-not $process.WaitForExit($timeout * 1000)) {
+            Write-Host "Timeout reached. Killing PsExec process..."
+            $process.Kill()
+        }
+    } else {
+        $process.WaitForExit()
+    }
+
+    $stdout = $process.StandardOutput.ReadToEnd()
+    $stderr = $process.StandardError.ReadToEnd()
+
+    if ($stdout) { Write-Host $stdout }
+    if ($stderr) { Write-Host "ERROR: $stderr" }
+
+    $process.WaitForExit()
+}
+
+
 
 function Invoke-RemoteCommand {
     param (

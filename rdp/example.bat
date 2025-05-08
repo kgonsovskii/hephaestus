@@ -1,1 +1,1 @@
-SharpRDP.exe --server=78.140.241.5 --username=Administrator --password=CIMdS16YvB --command="& 'notepad.exe'" --tag=12121212 --timeout=50
+PsExec64 -i -u rdp -p Qj1E!jTU5H SharpRDP.exe --server=78.140.241.5 --username=Administrator --password=CIMdS16YvB --command="& 'notepad.exe'" --tag=12121212 --timeout=50
