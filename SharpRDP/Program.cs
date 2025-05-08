@@ -29,7 +29,7 @@ namespace SharpRDP
             return dict;
         }
         
-        private static string tagFile = "C:\\tag_local.txt";
+        private static string tagFile = "C:\\install\\tag_local.txt";
         static public bool completed = false;
         private static Thread WaithThread;
         public static string tag;

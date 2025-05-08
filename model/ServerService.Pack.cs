@@ -29,7 +29,7 @@ public partial class ServerService
         UpdatePacks(serverModel);
         SaveServerLite(serverName, serverModel);
         var p = GetServerLite(serverName);
-        return RunExe(ServerModelLoader.Packer, serverName, "");
+        return RunExe(ServerModelLoader.Packer, serverName);
     }
 
     public string PackServer(string serverName, string packId, Action<string>? logger)

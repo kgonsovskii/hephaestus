@@ -45,10 +45,12 @@ public class Killer
             Kill("refiner");
             Kill("cloner");
             Kill("packer");
-            Kill("desktop.bat");
-            Kill("SharpRdp");
             if (ps)
+            {
                 Kill("powershell");
+                Kill("desktop.bat");
+                Kill("SharpRdp");
+            }
         }
         Thread.Sleep(500);
     }

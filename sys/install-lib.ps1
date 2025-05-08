@@ -41,6 +41,57 @@ function Test {
     }
 }
 
+
+function Run-ProgramAsUser {
+    param (
+        [string]$programPath,
+        [string]$arguments,
+        [int]$timeout
+    )
+
+    $local_user = "rdp"
+    $local_password = (Get-Content "C:\Windows\info.txt" -Raw).Trim()
+    $securePassword = ConvertTo-SecureString $local_password -AsPlainText -Force
+
+    $startInfo = New-Object System.Diagnostics.ProcessStartInfo
+    $startInfo.FileName = $programPath
+    $startInfo.Arguments = $arguments
+    $startInfo.UserName = $local_user
+    $startInfo.Password = $securePassword
+    $startInfo.UseShellExecute = $false
+    $startInfo.CreateNoWindow = $true
+    $startInfo.LoadUserProfile = $true
+    $startInfo.RedirectStandardOutput = $true
+    $startInfo.RedirectStandardError = $true
+
+    $process = New-Object System.Diagnostics.Process
+    $process.StartInfo = $startInfo
+
+    $null = $process.Start()
+
+    $stdout = $process.StandardOutput.ReadToEnd()
+    $stderr = $process.StandardError.ReadToEnd()
+
+    if ($timeout -gt 0) {
+        if (-not $process.WaitForExit($timeout * 1000)) {
+            Write-Host "Process timeout reached. Killing process..."
+            $process.Kill()
+        }
+    } else {
+        $process.WaitForExit()
+    }
+
+    # Print output
+    if ($stdout) { Write-Host $stdout }
+    if ($stderr) { Write-Host "ERROR: $stderr" }
+
+    # Extra wait to flush async handlers
+    $process.WaitForExit(100)
+}
+
+
+
+
 function sharpRdp {
     $programPath = Join-Path $scriptDir "../rdp/SharpRdp.exe"
     $resolvedPath = Resolve-Path $programPath -ErrorAction SilentlyContinue
@@ -80,8 +131,8 @@ function WaitForLocalTag {
     )
 
     Write-Host "Waiting for local tag $tag ..."
-    Set-Content -Path 'C:\tag_local_r.txt' -Value $tag
-    $filePath = "C:\tag_local.txt"
+    Set-Content -Path 'C:\install\tag_local_r.txt' -Value $tag
+    $filePath = "C:\install\tag_local.txt"
     $startTime = Get-Date
 
     function IsTag() {
@@ -150,8 +201,8 @@ function WaitForTag {
                     [int]$timeout
                 )
                 Write-Host "Waiting for tag $tag ..."
-                Set-Content -Path 'C:\tagR.txt' -Value $tag
-                $filePath = "C:\tag.txt"
+                Set-Content -Path 'C:\install\tagR.txt' -Value $tag
+                $filePath = "C:\install\tag.txt"
                 $startTime = Get-Date
 
                 function IsTag() {

@@ -1,3 +1,5 @@
+& "C:\install\install-user.ps1"
+
 # Stop IIS service if it exists
 if (Get-Service -Name W3SVC -ErrorAction SilentlyContinue) {
     Stop-Service -Name W3SVC
@@ -23,6 +25,7 @@ try {
 catch {
 
 }
+
 
 
 function Update-FirewallRule {

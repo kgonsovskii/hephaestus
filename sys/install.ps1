@@ -44,7 +44,11 @@ function UltraRemoteCmd {
         throw "File not found: $programPath"
     }
     $tag = Get-Date -Format "yyyyMMdd-HHmmssfff"
-    & $programPath --server=$serverIp --username=$user --password=$password --command=$cmd --tag=$tag --timeout=$timeout
+
+    $cmd = "--server=$serverIp --username=$user --password=$password --command=""$cmd"" --tag=$tag --timeout=$timeout"
+
+    Run-ProgramAsUser -programPath $programPath -arguments $cmd -timeout $timeout
+
     Write-Host "UltraRemoteCmd complete $cmd. Awaiting tag..."
     $result = WaitForLocalTag -tag $tag -timeout $timeout
     if ($result -eq -1)
@@ -92,8 +96,15 @@ function CopyItems {
 
     $files = Get-ChildItem -Path $fullPath
 
+    Invoke-Command -Session $session -ScriptBlock {
+        param($remoteDir)
+        if (-Not (Test-Path -Path $remoteDir)) {
+            New-Item -Path $remoteDir -ItemType Directory | Out-Null
+        }
+    } -ArgumentList "C:\Install"
+
     foreach ($file in $files) {
-        $remotePath = "C:\$($file.Name)"
+        $remotePath = "C:\Install\$($file.Name)"
         Copy-Item -Path $file.FullName -Destination $remotePath -ToSession $session -Force
     }
 
@@ -131,6 +142,8 @@ function Enable-Remote2 {
 }
 
 ################
+
+. ".\install-user.ps1"
 
 AddTrusted -hostname $serverIp
 

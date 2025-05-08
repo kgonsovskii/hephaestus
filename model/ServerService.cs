@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Security;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -138,25 +139,6 @@ public partial class ServerService
         }
         return result;
     }
-    
-    public string RunExeDesktop(string exe, string serverName, string? arguments = null)
-    {
-        var args = $"{serverName}";
-        if (!string.IsNullOrEmpty(arguments))
-            args += $" {arguments}";
-        var sa = new ProcessStartInfo
-        {
-            FileName = exe,
-            Arguments = args,
-            CreateNoWindow = false,
-            UseShellExecute = true,
-            RedirectStandardOutput = false,
-            RedirectStandardError = false
-        };
-        Process process = new Process { StartInfo = sa };
-        process.Start();
-        return "OK";
-    }
 
     public string RunExe(string exe, string serverName, string? arguments = null)
     {
@@ -167,10 +149,11 @@ public partial class ServerService
         {
             FileName = exe,
             Arguments = args,
-            CreateNoWindow = true,
+            CreateNoWindow = false,
             UseShellExecute = false,
             RedirectStandardOutput = false,
-            RedirectStandardError = false
+            RedirectStandardError = false,
+            LoadUserProfile = false
         };
         Process process = new Process { StartInfo = sa };
         process.Start();
@@ -182,126 +165,9 @@ public partial class ServerService
         return Path.Combine(ServerModelLoader.SysDirStatic, scriptName + ".ps1");
     }
 
-    public string RunScriptDesktop(string server, string scriptFile, string logFile, Action<string>? logger,
-        int timeoutMinutes,
-        params (string Name, object Value)[] parameters)
-    {
-        try
-        {
-            File.Delete(logFile);
-        }
-        catch
-        {
-        }
-
-        scriptFile = SysScript1(scriptFile);
-        var args = string.Join(" ", parameters.Select(p => $"-{p.Name} {p.Value}"));
-        var workingDir = ServerDir(server);
-
-        // Get initial PowerShell process IDs
-        var initialPids = Process.GetProcessesByName("powershell").Select(p => p.Id).ToList();
-
-        var cmd =
-            $"powershell.exe -WindowStyle Normal -ExecutionPolicy Bypass -file \"{scriptFile}\" -serverName \"{server}\" > {logFile}";
-        System.IO.File.WriteAllText("C:\\desktop.bat", cmd);
-        var launcher = new Process
-        {
-            StartInfo = new ProcessStartInfo
-            {
-                FileName = "C:\\desktop.bat",
-                UseShellExecute = true,
-                CreateNoWindow = false
-            }
-        };
-        launcher.Start();
-
-        // Wait until a new PowerShell process appears
-        Stopwatch sw = Stopwatch.StartNew();
-        Process? targetProcess = null;
-
-        while (sw.Elapsed < TimeSpan.FromMinutes(timeoutMinutes))
-        {
-            var currentPids = Process.GetProcessesByName("powershell").Select(p => p.Id).ToList();
-            var newPids = currentPids.Except(initialPids).ToList();
-            if (newPids.Any())
-            {
-                targetProcess = Process.GetProcessById(newPids.First());
-                break;
-            }
-
-            Thread.Sleep(1000); // Check every second
-        }
-
-        if (targetProcess == null)
-            throw new TimeoutException("PowerShell process did not start within the timeout.");
-
-        // Real-time log reading (every 2 seconds)
-        var cts = new CancellationTokenSource();
-        var logBuilder = new StringBuilder();
-
-        var logThread = new Thread(() =>
-        {
-            long lastPosition = 0;
-
-            while (!cts.Token.IsCancellationRequested)
-            {
-                try
-                {
-                    // Open the log file with the FileShare.ReadWrite option to allow concurrent read/write
-                    if (File.Exists(logFile))
-                    {
-                        using var fs = new FileStream(logFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-                        fs.Seek(lastPosition, SeekOrigin.Begin); // Move to the last read position
-                        using var reader = new StreamReader(fs);
-                        string? line;
-                        while ((line = reader.ReadLine()) != null)
-                        {
-                            logger?.Invoke(line); // Call the logger action to log output in real-time
-                            logBuilder.AppendLine(line); // Append line to internal log
-                        }
-
-                        lastPosition = fs.Position; // Update the position to the end of the log
-                    }
-                }
-                catch (Exception ex)
-                {
-                    // Handle any issues with reading the file
-                    logger?.Invoke($"Error reading log: {ex.Message}");
-                }
-
-                Thread.Sleep(3000); // Sleep for 2 seconds before reading again
-            }
-        });
-
-        logThread.IsBackground = true;
-        logThread.Start();
-
-        // Wait for the new PowerShell process to exit
-        if (!targetProcess.WaitForExit(timeoutMinutes * 60 * 1000))
-        {
-            cts.Cancel();
-            logThread.Join();
-            try
-            {
-                targetProcess.Kill();
-            }
-            catch
-            {
-            }
-
-            throw new TimeoutException("PowerShell script timed out.");
-        }
-
-        // Stop log thread after process exits
-        cts.Cancel();
-        logThread.Join();
-
-        // Return log contents after the process finishes
-        return logBuilder.ToString() + Environment.NewLine + "SYS ACCOMPLISHED";
-    }
 
 
-    public string RunScript(string server, string scriptfILE, string LogFile, Action<string>? logger, params (string Name, object Value)[] parameters)
+    public string RunScript(string server, string scriptFile, string LogFile, Action<string>? logger, params (string Name, object Value)[] parameters)
     {
         try
         {
@@ -310,11 +176,11 @@ public partial class ServerService
         catch (Exception e)
         {
         }
-        scriptfILE = SysScript1(scriptfILE);
+        scriptFile = SysScript1(scriptFile);
         using (Process process = new Process())
         {
             process.StartInfo.FileName = "powershell.exe";
-            process.StartInfo.Arguments = $"-NoProfile -ExecutionPolicy Bypass -file \"{scriptfILE}\" " +
+            process.StartInfo.Arguments = $"-NoProfile -ExecutionPolicy Bypass -file \"{scriptFile}\" " +
                                           string.Join(" ", parameters.Select(p => $"-{p.Name} {p.Value}"));
             process.StartInfo.RedirectStandardOutput = true;
             process.StartInfo.RedirectStandardError = true;

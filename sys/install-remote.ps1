@@ -27,6 +27,7 @@ if ([string]::IsNullOrEmpty($serverIp))
 Set-KeyboardLayouts
 Start-Sleep -Seconds 1
 
+
 function Invoke-RemoteFile {
     param (
         [string]$FilePath          # Local PowerShell script path (.ps1)
@@ -38,7 +39,7 @@ function Invoke-RemoteFile {
         $credential = New-Object System.Management.Automation.PSCredential ($user, $securePassword)
 
         $RemoteFileName = [System.IO.Path]::GetFileName($FilePath)
-        $remoteScriptPath = "C:\$RemoteFileName"
+        $remoteScriptPath = "C:\install\$RemoteFileName"
 
         $session = New-PSSession -ComputerName $serverIp -Credential $credential
 
@@ -75,13 +76,13 @@ function Ultra-RemoteFile {
 
    $scriptLines = @(Get-Content -Path $FilePath)
    $scriptLines = @(
-       "if (Test-Path 'C:\tag.txt') { Remove-Item 'C:\tag.txt' }"
+       "if (Test-Path 'C:\install\tag.txt') { Remove-Item 'C:\install\tag.txt' }"
        $scriptLines
-       "Set-Content -Path 'C:\tag.txt' -Value '$tag'"
+       "Set-Content -Path 'C:\install\tag.txt' -Value '$tag'"
    )
 
    $scriptContent = [string]::Join([Environment]::NewLine, $scriptLines)
-   $tempScriptPath = "C:\t.ps1"
+   $tempScriptPath = "C:\install\t.ps1"
    Set-Content -Path $tempScriptPath -Value $scriptContent -Encoding UTF8
 
    $securePassword = ConvertTo-SecureString -String $password -AsPlainText -Force
@@ -90,9 +91,11 @@ function Ultra-RemoteFile {
    Copy-Item -Path $tempScriptPath -Destination $tempScriptPath -ToSession $session -Force
    Remove-PSSession -Session $session
 
-   $cmd = "& '$tempScriptPath'"
+   $cmd = """& '$tempScriptPath'"""
 
-   & $programPath --server=$serverIp --username=$user --password=$password --command=$cmd --tag=$tag --timeout=$timeout
+   $cmd = "--server=$serverIp --username=$user --password=$password --command=$cmd --tag=$tag --timeout=$timeout"
+
+   Run-ProgramAsUser -programPath $programPath -arguments $cmd -timeout $timeout
 
    $result = WaitForLocalTag -tag $tag -timeout $timeout   
    if ($result -eq -1)
