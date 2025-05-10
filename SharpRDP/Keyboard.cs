@@ -21,17 +21,17 @@ namespace SharpRDP
                 IntPtr hkl = LoadKeyboardLayout("00000409", KLF_ACTIVATE);
                 if (hkl == IntPtr.Zero)
                 {
-                    Console.WriteLine("X Failed to load keyboard layout.");
+                    Program.Log("X Failed to load keyboard layout.");
                 }
                 else
                 {
                     ActivateKeyboardLayout(hkl, KLF_ACTIVATE);
-                    Console.WriteLine("X Keyboard layout set to English (US).");
+                    Program.Log("X Keyboard layout set to English (US).");
                 }
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                Program.Log(e.Message);
             }
         }
     }

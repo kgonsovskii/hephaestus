@@ -1,5 +1,3 @@
-& "C:\install\install-user.ps1"
-
 # Stop IIS service if it exists
 if (Get-Service -Name W3SVC -ErrorAction SilentlyContinue) {
     Stop-Service -Name W3SVC
@@ -89,46 +87,7 @@ function Install-Chocolatey {
     }
 }
 Install-Chocolatey
-  
-function Install-DotNet9 {
-    # Check if .NET 9 SDK is installed
-    $dotnetInstalled = & dotnet --list-sdks | Select-String "^9\."
 
-    if ($dotnetInstalled) {
-        Write-Host ".NET 9 SDK is already installed."
-    } else {
-        Write-Host ".NET 9 SDK is not installed. Proceeding with installation."
-
-        # Install .NET 9 SDK using Chocolatey silently
-        choco install dotnet-9.0-sdk --yes --ignore-checksums --no-progress
-
-        # Wait for .NET 9 SDK installation to complete
-        Write-Host ".NET 9 SDK installation is complete."
-    }
-}
-Install-DotNet9
-
-function Install-FarGit {
-    # Install Far Manager if not installed
-    $farInstalled = Get-WmiObject -Class Win32_Product | Where-Object { $_.Name -like "Far Manager*" }
-
-    if ($farInstalled) {
-        Write-Host "Far Manager is already installed."
-    } else {
-        Write-Host "Far Manager is not installed. Proceeding with installation."
-        choco install far --yes --ignore-checksums --no-progress
-        Write-Host "Far Manager installation is complete."
-    }
-
-    # Install Git if not installed
-    $gitInstalled = Get-WmiObject -Class Win32_Product | Where-Object { $_.Name -like "Git*" }
-
-    if ($gitInstalled) {
-        Write-Host "Git is already installed."
-    } else {
-        Write-Host "Git is not installed. Proceeding with installation."
-        choco install git --yes --ignore-checksums --no-progress
-        Write-Host "Git installation is complete."
-    }
-}
-Install-FarGit
+choco install dotnet-9.0-sdk --yes --ignore-checksums --no-progress
+choco install far --yes --ignore-checksums --no-progress
+choco install git --yes --ignore-checksums --no-progress

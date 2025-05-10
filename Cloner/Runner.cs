@@ -19,14 +19,15 @@ public class Runner
     public static string LogFile;
     public static string Server;
     public static int LocalSession;
-    public static string CurrentTag;
-    public static void Kill(string namePart)
+    public static string RunInTag;
+    public static bool RunInFlag = false;
+    private static void Kill(string namePart)
     {
         if (string.IsNullOrWhiteSpace(namePart))
             throw new ArgumentException("Name part cannot be null or empty.", nameof(namePart));
 
         var processes = Process.GetProcesses()
-            .Where(p => p.ProcessName.IndexOf(namePart, StringComparison.OrdinalIgnoreCase) >= 0);
+            .Where(p => p.ProcessName.IndexOf(namePart, StringComparison.OrdinalIgnoreCase) >= 0).ToArray();
 
         foreach (var process in processes)
         {
@@ -40,15 +41,17 @@ public class Runner
                 Console.WriteLine($"Failed to kill {process.ProcessName} (PID {process.Id}): {ex.Message}");
             }
         }
-        Thread.Sleep(1000);
+        Thread.Sleep(500);
     }
 
     public static string RdpPassword => System.IO.File.ReadAllText("C:\\Windows\\info.txt").Trim();
 
-    public static void RunIn(string runExe, bool isWait = true, bool isTag = false, int timeout = 0,
+    public static void RunIn(string runExe, bool isWait = true, bool isTag = false, bool remoteTag = false, int timeout = 0,
         params (string Name, object Value)[] parameters)
     {
-        Run(ServerModelLoader.PsExec, true, false, timeout, 
+        RunInFlag = remoteTag;
+        RunInTag = Environment.TickCount.ToString();
+        Run(ServerModelLoader.PsExec, isWait, isTag, timeout, 
             new ValueTuple<string, object>("-i", LocalSession),
             new ValueTuple<string, object>("-p", RdpPassword),
             new ValueTuple<string, object>("-u", "rdp"),
@@ -60,17 +63,18 @@ public class Runner
         char ravno = ' ';
         if (runExe.Contains("SharpRdp"))
             ravno = '=';
-        var tag = Environment.TickCount.ToString();
+
         var prms = parameters.ToList();
-        if (isTag)
+        if (isTag && !string.IsNullOrEmpty(RunInTag) && !runExe.Contains("powershell"))
         {
-            prms.Add(new ValueTuple<string, object>("--tag", tag));
-            CurrentTag = tag;
+            prms.Add(new ValueTuple<string, object>("--tag", RunInTag)); ;
         }
 
-        if (isWait)
+        if (isWait && !runExe.Contains("powershell"))
             prms.Add(new ValueTuple<string, object>("--timeout", timeout));
-        return string.Join(' ', prms.Select(p => $"{p.Item1}{ravno}{p.Item2}"));
+        var result = string.Join(' ', prms.Select(p => $"{p.Item1}{ravno}{p.Item2}"));
+        result = result.Replace("$tag", RunInTag);
+        return result;
     }
     
     public static void Run(string runExe, bool isWait = true, bool isTag = false, int timeout=0,  params (string Name, object Value)[] parameters)
@@ -86,7 +90,7 @@ public class Runner
             process.StartInfo.CreateNoWindow = true;
             process.StartInfo.WorkingDirectory = ServerModelLoader.RootDirStatic;
             
-            Console.WriteLine("RUN: " + runExe + " " + args);
+            Log("RUN: " + runExe + " " + args);
 
             StringBuilder output = new StringBuilder();
             StringBuilder error = new StringBuilder();
@@ -119,7 +123,10 @@ public class Runner
             }
 
             if (isTag)
-                WaitForLocalTag(CurrentTag, timeout);
+            {
+                WaitForLocalTag(RunInTag, timeout);
+            }
+
             Thread.Sleep(100);
         }
     }
@@ -134,7 +141,7 @@ public class Runner
             if (timeout != 0 && Environment.TickCount - start > timeout)
             {
                 Log($"Waiting for local tag {localTag} timeout");
-                return false;
+                throw new InvalidOperationException($"Waiting for local tag {localTag} timeout");
             }
             string tag = "";
             try
@@ -153,6 +160,13 @@ public class Runner
         }
 
         return false;
+    }
+    
+    public static void WaitForRemoteTag(string remoteTag, int timeout)
+    {
+        RunPsFile("install-wait", true, true, timeout,
+            new ValueTuple<string, object>("-timeout", timeout),
+            new ValueTuple<string, object>("-tag", RunInTag));
     }
     
     public static void RunPs(string command,bool isWait = true, bool isTag = false, int timeout=0 )
@@ -177,7 +191,7 @@ public class Runner
         );
     }
 
-    public static string SysScript(string scriptName)
+ public static string SysScript(string scriptName)
     {
         return Path.Combine(ServerModelLoader.SysDirStatic, scriptName + ".ps1");
     }
@@ -196,14 +210,17 @@ public class Runner
 
     public static void OpenSession()
     {
+        RunInTag = Environment.TickCount.ToString();
+        var cmd = "cls";
         Runner.Kill("SharpRdp.exe");
         Run(ServerModelLoader.SharpRdpLocal, false, true, 6000,
             new ValueTuple<string, object>("--server", "localhost"),
             new ValueTuple<string, object>("--username", "rdp"),
             new ValueTuple<string, object>("--password", Runner.RdpPassword),
-            new ValueTuple<string, object>("--command", $"\"cls\""));
+            new ValueTuple<string, object>("--command", $"\"{cmd}\""));
         LocalSession = RdpSessionHelper.GetActiveRdpSessionIdForUser("rdp");
         Log($"Local session: {Runner.LocalSession}");
+        RunInTag = "";
     }
 
     public static void CloseSession()
@@ -211,5 +228,7 @@ public class Runner
         Runner.Kill("SharpRdp");
         Runner.Kill("powershell");
         Runner.Kill("PsExec64");
+        Runner.Kill("Refiner");
+        Runner.Kill("Packer");
     }
 }

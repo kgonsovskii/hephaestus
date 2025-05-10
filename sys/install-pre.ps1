@@ -15,8 +15,6 @@ if ($serverName -eq "") {
 . ".\current.ps1" -serverName $serverName
 . ".\install-lib.ps1" -serverName $serverName
 
-$password = $server.clone.clonePassword
-$user=$server.clone.cloneUser
 $serverIp = $server.clone.cloneServerIp
 
 Write-Host "Install-Pre $serverName, serverIp $serverIp, rebooting $reboot"

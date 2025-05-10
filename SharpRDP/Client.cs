@@ -173,7 +173,7 @@ namespace SharpRDP
         {
             LogonErrorCode = e.lError;
             var errorstatus = Enum.GetName(typeof(LogonErrors), (uint)LogonErrorCode);
-            Console.WriteLine("[-] Logon Error           :  {0} - {1}", LogonErrorCode, errorstatus);
+            Program.Log("[-] Logon Error           :  {0} - {1}", LogonErrorCode, errorstatus);
             Thread.Sleep(1000);
 
             if(LogonErrorCode == -5 && takeover == true)
@@ -182,14 +182,14 @@ namespace SharpRDP
                 var rdpSession = (AxMsRdpClient9NotSafeForScripting)sender;
                 Thread.Sleep(1000);
                 keydata = (IMsRdpClientNonScriptable)rdpSession.GetOcx();
-                Console.WriteLine("[+] Another user is logged on, asking to take over session");
+                Program.Log("[+] Another user is logged on, asking to take over session");
                 SendElement("Tab");
                 Thread.Sleep(500);
                 SendElement("Enter+down");
                 Thread.Sleep(500);
                 SendElement("Enter+up");
                 Thread.Sleep(500);
-                Console.WriteLine("[+] Sleeping for 30 seconds");
+                Program.Log("[+] Sleeping for 30 seconds");
                 Task.Delay(31000).GetAwaiter().GetResult();
                 Marshal.ReleaseComObject(rdpSession);
                 Marshal.ReleaseComObject(keydata);
@@ -203,13 +203,13 @@ namespace SharpRDP
         private void RdpConnectionOnOnLoginComplete(object sender, EventArgs e)
         {
             var rdpSession = (AxMsRdpClient9NotSafeForScripting)sender;
-            Console.WriteLine("[+] Connected to          :  {0}", target);
+            Program.Log("[+] Connected to          :  {0}", target);
             Thread.Sleep(1000);
             keydata = (IMsRdpClientNonScriptable)rdpSession.GetOcx();
 
             if (LogonErrorCode == -2)
             {
-                Console.WriteLine("[+] User not currently logged in, creating new session");
+                Program.Log("[+] User not currently logged in, creating new session");
                 Task.Delay(10000).GetAwaiter().GetResult();
             }
 
@@ -219,7 +219,7 @@ namespace SharpRDP
                 privinfo = "elevated";
             }
 
-            Console.WriteLine("[+] Execution priv type   :  {0}", privinfo);
+            Program.Log("[+] Execution priv type   :  {0}", privinfo);
             Thread.Sleep(1000);
 
             try
@@ -247,21 +247,21 @@ namespace SharpRDP
             }
             catch (Exception exception)
             {
-                Console.WriteLine("HANLDED: " + exception.Message);
+                Program.Log("HANLDED: " + exception.Message);
             }
-            Console.WriteLine("Finish keys");
+            Program.Log("Finish keys");
             Thread.Sleep(1000);
 
 
             if (!Program.IsLocal())
             {
-                Console.WriteLine("[+] Disconnecting from    :  {0}", target);
+                Program.Log("[+] Disconnecting from    :  {0}", target);
                 rdpSession.Disconnect();
             }
             else
             {
                 Program.Report();
-                Console.WriteLine("[+] No disconnecting    :  {0}", target);
+                Program.Log("[+] No disconnecting    :  {0}", target);
             }
         }
 
@@ -269,10 +269,10 @@ namespace SharpRDP
         {
             DisconnectCode = e.discReason;
             var dire = Enum.GetName(typeof(DisconnectReasons), (uint)DisconnectCode);
-            Console.WriteLine("[+] Connection closed     :  {0}", target);
+            Program.Log("[+] Connection closed     :  {0}", target);
             if(e.discReason != 1)
             {
-                Console.WriteLine("[-] Disconnection Reason  :  {0} - {1}", DisconnectCode, dire);
+                Program.Log("[-] Disconnection Reason  :  {0} - {1}", DisconnectCode, dire);
             }
 
             Program.completed = true;
@@ -284,7 +284,7 @@ namespace SharpRDP
         {
             if(runtype == "taskmgr")
             {
-                Console.WriteLine("[+] Running task manager");
+                Program.Log("[+] Running task manager");
                 Thread.Sleep(500);
                 SendText("taskmgr");
                 Thread.Sleep(1000);
@@ -303,7 +303,7 @@ namespace SharpRDP
                 Thread.Sleep(500);
             }
 
-            Console.WriteLine("[+] Executing {0}", cmd.ToLower());
+            Program.Log("[+] Executing {0}", cmd.ToLower());
             SendText(cmd.ToLower());
             Thread.Sleep(1000);
 
@@ -363,7 +363,7 @@ namespace SharpRDP
         {
             if (runtype == "taskmgr")
             {
-                Console.WriteLine("[+] Executing task manager");
+                Program.Log("[+] Executing task manager");
                 Thread.Sleep(500);
                 SendText("taskmgr");
                 Thread.Sleep(3000);
@@ -382,7 +382,7 @@ namespace SharpRDP
                 Thread.Sleep(500);
             }
 
-            Console.WriteLine("[+] Executing {0} from {1}", cmd.ToLower(), consoletype);
+            Program.Log("[+] Executing {0} from {1}", cmd.ToLower(), consoletype);
             SendText(consoletype);
             Thread.Sleep(1000);
 

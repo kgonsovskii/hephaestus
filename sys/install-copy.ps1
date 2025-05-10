@@ -48,7 +48,5 @@ function CopyItems {
     }
 }
 
-WaitRestart -once $false
-
 
 CopyItems -FileMask "install*.*"

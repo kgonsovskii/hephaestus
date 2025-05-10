@@ -67,10 +67,3 @@ function Download-File {
   $client = New-Object System.Net.WebClient
   $client.DownloadFile($Uri, $OutFile)
 }
-
-# Start W3SVC again if it exists
-if (Get-Service -Name W3SVC -ErrorAction SilentlyContinue) {
-    Start-Service -Name W3SVC
-} else {
-    Write-Host "Service W3SVC does not exist."
-}

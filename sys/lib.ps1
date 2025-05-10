@@ -2,29 +2,6 @@ Write-Host "lib"
 
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 
-function Defaults {
-
-    if (!(Test-Path -Path "C:\data")) {
-        New-Item -ItemType Directory -Path $dirPath | Out-Null
-    }
-    $subfolders = Get-ChildItem -Path "C:\data"-Directory
-    if ($subfolders.Count -eq 0) {
-        New-Item -ItemType Directory -Path "C:\data\default" | Out-Null
-    }
-
-    if (-not (Test-Path "C:/data/default/server.json"))
-    {
-        $builderPath = Join-Path -Path $scriptDir -ChildPath "../TroyanBuilder/bin/debug/net9.0/TroyanBuilder.exe"
-        Start-Process -Wait $builderPath -ArgumentList "default"
-    }
-
-    if (-not (Test-Path "C:/data/debug/server.json"))
-    {
-        $builderPath = Join-Path -Path $scriptDir -ChildPath "../TroyanBuilder/bin/debug/net9.0/TroyanBuilder.exe"
-        Start-Process -Wait $builderPath -ArgumentList "debug"
-    }
-}
-
 function IsLocalServer
 {
     param ([string] $serverIp)
@@ -39,7 +16,6 @@ function IsLocalServer
 
 function detectServer()
 {
-    Defaults
     return "default"
     #$path = "C:\data"
     #$directories = Get-ChildItem -Path $Path -Directory | Select-Object -First 1

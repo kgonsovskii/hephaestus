@@ -6,7 +6,9 @@ public partial class ServerService
     {
         SaveServerLite(serverName, serverModel);
         var p = GetServerLite(serverName);
-        return RunExe(ServerModelLoader.Cloner, serverName);
+        var result = RunScript(p.Server, "install-request", p.UserCloneLog, (a) => Console.WriteLine(a),
+            new ValueTuple<string, object>("serverName", p.Server));
+        return result;
     }
 
 }

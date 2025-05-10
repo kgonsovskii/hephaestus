@@ -34,11 +34,29 @@ namespace SharpRDP
         static public bool completed = false;
         private static Thread WaithThread;
         public static string tag;
+        public static string LogFile;
 
         public static bool IsLocal()
         {
             string appName = Process.GetCurrentProcess().ProcessName;
             return appName.Contains("_local");
+        }
+
+        public static void Log(string s, params object[] args)
+        {
+            Console.WriteLine(s, args);
+            if (string.IsNullOrEmpty(LogFile))
+                return;
+            var p = "";
+            if (args != null)
+                p = string.Join(" ", args);
+            try
+            {
+                File.AppendAllText(LogFile, s + " " + p + "\r\n");
+            }
+            catch (Exception e)
+            {
+            }
         }
 
         static void Main(string[] args)
@@ -71,7 +89,7 @@ namespace SharpRDP
             if (!arguments.ContainsKey("server") || !arguments.ContainsKey("username") ||
                 !arguments.ContainsKey("password") || !arguments.ContainsKey("command"))
             {
-                Console.WriteLine(
+                Program.Log(
                     "Usage: program.exe --server=<IP> --username=<User> --password=<Pass> --command=\"<Command>\"");
                 return;
             }
@@ -90,13 +108,16 @@ namespace SharpRDP
             if (arguments.ContainsKey("timeout"))
                 timeout = arguments["timeout"];
             
+            if (arguments.ContainsKey("logfile"))
+                LogFile = arguments["logfile"];
             
-            Console.WriteLine("\n--- Confirming Input ---");
-            Console.WriteLine($"Server: {server}");
-            Console.WriteLine($"Username: {username}");
-            Console.WriteLine($"Password: {new string('*', password.Length)}"); // Masking password
-            Console.WriteLine($"Command: {command}");
-            Console.WriteLine($"Timeout: {timeout}");
+            
+            Program.Log("\n--- Confirming Input ---");
+            Program.Log($"Server: {server}");
+            Program.Log($"Username: {username}");
+            Program.Log($"Password: {new string('*', password.Length)}"); // Masking password
+            Program.Log($"Command: {command}");
+            Program.Log($"Timeout: {timeout}");
 
             var timeOutMs = 1000 * 60 * 60;
             if (!string.IsNullOrEmpty(timeout))
@@ -113,11 +134,11 @@ namespace SharpRDP
             try
             {
                 Client rdpconn = new Client();
-                Console.WriteLine("Run RDP");
+                Program.Log("Run RDP");
                 rdpconn.CreateRdpConnection(server, username, domain, password, command, execw, execElevated,
                     connectdrive, takeover, nla);
                 completed = true;
-                Console.WriteLine("RDP completed");
+                Program.Log("RDP completed");
                 Thread.Sleep(300);
                 Report();
                 WaithThread.Abort();
@@ -133,19 +154,19 @@ namespace SharpRDP
             if (IsLocal())
             {
                 System.IO.File.WriteAllText(tagFile, tag + " tag ready");
-                Console.WriteLine("No local");
+                Program.Log("No local");
                 return;
             }
-            Console.WriteLine($"Reprint local tag: {tag}, {completed}");
+            Program.Log($"Reprint local tag: {tag}, {completed}");
             if (!completed)
             {
                 System.IO.File.WriteAllText(tagFile, tag + " timeout");
-                Console.WriteLine("RDP connection thread completed with error.");
+                Program.Log("RDP connection thread completed with error.");
             }
             else
             {
                 System.IO.File.WriteAllText(tagFile, tag + " ok");
-                Console.WriteLine("RDP connection completed successfully.");
+                Program.Log("RDP connection completed successfully.");
             }
         }
 
