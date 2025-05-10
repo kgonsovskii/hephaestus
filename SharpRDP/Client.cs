@@ -218,30 +218,51 @@ namespace SharpRDP
             {
                 privinfo = "elevated";
             }
+
             Console.WriteLine("[+] Execution priv type   :  {0}", privinfo);
             Thread.Sleep(1000);
 
-            SendElement("Win+R+down");
-            Thread.Sleep(500);
-            SendElement("Win+R+up");
+            try
+            {
+
+
+                SendElement("Win+R+down");
+                Thread.Sleep(500);
+                SendElement("Win+R+up");
+                Thread.Sleep(1000);
+
+
+                if (execwith == "cmd")
+                {
+                    RunConsole("cmd.exe");
+                }
+                else if (execwith == "powershell" || execwith == "ps")
+                {
+                    RunConsole("powershell.exe");
+                }
+                else
+                {
+                    RunRun();
+                }
+            }
+            catch (Exception exception)
+            {
+                Console.WriteLine(exception);
+            }
+            Console.WriteLine("Finish keys");
             Thread.Sleep(1000);
 
-            if (execwith == "cmd")
+
+            if (!Program.IsLocal())
             {
-                RunConsole("cmd.exe");
-            }
-            else if (execwith == "powershell" || execwith == "ps")
-            {
-                RunConsole("powershell.exe");
+                Console.WriteLine("[+] Disconnecting from    :  {0}", target);
+                rdpSession.Disconnect();
             }
             else
             {
-                RunRun();
+                Program.Report();
+                Console.WriteLine("[+] No disconnecting    :  {0}", target);
             }
-
-            Thread.Sleep(1000);
-            Console.WriteLine("[+] Disconnecting from    :  {0}", target);
-            rdpSession.Disconnect();
         }
 
         private void RdpConnectionOnOnDisconnected(object sender, IMsTscAxEvents_OnDisconnectedEvent e)

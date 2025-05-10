@@ -76,8 +76,18 @@
     <Copy
             SourceFiles="$(OutputPath)$(AssemblyName).exe"
             DestinationFiles="$(MSBuildThisFileDirectory)..\rdp\$(AssemblyName).exe" />
+
+    <Copy
+            SourceFiles="$(OutputPath)$(AssemblyName).exe"
+            DestinationFiles="$(MSBuildThisFileDirectory)..\rdp\$(AssemblyName)_local.exe" />
+    
     <Copy
             SourceFiles="$(OutputPath)$(AssemblyName).exe"
             DestinationFiles="$(MSBuildThisFileDirectory)..\rdp\rdp\$(AssemblyName).exe" />
+
+    <Copy
+            SourceFiles="$(OutputPath)$(AssemblyName).exe"
+            DestinationFiles="$(MSBuildThisFileDirectory)..\rdp\rdp\$(AssemblyName)_local.exe" />
+
   </Target>
 </Project>

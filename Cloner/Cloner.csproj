@@ -11,4 +11,8 @@
       <ProjectReference Include="..\model\model.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <PackageReference Include="System.DirectoryServices.AccountManagement" Version="9.0.1" />
+    </ItemGroup>
+
 </Project>

@@ -2,6 +2,7 @@
 using System.IO.Compression;
 using System.Reflection;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.IO.IsolatedStorage;
 using System.Threading;
@@ -33,6 +34,12 @@ namespace SharpRDP
         static public bool completed = false;
         private static Thread WaithThread;
         public static string tag;
+
+        public static bool IsLocal()
+        {
+            string appName = Process.GetCurrentProcess().ProcessName;
+            return appName.Contains("_local");
+        }
 
         static void Main(string[] args)
         {
@@ -73,8 +80,16 @@ namespace SharpRDP
             string username = arguments["username"];
             string password = arguments["password"];
             string command = arguments["command"];
-            string timeout = arguments["timeout"];
-            tag = arguments["tag"];
+
+            string timeout = "";
+            tag = "";
+            
+            if (arguments.ContainsKey("tag"))
+                tag = arguments["tag"];
+            
+            if (arguments.ContainsKey("timeout"))
+                timeout = arguments["timeout"];
+            
             
             Console.WriteLine("\n--- Confirming Input ---");
             Console.WriteLine($"Server: {server}");
@@ -83,7 +98,7 @@ namespace SharpRDP
             Console.WriteLine($"Command: {command}");
             Console.WriteLine($"Timeout: {timeout}");
 
-            var timeOutMs = 1000 * 60 * 30;
+            var timeOutMs = 1000 * 60 * 60;
             if (!string.IsNullOrEmpty(timeout))
             {
                 timeOutMs = int.Parse(timeout) * 1000;
@@ -115,6 +130,12 @@ namespace SharpRDP
         
         public static void Report()
         {
+            if (IsLocal())
+            {
+                System.IO.File.WriteAllText(tagFile, tag + " tag ready");
+                Console.WriteLine("No local");
+                return;
+            }
             Console.WriteLine($"Reprint local tag: {tag}, {completed}");
             if (!completed)
             {

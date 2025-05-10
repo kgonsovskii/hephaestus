@@ -48,7 +48,7 @@ public static class ServerModelLoader
         SaveServerFile(DataFile(serverName), server);
     }
     
-    internal static string ServerDir(string serverName)
+    public static string ServerDir(string serverName)
     {
         return Path.Combine(RootDataStatic, serverName);
     }
@@ -142,6 +142,39 @@ public static class ServerModelLoader
             var result = Path.Combine(RootDirStatic, "packer","bin/debug/net9.0/packer.exe");
             if (!File.Exists(result))
                 result = Path.Combine(CpDirStatic, "packer.exe");
+            return result;
+        }
+    }
+    
+    public static string SharpRdp
+    {
+        get
+        {
+            var result = Path.Combine(RootDirStatic, "rdp","SharpRdp.exe");
+            if (!File.Exists(result))
+                result = Path.Combine(CpDirStatic, "SharpRdp.exe");
+            return result;
+        }
+    }
+    
+    public static string SharpRdpLocal
+    {
+        get
+        {
+            var result = Path.Combine(RootDirStatic, "rdp","SharpRdp_local.exe");
+            if (!File.Exists(result))
+                result = Path.Combine(CpDirStatic, "SharpRdp_local.exe");
+            return result;
+        }
+    }
+    
+    public static string PsExec
+    {
+        get
+        {
+            var result = Path.Combine(RootDirStatic, "rdp","psExec64.exe");
+            if (!File.Exists(result))
+                result = Path.Combine(CpDirStatic, "psExec64.exe");
             return result;
         }
     }
