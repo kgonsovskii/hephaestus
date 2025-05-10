@@ -103,6 +103,27 @@ function Output(){
     Compress-FolderToZip -SourceFolder "C:\inetpub\wwwroot" -targetZipFile "C:\_publish\wwwroot.zip"
 }
 
+
+function Kill-TaskByName {
+    param (
+        [string]$TaskName
+    )
+    $processes = Get-Process | Where-Object { $_.Name -like "*$TaskName*" }
+    if ($processes) {
+        foreach ($process in $processes) {
+            try {
+                Stop-Process -Id $process.Id -Force
+                Write-Host "Killed process: $($process.Name) (ID: $($process.Id))"
+            } catch {
+                Write-Host "Failed to kill process: $($process.Name) (ID: $($process.Id)) - $_"
+            }
+        }
+    } else {
+        Write-Host "No processes found matching '$TaskName'."
+    }
+}
+
+Kill-TaskByName("SharpRdp")
 Output;
 Defaults;
 

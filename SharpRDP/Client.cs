@@ -247,7 +247,7 @@ namespace SharpRDP
             }
             catch (Exception exception)
             {
-                Console.WriteLine(exception);
+                Console.WriteLine("HANLDED: " + exception.Message);
             }
             Console.WriteLine("Finish keys");
             Thread.Sleep(1000);

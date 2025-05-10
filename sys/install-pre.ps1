@@ -8,8 +8,9 @@ Set-Location -Path $scriptDir
 . ".\lib.ps1"
 
 if ($serverName -eq "") {
-    throw "No server"
+    $serverName = detectServer
 } 
+
 
 . ".\current.ps1" -serverName $serverName
 . ".\install-lib.ps1" -serverName $serverName

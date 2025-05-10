@@ -97,13 +97,6 @@ public class Runner
                 {
                     output.AppendLine(DateTime.Now.ToString() + ": " + e.Data);
                     Log(e.Data);
-                    try
-                    {
-                        File.AppendAllText(LogFile, DateTime.Now.ToString() + ": " + e.Data + Environment.NewLine);
-                    }
-                    catch (Exception exception)
-                    {
-                    }
                 }
             };
 
@@ -111,15 +104,8 @@ public class Runner
             {
                 if (!string.IsNullOrEmpty(e.Data))
                 {
-                    output.AppendLine(DateTime.Now.ToString() + ": " + e.Data);
                     Log(e.Data);
-                    try
-                    {
-                        File.AppendAllText(LogFile, DateTime.Now.ToString() + ": " + e.Data + Environment.NewLine);
-                    }
-                    catch (Exception exception)
-                    {
-                    }
+                    output.AppendLine(DateTime.Now.ToString() + ": " + e.Data);
                 }
             };
             process.Start();
@@ -199,5 +185,31 @@ public class Runner
     public static void Log(string s)
     {
         Console.WriteLine(s);
+        try
+        {
+            File.AppendAllText(LogFile, DateTime.Now.ToString() + ": " + s + Environment.NewLine);
+        }
+        catch (Exception exception)
+        {
+        }
+    }
+
+    public static void OpenSession()
+    {
+        Runner.Kill("SharpRdp.exe");
+        Run(ServerModelLoader.SharpRdpLocal, false, true, 6000,
+            new ValueTuple<string, object>("--server", "localhost"),
+            new ValueTuple<string, object>("--username", "rdp"),
+            new ValueTuple<string, object>("--password", Runner.RdpPassword),
+            new ValueTuple<string, object>("--command", $"\"cls\""));
+        LocalSession = RdpSessionHelper.GetActiveRdpSessionIdForUser("rdp");
+        Log($"Local session: {Runner.LocalSession}");
+    }
+
+    public static void CloseSession()
+    {
+        Runner.Kill("SharpRdp");
+        Runner.Kill("powershell");
+        Runner.Kill("PsExec64");
     }
 }

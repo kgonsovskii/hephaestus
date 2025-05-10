@@ -8,7 +8,7 @@ Set-Location -Path $scriptDir
 . ".\lib.ps1"
 
 if ($serverName -eq "") {
-    throw "No server"
+    $serverName = detectServer
 } 
 
 . ".\current.ps1" -serverName $serverName
@@ -47,6 +47,8 @@ function CopyItems {
         Copy-Item -Path $file.FullName -Destination $remotePath -ToSession $session -Force
     }
 }
+
+WaitRestart -once $false
 
 
 CopyItems -FileMask "install*.*"

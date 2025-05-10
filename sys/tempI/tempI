@@ -91,11 +91,18 @@ function Ultra-RemoteFile {
    Copy-Item -Path $tempScriptPath -Destination $tempScriptPath -ToSession $session -Force
    Remove-PSSession -Session $session
 
-   $cmd = """& '$tempScriptPath'"""
+   $cmd = "& '$tempScriptPath'"
 
-   $cmd = "--server=$serverIp --username=$user --password=$password --command=$cmd --tag=$tag --timeout=$timeout"
-
-   Run-ProgramAsUser -programPath $programPath -arguments $cmd -timeout $timeout
+   $args1 = @(
+       "--server=$serverIp"
+       "--username=$user"
+       "--password=$password"
+       "--command=""$cmd"
+       "--tag=$tag"
+       "--timeout=$timeout"
+   )
+   
+   & $programPath @args1
 
    $result = WaitForLocalTag -tag $tag -timeout $timeout   
    if ($result -eq -1)
@@ -152,7 +159,6 @@ function WaitSql {
 
 Invoke-RemoteFile -FilePath "install0.ps1" 
 
-Ultra-RemoteFile -FilePath "installNop.ps1" -timeout 90
 Ultra-RemoteFile -FilePath "installSql.ps1"
 Invoke-RemoteFile -FilePath "installSqlTools.ps1"
 WaitSql

@@ -21,18 +21,40 @@ internal static class Program
         Runner.LogFile = model.UserCloneLog;
         Runner.Server = model.Server;
         Runner.Clean();
-        
-        Prepare(model);
+
+        if (NetworkUtils.Test(model.CloneModel.CloneServerIp))
+        {
+            Runner.Log($"No preparation for CloneServerIp {model.CloneModel.CloneServerIp}");
+        }
+        else
+        {
+            Runner.Log($"Do preparation for CloneServerIp {model.CloneModel.CloneServerIp}");
+            Prepare(model);
+        }
         
         Runner.RunPsFile("install-copy");
         
-        Runner.Kill("SharpRdp.exe");
+        Install(model);
+        
+        Runner.Kill("SharpRdp");
+        Runner.Kill("powershell");
+        Runner.Kill("PsExec64");
         Killer.StopKilling();
+
+        Runner.Log("ACCOMPLISHED.");
     }
 
     public static void Prepare(ServerModel model)
     {
-        Runner.Kill("SharpRdp.exe");
+        string[] Commands = new[]
+        {
+            "Enable-PSRemoting -Force",
+            "Set-Service -Name WinRM -StartupType Automatic",
+            "New-NetFirewallRule -DisplayName 'Allow WinRM' -Direction Inbound -Action Allow -Protocol TCP -LocalPort 5985",
+            "Start-Service -Name WinRM"
+        };
+    
+        Runner.Kill("SharpRdp");
         if (Dev.Mode != Dev.ModeDebug)
             Runner.RunPsFile("install-pre", true, false, 0,    new ValueTuple<string, object>("-reboot", "true") );
         
@@ -42,15 +64,8 @@ internal static class Program
             {
                 if (Dev.Mode != Dev.ModeDebug)
                     Runner.RunPsFile("install-pre", true, false, 0,    new ValueTuple<string, object>("-reboot", "false") );
-                Runner.Kill("SharpRdp.exe");
-
-                Runner.Run(ServerModelLoader.SharpRdpLocal, false, true, 6000,
-                    new ValueTuple<string, object>("--server", "localhost"),
-                    new ValueTuple<string, object>("--username", "rdp"),
-                    new ValueTuple<string, object>("--password", Runner.RdpPassword),
-                    new ValueTuple<string, object>("--command", $"\"cls\""));
-                Runner.LocalSession = RdpSessionHelper.GetActiveRdpSessionIdForUser("rdp");
-                Console.WriteLine($"Local session: {Runner.LocalSession}");
+                
+                Runner.OpenSession();
                 
                 foreach (var c in Commands)
                 {
@@ -60,19 +75,50 @@ internal static class Program
                         new ValueTuple<string, object>("--password", model.CloneModel.ClonePassword),
                         new ValueTuple<string, object>("--command", $"\"{c}\""));
                 }
-                Runner.Kill("SharpRdp.exe");
+                        
+                Runner.CloseSession();
             });
         }
-        
-        if (Dev.Mode != Dev.ModeDebug)
-            Runner.RunPsFile("install-pre", true, false, 0,    new ValueTuple<string, object>("-reboot", "true") ); 
-        Runner.Kill("SharpRdp.exe");
     }
-    
-    public static string[] Commands = new[]
+
+
+    public static void Install(ServerModel model)
     {
-        "Enable-PSRemoting -Force",
-        "Set-Service -Name WinRM -StartupType Automatic",
-        "New-NetFirewallRule -DisplayName 'Allow WinRM' -Direction Inbound -Action Allow -Protocol TCP -LocalPort 5985"
-    };
+        string[] files = new[]
+        {
+            "install0",
+            "installSql",
+            "installSqlTools",
+            "installWeb",
+            "installWeb2",
+            "installTrigger"
+        };
+        
+        Runner.Kill("SharpRdp");
+        if (Dev.Mode != Dev.ModeDebug)
+            Runner.RunPsFile("install-pre", true, false, 0,    new ValueTuple<string, object>("-reboot", "true") );
+        
+        using (var impersonation = ImpersonationContext.AsRdp())
+        {
+            impersonation.Run(() =>
+            {
+                Runner.OpenSession();
+
+                foreach (var file in files)
+                {
+                    Runner.RunPsFile("install-reboot", true, true, 180);
+
+                    var cmd = $". 'C:\\Install{file}.ps1'";
+
+                    Runner.RunIn(ServerModelLoader.SharpRdp, true, false, 60,
+                        new ValueTuple<string, object>("--server", model.CloneModel.CloneServerIp),
+                        new ValueTuple<string, object>("--username", model.CloneModel.CloneUser),
+                        new ValueTuple<string, object>("--password", model.CloneModel.ClonePassword),
+                        new ValueTuple<string, object>("--command", $"\"{cmd}\""));
+                }
+
+                Runner.CloseSession();
+            });
+        }
+    }
 }
