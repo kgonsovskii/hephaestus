@@ -31,7 +31,7 @@ internal static class Program
             Prepare(model);
         }
         
-        Runner.RunPsFile("install-reboot", true, false, 90);
+        Runner.Reboot();
         
         Runner.RunPsFile("install-copy");
 
@@ -44,7 +44,7 @@ internal static class Program
             new ValueTuple<string, object>("-direct", "true")
         );
 
-        Runner.RunPsFile("install-reboot", true, false, 180);
+        Runner.Reboot();
 
         Runner.CloseSession();
         Killer.StopKilling();
@@ -61,36 +61,24 @@ internal static class Program
             "New-NetFirewallRule -DisplayName 'Allow WinRM' -Direction Inbound -Action Allow -Protocol TCP -LocalPort 5985",
             "Start-Service -Name WinRM"
         };
-
-        Runner.CloseSession();
+        Runner.OpenSession();
+        
         Runner.RunPsFile("install-pre", true, false, 0, new ValueTuple<string, object>("-reboot", "true"));
 
-        using (var impersonation = ImpersonationContext.AsRdp())
+        foreach (var c in Commands)
         {
-            impersonation.Run(() =>
-            {
-                Runner.RunPsFile("install-pre", true, false, 0, new ValueTuple<string, object>("-reboot", "false"));
-
-                Runner.OpenSession();
-
-                foreach (var c in Commands)
-                {
-                    var cmd = c;
-                    Runner.RunIn(ServerModelLoader.SharpRdp, true, true, false, 90,
-                        new ValueTuple<string, object>("--server", model.CloneModel.CloneServerIp),
-                        new ValueTuple<string, object>("--username", model.CloneModel.CloneUser),
-                        new ValueTuple<string, object>("--password", model.CloneModel.ClonePassword),
-                        new ValueTuple<string, object>("--logfile", $"\"{model.UserCloneLog}\""),
-                        new ValueTuple<string, object>("--command", $"\"{cmd}\""));
-                }
-
-                Runner.CloseSession();
-            });
+            var cmd = c;
+            Runner.RunIn(ServerModelLoader.SharpRdp, true, true, false, Runner.CommandTimeOut,
+                new ValueTuple<string, object>("--server", model.CloneModel.CloneServerIp),
+                new ValueTuple<string, object>("--username", model.CloneModel.CloneUser),
+                new ValueTuple<string, object>("--password", model.CloneModel.ClonePassword),
+                new ValueTuple<string, object>("--logfile", $"\"{model.UserCloneLog}\""),
+                new ValueTuple<string, object>("--command", $"\"{cmd}\""));
+            Runner.RunInTag = "";
         }
 
         Runner.CloseSession();
     }
-
 
     public static void Install(ServerModel model)
     {
@@ -103,40 +91,23 @@ internal static class Program
             "install-web2",
             "install-trigger"
         };
-
-        Runner.CloseSession();
-
-        using (var impersonation = ImpersonationContext.AsRdp())
-        {
-            impersonation.Run(() => { Runner.OpenSession(); });
-        }
-
+        
+        Runner.OpenSession();
         foreach (var file in files)
         {
-            Runner.RunPsFile("install-reboot", true, false, 90);
+            Runner.Reboot();
+            
+            var cmd = $". 'C:\\Install\\{file}.ps1'; Set-Content -Path 'C:\\Install\\tag.txt' -Value '$tag'";
 
-            using (var impersonation = ImpersonationContext.AsRdp())
-            {
-                impersonation.Run(() =>
-                {
-                    var cmd = $". 'C:\\Install\\{file}.ps1'; Set-Content -Path 'C:\\Install\\tag.txt' -Value '$tag'";
-
-                    Runner.RunIn(ServerModelLoader.SharpRdp, true, true, true, 6000,
-                        new ValueTuple<string, object>("--server", model.CloneModel.CloneServerIp),
-                        new ValueTuple<string, object>("--username", model.CloneModel.CloneUser),
-                        new ValueTuple<string, object>("--password", model.CloneModel.ClonePassword),
-                        new ValueTuple<string, object>("--logfile", $"\"{model.UserCloneLog}\""),
-                        new ValueTuple<string, object>("--command", $"\"{cmd}\""));
-                });
-            }
-            Runner.RunInFlag = false;
-            Runner.WaitForRemoteTag( Runner.RunInTag, 6000);
+            Runner.RunIn(ServerModelLoader.SharpRdp, true, true, true, Runner.StageTimeOut,
+                new ValueTuple<string, object>("--server", model.CloneModel.CloneServerIp),
+                new ValueTuple<string, object>("--username", model.CloneModel.CloneUser),
+                new ValueTuple<string, object>("--password", model.CloneModel.ClonePassword),
+                new ValueTuple<string, object>("--logfile", $"\"{model.UserCloneLog}\""),
+                new ValueTuple<string, object>("--command", $"\"{cmd}\""));
+            
+            Runner.WaitForRemoteTag(Runner.RunInTag, Runner.StageTimeOut);
             Runner.RunInTag = "";
-        }
-
-        using (var impersonation = ImpersonationContext.AsRdp())
-        {
-            impersonation.Run(() => { Runner.CloseSession(); });
         }
 
         Runner.CloseSession();

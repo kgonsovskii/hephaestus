@@ -6,6 +6,16 @@ namespace Cloner;
 
 public class Runner
 {
+    public const int LocalTagTimeOut = 70;
+    public const int CommandTimeOut = LocalTagTimeOut;
+    public const int RebootTimeOut = 110;
+    public const int StageTimeOut = 1800;
+
+    public static void Reboot()
+    {
+        Runner.RunPsFile("install-reboot", true, false, RebootTimeOut);
+    }
+    
     public static void Clean()
     {
         try
@@ -15,12 +25,12 @@ public class Runner
         catch (Exception e)
         {
         }
+
+        LastLog = DateTime.Now;
     }
     public static string LogFile;
     public static string Server;
-    public static int LocalSession;
     public static string RunInTag;
-    public static bool RunInFlag = false;
     private static void Kill(string namePart)
     {
         if (string.IsNullOrWhiteSpace(namePart))
@@ -44,18 +54,24 @@ public class Runner
         Thread.Sleep(500);
     }
 
-    public static string RdpPassword => System.IO.File.ReadAllText("C:\\Windows\\info.txt").Trim();
-
     public static void RunIn(string runExe, bool isWait = true, bool isTag = false, bool remoteTag = false, int timeout = 0,
         params (string Name, object Value)[] parameters)
     {
-        RunInFlag = remoteTag;
-        RunInTag = Environment.TickCount.ToString();
-        Run(ServerModelLoader.PsExec, isWait, isTag, timeout, 
-            new ValueTuple<string, object>("-i", LocalSession),
-            new ValueTuple<string, object>("-p", RdpPassword),
-            new ValueTuple<string, object>("-u", "rdp"),
-            new ValueTuple<string, object>(runExe, ArgString(runExe, isWait, isTag, timeout, parameters)));
+        try
+        {
+            RunInTag = Environment.TickCount.ToString();
+            Run(runExe, isWait, isTag, timeout, parameters);
+        }
+        catch (Exception e)
+        {
+            Log("Run In Error, restarting...");
+            Thread.Sleep(1000);
+            RunInTag = "";
+            Runner.RunPsFile("install-reboot", true, false, 90);
+            Thread.Sleep(1000);
+            RunIn(runExe, isWait, isTag, remoteTag, timeout, parameters);
+        }
+
     }
 
     public static string ArgString(string runExe, bool isWait = true, bool isTag = false, int timeout=0, params (string Name, object Value)[] parameters)
@@ -124,16 +140,17 @@ public class Runner
 
             if (isTag)
             {
-                WaitForLocalTag(RunInTag, timeout);
+                WaitForLocalTag(RunInTag, LocalTagTimeOut);
             }
 
-            Thread.Sleep(100);
+            Thread.Sleep(300);
         }
     }
 
     public static string LocalTag = "C:\\install\\tag_local.txt";
     public static bool WaitForLocalTag(string localTag, int timeout)
     {
+        Log("WaitForLocalTag:" + localTag);
         timeout *= 1000;
         var start = Environment.TickCount;
         while (true)
@@ -154,7 +171,10 @@ public class Runner
 
             if (tag.Contains(localTag))
             {
-                return true;
+                var res = tag.Contains("ok");
+                if (!res)
+                    throw new InvalidOperationException($"Waiting for local tag {localTag} error");
+                return res;
             }
             System.Threading.Thread.Sleep(1000);
         }
@@ -164,6 +184,7 @@ public class Runner
     
     public static void WaitForRemoteTag(string remoteTag, int timeout)
     {
+        Log("WaitForRemoteTag:" + remoteTag);
         RunPsFile("install-wait", true, true, timeout,
             new ValueTuple<string, object>("-timeout", timeout),
             new ValueTuple<string, object>("-tag", RunInTag));
@@ -191,17 +212,22 @@ public class Runner
         );
     }
 
- public static string SysScript(string scriptName)
+    public static string SysScript(string scriptName)
     {
         return Path.Combine(ServerModelLoader.SysDirStatic, scriptName + ".ps1");
     }
-    
+
+    public static DateTime LastLog;
+ 
+ 
     public static void Log(string s)
     {
+        s = DateTime.Now.ToString() + "[ " + (DateTime.Now - LastLog).TotalSeconds + "sec] "  + s;
+        LastLog = DateTime.Now;
         Console.WriteLine(s);
         try
         {
-            File.AppendAllText(LogFile, DateTime.Now.ToString() + ": " + s + Environment.NewLine);
+            File.AppendAllText(LogFile, s + Environment.NewLine);
         }
         catch (Exception exception)
         {
@@ -210,17 +236,7 @@ public class Runner
 
     public static void OpenSession()
     {
-        RunInTag = Environment.TickCount.ToString();
-        var cmd = "cls";
-        Runner.Kill("SharpRdp.exe");
-        Run(ServerModelLoader.SharpRdpLocal, false, true, 6000,
-            new ValueTuple<string, object>("--server", "localhost"),
-            new ValueTuple<string, object>("--username", "rdp"),
-            new ValueTuple<string, object>("--password", Runner.RdpPassword),
-            new ValueTuple<string, object>("--command", $"\"{cmd}\""));
-        LocalSession = RdpSessionHelper.GetActiveRdpSessionIdForUser("rdp");
-        Log($"Local session: {Runner.LocalSession}");
-        RunInTag = "";
+        CloseSession();
     }
 
     public static void CloseSession()
@@ -228,7 +244,5 @@ public class Runner
         Runner.Kill("SharpRdp");
         Runner.Kill("powershell");
         Runner.Kill("PsExec64");
-        Runner.Kill("Refiner");
-        Runner.Kill("Packer");
     }
 }

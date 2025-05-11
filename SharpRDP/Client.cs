@@ -13,6 +13,13 @@ namespace SharpRDP
 {
     public class Client
     {
+        private const int WaitChop = 1000;
+
+        private void Wait(double chops)
+        {
+            Task.Delay((int)(WaitChop * chops)).GetAwaiter().GetResult();
+        }
+        
         private Dictionary<string, Code> keycode;
         private IMsRdpClientNonScriptable keydata;
         private int LogonErrorCode { get; set; }
@@ -174,23 +181,23 @@ namespace SharpRDP
             LogonErrorCode = e.lError;
             var errorstatus = Enum.GetName(typeof(LogonErrors), (uint)LogonErrorCode);
             Program.Log("[-] Logon Error           :  {0} - {1}", LogonErrorCode, errorstatus);
-            Thread.Sleep(1000);
+            Wait(1);
 
             if(LogonErrorCode == -5 && takeover == true)
             {
                 // it doesn't go to the logon event, so this has to be done here
                 var rdpSession = (AxMsRdpClient9NotSafeForScripting)sender;
-                Thread.Sleep(1000);
+                Wait(1);
                 keydata = (IMsRdpClientNonScriptable)rdpSession.GetOcx();
                 Program.Log("[+] Another user is logged on, asking to take over session");
                 SendElement("Tab");
-                Thread.Sleep(500);
+                Wait(1);
                 SendElement("Enter+down");
-                Thread.Sleep(500);
+                Wait(1);
                 SendElement("Enter+up");
-                Thread.Sleep(500);
+                Wait(1);
                 Program.Log("[+] Sleeping for 30 seconds");
-                Task.Delay(31000).GetAwaiter().GetResult();
+                Wait(31);
                 Marshal.ReleaseComObject(rdpSession);
                 Marshal.ReleaseComObject(keydata);
             }
@@ -204,13 +211,13 @@ namespace SharpRDP
         {
             var rdpSession = (AxMsRdpClient9NotSafeForScripting)sender;
             Program.Log("[+] Connected to          :  {0}", target);
-            Thread.Sleep(1000);
+            Wait(1);
             keydata = (IMsRdpClientNonScriptable)rdpSession.GetOcx();
 
             if (LogonErrorCode == -2)
             {
                 Program.Log("[+] User not currently logged in, creating new session");
-                Task.Delay(10000).GetAwaiter().GetResult();
+                Wait(10);
             }
 
             string privinfo = "non-elevated";
@@ -220,16 +227,16 @@ namespace SharpRDP
             }
 
             Program.Log("[+] Execution priv type   :  {0}", privinfo);
-            Thread.Sleep(1000);
+            Wait(1);
 
             try
             {
 
 
                 SendElement("Win+R+down");
-                Thread.Sleep(500);
+                Wait(1);
                 SendElement("Win+R+up");
-                Thread.Sleep(1000);
+                Wait(1);
 
 
                 if (execwith == "cmd")
@@ -247,7 +254,18 @@ namespace SharpRDP
             }
             catch (Exception exception)
             {
+                Program.completed = true;
+                Program.error = true;
+                Program.Report();
                 Program.Log("HANLDED: " + exception.Message);
+                try
+                {
+                    rdpSession.Disconnect();
+                }
+                catch (Exception e1)
+                {
+                }
+                return;
             }
             Program.Log("Finish keys");
             Thread.Sleep(1000);
@@ -270,14 +288,14 @@ namespace SharpRDP
             DisconnectCode = e.discReason;
             var dire = Enum.GetName(typeof(DisconnectReasons), (uint)DisconnectCode);
             Program.Log("[+] Connection closed     :  {0}", target);
-            if(e.discReason != 1)
+            if (e.discReason != 1)
             {
                 Program.Log("[-] Disconnection Reason  :  {0} - {1}", DisconnectCode, dire);
             }
 
             Program.completed = true;
-           Program.Report();
-           Environment.Exit(0);
+            Program.Report();
+            Environment.Exit(0);
         }
 
         private void RunRun()
@@ -285,76 +303,76 @@ namespace SharpRDP
             if(runtype == "taskmgr")
             {
                 Program.Log("[+] Running task manager");
-                Thread.Sleep(500);
+                Wait(1);
                 SendText("taskmgr");
-                Thread.Sleep(1000);
+                Wait(1);
 
-                Thread.Sleep(500);
+                Wait(1);
                 SendElement("Enter+down");
-                Thread.Sleep(500);
+                Wait(1);
                 SendElement("Enter+up");
 
                 SendElement("Alt+F");
-                Thread.Sleep(1000);
+                Wait(1);
 
                 SendElement("Enter+down");
-                Thread.Sleep(500);
+                Wait(1);
                 SendElement("Enter+up");
-                Thread.Sleep(500);
+                Wait(1);
             }
 
             Program.Log("[+] Executing {0}", cmd.ToLower());
             SendText(cmd.ToLower());
-            Thread.Sleep(1000);
+            Wait(1);
 
             if (runtype == "taskmgr")
             {
                 SendElement("Tab");
-                Thread.Sleep(500);
+                Wait(1);
                 SendElement("Space");
-                Thread.Sleep(500);
+                Wait(1);
             }
 
             if(runtype == "winr")
             {
                 //Currently bugged - does not run elevated
                 SendElement("Ctrl+Shift+down");
-                Thread.Sleep(500);
+                Wait(1);
                 SendElement("Enter+down");
-                Thread.Sleep(250);
+                Wait(1);
                 SendElement("Enter+up");
-                Thread.Sleep(500);
+                Wait(1);
                 SendElement("Ctrl+Shift+up");
-                Thread.Sleep(500);
+                Wait(1);
             }
             else
             {
                 SendElement("Enter+down");
-                Thread.Sleep(500);
+                Wait(1);
                 SendElement("Enter+up");
-                Thread.Sleep(250);
+                Wait(1);
             }
 
             if (isdrive == true)
             {
                 SendElement("Left");
-                Thread.Sleep(500);
+                Wait(1);
                 SendElement("Enter+down");
-                Thread.Sleep(500);
+                Wait(1);
                 SendElement("Enter+up");
             }
             
             if (runtype == "winr")
             {
                 SendElement("Left");
-                Thread.Sleep(500);
+                Wait(1);
                 SendElement("Enter+down");
-                Thread.Sleep(500);
+                Wait(1);
                 SendElement("Enter+up");
             }
             if (runtype == "taskmgr")
             {
-                Thread.Sleep(250);
+                Wait(1);
                 SendElement("Alt+F4");
             }
         }
@@ -364,66 +382,66 @@ namespace SharpRDP
             if (runtype == "taskmgr")
             {
                 Program.Log("[+] Executing task manager");
-                Thread.Sleep(500);
+                Wait(1);
                 SendText("taskmgr");
-                Thread.Sleep(3000);
+                Wait(3);
 
-                Thread.Sleep(500);
+                Wait(1);
                 SendElement("Enter+down");
-                Thread.Sleep(500);
+                Wait(1);
                 SendElement("Enter+up");
 
                 SendElement("Alt+F");
-                Thread.Sleep(1000);
+                Wait(1);
 
                 SendElement("Enter+down");
-                Thread.Sleep(500);
+                Wait(1);
                 SendElement("Enter+up");
-                Thread.Sleep(500);
+                Wait(1);
             }
 
             Program.Log("[+] Executing {0} from {1}", cmd.ToLower(), consoletype);
             SendText(consoletype);
-            Thread.Sleep(1000);
+            Wait(1);
 
             if (runtype == "taskmgr")
             {
                 SendElement("Tab");
-                Thread.Sleep(500);
+                Wait(1);
                 SendElement("Space");
-                Thread.Sleep(250);
+                Wait(1);
             }
 
             if (runtype == "winr")
             {
                 //Currently bugged - does not run elevated
                 SendElement("Ctrl+Shift+down");
-                Thread.Sleep(500);
+                Wait(1);
                 SendElement("Enter+down");
-                Thread.Sleep(250);
+                Wait(1);
                 SendElement("Enter+up");
-                Thread.Sleep(500);
+                Wait(1);
                 SendElement("Ctrl+Shift+up");
-                Thread.Sleep(500);
+                Wait(1);
             }
             else
             {
                 SendElement("Enter+down");
-                Thread.Sleep(500);
+                Wait(1);
                 SendElement("Enter+up");
-                Thread.Sleep(250);
+                Wait(1);
             }
 
-            Thread.Sleep(500);
+            Wait(1);
             SendText(cmd.ToLower());
 
-            Thread.Sleep(1000);
+            Wait(1);
 
             SendElement("Enter+down");
-            Thread.Sleep(500);
+            Wait(1);
             SendElement("Enter+up");
 
-            Thread.Sleep(500);
+            Wait(1);
             SendText("exit");
 
             SendElement("Enter+down");
@@ -432,9 +450,9 @@ namespace SharpRDP
 
             if(runtype == "taskmgr")
             {
-                Thread.Sleep(250);
+                Wait(1);
                 SendElement("Alt+F4");
-                Thread.Sleep(250);
+                Wait(1);
             }
         }
 
@@ -444,7 +462,7 @@ namespace SharpRDP
             {
                 var symbol = t.ToString();
                 keydata.SendKeys(keycode[symbol].length, ref keycode[symbol].bools[0], ref keycode[symbol].ints[0]);
-                Thread.Sleep(20);
+                Wait(0.05);
             }
         }
 
@@ -452,7 +470,7 @@ namespace SharpRDP
         {
             var current = keycode[curchars];
             keydata.SendKeys(current.length, ref current.bools[0], ref current.ints[0]);
-            Thread.Sleep(20);
+            Wait(0.05);
         }
 
         private void KeyCodes()

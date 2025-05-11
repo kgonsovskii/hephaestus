@@ -31,7 +31,8 @@ namespace SharpRDP
         }
         
         private static string tagFile = "C:\\install\\tag_local.txt";
-        static public bool completed = false;
+        static public bool completed;
+        static public bool error;
         private static Thread WaithThread;
         public static string tag;
         public static string LogFile;
@@ -165,7 +166,12 @@ namespace SharpRDP
             }
             else
             {
-                System.IO.File.WriteAllText(tagFile, tag + " ok");
+                if (!error)
+                    System.IO.File.WriteAllText(tagFile, tag + " ok");
+                else
+                {
+                    System.IO.File.WriteAllText(tagFile, tag + " error");
+                }
                 Program.Log("RDP connection completed successfully.");
             }
         }
@@ -179,9 +185,12 @@ namespace SharpRDP
                 var starttime = Environment.TickCount;
                 while (!completed)
                 {
-                    Thread.Sleep(50);
+                    Thread.Sleep(200);
                     if (Environment.TickCount - starttime > timeoutMs)
+                    {
+                        error = true;
                         break;
+                    }
                 }
                 Report();
                 Environment.Exit(0);
