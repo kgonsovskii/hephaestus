@@ -6,19 +6,23 @@ internal static class Program
 {
     private static async Task Main(string[] args)
     {
-        Killer.StartKilling(true);
 
         var server = args.Length > 0 ? args[0] : Dev.Mode;
         if (args.Length >= 1)
         {
             server = args[0].Trim();
         }
+        
+        Runner.Log("Starting cloner:" + server);
+        Killer.StartKilling(true);
+
 
         var model = ServerModelLoader.LoadServer(server);
         Console.WriteLine($"Cloning server {server}");
 
         Runner.LogFile = model.UserCloneLog;
         Runner.Server = model.Server;
+        Runner.Log("WinUser=" + Environment.UserName + ", LogFile: " + Runner.LogFile);
         Runner.Clean();
 
         if (NetworkUtils.Test(model.CloneModel.CloneServerIp))
@@ -99,6 +103,7 @@ internal static class Program
             
             var cmd = $". 'C:\\Install\\{file}.ps1'; Set-Content -Path 'C:\\Install\\tag.txt' -Value '$tag'";
 
+            Runner.RunInWithRestart = true;
             Runner.RunIn(ServerModelLoader.SharpRdp, true, true, true, Runner.StageTimeOut,
                 new ValueTuple<string, object>("--server", model.CloneModel.CloneServerIp),
                 new ValueTuple<string, object>("--username", model.CloneModel.CloneUser),

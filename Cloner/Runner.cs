@@ -31,6 +31,7 @@ public class Runner
     public static string LogFile;
     public static string Server;
     public static string RunInTag;
+    public static bool RunInWithRestart;
     private static void Kill(string namePart)
     {
         if (string.IsNullOrWhiteSpace(namePart))
@@ -67,8 +68,12 @@ public class Runner
             Log("Run In Error, restarting...");
             Thread.Sleep(1000);
             RunInTag = "";
-            Runner.RunPsFile("install-reboot", true, false, 90);
-            Thread.Sleep(1000);
+            if (RunInWithRestart)
+            {
+                Runner.RunPsFile("install-reboot", true, false, 90);
+                Thread.Sleep(1000);
+            }
+
             RunIn(runExe, isWait, isTag, remoteTag, timeout, parameters);
         }
 

@@ -10,5 +10,4 @@ public partial class ServerService
             new ValueTuple<string, object>("serverName", p.Server));
         return result;
     }
-
 }
