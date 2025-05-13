@@ -10,6 +10,25 @@ function checkFolder {
     }
 }
 
+$globalScriptPaths = @(
+    #$MyInvocation.MyCommand.Definition,
+    $PSCommandPath,
+    $MyInvocation.MyCommand.Path
+)
+
+function Get-ScriptPath {
+    
+    foreach ($path in $globalScriptPaths) {
+        try {
+            if (Test-Path $path) {
+                return $path
+            }
+        }
+        catch {
+        }
+    }
+}
+
 function extract_holder()
 {
     try

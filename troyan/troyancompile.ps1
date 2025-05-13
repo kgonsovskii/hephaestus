@@ -2,10 +2,6 @@ param (
     [string]$serverName, [string]$packId = ""
 )
 
-if ($serverName -eq "") {
-    $serverName = "127.0.0.1"
-    $action = "exe"
-} 
 
 if ([string]::IsNullOrEmpty($serverName)) {
         throw "-serverName argument is null"

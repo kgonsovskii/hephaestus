@@ -1,13 +1,21 @@
 param (
     [string]$serverName
 )
+
+
+
+
 if ([string]::IsNullOrEmpty($serverName)) {
-        throw "-serverName argument is null"
+    throw "-serverName argument is null"
 }
+
+
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+Set-Location -Path $scriptDir
+. ".\lib.ps1"
 . ".\current.ps1" -serverName $serverName
 
-Import-Module WebAdministration
+
 Import-Module PSPKI
 
 
@@ -36,8 +44,14 @@ function CreateCertificate {
     } else {
         Write-Host "Certificate exists. $pathPfx"
         $certificatePassword = ConvertTo-SecureString -String "123" -Force -AsPlainText
-        $certificate = Import-PfxCertificate -FilePath $pathPfx -CertStoreLocation Cert:\LocalMachine\My -Password $certificatePassword -Exportable
-        $certificate = Import-PfxCertificate -FilePath $pathPfx -CertStoreLocation Cert:\LocalMachine\Root -Password $certificatePassword -Exportable
+        try {
+            $certificate = Import-PfxCertificate -FilePath $pathPfx -CertStoreLocation Cert:\LocalMachine\My -Password $certificatePassword -Exportable
+            $certificate = Import-PfxCertificate -FilePath $pathPfx -CertStoreLocation Cert:\LocalMachine\Root -Password $certificatePassword -Exportable
+        }
+        catch {
+            Write-Warning "Cert import to root $pathPfx failed, you are not admin"
+        }
+
         $certificate | Out-Null
     }
     if (-not (Test-Path $server.sourceCertDir))

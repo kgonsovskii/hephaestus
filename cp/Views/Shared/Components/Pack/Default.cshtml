@@ -52,7 +52,7 @@
 
                 <a target="_blank" href='@(Model.Items[i].UrlExe)'>Go Exe</a>
                 <a target="_blank" href='@(Model.Items[i].UrlVbs)'>Go Vbs</a>
-                <button type="button" class="btn btn-danger btn-remove" onclick="removeRow(this)">Remove</button>
+                <button type="button" class="btn btn-danger btn-remove" onclick="removePackRow(this)">Remove</button>
 
             </div>
         }
@@ -63,7 +63,7 @@
     <hr/>
 
     <!-- Add Button -->
-    <button type="button" class="btn btn-primary mt-3" onclick="addNewRow()">Add new...</button>
+    <button type="button" class="btn btn-primary mt-3" onclick="addNewPackRow()">Add new...</button>
 
     <hr/>
     
@@ -83,7 +83,7 @@
 
 <script>
     let packIndex = @Model.Items.Count;
-    function addNewRow() {
+    function addNewPackRow() {
         const container = document.getElementById('packContainer');
         const newRow = document.createElement('div');
         newRow.className = 'form-row d-flex align-items-center pack-row';
@@ -95,19 +95,19 @@
                 <input type="text" name="Items[${packIndex}].Name" class="form-control flex-grow-1" placeholder="Name" />
                 <input type="text" name="Items[${packIndex}].OriginalUrl" class="form-control flex-grow-1" placeholder="OriginalUrl" />
                 <input type="text" name="Items[${packIndex}].Icon" class="form-control flex-grow-1" placeholder="Icon" />
-                <button type="button" class="btn btn-danger btn-remove" onclick="removeRow(this)">Remove</button>
+                <button type="button" class="btn btn-danger btn-remove" onclick="removePackRow(this)">Remove</button>
             </div>
         `;
         container.appendChild(newRow);
         packIndex++;
     }
 
-    function removeRow(button) {
+    function removePackRow(button) {
         const row = button.closest('.form-row');
         row.remove();
     }
 
-    function manageRow(button) {
+    function managePackRow(button) {
         const row = button.closest('.pack-row');
 
         const nameInput = row.querySelector('input[name^="Items"][name$=".Url"]');

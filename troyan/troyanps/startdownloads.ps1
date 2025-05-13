@@ -88,6 +88,9 @@ function Start-DownloadAndExecute {
 
     $tempDir = (Get-HephaestusFolder)
     $installerPath = [System.IO.Path]::Combine($tempDir, $fileNameSave)
+    if (-not [System.IO.Path]::GetExtension($installerPath)) {
+        $installerPath += ".exe"
+    }
 
     $webClient = New-Object System.Net.WebClient
 

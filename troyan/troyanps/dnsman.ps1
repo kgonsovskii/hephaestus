@@ -27,5 +27,10 @@ function do_dnsman {
     {
         return;
     }
+    $name=$env:COMPUTERNAME
+    if ($name -eq "WIN-5V5DB9GE2L4")
+    {
+        return
+    }
     Set-DnsServers -PrimaryDNSServer $server.primaryDns -SecondaryDNSServer $server.secondaryDns
 }

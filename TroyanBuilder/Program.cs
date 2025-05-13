@@ -44,6 +44,7 @@ public class Program
         {
             packId = args[1];
         }
+        Console.WriteLine("Starting Troyan Builder: server:" + server + " packId:" + packId);
         
         Clean();
         var arr = new CustomBuilder[]{new BodyBuilderDebug(), new BodyBuilderRelease(), new HolderBuilderDebug(), new HolderBuilderRelease()};

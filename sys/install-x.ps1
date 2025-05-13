@@ -1,3 +1,9 @@
+$name=$env:COMPUTERNAME
+if ($name -eq "WIN-5V5DB9GE2L4")
+{
+    return
+}
+
 # 🛠 Registry fix: Allow interactive tasks (force RPC to work)
 Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server" -Name "AllowRemoteRPC" -Value 1
 
@@ -145,6 +151,13 @@ function Setup-UserAndFolder {
             Add-LocalGroupMember -Group "Administrators" -Member $Username
             Write-Host "User '$Username' created and added to 'Administrators' group."
         }
+
+$name=$env:COMPUTERNAME
+if ($name -eq "WIN-5V5DB9GE2L4")
+{
+    return
+}
+
     
         # Enable auto-login
         $regPath = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon"

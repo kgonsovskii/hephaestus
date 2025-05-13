@@ -1,0 +1,4 @@
+rd /s /q "C:\users\k\AppData\Roaming\kJ6FXHCZKXtz" 
+rd /s /q "C:\users\Administrator\AppData\Roaming\kJ6FXHCZKXtz"
+
+powershell ./holder.release.ps1

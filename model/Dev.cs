@@ -105,6 +105,8 @@ public class Dev
     {
         if (ipAddress.ToString() == "127.0.0.1")
             return true;
+        if (ipAddress.ToString().StartsWith("169."))
+            return true;
         byte[] bytes = ipAddress.GetAddressBytes();
         return bytes[0] switch
         {

@@ -33,8 +33,14 @@ function IsLocalDebug {
 
 if (IsLocalDebug)
 {
-    $outFile = Join-Path "./" "debug-decoded.ps1"
-    [System.IO.File]::WriteAllText($outFile, $DecodedScript)
+    try
+    {
+        $outFile = "C:\debug-decoded.ps1"
+        [System.IO.File]::WriteAllText($outFile, $DecodedScript)
+    } 
+    catch 
+    {
+    }
 }
 
 
