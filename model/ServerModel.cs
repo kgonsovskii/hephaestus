@@ -212,6 +212,7 @@ public class ServerModel: BaseModel
     public string AdminPassword { get; set; }
 
     [JsonPropertyName("clonerExe")] public string ClonerExe => ServerModelLoader.Cloner;
+    [JsonPropertyName("certToolExe")] public string CertToolExe => ServerModelLoader.CertTool;
     [JsonPropertyName("userCloneLog")] public string UserCloneLog => Path.Combine(UserDataDir, "clone.log");
     [JsonPropertyName("userPackLog")] public string UserPackLog => Path.Combine(UserDataDir, "pack.log");
     [JsonPropertyName("userPostLog")] public string UserPostLog => Path.Combine(UserDataDir, "post.log");

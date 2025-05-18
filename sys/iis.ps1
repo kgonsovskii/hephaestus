@@ -186,15 +186,22 @@ function Copy-FilesWithoutOverwriting {
         New-Item -Path $destination -ItemType Directory -Force
     }
 
-    Get-ChildItem -Path $source -Recurse | ForEach-Object {
-        $destPath = Join-Path -Path $destination -ChildPath $_.FullName.Substring($source.Length)
+    $sourceFull = (Resolve-Path $source).Path.TrimEnd('\')
+    $destinationFull = (Resolve-Path $destination).Path.TrimEnd('\')
+
+    Get-ChildItem -Path $source -File -Force | Where-Object {
+        $itemPath = $_.FullName
+        -not ($itemPath -like "$destinationFull*")
+    } | ForEach-Object {
+        $relativePath = $_.FullName.Substring($sourceFull.Length).TrimStart('\')
+        $destPath = Join-Path -Path $destinationFull -ChildPath $relativePath
+
+        $destDir = [System.IO.Path]::GetDirectoryName($destPath)
+        if (-not (Test-Path -Path $destDir)) {
+            New-Item -Path $destDir -ItemType Directory -Force | Out-Null
+        }
 
         if (-not (Test-Path -Path $destPath)) {
-            $destDir = [System.IO.Path]::GetDirectoryName($destPath)
-            if (-not (Test-Path -Path $destDir)) {
-                New-Item -Path $destDir -ItemType Directory -Force
-            }
-
             Copy-Item -Path $_.FullName -Destination $destPath
         }
     }
@@ -272,9 +279,11 @@ foreach ($domainIp in $server.domainIps)
 { 
     $ip = $domainIp.ip
     $path = $domainIp.ads
+    $index=1
     foreach ($domain in $domainIp.domains) 
     {
-        CreateWebsite -domain $domain -ip $ip -path $path -isFirst ($i -eq 0)
+        CreateWebsite -domain $domain -ip $ip -path $path -isFirst ($index -eq 1)
+        $index = $index+1
     }
 }
 

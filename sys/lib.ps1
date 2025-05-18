@@ -312,10 +312,7 @@ function Create-FtpSite {
     } catch {
         Write-Host "Error setting authentication properties: $_" -ForegroundColor Red
     }
-    
-    # Restart IIS and FTP services
-    Restart-Service W3SVC -Force
-    Restart-Service FTPSVC -Force
+
 
     Write-Host "FTP site $ftpSiteName configured successfully!" -ForegroundColor Green
 }

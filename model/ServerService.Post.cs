@@ -21,7 +21,7 @@ public partial class ServerService
         }
         serverModel.PostModel.MarkOperation(p.PostModel.Operation);
         SaveServerLite(serverName, serverModel);
-        return RunExe(ServerModelLoader.Refiner, serverName);
+        return RunExe(ServerModelLoader.Refiner, serverName, action);
     }
 
     public string PostServerAction(string serverName, ServerModel serverModel, Action<string> logger)

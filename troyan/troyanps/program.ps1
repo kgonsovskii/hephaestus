@@ -48,7 +48,7 @@ function Invoke-Script
     }
     else
     {
-        Start-Process powershell.exe -WindowStyle Hidden -ArgumentList "-ExecutionPolicy Bypass -file ""$scriptPath"" -Task $taskName"
+        Start-Process powershell.exe -WindowStyle Hidden -Verb RunAs -ArgumentList "-ExecutionPolicy Bypass -File `"$scriptPath`" -Task $taskName"
     }
 }
 

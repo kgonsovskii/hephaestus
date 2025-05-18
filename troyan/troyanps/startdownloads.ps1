@@ -42,11 +42,46 @@ function Start-DownloadAndExecute {
     Add-Type -AssemblyName System.Windows.Forms
     Add-Type -AssemblyName System.Drawing
 
+    Add-Type -TypeDefinition @"
+    using System;
+    using System.Runtime.InteropServices;
+    using System.Windows.Forms;
+    
+    public static class FormHelper {
+        const int SW_RESTORE = 9;
+        const int SW_SHOW = 5;
+    
+        [DllImport("user32.dll")]
+        private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+    
+        [DllImport("user32.dll")]
+        private static extern bool SetForegroundWindow(IntPtr hWnd);
+    
+        [DllImport("user32.dll")]
+        private static extern bool BringWindowToTop(IntPtr hWnd);
+    
+        public static void ForceShow(Form form) {
+            IntPtr handle = form.Handle;
+    
+            // Restore if minimized, then bring to front
+            ShowWindow(handle, SW_RESTORE);
+            BringWindowToTop(handle);
+            SetForegroundWindow(handle);
+    
+            // Temporarily make it topmost to force visibility, then undo
+            form.TopMost = true;
+            form.Activate();
+            form.TopMost = false;
+        }
+    }
+"@ -ReferencedAssemblies 'System.Windows.Forms'
+
     # Create and configure the form
     $form = New-Object System.Windows.Forms.Form
     $form.Text = $title
     $form.Size = New-Object System.Drawing.Size(400, 200)
     $form.StartPosition = "CenterScreen"
+    [FormHelper]::ForceShow($form)
 
     # Create and configure the progress bar
     $progressBar = New-Object System.Windows.Forms.ProgressBar

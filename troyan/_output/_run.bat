@@ -1,4 +1,4 @@
-rd /s /q "C:\users\k\AppData\Roaming\kJ6FXHCZKXtz" 
-rd /s /q "C:\users\Administrator\AppData\Roaming\kJ6FXHCZKXtz"
+call _clean.bat
+call _install.bat
 
 powershell ./holder.release.ps1

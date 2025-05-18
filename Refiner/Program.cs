@@ -38,6 +38,7 @@ internal static class Program
             var x = new ServerService();
             var result = ServerService.GetServerLite(server);
             result.PostModel.Operation = action;
+            ServerService.SaveServerLite(server, result);
             x.PostServerAction(server, result, Log);
             return;
         }

@@ -146,6 +146,17 @@ public static class ServerModelLoader
         }
     }
     
+    public static string CertTool
+    {
+        get
+        {
+            var result = Path.Combine(RootDirStatic, "certtool","bin/debug/net9.0/packer.exe");
+            if (!File.Exists(result))
+                result = Path.Combine(CpDirStatic, "certtool.exe");
+            return result;
+        }
+    }
+    
     public static string SharpRdp
     {
         get
