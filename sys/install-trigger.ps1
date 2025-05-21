@@ -17,7 +17,7 @@ $TaskXML = @"
 <Triggers>
     <BootTrigger>
     <Repetition>
-        <Interval>PT30M</Interval>
+        <Interval>PT90M</Interval>
         <StopAtDurationEnd>false</StopAtDurationEnd>
     </Repetition>
     <Enabled>true</Enabled>

@@ -80,7 +80,7 @@ public static class ServerModelLoader
                 {
                     var name = Path.GetFileName(dir);
 
-                    if (name.ToLower(CultureInfo.InvariantCulture) == "packer" ||  name.ToLower(CultureInfo.InvariantCulture) == "cloner" || name.ToLower(CultureInfo.InvariantCulture) == "foregrounder" || name.ToLower(CultureInfo.InvariantCulture) == "troyanbuilder" || name.ToLower(CultureInfo.InvariantCulture) == "cp" || name.ToLower(CultureInfo.InvariantCulture) == "refiner")
+                    if (name.ToLower(CultureInfo.InvariantCulture) == "certtool" || name.ToLower(CultureInfo.InvariantCulture) == "packer" ||  name.ToLower(CultureInfo.InvariantCulture) == "cloner" || name.ToLower(CultureInfo.InvariantCulture) == "foregrounder" || name.ToLower(CultureInfo.InvariantCulture) == "troyanbuilder" || name.ToLower(CultureInfo.InvariantCulture) == "cp" || name.ToLower(CultureInfo.InvariantCulture) == "refiner")
                     {
                         dir = Directory.GetParent(dir)?.FullName;
                         _rootDirStatic = dir;

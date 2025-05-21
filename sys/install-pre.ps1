@@ -1,5 +1,5 @@
 param (
-    [string]$serverName, [string]$reboot="true"
+    [string]$serverName,  [string]$user="",  [string]$password="", [string]$direct="", [string]$reboot="true"
 )
 
 . ".\install-x.ps1"
@@ -13,10 +13,22 @@ if ($serverName -eq "") {
     $serverName = detectServer
 } 
 
-. ".\current.ps1" -serverName $serverName
-. ".\install-lib.ps1" -serverName $serverName
+if ($direct -ne "true")
+{
+    . ".\current.ps1" -serverName $serverName
+}
+. ".\install-lib.ps1" -serverName $serverName -user $user -password $password -direct $direct
 
-$serverIp = $server.clone.cloneServerIp
+if ($direct -eq "true")
+{
+    $serverIp = $serverName
+}
+else
+{
+    $password = $server.clone.clonePassword
+    $user=$server.clone.cloneUser
+    $serverIp = $server.clone.cloneServerIp
+}
 
 Write-Host "Install-Pre $serverName, serverIp $serverIp, rebooting $reboot"
 

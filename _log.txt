@@ -1,0 +1,26 @@
+5/22/2025 8:25:02 AM[ 0.0156037sec] RUN: powershell -ExecutionPolicy Bypass -File "C:\soft\hephaestus\sys\install-x.ps1" -ArgumentList -serverName 93.183.75.106 -direct true -user Administrator -password 9GP7WLEhLg
+5/22/2025 8:25:03 AM[ 0.2744945sec] WARNING: If the Windows Display Language has changed, it will take effect after the next sign-in.
+5/22/2025 8:25:03 AM[ 0.4275513sec] No preparation for CloneServerIp 93.183.75.106
+5/22/2025 8:25:03 AM[ 0.000803sec] RUN: powershell -ExecutionPolicy Bypass -File "C:\soft\hephaestus\sys\install-reboot.ps1" -ArgumentList -serverName 93.183.75.106 -direct true -user Administrator -password 9GP7WLEhLg
+5/22/2025 8:25:03 AM[ 0.2474933sec] lib
+5/22/2025 8:25:03 AM[ 0.0174505sec] lib
+5/22/2025 8:25:03 AM[ 0.0092536sec] Install-Reboot 93.183.75.106, serverIp 93.183.75.106
+5/22/2025 8:25:03 AM[ 0.0002979sec] Restarting..
+
+--- Confirming Input --- 
+Server: 93.183.75.106 
+Username: Administrator 
+Password: ********** 
+Command: . 'C:\Install\install-0.ps1'; Set-Content -Path 'C:\Install\tag.txt' -Value '1655531' 
+Timeout: 1800 
+Run RDP 
+[-] Logon Error           :  {0} - {1} -2 ARBITRATION_CODE_CONTINUE_LOGON
+[+] Connected to          :  {0} 93.183.75.106
+[+] User not currently logged in, creating new session 
+[+] Execution priv type   :  {0} elevated
+[+] Executing {0} from {1} . 'c:\install\install-0.ps1'; set-content -path 'c:\install\tag.txt' -value '1655531' powershell.exe
+Finish keys 
+[+] Disconnecting from    :  {0} 93.183.75.106
+[+] Connection closed     :  {0} 93.183.75.106
+Reprint local tag: 1655531, True 
+RDP connection completed successfully. 

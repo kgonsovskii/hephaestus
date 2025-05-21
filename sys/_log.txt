@@ -1,0 +1,10 @@
+5/22/2025 8:35:55 AM[ 0.0161424sec] RUN: powershell -ExecutionPolicy Bypass -File "C:\soft\hephaestus\sys\install-x.ps1" -ArgumentList -serverName 93.183.75.106 -direct true -user Administrator -password 9GP7WLEhLg
+5/22/2025 8:35:55 AM[ 0.319008sec] WARNING: If the Windows Display Language has changed, it will take effect after the next sign-in.
+5/22/2025 8:35:56 AM[ 0.4459676sec] No preparation for CloneServerIp 93.183.75.106
+5/22/2025 8:35:56 AM[ 0.0011002sec] RUN: powershell -ExecutionPolicy Bypass -File "C:\soft\hephaestus\sys\install-reboot.ps1" -ArgumentList -serverName 93.183.75.106 -direct true -user Administrator -password 9GP7WLEhLg
+5/22/2025 8:35:56 AM[ 0.3061753sec] lib
+5/22/2025 8:35:56 AM[ 0.0203125sec] lib
+5/22/2025 8:35:56 AM[ 0.0022257sec] Install-Reboot 93.183.75.106, serverIp 93.183.75.106
+5/22/2025 8:35:56 AM[ 0.0077818sec] Restarting..
+5/22/2025 8:36:05 AM[ 9.3851336sec] Ping attempt..
+5/22/2025 8:36:10 AM[ 4.9684638sec] Ping attempt..

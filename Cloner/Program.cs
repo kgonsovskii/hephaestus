@@ -6,48 +6,75 @@ internal static class Program
 {
     private static async Task Main(string[] args)
     {
-
+        string direct = "false";
         var server = args.Length > 0 ? args[0] : Dev.Mode;
         if (args.Length >= 1)
         {
             server = args[0].Trim();
         }
+
+        var login = "";
+        var password = "";
+        var logFile = "";
+        var serverIp = "";
         
-        Runner.Log("Starting cloner:" + server);
-        Killer.StartKilling(true);
-
-
-        var model = ServerModelLoader.LoadServer(server);
-        Console.WriteLine($"Cloning server {server}");
-
-        Runner.LogFile = model.UserCloneLog;
-        Runner.Server = model.Server;
-        Runner.Log("WinUser=" + Environment.UserName + ", LogFile: " + Runner.LogFile);
-        Runner.Clean();
-
-        if (NetworkUtils.Test(model.CloneModel.CloneServerIp))
+        if (args.Length >= 3)
         {
-            Runner.Log($"No preparation for CloneServerIp {model.CloneModel.CloneServerIp}");
+            login = args[1].Trim();
+            password = args[2].Trim();
+            logFile = "_log.txt";
+            serverIp = server;
+            direct = "true";
         }
         else
         {
-            Runner.Log($"Do preparation for CloneServerIp {model.CloneModel.CloneServerIp}");
-            Prepare(model);
+            var model = ServerModelLoader.LoadServer(server);
+            logFile = model.UserCloneLog;
+            server = model.Server;
+            serverIp = model.CloneModel.CloneServerIp;
+            login = model.CloneModel.CloneUser;
+            password = model.CloneModel.ClonePassword;
+            Console.WriteLine($"Cloning model server {server}");
+        }
+        
+        Killer.StartKilling(true, string.IsNullOrEmpty(direct));
+        
+        Runner.Log("Starting cloner:" + server);
+        if (!string.IsNullOrEmpty(login) && !string.IsNullOrEmpty(password))
+        {
+            Runner.Log("Cloning direct:" + server + ":" + login + ":" + password);
+        }
+
+
+
+        Runner.LogFile = logFile;
+        Runner.Server = server;
+        Runner.User = login;
+        Runner.Password = password;
+        Runner.Direct = direct.ToString();
+        Runner.Log("WinUser=" + Environment.UserName + ", LogFile: " + Runner.LogFile);
+        Runner.Clean();
+        
+        Runner.RunPsFile("install-x");
+        if (NetworkUtils.Test(serverIp))
+        {
+            Runner.Log($"No preparation for CloneServerIp {serverIp}");
+        }
+        else
+        {
+            Runner.Log($"Do preparation for CloneServerIp {serverIp}");
+            Prepare(serverIp, login, password, logFile);
         }
         
         Runner.Reboot();
         
         Runner.RunPsFile("install-copy");
 
-        Install(model);
+        Install(serverIp, login, password, logFile);
 
-        Runner.RunPsFile("publish", true, false, 0,
-            new ValueTuple<string, object>("-serverIp", model.CloneModel.CloneServerIp),
-            new ValueTuple<string, object>("-user", model.CloneModel.CloneUser),
-            new ValueTuple<string, object>("-password", model.CloneModel.ClonePassword),
-            new ValueTuple<string, object>("-direct", "true")
-        );
-
+        Runner.Direct = "true";
+        Runner.Server = serverIp;
+        Runner.RunPsFile("publish", true, false, 0);
         Runner.Reboot();
 
         Runner.CloseSession();
@@ -56,7 +83,7 @@ internal static class Program
         Runner.Log("ACCOMPLISHED.");
     }
 
-    public static void Prepare(ServerModel model)
+    public static void Prepare(string serverIp, string user, string password, string logFile)
     {
         string[] Commands = new[]
         {
@@ -73,10 +100,10 @@ internal static class Program
         {
             var cmd = c;
             Runner.RunIn(ServerModelLoader.SharpRdp, true, true, false, Runner.CommandTimeOut,
-                new ValueTuple<string, object>("--server", model.CloneModel.CloneServerIp),
-                new ValueTuple<string, object>("--username", model.CloneModel.CloneUser),
-                new ValueTuple<string, object>("--password", model.CloneModel.ClonePassword),
-                new ValueTuple<string, object>("--logfile", $"\"{model.UserCloneLog}\""),
+                new ValueTuple<string, object>("--server", serverIp),
+                new ValueTuple<string, object>("--username", user),
+                new ValueTuple<string, object>("--password", password),
+                new ValueTuple<string, object>("--logfile", $"\"{logFile}\""),
                 new ValueTuple<string, object>("--command", $"\"{cmd}\""));
             Runner.RunInTag = "";
         }
@@ -84,7 +111,7 @@ internal static class Program
         Runner.CloseSession();
     }
 
-    public static void Install(ServerModel model)
+    public static void Install(string serverIp, string user, string password, string logFile)
     {
         string[] files = new[]
         {
@@ -105,10 +132,10 @@ internal static class Program
 
             Runner.RunInWithRestart = true;
             Runner.RunIn(ServerModelLoader.SharpRdp, true, true, true, Runner.StageTimeOut,
-                new ValueTuple<string, object>("--server", model.CloneModel.CloneServerIp),
-                new ValueTuple<string, object>("--username", model.CloneModel.CloneUser),
-                new ValueTuple<string, object>("--password", model.CloneModel.ClonePassword),
-                new ValueTuple<string, object>("--logfile", $"\"{model.UserCloneLog}\""),
+                new ValueTuple<string, object>("--server", serverIp),
+                new ValueTuple<string, object>("--username", user),
+                new ValueTuple<string, object>("--password", password),
+                new ValueTuple<string, object>("--logfile", $"\"{logFile}\""),
                 new ValueTuple<string, object>("--command", $"\"{cmd}\""));
             
             Runner.WaitForRemoteTag(Runner.RunInTag, Runner.StageTimeOut);

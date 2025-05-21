@@ -1,5 +1,5 @@
 param (
-    [string]$serverName,  [string]$tag, [int]$timeout
+    [string]$serverName,  [string]$user="",  [string]$password="", [string]$direct="",  [string]$tag="", [int]$timeout=0
 )
 
 #currents
@@ -11,12 +11,23 @@ if ($serverName -eq "") {
     $serverName = detectServer
 } 
 
-. ".\current.ps1" -serverName $serverName
-. ".\install-lib.ps1" -serverName $serverName
+if ($direct -ne "true")
+{
+    . ".\current.ps1" -serverName $serverName
+}
+. ".\install-lib.ps1" -serverName $serverName -user $user -password $password -direct $direct
 
-$password = $server.clone.clonePassword
-$user=$server.clone.cloneUser
-$serverIp = $server.clone.cloneServerIp
+
+if ($direct -eq "true")
+{
+    $serverIp = $serverName
+}
+else
+{
+    $password = $server.clone.clonePassword
+    $user=$server.clone.cloneUser
+    $serverIp = $server.clone.cloneServerIp
+}
 
 Write-Host "Install-Tag $serverName, serverIp $serverIp, tag $tag, $timeout timeout"
 

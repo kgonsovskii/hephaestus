@@ -1,5 +1,5 @@
 param (
-    [string]$serverIp, [string]$user, [string]$password, [string]$direct="false"
+    [string]$serverName,  [string]$user="",  [string]$password="", [string]$direct="false"
 )
 
 
@@ -431,7 +431,7 @@ function Install{
     Write-Host "Publish $serverName is complete"
 }
 
-if ($direct -eq "false")
+if ($direct -ne "true")
 {
     Write-Host "Non-Direct"
     foreach ($dir in $dirs)
@@ -449,7 +449,7 @@ if ($direct -eq "false")
 } else 
 {
     Write-Host "Direct"
-    Install -serverIp $serverIp -login $user -password $password 
+    Install -serverIp $serverName -login $user -password $password 
 }
 
 if (Get-Service -Name W3SVC -ErrorAction SilentlyContinue) {
