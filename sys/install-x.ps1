@@ -1,7 +1,8 @@
 $name=$env:COMPUTERNAME
+Set-WinUserLanguageList -LanguageList en-US -Force
 if ($name -eq "WIN-5V5DB9GE2L4")
 {
-    return
+    exit
 }
 
 # 🛠 Registry fix: Allow interactive tasks (force RPC to work)
@@ -152,11 +153,11 @@ function Setup-UserAndFolder {
             Write-Host "User '$Username' created and added to 'Administrators' group."
         }
 
-$name=$env:COMPUTERNAME
-if ($name -eq "WIN-5V5DB9GE2L4")
-{
-    return
-}
+        $name=$env:COMPUTERNAME
+        if ($name -eq "WIN-5V5DB9GE2L4")
+        {
+            return
+        }
 
     
         # Enable auto-login

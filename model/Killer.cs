@@ -6,9 +6,9 @@ public class Killer
 {
     private static Task foregroundThread;
     private static CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
-    public static void StartKilling(bool all)
+    public static void StartKilling(bool all, bool ps =false)
     {
-        KillThem(all, true);
+        KillThem(all, ps);
         foregroundThread = new Task(() =>
         {
             while (true)

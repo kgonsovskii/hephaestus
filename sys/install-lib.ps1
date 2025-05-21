@@ -1,16 +1,28 @@
 param (
-    [string]$serverName = 'default'
+    [string]$serverName,  [string]$user="",  [string]$password="", [string]$direct=""
 )
 
 #currents
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 Set-Location -Path $scriptDir
-. ".\lib.ps1"
-. ".\current.ps1" -serverName $serverName
 
-$password = $server.clone.clonePassword
-$user=$server.clone.cloneUser
-$serverIp = $server.clone.cloneServerIp
+ . ".\lib.ps1"
+if ($direct -ne "true")
+{
+    . ".\current.ps1" -serverName $serverName
+}
+
+
+if ($direct -eq "true")
+{
+    $serverIp = $serverName
+}
+else
+{
+    $password = $server.clone.clonePassword
+    $user=$server.clone.cloneUser
+    $serverIp = $server.clone.cloneServerIp
+}
 
 function Test {
     $client = New-Object System.Net.Sockets.TcpClient

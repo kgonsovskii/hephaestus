@@ -30,6 +30,9 @@ public class Runner
     }
     public static string LogFile;
     public static string Server;
+    public static string User;
+    public static string Password;
+    public static string Direct;
     public static string RunInTag;
     public static bool RunInWithRestart;
     private static void Kill(string namePart)
@@ -195,19 +198,13 @@ public class Runner
             new ValueTuple<string, object>("-tag", RunInTag));
     }
     
-    public static void RunPs(string command,bool isWait = true, bool isTag = false, int timeout=0 )
-    {
-        Run("powershell", isWait, isTag, timeout,
-            new ValueTuple<string, object>("-NoProfile", ""),
-            new ValueTuple<string, object>("-ExecutionPolicy", "Bypass"),
-            new ValueTuple<string, object>("-Command", $"\"{command}\"")
-        );
-    }
-    
     public static void RunPsFile(string psFile, bool isWait = true, bool isTag = false, int timeout=0, params (string Name, object Value)[] parameters)
     {
         var args = parameters.ToList();
         args.Add(new ValueTuple<string, object>("-serverName", Server));
+        args.Add(new ValueTuple<string, object>("-direct", Direct));
+        args.Add(new ValueTuple<string, object>("-user", User));
+        args.Add(new ValueTuple<string, object>("-password", Password));
         var argsStr = string.Join(" ", args.Select(p => $"{p.Item1} {p.Item2}"));
         psFile = SysScript(psFile);
         Run("powershell", isWait, isTag, timeout, 
@@ -247,7 +244,10 @@ public class Runner
     public static void CloseSession()
     {
         Runner.Kill("SharpRdp");
-        Runner.Kill("powershell");
+        if (Runner.Direct != "true")
+        {
+            Runner.Kill("powershell");
+        }
         Runner.Kill("PsExec64");
     }
 }
