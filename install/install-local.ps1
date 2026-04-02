@@ -1,7 +1,8 @@
 param(
-    [string] $CloneUrl = 'https://github.com/kgonsovskii/hephaestus.git'
+    [string] $CloneUrl = 'https://github.com/kgonsovskii/hephaestus.git',
+
+    [string] $CloneParent = 'C:\Delta'
 )
-$CloneParent = 'C:\Delta'
 $ErrorActionPreference = 'Stop'
 $ConfirmPreference = 'None'
 $ProgressPreference = 'SilentlyContinue'
@@ -119,4 +120,71 @@ if ($g -ne 0) {
     throw "git exited with code $g"
 }
 
-Write-Output '=== install-local finished ==='
+$installPs1 = Join-Path $dest 'install\install.ps1'
+if (-not (Test-Path -LiteralPath $installPs1)) {
+    throw "Missing $installPs1"
+}
+
+$logPath = Join-Path $CloneParent 'install.log'
+$wrapperPath = Join-Path $CloneParent 'run-install-once.ps1'
+$taskName = '_HephaestusBootInstall'
+$psExe = Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
+
+$wrapperLines = @(
+    "`$ErrorActionPreference = 'Continue'",
+    "`$ConfirmPreference = 'None'",
+    "Unregister-ScheduledTask -TaskName '$taskName' -Confirm:`$false -ErrorAction SilentlyContinue",
+    "`$log = '$($logPath.Replace("'", "''"))'",
+    "`$install = '$($installPs1.Replace("'", "''"))'",
+    "& `$install *>&1 | Tee-Object -FilePath `$log -Append"
+)
+Set-Content -LiteralPath $wrapperPath -Value $wrapperLines -Encoding Unicode
+
+if (Get-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue) {
+    Unregister-ScheduledTask -TaskName $taskName -Confirm:$false
+}
+
+$argEsc = $wrapperPath.Replace('"', '&quot;')
+$taskXml = @"
+<?xml version="1.0" encoding="UTF-16"?>
+<Task version="1.2" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
+<RegistrationInfo>
+    <Date>2026-01-01T00:00:00</Date>
+    <Author>Hephaestus</Author>
+    <URI>\$taskName</URI>
+</RegistrationInfo>
+<Triggers>
+    <BootTrigger><Enabled>true</Enabled></BootTrigger>
+</Triggers>
+<Settings>
+    <MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy>
+    <DisallowStartIfOnBatteries>false</DisallowStartIfOnBatteries>
+    <StopIfGoingOnBatteries>false</StopIfGoingOnBatteries>
+    <AllowHardTerminate>true</AllowHardTerminate>
+    <StartWhenAvailable>true</StartWhenAvailable>
+    <RunOnlyIfNetworkAvailable>false</RunOnlyIfNetworkAvailable>
+    <AllowStartOnDemand>true</AllowStartOnDemand>
+    <Enabled>true</Enabled>
+    <Hidden>false</Hidden>
+    <RunOnlyIfIdle>false</RunOnlyIfIdle>
+    <WakeToRun>false</WakeToRun>
+    <ExecutionTimeLimit>PT72H</ExecutionTimeLimit>
+    <Priority>7</Priority>
+</Settings>
+<Actions Context="Author">
+    <Exec>
+        <Command>$($psExe.Replace('&', '&amp;'))</Command>
+        <Arguments>-NoProfile -ExecutionPolicy Bypass -File &quot;$argEsc&quot;</Arguments>
+    </Exec>
+</Actions>
+</Task>
+"@
+
+$taskXmlPath = Join-Path $env:TEMP 'HephaestusBootInstallTask.xml'
+$taskXml | Set-Content -LiteralPath $taskXmlPath -Encoding Unicode
+& schtasks.exe /Create /XML $taskXmlPath /TN $taskName /F
+Remove-Item -LiteralPath $taskXmlPath -Force -ErrorAction SilentlyContinue
+
+Write-Output "=== scheduled task '$taskName' (boot) -> $wrapperPath ; log $logPath ==="
+Write-Output '=== restarting computer ==='
+Restart-Computer -Force
