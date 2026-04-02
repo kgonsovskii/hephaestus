@@ -39,7 +39,7 @@ try {
 
 Invoke-RemotePreInstallReboot -ComputerName $Server -Credential $cred
 
-$localFiles = @(Get-ChildItem -LiteralPath $here -Filter 'install-local-*.*' -File | Sort-Object Name)
+$localFiles = @(Get-ChildItem -LiteralPath $here -Filter 'install-local*.*' -File | Sort-Object Name)
 if ($localFiles.Count -eq 0) {
     throw "No install-local-*.* files found in $here"
 }
