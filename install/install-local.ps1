@@ -132,16 +132,12 @@ if (Test-Path -LiteralPath $bootstrapLog) {
 
 $logPath = Join-Path $CloneParent 'log.txt'
 $logRunner = [System.IO.Path]::GetFullPath((Join-Path $dest 'install\install-local-log.ps1'))
-$taskName = '_HephaestusBootInstall'
-
-if (Get-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue) {
-    Unregister-ScheduledTask -TaskName $taskName -Confirm:$false
-}
+$runEntryName = '_HephaestusBootInstall'
 
 $runKey = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run'
 $psExe = Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
 $cmd = "`"$psExe`" -NoProfile -ExecutionPolicy Bypass -File `"$logRunner`""
-Set-ItemProperty -LiteralPath $runKey -Name $taskName -Value $cmd
+Set-ItemProperty -LiteralPath $runKey -Name $runEntryName -Value $cmd
 
-Write-Output "=== HKLM Run '$taskName' (next logon) -> $logRunner ; log -> $logPath ==="
+Write-Output "=== HKLM Run '$runEntryName' (next logon) -> $logRunner ; log -> $logPath ==="
 Write-Output '=== install-local finished (reboot from install-remote) ==='

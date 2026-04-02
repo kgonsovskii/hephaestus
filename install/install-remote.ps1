@@ -63,6 +63,9 @@ try {
     try {
         Invoke-Command -Session $session -ScriptBlock {
             param($Parent, $LocalText, $LogText)
+            if (Test-Path -LiteralPath $Parent) {
+                Remove-Item -LiteralPath $Parent -Recurse -Force
+            }
             New-Item -ItemType Directory -Force -Path $Parent | Out-Null
             Set-Content -LiteralPath (Join-Path $Parent 'install-local.ps1') -Value $LocalText -Encoding utf8
             Set-Content -LiteralPath (Join-Path $Parent 'install-local-log.ps1') -Value $LogText -Encoding utf8
