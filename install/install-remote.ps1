@@ -41,7 +41,7 @@ function New-RemotePwshSession {
         [string] $ComputerName,
         [pscredential] $Credential
     )
-    $so = New-PSSessionOption -SkipCACheck -SkipCNCheck -SkipRevocationCheck
+    $so = New-PSSessionOption -SkipCACheck -SkipCNCheck -SkipRevocationCheck -OpenTimeout 3000
     $uri = "http://${ComputerName}:5985/wsman"
     New-PSSession -ConnectionUri $uri -Credential $Credential -SessionOption $so
 }
@@ -54,9 +54,25 @@ if (-not (Test-Path -LiteralPath $localScript)) {
 Write-Host '=== WinRM: copy + run install-local.ps1 ===' -ForegroundColor Cyan
 $session = New-RemotePwshSession -ComputerName $Server -Credential $cred
 try {
-    Invoke-Command -Session $session -FilePath $localScript -ArgumentList $CloneUrl, $CloneParent
+    try {
+        Invoke-Command -Session $session -FilePath $localScript -ArgumentList $CloneUrl, $CloneParent -ErrorAction Stop
+    } catch {
+        Write-Host "install-local failed: $($_.Exception.Message)" -ForegroundColor Red
+        throw
+    }
+    Write-Host '=== WinRM: Restart-Computer -Force (remote) ===' -ForegroundColor Cyan
+    try {
+        Invoke-Command -Session $session -ScriptBlock { Restart-Computer -Force }
+    } catch {
+        Write-Host "remote reboot sent (session drop is normal): $($_.Exception.Message)" -ForegroundColor Yellow
+    }
 } finally {
     Remove-PSSession -Session $session -ErrorAction SilentlyContinue
 }
+
+Write-Host '=== sleep 10s after remote reboot (before install-remote2) ===' -ForegroundColor Cyan
+Start-Sleep -Seconds 10
+
+& (Join-Path $here 'install-remote2.ps1') -Server $Server -Login $Login -Password $Password
 
 Write-Host '=== install-remote finished ===' -ForegroundColor Green
