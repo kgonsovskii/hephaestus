@@ -48,7 +48,7 @@ foreach ($p in @($srcLocal, $srcLog)) {
 }
 
 Write-Host "=== WinRM: copy 2 files -> $CloneParent , then run install-local.ps1 ===" -ForegroundColor Cyan
-$session = New-RemotePwshSession -ComputerName $Server -Credential $cred
+$session = New-RemotePwshSession -ComputerName $Server -Credential $cred -RetryUntilConnected $true
 $bodyLocal = Get-Content -LiteralPath $srcLocal -Raw -ErrorAction Stop
 $bodyLog = Get-Content -LiteralPath $srcLog -Raw -ErrorAction Stop
 $remoteLocal = [System.IO.Path]::GetFullPath((Join-Path $CloneParent 'install-local.ps1'))

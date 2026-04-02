@@ -64,6 +64,7 @@ while ((Get-Date) -lt $pollDeadline) {
         }
     } catch {
         Write-Host "poll iteration: $($_.Exception.Message)" -ForegroundColor Yellow
+        Start-Sleep -Seconds 5
     } finally {
         if ($null -ne $pollSession) {
             Remove-PSSession -Session $pollSession -ErrorAction SilentlyContinue

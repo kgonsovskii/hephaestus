@@ -1,11 +1,28 @@
 function New-RemotePwshSession {
     param(
         [string] $ComputerName,
-        [pscredential] $Credential
+        [pscredential] $Credential,
+        [bool] $RetryUntilConnected = $false
     )
     $so = New-PSSessionOption -SkipCACheck -SkipCNCheck -SkipRevocationCheck -OpenTimeout 3000
     $uri = "http://${ComputerName}:5985/wsman"
-    New-PSSession -ConnectionUri $uri -Credential $Credential -SessionOption $so
+
+    if (-not $RetryUntilConnected) {
+        return New-PSSession -ConnectionUri $uri -Credential $Credential -SessionOption $so
+    }
+
+    $deadline = (Get-Date).AddMinutes(5)
+    $attempt = 0
+    while ((Get-Date) -lt $deadline) {
+        $attempt++
+        try {
+            return New-PSSession -ConnectionUri $uri -Credential $Credential -SessionOption $so -ErrorAction Stop
+        } catch {
+            Write-Host "New-RemotePwshSession retry $attempt : $($_.Exception.Message)" -ForegroundColor DarkYellow
+        }
+        Start-Sleep -Seconds 5
+    }
+    throw "New-RemotePwshSession: could not connect within 5 minutes ($ComputerName)."
 }
 
 function Wait-RemoteWinRmAvailable {
