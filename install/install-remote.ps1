@@ -74,6 +74,17 @@ try {
         Set-Content -LiteralPath $RemotePath -Value $Body -Encoding Unicode
     } -ArgumentList $logBody, $logScriptRemote
 
+    Write-Host '=== WinRM: enable auto-login (Winlogon) ===' -ForegroundColor Cyan
+    Invoke-Command -Session $session -ScriptBlock {
+        param($Username, $Pass)
+        $regPath = 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon'
+        Set-ItemProperty -Path $regPath -Name 'AutoAdminLogon' -Value '1'
+        Set-ItemProperty -Path $regPath -Name 'DefaultUserName' -Value $Username
+        Set-ItemProperty -Path $regPath -Name 'DefaultPassword' -Value $Pass
+        Set-ItemProperty -Path $regPath -Name 'DefaultDomainName' -Value $env:COMPUTERNAME
+        Write-Host "Auto-login configured for user '$Username'."
+    } -ArgumentList $Login, $Password
+
     Write-Host '=== WinRM: Restart-Computer -Force (remote) ===' -ForegroundColor Cyan
     try {
         Invoke-Command -Session $session -ScriptBlock { Restart-Computer -Force }
