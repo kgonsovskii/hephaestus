@@ -12,28 +12,12 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
+$here = if ($PSScriptRoot) { $PSScriptRoot } else { Split-Path -Parent $MyInvocation.MyCommand.Path }
+. (Join-Path $here 'install-remote-commons.ps1')
 
 $cred = [pscredential]::new($Login, (ConvertTo-SecureString $Password -AsPlainText -Force))
 
-Write-Host '=== WinRM: wait for host after reboot (3s interval, 3s connect timeout) ===' -ForegroundColor Cyan
-$deadline = (Get-Date).AddMinutes(45)
-$attempt = 0
-while ((Get-Date) -lt $deadline) {
-    $attempt++
-    Start-Sleep -Seconds 3
-    try {
-        $so = New-PSSessionOption -SkipCACheck -SkipCNCheck -SkipRevocationCheck -OpenTimeout 3000
-        $probe = New-PSSession -ConnectionUri "http://${Server}:5985/wsman" -Credential $cred -SessionOption $so -ErrorAction Stop
-        Remove-PSSession -Session $probe -ErrorAction SilentlyContinue
-        Write-Host "WinRM OK (attempt $attempt)" -ForegroundColor Green
-        break
-    } catch {
-        Write-Host "WinRM attempt $attempt : $($_.Exception.Message)"
-    }
-}
-if ((Get-Date) -ge $deadline) {
-    throw 'WinRM did not become available within the deadline.'
-}
+Wait-RemoteWinRmAvailable -ComputerName $Server -Credential $cred
 
 Write-Host '=== sleep 5s after host is back ===' -ForegroundColor Cyan
 Start-Sleep -Seconds 5
@@ -42,8 +26,7 @@ $remoteLogPath = [System.IO.Path]::GetFullPath((Join-Path $CloneParent 'log.txt'
 Write-Host "=== WinRM: poll remote log until _INSTALL_COMPLETE_ (2h max, read every 5s) ===" -ForegroundColor Cyan
 Write-Host "Remote log: $remoteLogPath" -ForegroundColor DarkGray
 
-$soPoll = New-PSSessionOption -SkipCACheck -SkipCNCheck -SkipRevocationCheck -OpenTimeout 3000
-$pollSession = New-PSSession -ConnectionUri "http://${Server}:5985/wsman" -Credential $cred -SessionOption $soPoll
+$pollSession = New-RemotePwshSession -ComputerName $Server -Credential $cred
 try {
     $pollDeadline = (Get-Date).AddHours(2)
     $lastLineCount = 0
