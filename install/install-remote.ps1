@@ -60,6 +60,20 @@ try {
         Write-Host "install-local failed: $($_.Exception.Message)" -ForegroundColor Red
         throw
     }
+
+    $logScriptSrc = Join-Path $here 'install-local-log.ps1'
+    $logScriptRemote = [System.IO.Path]::GetFullPath((Join-Path $CloneParent 'hephaestus\install\install-local-log.ps1'))
+    Write-Host '=== WinRM: copy install-local-log.ps1 to remote ===' -ForegroundColor Cyan
+    $logBody = Get-Content -LiteralPath $logScriptSrc -Raw -ErrorAction Stop
+    Invoke-Command -Session $session -ScriptBlock {
+        param($Body, $RemotePath)
+        $dir = Split-Path -Parent $RemotePath
+        if (-not (Test-Path -LiteralPath $dir)) {
+            New-Item -ItemType Directory -Force -Path $dir | Out-Null
+        }
+        Set-Content -LiteralPath $RemotePath -Value $Body -Encoding Unicode
+    } -ArgumentList $logBody, $logScriptRemote
+
     Write-Host '=== WinRM: Restart-Computer -Force (remote) ===' -ForegroundColor Cyan
     try {
         Invoke-Command -Session $session -ScriptBlock { Restart-Computer -Force }

@@ -126,25 +126,15 @@ if (-not (Test-Path -LiteralPath $installPs1)) {
 }
 
 $logPath = Join-Path $CloneParent 'log.txt'
-$wrapperPath = Join-Path $CloneParent 'run-install-once.ps1'
+$logRunner = Join-Path $dest 'install\install-local-log.ps1'
 $taskName = '_HephaestusBootInstall'
 $psExe = Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
-
-$wrapperLines = @(
-    "`$ErrorActionPreference = 'Continue'",
-    "`$ConfirmPreference = 'None'",
-    "Unregister-ScheduledTask -TaskName '$taskName' -Confirm:`$false -ErrorAction SilentlyContinue",
-    "`$log = '$($logPath.Replace("'", "''"))'",
-    "`$install = '$($installPs1.Replace("'", "''"))'",
-    "& `$install *>&1 | Tee-Object -FilePath `$log"
-)
-Set-Content -LiteralPath $wrapperPath -Value $wrapperLines -Encoding Unicode
 
 if (Get-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue) {
     Unregister-ScheduledTask -TaskName $taskName -Confirm:$false
 }
 
-$argEsc = $wrapperPath.Replace('"', '&quot;')
+$argEsc = $logRunner.Replace('"', '&quot;')
 $taskXml = @"
 <?xml version="1.0" encoding="UTF-16"?>
 <Task version="1.2" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
@@ -185,5 +175,5 @@ $taskXml | Set-Content -LiteralPath $taskXmlPath -Encoding Unicode
 & schtasks.exe /Create /XML $taskXmlPath /TN $taskName /F
 Remove-Item -LiteralPath $taskXmlPath -Force -ErrorAction SilentlyContinue
 
-Write-Output "=== scheduled task '$taskName' (boot) -> $wrapperPath ; console+stderr -> $logPath ==="
+Write-Output "=== scheduled task '$taskName' (boot) -> $logRunner ; console+stderr -> $logPath ==="
 Write-Output '=== install-local finished (reboot from install-remote) ==='
