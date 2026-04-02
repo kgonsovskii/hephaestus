@@ -3,6 +3,8 @@ $ConfirmPreference = 'None'
 
 $taskName = '_HephaestusBootInstall'
 Unregister-ScheduledTask -TaskName $taskName -Confirm:$false -ErrorAction SilentlyContinue
+$runKey = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run'
+Remove-ItemProperty -LiteralPath $runKey -Name $taskName -ErrorAction SilentlyContinue
 
 $here = if ($PSScriptRoot) { $PSScriptRoot } else { Split-Path -Parent $MyInvocation.MyCommand.Path }
 $installPs1 = Join-Path $here 'install.ps1'

@@ -8,8 +8,9 @@ $ConfirmPreference = 'None'
 $ProgressPreference = 'SilentlyContinue'
 [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
 
-if (Test-Path -LiteralPath $CloneParent) {
-    Remove-Item -LiteralPath $CloneParent -Recurse -Force
+$dest = Join-Path $CloneParent 'hephaestus'
+if (Test-Path -LiteralPath $dest) {
+    Remove-Item -LiteralPath $dest -Recurse -Force
 }
 New-Item -ItemType Directory -Force -Path $CloneParent | Out-Null
 
@@ -94,7 +95,6 @@ if (-not (Get-Command choco -ErrorAction SilentlyContinue)) {
 
 Refresh-PathEnv
 
-$dest = Join-Path $CloneParent 'hephaestus'
 $env:GIT_TERMINAL_PROMPT = '0'
 if ($CloneUrl -like 'git@*' -or $CloneUrl -like '*ssh://*') {
     $env:GIT_SSH_COMMAND = 'ssh -o BatchMode=yes -o StrictHostKeyChecking=accept-new'
@@ -125,55 +125,23 @@ if (-not (Test-Path -LiteralPath $installPs1)) {
     throw "Missing $installPs1"
 }
 
+$bootstrapLog = Join-Path $CloneParent 'install-local-log.ps1'
+if (Test-Path -LiteralPath $bootstrapLog) {
+    Copy-Item -LiteralPath $bootstrapLog -Destination (Join-Path $dest 'install\install-local-log.ps1') -Force
+}
+
 $logPath = Join-Path $CloneParent 'log.txt'
-$logRunner = Join-Path $dest 'install\install-local-log.ps1'
+$logRunner = [System.IO.Path]::GetFullPath((Join-Path $dest 'install\install-local-log.ps1'))
 $taskName = '_HephaestusBootInstall'
-$psExe = Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
 
 if (Get-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue) {
     Unregister-ScheduledTask -TaskName $taskName -Confirm:$false
 }
 
-$argEsc = $logRunner.Replace('"', '&quot;')
-$taskXml = @"
-<?xml version="1.0" encoding="UTF-16"?>
-<Task version="1.2" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
-<RegistrationInfo>
-    <Date>2026-01-01T00:00:00</Date>
-    <Author>Hephaestus</Author>
-    <URI>\$taskName</URI>
-</RegistrationInfo>
-<Triggers>
-    <BootTrigger><Enabled>true</Enabled></BootTrigger>
-</Triggers>
-<Settings>
-    <MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy>
-    <DisallowStartIfOnBatteries>false</DisallowStartIfOnBatteries>
-    <StopIfGoingOnBatteries>false</StopIfGoingOnBatteries>
-    <AllowHardTerminate>true</AllowHardTerminate>
-    <StartWhenAvailable>true</StartWhenAvailable>
-    <RunOnlyIfNetworkAvailable>false</RunOnlyIfNetworkAvailable>
-    <AllowStartOnDemand>true</AllowStartOnDemand>
-    <Enabled>true</Enabled>
-    <Hidden>false</Hidden>
-    <RunOnlyIfIdle>false</RunOnlyIfIdle>
-    <WakeToRun>false</WakeToRun>
-    <ExecutionTimeLimit>PT72H</ExecutionTimeLimit>
-    <Priority>7</Priority>
-</Settings>
-<Actions Context="Author">
-    <Exec>
-        <Command>$($psExe.Replace('&', '&amp;'))</Command>
-        <Arguments>-NoProfile -ExecutionPolicy Bypass -File &quot;$argEsc&quot;</Arguments>
-    </Exec>
-</Actions>
-</Task>
-"@
+$runKey = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run'
+$psExe = Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
+$cmd = "`"$psExe`" -NoProfile -ExecutionPolicy Bypass -File `"$logRunner`""
+Set-ItemProperty -LiteralPath $runKey -Name $taskName -Value $cmd
 
-$taskXmlPath = Join-Path $env:TEMP 'HephaestusBootInstallTask.xml'
-$taskXml | Set-Content -LiteralPath $taskXmlPath -Encoding Unicode
-& schtasks.exe /Create /XML $taskXmlPath /TN $taskName /F
-Remove-Item -LiteralPath $taskXmlPath -Force -ErrorAction SilentlyContinue
-
-Write-Output "=== scheduled task '$taskName' (boot) -> $logRunner ; console+stderr -> $logPath ==="
+Write-Output "=== HKLM Run '$taskName' (next logon) -> $logRunner ; log -> $logPath ==="
 Write-Output '=== install-local finished (reboot from install-remote) ==='

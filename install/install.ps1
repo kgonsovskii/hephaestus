@@ -21,3 +21,5 @@ foreach ($name in $scripts) {
     Write-Host "=== Running $name ===" -ForegroundColor Cyan
     & $path
 }
+
+Write-Host '_INSTALL_COMPLETE_'

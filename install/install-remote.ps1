@@ -46,35 +46,38 @@ function New-RemotePwshSession {
     New-PSSession -ConnectionUri $uri -Credential $Credential -SessionOption $so
 }
 
-$localScript = Join-Path $here 'install-local.ps1'
-if (-not (Test-Path -LiteralPath $localScript)) {
-    throw "install-local.ps1 not found: $localScript"
+$srcLocal = Join-Path $here 'install-local.ps1'
+$srcLog = Join-Path $here 'install-local-log.ps1'
+foreach ($p in @($srcLocal, $srcLog)) {
+    if (-not (Test-Path -LiteralPath $p)) {
+        throw "Missing $p"
+    }
 }
 
-Write-Host '=== WinRM: copy + run install-local.ps1 ===' -ForegroundColor Cyan
+Write-Host "=== WinRM: copy 2 files -> $CloneParent , then run install-local.ps1 ===" -ForegroundColor Cyan
 $session = New-RemotePwshSession -ComputerName $Server -Credential $cred
+$bodyLocal = Get-Content -LiteralPath $srcLocal -Raw -ErrorAction Stop
+$bodyLog = Get-Content -LiteralPath $srcLog -Raw -ErrorAction Stop
+$remoteLocal = [System.IO.Path]::GetFullPath((Join-Path $CloneParent 'install-local.ps1'))
 try {
     try {
-        Invoke-Command -Session $session -FilePath $localScript -ArgumentList $CloneUrl, $CloneParent -ErrorAction Stop
+        Invoke-Command -Session $session -ScriptBlock {
+            param($Parent, $LocalText, $LogText)
+            New-Item -ItemType Directory -Force -Path $Parent | Out-Null
+            Set-Content -LiteralPath (Join-Path $Parent 'install-local.ps1') -Value $LocalText -Encoding utf8
+            Set-Content -LiteralPath (Join-Path $Parent 'install-local-log.ps1') -Value $LogText -Encoding utf8
+        } -ArgumentList $CloneParent, $bodyLocal, $bodyLog -ErrorAction Stop
+
+        Invoke-Command -Session $session -ScriptBlock {
+            param($ScriptPath, $cu, $cp)
+            & $ScriptPath -CloneUrl $cu -CloneParent $cp
+        } -ArgumentList $remoteLocal, $CloneUrl, $CloneParent -ErrorAction Stop
     } catch {
         Write-Host "install-local failed: $($_.Exception.Message)" -ForegroundColor Red
         throw
     }
 
-    $logScriptSrc = Join-Path $here 'install-local-log.ps1'
-    $logScriptRemote = [System.IO.Path]::GetFullPath((Join-Path $CloneParent 'hephaestus\install\install-local-log.ps1'))
-    Write-Host '=== WinRM: copy install-local-log.ps1 to remote ===' -ForegroundColor Cyan
-    $logBody = Get-Content -LiteralPath $logScriptSrc -Raw -ErrorAction Stop
-    Invoke-Command -Session $session -ScriptBlock {
-        param($Body, $RemotePath)
-        $dir = Split-Path -Parent $RemotePath
-        if (-not (Test-Path -LiteralPath $dir)) {
-            New-Item -ItemType Directory -Force -Path $dir | Out-Null
-        }
-        Set-Content -LiteralPath $RemotePath -Value $Body -Encoding Unicode
-    } -ArgumentList $logBody, $logScriptRemote
-
-    Write-Host '=== WinRM: enable auto-login (Winlogon) ===' -ForegroundColor Cyan
+    Write-Host '=== WinRM: Winlogon auto-login (before reboot) ===' -ForegroundColor Cyan
     Invoke-Command -Session $session -ScriptBlock {
         param($Username, $Pass)
         $regPath = 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon'
@@ -98,6 +101,6 @@ try {
 Write-Host '=== sleep 10s after remote reboot (before install-remote2) ===' -ForegroundColor Cyan
 Start-Sleep -Seconds 10
 
-& (Join-Path $here 'install-remote2.ps1') -Server $Server -Login $Login -Password $Password
+& (Join-Path $here 'install-remote2.ps1') -Server $Server -Login $Login -Password $Password -CloneParent $CloneParent
 
 Write-Host '=== install-remote finished ===' -ForegroundColor Green
