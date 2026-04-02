@@ -6,13 +6,18 @@ param(
 $ErrorActionPreference = 'Stop'
 $ConfirmPreference = 'None'
 $ProgressPreference = 'SilentlyContinue'
-[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
 
-$dest = Join-Path $CloneParent 'hephaestus'
-if (Test-Path -LiteralPath $dest) {
-    Remove-Item -LiteralPath $dest -Recurse -Force
+# First: remove any previous repo folder under CloneParent (hephaestus / Hephaestus)
+foreach ($leaf in @('hephaestus', 'Hephaestus')) {
+    $p = Join-Path $CloneParent $leaf
+    if (Test-Path -LiteralPath $p) {
+        Remove-Item -LiteralPath $p -Recurse -Force
+    }
 }
+$dest = Join-Path $CloneParent 'hephaestus'
 New-Item -ItemType Directory -Force -Path $CloneParent | Out-Null
+
+[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
 
 function Refresh-PathEnv {
     $m = [System.Environment]::GetEnvironmentVariable('Path', 'Machine')
