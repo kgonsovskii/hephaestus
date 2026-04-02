@@ -39,32 +39,25 @@ try {
 
 Invoke-RemotePreInstallReboot -ComputerName $Server -Credential $cred
 
-$copyPayload = @()
-foreach ($f in Get-ChildItem -LiteralPath $here -Filter 'install-local*.*' -File | Sort-Object Name) {
-    $copyPayload += [pscustomobject]@{
-        Name = $f.Name
-        Body = Get-Content -LiteralPath $f.FullName -Raw -ErrorAction Stop
-    }
+$srcLocal = Join-Path $here 'install-local.ps1'
+if (-not (Test-Path -LiteralPath $srcLocal)) {
+    throw "Missing $srcLocal"
 }
+$bodyLocal = Get-Content -LiteralPath $srcLocal -Raw -ErrorAction Stop
 
-Write-Host "=== WinRM: copy install-local*.* ($($copyPayload.Count) files) -> $CloneParent , then run install-local.ps1 ===" -ForegroundColor Cyan
+Write-Host "=== WinRM: copy install-local.ps1 -> $CloneParent , then run ===" -ForegroundColor Cyan
 $session = New-RemotePwshSession -ComputerName $Server -Credential $cred -RetryUntilConnected $true
 $remoteLocal = [System.IO.Path]::GetFullPath((Join-Path $CloneParent 'install-local.ps1'))
 try {
     try {
         Invoke-Command -Session $session -ScriptBlock {
-            param($Parent, $Items)
+            param($Parent, $LocalText)
             if (Test-Path -LiteralPath $Parent) {
                 Remove-Item -LiteralPath $Parent -Recurse -Force
             }
             New-Item -ItemType Directory -Force -Path $Parent | Out-Null
-            foreach ($item in $Items) {
-                $outPath = Join-Path $Parent $item.Name
-                $ext = [System.IO.Path]::GetExtension($item.Name).ToLowerInvariant()
-                $enc = if ($ext -eq '.bat' -or $ext -eq '.cmd') { 'ascii' } else { 'utf8' }
-                Set-Content -LiteralPath $outPath -Value $item.Body -Encoding $enc
-            }
-        } -ArgumentList $CloneParent, $copyPayload -ErrorAction Stop
+            Set-Content -LiteralPath (Join-Path $Parent 'install-local.ps1') -Value $LocalText -Encoding utf8
+        } -ArgumentList $CloneParent, $bodyLocal -ErrorAction Stop
 
         Invoke-Command -Session $session -ScriptBlock {
             param($ScriptPath, $cu, $cp)

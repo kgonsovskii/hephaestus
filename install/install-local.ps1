@@ -126,16 +126,6 @@ if ($g -ne 0) {
 }
 
 $installPs1 = Join-Path $dest 'install\install.ps1'
-if (-not (Test-Path -LiteralPath $installPs1)) {
-    throw "Missing $installPs1"
-}
-
-$installDir = Join-Path $dest 'install'
-if (Test-Path -LiteralPath $CloneParent) {
-    foreach ($bf in Get-ChildItem -LiteralPath $CloneParent -Filter 'install-local*.*' -File) {
-        Copy-Item -LiteralPath $bf.FullName -Destination (Join-Path $installDir $bf.Name) -Force
-    }
-}
 
 $logPath = Join-Path $CloneParent 'log.txt'
 $logRunner = [System.IO.Path]::GetFullPath((Join-Path $dest 'install\install-local-log.ps1'))
