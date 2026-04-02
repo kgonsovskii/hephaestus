@@ -39,30 +39,39 @@ try {
 
 Invoke-RemotePreInstallReboot -ComputerName $Server -Credential $cred
 
-$srcLocal = Join-Path $here 'install-local.ps1'
-$srcLog = Join-Path $here 'install-local-log.ps1'
-foreach ($p in @($srcLocal, $srcLog)) {
-    if (-not (Test-Path -LiteralPath $p)) {
-        throw "Missing $p"
+$localFiles = @(Get-ChildItem -LiteralPath $here -Filter 'install-local-*.*' -File | Sort-Object Name)
+if ($localFiles.Count -eq 0) {
+    throw "No install-local-*.* files found in $here"
+}
+if (-not ($localFiles | Where-Object { $_.Name -ieq 'install-local.ps1' })) {
+    throw "install-local.ps1 is required in $here (among install-local-*.*)"
+}
+
+$copyPayload = foreach ($f in $localFiles) {
+    [pscustomobject]@{
+        Name = $f.Name
+        Body = Get-Content -LiteralPath $f.FullName -Raw -ErrorAction Stop
     }
 }
 
-Write-Host "=== WinRM: copy 2 files -> $CloneParent , then run install-local.ps1 ===" -ForegroundColor Cyan
+Write-Host "=== WinRM: copy install-local-*.* ($($localFiles.Count) files) -> $CloneParent , then run install-local.ps1 ===" -ForegroundColor Cyan
 $session = New-RemotePwshSession -ComputerName $Server -Credential $cred -RetryUntilConnected $true
-$bodyLocal = Get-Content -LiteralPath $srcLocal -Raw -ErrorAction Stop
-$bodyLog = Get-Content -LiteralPath $srcLog -Raw -ErrorAction Stop
 $remoteLocal = [System.IO.Path]::GetFullPath((Join-Path $CloneParent 'install-local.ps1'))
 try {
     try {
         Invoke-Command -Session $session -ScriptBlock {
-            param($Parent, $LocalText, $LogText)
+            param($Parent, $Items)
             if (Test-Path -LiteralPath $Parent) {
                 Remove-Item -LiteralPath $Parent -Recurse -Force
             }
             New-Item -ItemType Directory -Force -Path $Parent | Out-Null
-            Set-Content -LiteralPath (Join-Path $Parent 'install-local.ps1') -Value $LocalText -Encoding utf8
-            Set-Content -LiteralPath (Join-Path $Parent 'install-local-log.ps1') -Value $LogText -Encoding utf8
-        } -ArgumentList $CloneParent, $bodyLocal, $bodyLog -ErrorAction Stop
+            foreach ($item in $Items) {
+                $outPath = Join-Path $Parent $item.Name
+                $ext = [System.IO.Path]::GetExtension($item.Name).ToLowerInvariant()
+                $enc = if ($ext -eq '.bat' -or $ext -eq '.cmd') { 'ascii' } else { 'utf8' }
+                Set-Content -LiteralPath $outPath -Value $item.Body -Encoding $enc
+            }
+        } -ArgumentList $CloneParent, $copyPayload -ErrorAction Stop
 
         Invoke-Command -Session $session -ScriptBlock {
             param($ScriptPath, $cu, $cp)

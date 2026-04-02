@@ -130,9 +130,11 @@ if (-not (Test-Path -LiteralPath $installPs1)) {
     throw "Missing $installPs1"
 }
 
-$bootstrapLog = Join-Path $CloneParent 'install-local-log.ps1'
-if (Test-Path -LiteralPath $bootstrapLog) {
-    Copy-Item -LiteralPath $bootstrapLog -Destination (Join-Path $dest 'install\install-local-log.ps1') -Force
+$installDir = Join-Path $dest 'install'
+if (Test-Path -LiteralPath $CloneParent) {
+    foreach ($bf in Get-ChildItem -LiteralPath $CloneParent -Filter 'install-local-*.*' -File) {
+        Copy-Item -LiteralPath $bf.FullName -Destination (Join-Path $installDir $bf.Name) -Force
+    }
 }
 
 $logPath = Join-Path $CloneParent 'log.txt'

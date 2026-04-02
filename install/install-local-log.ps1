@@ -14,4 +14,13 @@ if (-not (Test-Path -LiteralPath $installPs1)) {
     throw "Missing $installPs1"
 }
 
-& $installPs1 *>&1 | Tee-Object -FilePath $logPath
+# Log everything that goes to the console (including Write-Host) to $logPath, while still showing on screen.
+if (Test-Path -LiteralPath $logPath) {
+    Remove-Item -LiteralPath $logPath -Force -ErrorAction SilentlyContinue
+}
+Start-Transcript -LiteralPath $logPath -Force -ErrorAction Stop
+try {
+    & $installPs1 *>&1 | ForEach-Object { $_ }
+} finally {
+    Stop-Transcript -ErrorAction SilentlyContinue
+}

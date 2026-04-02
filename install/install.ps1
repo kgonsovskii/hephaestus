@@ -23,3 +23,4 @@ foreach ($name in $scripts) {
 }
 
 Write-Host '_INSTALL_COMPLETE_'
+Write-Output '_INSTALL_COMPLETE_'
