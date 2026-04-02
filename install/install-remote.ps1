@@ -39,22 +39,14 @@ try {
 
 Invoke-RemotePreInstallReboot -ComputerName $Server -Credential $cred
 
-$localFiles = @(Get-ChildItem -LiteralPath $here -Filter 'install-local*.*' -File | Sort-Object Name)
-if ($localFiles.Count -eq 0) {
-    throw "No install-local-*.* files found in $here"
-}
-if (-not ($localFiles | Where-Object { $_.Name -ieq 'install-local.ps1' })) {
-    throw "install-local.ps1 is required in $here (among install-local-*.*)"
-}
-
-$copyPayload = foreach ($f in $localFiles) {
-    [pscustomobject]@{
+Write-Host "=== WinRM: copy install-local*.* ($($copyPayload.Count) files) -> $CloneParent , then run install-local.ps1 ===" -ForegroundColor Cyan
+$copyPayload = @()
+foreach ($f in Get-ChildItem -LiteralPath $here -Filter 'install-local*.*' -File | Sort-Object Name) {
+    $copyPayload += [pscustomobject]@{
         Name = $f.Name
         Body = Get-Content -LiteralPath $f.FullName -Raw -ErrorAction Stop
     }
 }
-
-Write-Host "=== WinRM: copy install-local-*.* ($($localFiles.Count) files) -> $CloneParent , then run install-local.ps1 ===" -ForegroundColor Cyan
 $session = New-RemotePwshSession -ComputerName $Server -Credential $cred -RetryUntilConnected $true
 $remoteLocal = [System.IO.Path]::GetFullPath((Join-Path $CloneParent 'install-local.ps1'))
 try {

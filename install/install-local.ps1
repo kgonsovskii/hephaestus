@@ -132,7 +132,7 @@ if (-not (Test-Path -LiteralPath $installPs1)) {
 
 $installDir = Join-Path $dest 'install'
 if (Test-Path -LiteralPath $CloneParent) {
-    foreach ($bf in Get-ChildItem -LiteralPath $CloneParent -Filter 'install-local-*.*' -File) {
+    foreach ($bf in Get-ChildItem -LiteralPath $CloneParent -Filter 'install-local*.*' -File) {
         Copy-Item -LiteralPath $bf.FullName -Destination (Join-Path $installDir $bf.Name) -Force
     }
 }
