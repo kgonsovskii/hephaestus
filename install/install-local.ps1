@@ -1,9 +1,7 @@
 param(
-    [string] $CloneUrl = 'https://github.com/kgonsovskii/hephaestus.git',
-
-    [string] $CloneParent = 'C:\Delta'
+    [string] $CloneUrl = 'https://github.com/kgonsovskii/hephaestus.git'
 )
-
+$CloneParent = 'C:\Delta'
 $ErrorActionPreference = 'Stop'
 $ConfirmPreference = 'None'
 $ProgressPreference = 'SilentlyContinue'
