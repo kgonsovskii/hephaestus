@@ -77,6 +77,9 @@ $preSession = New-RemotePwshSession -ComputerName $Server -Credential $cred
 try {
     try {
         Invoke-Command -Session $preSession -ScriptBlock { Restart-Computer -Force }
+        Start-Sleep -Seconds 5
+        Wait-RemoteWinRmAvailable -ComputerName $Server -Credential $cred
+        Start-Sleep -Seconds 5
     } catch {
         Write-Host "pre-install reboot sent (session drop is normal): $($_.Exception.Message)" -ForegroundColor Yellow
     }
@@ -84,8 +87,6 @@ try {
     Remove-PSSession -Session $preSession -ErrorAction SilentlyContinue
 }
 
-Wait-RemoteWinRmAvailable -ComputerName $Server -Credential $cred
-Start-Sleep -Seconds 5
 
 $srcLocal = Join-Path $here 'install-local.ps1'
 $srcLog = Join-Path $here 'install-local-log.ps1'
