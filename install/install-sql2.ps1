@@ -1,4 +1,4 @@
-choco install sqlserver-cmdlineutils --yes --ignore-checksums
+
 choco install sql-server-management-studio --yes --ignore-checksums
 
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
