@@ -1,0 +1,26 @@
+<Project>
+  <PropertyGroup Condition="'$(UsingMicrosoftNETSdk)' == 'true'">
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <!-- Shared package versions (referenced as $(PkgName) in *.csproj) -->
+    <PkgNpgsqlVersion>10.0.0</PkgNpgsqlVersion>
+    <PkgMicrosoftExtensionsVersion>10.0.0</PkgMicrosoftExtensionsVersion>
+    <PkgMicrosoftNetTestSdkVersion>18.0.0</PkgMicrosoftNetTestSdkVersion>
+    <PkgMSTestVersion>4.0.2</PkgMSTestVersion>
+    <PkgFluentAssertionsVersion>7.2.0</PkgFluentAssertionsVersion>
+    <PkgHtmlAgilityPackVersion>1.12.4</PkgHtmlAgilityPackVersion>
+    <PkgMicrosoftPowerShellSdkVersion>7.5.4</PkgMicrosoftPowerShellSdkVersion>
+    <PkgSystemDirectoryServicesAccountManagementVersion>10.0.0</PkgSystemDirectoryServicesAccountManagementVersion>
+    <PkgSMBLibraryVersion>1.5.3.5</PkgSMBLibraryVersion>
+  </PropertyGroup>
+
+  <!-- Single flat folder: repo\output\ — no Configuration / TFM segments; last build wins on duplicates. Tests excluded (default bin\obj\ under Tests). -->
+  <PropertyGroup Condition="'$(UsingMicrosoftNETSdk)' == 'true' AND '$(MSBuildProjectName)' != 'Tests'">
+    <BaseOutputPath>$(MSBuildThisFileDirectory)..\output\</BaseOutputPath>
+    <OutputPath>$(MSBuildThisFileDirectory)..\output\</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+  </PropertyGroup>
+</Project>
