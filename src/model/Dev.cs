@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Net.NetworkInformation;
+using System.Net.Sockets;
 using System.Text.Json;
 
 namespace model;
@@ -96,6 +97,8 @@ public class Dev
             }
         }
         _privateIpAddresses = ipv4Addresses;
+        if (_privateIpAddresses.Count == 0)
+            _privateIpAddresses.Add(LocalNetwork.GetPrimaryIpAddress()!);
         return _privateIpAddresses;
     }
 
@@ -130,3 +133,45 @@ public class Dev
         };
     }
 }
+
+
+
+/// <summary>
+/// Helpers for local network configuration (primary IP, etc.).
+/// Filters out loopback, virtual, VPN, and tunnel interfaces.
+/// </summary>
+public static class LocalNetwork
+{
+    /// <summary>
+    /// Returns the primary non-loopback IPv4 address, skipping virtual/VPN/tunnel interfaces.
+    /// Returns null if none found.
+    /// </summary>
+    public static string? GetPrimaryIpAddress()
+    {
+        foreach (var ni in NetworkInterface.GetAllNetworkInterfaces())
+        {
+            if (ni.OperationalStatus != OperationalStatus.Up)
+                continue;
+            if (ni.NetworkInterfaceType == NetworkInterfaceType.Loopback)
+                continue;
+            if (ni.NetworkInterfaceType == NetworkInterfaceType.Tunnel)
+                continue;
+            var name = (ni.Name ?? "").ToLowerInvariant();
+            var desc = (ni.Description ?? "").ToLowerInvariant();
+            if (name.Contains("virtual") || desc.Contains("virtual") ||
+                name.Contains("vmware") || desc.Contains("vmware") ||
+                name.Contains("vbox") || desc.Contains("virtualbox") ||
+                name.Contains("hyper-v") || desc.Contains("hyper-v") ||
+                name.Contains("docker") || desc.Contains("docker") ||
+                name.Contains("vpn") || desc.Contains("vpn"))
+                continue;
+
+            var addr = ni.GetIPProperties().UnicastAddresses
+                .FirstOrDefault(u => u.Address.AddressFamily == AddressFamily.InterNetwork && !IPAddress.IsLoopback(u.Address));
+            if (addr != null)
+                return addr.Address.ToString();
+        }
+        return null;
+    }
+}
+
