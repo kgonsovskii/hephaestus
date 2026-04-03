@@ -1,248 +1,233 @@
--- Close all connections to the database 'hephaestus'
-USE master;
-GO
+-- PostgreSQL: run as superuser against maintenance DB, e.g.:
+--   psql -U postgres -d postgres -v ON_ERROR_STOP=1 -f install.sql
 
--- Terminate all connections to the 'hephaestus' database
-ALTER DATABASE hephaestus SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
-GO
-
--- Drop the 'hephaestus' database if it exists
-IF EXISTS (SELECT * FROM sys.databases WHERE name = 'hephaestus')
+DO $$
 BEGIN
-    DROP DATABASE hephaestus;
-    PRINT 'Database hephaestus dropped successfully.';
-END
-GO
+  IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'tss') THEN
+    CREATE ROLE tss LOGIN PASSWORD '123' CREATEDB;
+  ELSE
+    ALTER ROLE tss WITH PASSWORD '123';
+  END IF;
+END $$;
 
--- Recreate the 'hephaestus' database
-CREATE DATABASE hephaestus;
-GO
+SELECT pg_terminate_backend(pid)
+FROM pg_stat_activity
+WHERE datname = 'hephaestus'
+  AND pid <> pg_backend_pid();
 
--- Switch to the 'hephaestus' database
-USE hephaestus;
-GO
+DROP DATABASE IF EXISTS hephaestus;
 
--- You can add additional setup scripts here, such as creating tables, inserting data, etc.
--- Example:
--- CREATE TABLE ExampleTable (ID INT PRIMARY KEY, Name NVARCHAR(50));
--- INSERT INTO ExampleTable (ID, Name) VALUES (1, 'Sample Data');
-GO
+CREATE DATABASE hephaestus
+  OWNER tss
+  ENCODING 'UTF8'
+  TEMPLATE template0;
 
+\connect hephaestus
 
-use hephaestus
--- Drop the stored procedure if it exists
+DROP VIEW IF EXISTS daily_server_serie_stats_view;
+DROP VIEW IF EXISTS download_log_view;
+DROP VIEW IF EXISTS bot_log_view;
 
-IF OBJECT_ID('dbo.UpsertBotLog', 'P') IS NOT NULL
-BEGIN
-DROP PROCEDURE dbo.UpsertBotLog;
-END
-GO
+DROP TABLE IF EXISTS dn_log;
+DROP TABLE IF EXISTS bot_log;
 
-IF OBJECT_ID('dbo.Clean', 'P') IS NOT NULL
-BEGIN
-DROP PROCEDURE dbo.Clean;
-END
-GO
-
-
-IF OBJECT_ID('dbo.CalcStats', 'P') IS NOT NULL
-BEGIN
-DROP PROCEDURE dbo.CalcStats;
-END
-GO
-
-IF OBJECT_ID('dbo.LogDn', 'P') IS NOT NULL
-BEGIN
-DROP PROCEDURE dbo.LogDn;
-END
-GO
-
-
-DROP table if exists dbo.botLog
-
-DROP table if exists dbo.dnLog
-
-CREATE TABLE dbo.botLog (
-                            id varchar(100) PRIMARY KEY,
-                            server VARCHAR(15),
-                            first_seen DATETIME DEFAULT CURRENT_TIMESTAMP,
-                            last_seen DATETIME DEFAULT CURRENT_TIMESTAMP,
-                            first_seen_ip VARCHAR(15),
-                            last_seen_ip VARCHAR(15),
-                            serie VARCHAR(100),
-                            number_of_requests INT DEFAULT 1,
-                            number_of_elevated_requests INT DEFAULT 0,
-							number_of_downloads int,
-							install_calculated DATETIME,
-							uninstall_calculated DATETIME
+CREATE TABLE bot_log (
+  id                         VARCHAR(100) PRIMARY KEY,
+  server                     VARCHAR(15),
+  first_seen                 TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  last_seen                  TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  first_seen_ip              VARCHAR(15),
+  last_seen_ip               VARCHAR(15),
+  serie                      VARCHAR(100),
+  number_of_requests         INT DEFAULT 1,
+  number_of_elevated_requests INT DEFAULT 0,
+  number_of_downloads        INT,
+  install_calculated         TIMESTAMP WITHOUT TIME ZONE,
+  uninstall_calculated       TIMESTAMP WITHOUT TIME ZONE
 );
-GO
 
-
-CREATE TABLE dbo.dnLog ( ip VARCHAR(15) PRIMARY KEY,
-                           server VARCHAR(15),
-                           profile VARCHAR(100),
-                           first_seen DATETIME DEFAULT CURRENT_TIMESTAMP,
-                           last_seen DATETIME DEFAULT CURRENT_TIMESTAMP,
-						   number_of_requests  INT DEFAULT 1,
+CREATE TABLE dn_log (
+  ip                VARCHAR(15) PRIMARY KEY,
+  server            VARCHAR(15),
+  profile           VARCHAR(100),
+  first_seen        TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  last_seen         TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  number_of_requests INT DEFAULT 1
 );
-GO
 
--- Create or alter the stored procedure
-CREATE PROCEDURE dbo.UpsertBotLog
-    @server VARCHAR(15),
-    @ip VARCHAR(15),
-    @id VARCHAR(100),
-    @elevated INT = 0,
-    @serie VARCHAR(100) = NULL,
-    @timeDif int = 0 
-AS
+CREATE OR REPLACE FUNCTION upsert_bot_log(
+  p_server   VARCHAR(15),
+  p_ip       VARCHAR(15),
+  p_id       VARCHAR(100),
+  p_elevated INT DEFAULT 0,
+  p_serie    VARCHAR(100) DEFAULT NULL,
+  p_time_dif INT DEFAULT 0
+) RETURNS void
+LANGUAGE plpgsql
+AS $$
 BEGIN
-	
-    -- Use MERGE to handle insert or update
-MERGE dbo.botLog AS target
-    USING (VALUES (@id, @server, @serie, @ip, @ip, @timeDif))
-    AS source (id, server, serie,  first_seen_ip, last_seen_ip, time_dif)
-    ON target.id = source.id
-    WHEN MATCHED THEN
-UPDATE SET
-    last_seen = CURRENT_TIMESTAMP,                  -- Update last seen timestamp
-    last_seen_ip = source.last_seen_ip,             -- Update last seen IP address
-    number_of_requests = target.number_of_requests + 1,  -- Increment number of requests
-    number_of_elevated_requests = target.number_of_elevated_requests + @elevated  -- Increment elevated requests if elevated > 0
-    WHEN NOT MATCHED BY TARGET THEN
-INSERT (id, server, first_seen, last_seen, first_seen_ip, last_seen_ip, serie, number_of_requests, number_of_elevated_requests)
-VALUES (
-    source.id,                                      -- Use provided @id
-    source.server,                                  -- Server name or address
-    CURRENT_TIMESTAMP,                              -- First seen timestamp
-    CURRENT_TIMESTAMP,                              -- Last seen timestamp
-    source.first_seen_ip,                           -- First seen IP address
-    source.last_seen_ip,                            -- Last seen IP address
-    source.serie,                                   -- Serie (provided during insert)
-    1,                                              -- Number of requests set to 1 for new record
-    @elevated                                       -- Number of elevated requests set to @elevated value for new record
-    );
-END;
-GO
-
-CREATE PROCEDURE dbo.LogDn
-    @server VARCHAR(15),
-    @profile VARCHAR(100),
-    @ip varchar(15)
-AS
-BEGIN
-MERGE dbo.dnLog AS target
-    USING (VALUES (@ip, @server, @profile))
-    AS source (ip, server, profile)
-    ON target.ip = source.ip
-    WHEN MATCHED THEN
-UPDATE SET
+  INSERT INTO bot_log (
+    id, server, first_seen, last_seen, first_seen_ip, last_seen_ip, serie,
+    number_of_requests, number_of_elevated_requests, number_of_downloads,
+    install_calculated, uninstall_calculated
+  )
+  VALUES (
+    p_id, p_server, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, p_ip, p_ip, p_serie,
+    1, p_elevated, NULL, NULL, NULL
+  )
+  ON CONFLICT (id) DO UPDATE SET
     last_seen = CURRENT_TIMESTAMP,
-    number_of_requests = target.number_of_requests + 1
-    WHEN NOT MATCHED BY TARGET THEN
-INSERT (ip, server, profile, first_seen, last_seen, number_of_requests)
-VALUES (
-    source.ip,                                      
-    source.server,                                  
-    source.profile,                              
-    CURRENT_TIMESTAMP,                              
-    CURRENT_TIMESTAMP,                                          
-    1                                                               
-    );
+    last_seen_ip = EXCLUDED.last_seen_ip,
+    number_of_requests = bot_log.number_of_requests + 1,
+    number_of_elevated_requests = bot_log.number_of_elevated_requests + p_elevated;
 END;
-GO
+$$;
 
-CREATE PROCEDURE dbo.Clean
-    AS
+CREATE OR REPLACE FUNCTION log_dn(
+  p_server  VARCHAR(15),
+  p_profile VARCHAR(100),
+  p_ip      VARCHAR(15)
+) RETURNS void
+LANGUAGE plpgsql
+AS $$
 BEGIN
-	DELETE FROM dbo.dnLog
-	WHERE first_seen < DATEADD(HOUR, -48, GETDATE());
-END
-GO
+  INSERT INTO dn_log (ip, server, profile, first_seen, last_seen, number_of_requests)
+  VALUES (p_ip, p_server, p_profile, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1)
+  ON CONFLICT (ip) DO UPDATE SET
+    last_seen = CURRENT_TIMESTAMP,
+    number_of_requests = dn_log.number_of_requests + 1;
+END;
+$$;
 
-
-CREATE PROCEDURE dbo.CalcStats
-    AS
+CREATE OR REPLACE FUNCTION clean()
+RETURNS void
+LANGUAGE plpgsql
+AS $$
 BEGIN
-	UPDATE dbo.botlog
-	SET install_calculated = first_seen
-	WHERE install_calculated IS NULL
-	  AND ABS(DATEDIFF(MINUTE, first_seen, last_seen)) <= 5;
+  DELETE FROM dn_log
+  WHERE first_seen < (CURRENT_TIMESTAMP - INTERVAL '48 hours');
+END;
+$$;
 
-	UPDATE dbo.botlog
-	SET uninstall_calculated = last_seen
-	WHERE uninstall_calculated IS NULL
-	  AND DATEDIFF(DAY, first_seen, last_seen) > 10;
-END
-GO
+CREATE OR REPLACE FUNCTION calc_stats()
+RETURNS void
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  UPDATE bot_log
+  SET install_calculated = first_seen
+  WHERE install_calculated IS NULL
+    AND ABS(EXTRACT(EPOCH FROM (last_seen - first_seen)) / 60.0) <= 5;
 
+  UPDATE bot_log
+  SET uninstall_calculated = last_seen
+  WHERE uninstall_calculated IS NULL
+    AND (last_seen::date - first_seen::date) > 10;
+END;
+$$;
 
-DROP VIEW  if exists dbo.BotLogView;
-GO
+CREATE OR REPLACE VIEW bot_log_view AS
+SELECT *
+FROM (
+  SELECT
+    bl.id,
+    bl.server,
+    bl.first_seen,
+    bl.last_seen,
+    bl.first_seen_ip,
+    bl.last_seen_ip,
+    bl.serie,
+    bl.number_of_requests,
+    bl.number_of_elevated_requests,
+    (
+      SELECT COUNT(*)::bigint
+      FROM dn_log dl
+      WHERE dl.ip = bl.first_seen_ip
+        AND CAST(dl.first_seen AS date) = CAST(bl.first_seen AS date)
+    ) AS number_of_downloads
+  FROM bot_log bl
+  LIMIT 1000
+) sub;
 
--- Create the view
-CREATE VIEW dbo.BotLogView AS
-SELECT TOP (1000) [id]
-      ,[server]
-      ,[first_seen]
-      ,[last_seen]
-      ,[first_seen_ip]
-      ,[last_seen_ip]
-      ,[serie]
-      ,[number_of_requests]
-      ,[number_of_elevated_requests],
+CREATE OR REPLACE VIEW download_log_view AS
+SELECT *
+FROM (
+  SELECT
+    ip,
+    server,
+    profile,
+    first_seen,
+    last_seen,
+    number_of_requests
+  FROM dn_log
+  LIMIT 1000
+) sub;
 
-	  	( (Select count(*) from dnLog where dnLog.ip = 
-	botLog.first_seen_ip and cast(dnLog.first_seen as date) = CAST(botlog.first_seen AS DATE)))
-	as number_of_downloads
-
-  FROM [hephaestus].[dbo].[botLog]
-GO
-
-
-
-DROP VIEW  if exists dbo.DownloadLogView;
-GO
-
-CREATE VIEW dbo.DownloadLogView AS
-SELECT TOP (1000) [ip]
-      ,[server]
-      ,[profile]
-      ,[first_seen]
-      ,[last_seen]
-      ,[number_of_requests]
-  FROM [hephaestus].[dbo].[dnLog]
-GO
-
-  
-
-IF OBJECT_ID('dbo.DailyServerSerieStatsView', 'V') IS NOT NULL
-    DROP VIEW dbo.DailyServerSerieStatsView;
-GO
-
--- Create the view
-CREATE VIEW dbo.DailyServerSerieStatsView AS
+CREATE OR REPLACE VIEW daily_server_serie_stats_view AS
 SELECT
-    CAST(first_seen AS DATE) AS Date,
-    server,
-    ISNULL(serie, 'not specified') AS Serie,
-    COUNT(DISTINCT id) AS UniqueIDCount,
-	COUNT(DISTINCT CASE WHEN number_of_elevated_requests > 0 THEN id END) AS ElevatedUniqueIDCount,
+  grp.d0 AS stat_date,
+  grp.srv AS server,
+  grp.ser AS serie,
+  grp.unique_id_count,
+  grp.elevated_unique_id_count,
+  (
+    SELECT COUNT(*)::bigint
+    FROM dn_log d
+    WHERE CAST(d.first_seen AS date) = grp.d0
+      AND EXISTS (
+        SELECT 1
+        FROM bot_log b2
+        WHERE b2.first_seen_ip = d.ip
+          AND CAST(b2.first_seen AS date) = grp.d0
+          AND b2.server = grp.srv
+          AND COALESCE(b2.serie, 'not specified') = grp.ser
+      )
+  ) AS number_of_downloads,
+  grp.install_count,
+  grp.uninstall_count
+FROM (
+  SELECT
+    CAST(first_seen AS date) AS d0,
+    server AS srv,
+    COALESCE(serie, 'not specified') AS ser,
+    COUNT(DISTINCT id) AS unique_id_count,
+    COUNT(DISTINCT CASE WHEN number_of_elevated_requests > 0 THEN id END) AS elevated_unique_id_count,
+    SUM(
+      CASE
+        WHEN install_calculated IS NOT NULL
+          AND CAST(first_seen AS date) = CAST(install_calculated AS date)
+        THEN 1 ELSE 0
+      END
+    ) AS install_count,
+    SUM(
+      CASE
+        WHEN uninstall_calculated IS NOT NULL
+          AND CAST(last_seen AS date) = CAST(uninstall_calculated AS date)
+        THEN 1 ELSE 0
+      END
+    ) AS uninstall_count
+  FROM bot_log
+  GROUP BY CAST(first_seen AS date), server, COALESCE(serie, 'not specified')
+) grp;
 
-	( (Select count(*) from dnLog where dnLog.ip = 
-	min(botLog.first_seen_ip) and cast(dnLog.first_seen as date) = CAST(botlog.first_seen AS DATE)))
-	as NumberOfDownloads,
+ALTER SCHEMA public OWNER TO tss;
+ALTER TABLE bot_log OWNER TO tss;
+ALTER TABLE dn_log OWNER TO tss;
+ALTER VIEW bot_log_view OWNER TO tss;
+ALTER VIEW download_log_view OWNER TO tss;
+ALTER VIEW daily_server_serie_stats_view OWNER TO tss;
 
-sum(CASE WHEN install_calculated is not null and CAST(first_seen AS DATE) = CAST(install_calculated AS DATE) THEN 1 else 0 END) AS InstallCount,
-
-sum(CASE WHEN uninstall_calculated is not null and CAST(last_seen AS DATE) = CAST(uninstall_calculated AS DATE) THEN 1 else 0 END) AS UnInstallCount
-FROM
-    dbo.botLog
-GROUP BY
-    CAST(first_seen AS DATE),
-    server,
-    ISNULL(serie, 'not specified');
-GO
-
-
+DO $$
+DECLARE
+  r RECORD;
+BEGIN
+  FOR r IN
+    SELECT p.oid::regprocedure AS fp
+    FROM pg_proc p
+    JOIN pg_namespace n ON n.oid = p.pronamespace
+    WHERE n.nspname = 'public'
+      AND p.proname = ANY (ARRAY['upsert_bot_log', 'log_dn', 'clean', 'calc_stats'])
+  LOOP
+    EXECUTE format('ALTER FUNCTION %s OWNER TO tss', r.fp);
+  END LOOP;
+END $$;
