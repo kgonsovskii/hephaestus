@@ -22,7 +22,10 @@ CREATE DATABASE hephaestus
   ENCODING 'UTF8'
   TEMPLATE template0;
 
-connect hephaestus
+\connect hephaestus
+
+-- Keep NOTICEs off stderr (e.g. DROP IF EXISTS) so PowerShell does not treat psql as failed.
+SET client_min_messages = WARNING;
 
 DROP VIEW IF EXISTS daily_server_serie_stats_view;
 DROP VIEW IF EXISTS download_log_view;
