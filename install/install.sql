@@ -22,7 +22,7 @@ CREATE DATABASE hephaestus
   ENCODING 'UTF8'
   TEMPLATE template0;
 
-\connect hephaestus
+connect hephaestus
 
 DROP VIEW IF EXISTS daily_server_serie_stats_view;
 DROP VIEW IF EXISTS download_log_view;
