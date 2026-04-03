@@ -17,13 +17,13 @@ public class Dev
 #endif
         }
     }
-    
+
     public const string ModeDefault = "default";
-    public const string ModeDebug = "debug";
-    
+    public const string ModeDebug = "default";
+
     public static string[] KnownDomains = new[] { "masterhost.online", "masterhost2.online" };
     public static string[] KnownSubs = new[] {"", "cp", "dev" };
-        
+
     private static string DevIp = "127.0.0.1";
     private static string DevHost = "localhost.masterhost.online:5000";
     private static string DevPassword = "Putin123";
@@ -49,14 +49,27 @@ public class Dev
         {
             server.ServerIp = serverIp;
         }
+
+        if (string.IsNullOrEmpty(server.ServerIp))
+        {
+            var all = GetPublicIPv4Addresses();
+            if (all.Count >= 1)
+            {
+                server.ServerIp = all[0];
+            }
+            else
+            {
+                server.ServerIp = "127.0.0.1";
+            }
+        }
         ServerModelLoader.SaveServer(serverName, server);
     }
-    
+
     static int CountDots(string input)
     {
         return input.Split('.').Length - 1;
     }
-    
+
     private static List<string>? _privateIpAddresses = null;
     public static List<string> GetPublicIPv4Addresses()
     {
@@ -85,9 +98,9 @@ public class Dev
         _privateIpAddresses = ipv4Addresses;
         return _privateIpAddresses;
     }
-    
 
-    
+
+
     static string ResolveDomainToIP(string domain)
     {
         try

@@ -20,10 +20,7 @@ public class PackModel: BaseModel
     {
         get
         {
-            var url = ServerModel.Alias;
-            if (string.IsNullOrEmpty(url))
-                url = ServerModel.ServerIp;
-            url = "http://" + url + "/pack/envelope";
+            var url = "http://" + ServerModel.EffectiveAlias + "/pack/envelope";
             return url;
         }
     }
@@ -49,10 +46,10 @@ public class PackItem: BaseModel
     }
     [JsonPropertyName("packFolder")]
     public string PackFolder => Path.Combine(PackModel.PackFolder, Id);
-    
+
     [JsonPropertyName("packFileVbs")]
     public string PackFileVbs => Path.Combine(PackFolder, Name + ".vbs");
-    
+
     [JsonPropertyName("packFileExe")]
     public string PackFileExe => Path.Combine(PackFolder, Name + ".exe");
 
@@ -62,13 +59,13 @@ public class PackItem: BaseModel
 
 
     [JsonPropertyName("name")] public string Name => UrlHelper.GetFileNameFromUrl(OriginalUrl, PackModel.PackTemplateUrl);
-    
+
     [JsonPropertyName("originalUrl")]
     public string OriginalUrl { get; set; }
-    
+
     [JsonPropertyName("icon")]
     public string Icon { get; set; }
-    
+
     [JsonPropertyName("iconFile")]
     public string IconFile => Path.Combine(PackFolder, Name + ".ico");
 
@@ -76,7 +73,7 @@ public class PackItem: BaseModel
     [JsonPropertyName("urlVbs")] public string UrlVbs => PackModel.PackTemplateUrl + "?type=vbs&url=" + OriginalUrl;
 
     [JsonPropertyName("enabled")] public bool Enabled { get; set; } = false;
-    
+
     [JsonPropertyName("date")] public string Date { get; set; } = "";
 
     protected override void InternalRefresh()

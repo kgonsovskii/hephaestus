@@ -1,4 +1,3 @@
-using System.Globalization;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -66,33 +65,36 @@ public static class ServerModelLoader
         }
     }
 
-    private static string? _rootDirStatic = null;
+    private const string RepoRootMarkerFile = "defaulticon.ico";
 
     public static string RootDirStatic
     {
         get
         {
-            if (_rootDirStatic == null)
+            if (field == null)
             {
-                var found = false;
-                string dir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
-                while (!found)
+                var dir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+                while (!string.IsNullOrEmpty(dir))
                 {
-                    var name = Path.GetFileName(dir);
-
-                    if (name.ToLower(CultureInfo.InvariantCulture) == "certtool" || name.ToLower(CultureInfo.InvariantCulture) == "packer" ||  name.ToLower(CultureInfo.InvariantCulture) == "remoteenabler" || name.ToLower(CultureInfo.InvariantCulture) == "foregrounder" || name.ToLower(CultureInfo.InvariantCulture) == "troyanbuilder" || name.ToLower(CultureInfo.InvariantCulture) == "cp" || name.ToLower(CultureInfo.InvariantCulture) == "refiner")
+                    if (File.Exists(Path.Combine(dir, RepoRootMarkerFile)))
                     {
-                        dir = Directory.GetParent(dir)?.FullName;
-                        _rootDirStatic = dir;
+                        field = dir;
                         break;
                     }
 
                     dir = Directory.GetParent(dir)?.FullName;
                 }
+
+                if (field == null)
+                {
+                    throw new InvalidOperationException(
+                        $"Could not find repository root: no parent directory of the executable contains '{RepoRootMarkerFile}'.");
+                }
             }
-            return _rootDirStatic!;
+
+            return field!;
         }
-    }
+    } = null;
 
     public static string RootDataStatic
     {
@@ -146,39 +148,6 @@ public static class ServerModelLoader
         }
     }
 
-    public static string SharpRdp
-    {
-        get
-        {
-            var result = Path.Combine(RootDirStatic, "rdp","SharpRdp.exe");
-            if (!File.Exists(result))
-                result = Path.Combine(CpDirStatic, "SharpRdp.exe");
-            return result;
-        }
-    }
-
-    public static string SharpRdpLocal
-    {
-        get
-        {
-            var result = Path.Combine(RootDirStatic, "rdp","SharpRdp_local.exe");
-            if (!File.Exists(result))
-                result = Path.Combine(CpDirStatic, "SharpRdp_local.exe");
-            return result;
-        }
-    }
-
-    public static string PsExec
-    {
-        get
-        {
-            var result = Path.Combine(RootDirStatic, "rdp","psExec64.exe");
-            if (!File.Exists(result))
-                result = Path.Combine(CpDirStatic, "psExec64.exe");
-            return result;
-        }
-    }
-
     public static string UserDataDir(string server)
     {
         if (server == null)
@@ -201,12 +170,12 @@ public static class ServerModelLoader
     public static string CpDirStatic => Path.Combine(RootDirStatic, "cp");
 
     public static string AdsDirStatic => Path.Combine(RootDirStatic, "ads");
+
     public static string PhpDirStatic => Path.Combine(RootDirStatic, "php");
 
     public static string CertDirStatic => Path.Combine(RootDirStatic, "cert");
 
     public static string SysDirStatic => Path.Combine(RootDirStatic, "sys");
-
 
     public static string TroyanDirStatic => Path.Combine(RootDirStatic, "troyan");
 
