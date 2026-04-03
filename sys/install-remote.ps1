@@ -18,7 +18,7 @@ function Get-ClonerPath {
     }
 
     $paths = @(
-        (Join-Path -Path $scriptDir -ChildPath "..\cloner\bin\debug\net9.0\cloner.exe"),
+        (Join-Path -Path $scriptDir -ChildPath "..\cloner\bin\debug\net10.0\cloner.exe"),
         (Join-Path -Path $scriptDir -ChildPath "..\cp\cloner.exe")
     )
 

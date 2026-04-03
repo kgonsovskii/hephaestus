@@ -1,9 +1,8 @@
-﻿using System.Data;
-using System.Data.SqlClient;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 using model;
+using Npgsql;
 
 namespace cp.Controllers;
 
@@ -17,12 +16,10 @@ public class StatsController: BaseController
     
     internal void ClearStats()
     {
-        using (var connection = new SqlConnection(_connectionString))
+        using (var connection = new NpgsqlConnection(_connectionString))
         {
             connection.Open();
-            var command = new SqlCommand( "truncate table dbo.botLog; truncate table dbo.dnLog");
-            command.CommandType = CommandType.Text;
-            command.Connection = connection;
+            using var command = new NpgsqlCommand("TRUNCATE TABLE bot_log, dn_log", connection);
             command.ExecuteNonQuery();
         }
     }
@@ -36,11 +33,27 @@ public class StatsController: BaseController
 
         try
         {
-            await using (var connection = new SqlConnection(_connectionString))
+            await using (var connection = new NpgsqlConnection(_connectionString))
             {
                 await connection.OpenAsync();
-                await using (var command = new SqlCommand($"SELECT TOP (1000) [Date], [server], [Serie], [UniqueIDCount], [ElevatedUniqueIDCount],NumberOfDownloads,InstallCount,UnInstallCount FROM [hephaestus].[dbo].[DailyServerSerieStatsView] where server = '{server}' order by date desc", connection))
+                await using (var command = new NpgsqlCommand(
+                    """
+                    SELECT
+                      stat_date AS "Date",
+                      server AS "server",
+                      serie AS "Serie",
+                      unique_id_count AS "UniqueIDCount",
+                      elevated_unique_id_count AS "ElevatedUniqueIDCount",
+                      number_of_downloads AS "NumberOfDownloads",
+                      install_count AS "InstallCount",
+                      uninstall_count AS "UnInstallCount"
+                    FROM daily_server_serie_stats_view
+                    WHERE server = @server
+                    ORDER BY stat_date DESC
+                    LIMIT 1000
+                    """, connection))
                 {
+                    command.Parameters.AddWithValue("server", server);
                     await using (var reader = await command.ExecuteReaderAsync())
                     {
                         while (await reader.ReadAsync())
@@ -52,7 +65,7 @@ public class StatsController: BaseController
                                 Serie = reader.GetString(reader.GetOrdinal("Serie")),
                                 UniqueIDCount = reader.GetInt32(reader.GetOrdinal("UniqueIDCount")),
                                 ElevatedUniqueIDCount = reader.GetInt32(reader.GetOrdinal("ElevatedUniqueIDCount")),
-                                NumberOfDownloads = reader.GetInt32(reader.GetOrdinal("NumberOfDownloads")),
+                                NumberOfDownloads = (int)reader.GetInt64(reader.GetOrdinal("NumberOfDownloads")),
                                 InstallCount = reader.GetInt32(reader.GetOrdinal("InstallCount")),
                                 UnInstallCount = reader.GetInt32(reader.GetOrdinal("UnInstallCount"))
                             };
@@ -78,38 +91,45 @@ public class StatsController: BaseController
 
         try
         {
-            await using (var connection = new SqlConnection(_connectionString))
+            await using (var connection = new NpgsqlConnection(_connectionString))
             {
                 await connection.OpenAsync();
-                await using (var command = new SqlCommand($@"SELECT TOP (1000) [id]
-      ,[server]
-      ,[first_seen]
-      ,[last_seen]
-      ,[first_seen_ip]
-      ,[last_seen_ip]
-      ,[serie]
-      ,[number_of_requests]
-      ,[number_of_elevated_requests]
-      ,[number_of_downloads]
-  FROM [hephaestus].[dbo].[BotLogView]
-  where server='{server}' order by last_seen desc", connection))
+                await using (var command = new NpgsqlCommand(
+                    """
+                    SELECT
+                      id,
+                      server,
+                      first_seen,
+                      last_seen,
+                      first_seen_ip,
+                      last_seen_ip,
+                      serie,
+                      number_of_requests,
+                      number_of_elevated_requests,
+                      number_of_downloads
+                    FROM bot_log_view
+                    WHERE server = @server
+                    ORDER BY last_seen DESC
+                    LIMIT 1000
+                    """, connection))
                 {
+                    command.Parameters.AddWithValue("server", server);
                     await using (var reader = await command.ExecuteReaderAsync())
                     {
                         while (await reader.ReadAsync())
                         {
                             var stat = new BotLog()
                             {
-                                Id = reader.GetString("id"),
+                                Id = reader.GetString(reader.GetOrdinal("id")),
                                 Server = reader.GetString(reader.GetOrdinal("server")),
                                 LastSeen = reader.GetDateTime(reader.GetOrdinal("last_seen")),
                                 LastSeenIp = reader.GetString(reader.GetOrdinal("last_seen_ip")),
                                 FirstSeen = reader.GetDateTime(reader.GetOrdinal("first_seen")),
                                 FirstSeenIp = reader.GetString(reader.GetOrdinal("first_seen_ip")),
-                                Serie = reader.GetString("serie"),
-                                NumberOfRequests =  reader.GetOrdinal("number_of_requests"),
-                                NumberOfElevatedRequests =  reader.GetInt32("number_of_elevated_requests"),
-                                NumberOfDownloads =  reader.GetInt32("number_of_downloads")
+                                Serie = reader.GetString(reader.GetOrdinal("serie")),
+                                NumberOfRequests = reader.GetInt32(reader.GetOrdinal("number_of_requests")),
+                                NumberOfElevatedRequests = reader.GetInt32(reader.GetOrdinal("number_of_elevated_requests")),
+                                NumberOfDownloads = (int)reader.GetInt64(reader.GetOrdinal("number_of_downloads"))
                             };
                             stats.Add(stat);
                         }
@@ -135,31 +155,37 @@ public class StatsController: BaseController
 
         try
         {
-            await using (var connection = new SqlConnection(_connectionString))
+            await using (var connection = new NpgsqlConnection(_connectionString))
             {
                 await connection.OpenAsync();
-                await using (var command = new SqlCommand($@"SELECT TOP (1000) 
-        [ip]
-      ,[server]
-      ,[profile]
-      ,[first_seen]
-      ,[last_seen]
-      ,[number_of_requests]
-  FROM [hephaestus].[dbo].[DownloadLogView]
-  where server='{server}' order by last_seen desc", connection))
+                await using (var command = new NpgsqlCommand(
+                    """
+                    SELECT
+                      ip,
+                      server,
+                      profile,
+                      first_seen,
+                      last_seen,
+                      number_of_requests
+                    FROM download_log_view
+                    WHERE server = @server
+                    ORDER BY last_seen DESC
+                    LIMIT 1000
+                    """, connection))
                 {
+                    command.Parameters.AddWithValue("server", server);
                     await using (var reader = await command.ExecuteReaderAsync())
                     {
                         while (await reader.ReadAsync())
                         {
                             var stat = new DownloadLog()
                             {
-                                Ip = reader.GetString("ip"),
+                                Ip = reader.GetString(reader.GetOrdinal("ip")),
                                 Server = reader.GetString(reader.GetOrdinal("server")),
                                 Profile = reader.GetString(reader.GetOrdinal("profile")),
                                 FirstSeen = reader.GetDateTime(reader.GetOrdinal("first_seen")),
                                 LastSeen = reader.GetDateTime(reader.GetOrdinal("last_seen")),
-                                NumberOfRequests =  reader.GetOrdinal("number_of_requests"),
+                                NumberOfRequests = reader.GetInt32(reader.GetOrdinal("number_of_requests")),
                             };
                             stats.Add(stat);
                         }

@@ -1,10 +1,7 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
-        <TargetFramework>net9.0</TargetFramework>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
     </PropertyGroup>
 
     <ItemGroup>
@@ -12,7 +9,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="System.DirectoryServices.AccountManagement" Version="9.0.1" />
+      <PackageReference Include="System.DirectoryServices.AccountManagement" Version="$(PkgSystemDirectoryServicesAccountManagementVersion)" />
     </ItemGroup>
 
 </Project>

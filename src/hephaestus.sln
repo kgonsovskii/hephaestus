@@ -1,4 +1,4 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "model", "model\model.csproj", "{A7BC8490-5D7C-42A3-A5C1-81B55E73AF55}"
 EndProject
@@ -8,6 +8,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Refiner", "Refiner\Refiner.
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{9C3B6E20-DEEA-4813-B690-EE5C793E56E3}"
 	ProjectSection(SolutionItems) = preProject
+		Directory.Build.props = Directory.Build.props
 		cp\publish.ps1 = cp\publish.ps1
 	EndProjectSection
 EndProject

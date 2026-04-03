@@ -22,7 +22,7 @@ $password = (Get-Content 'C:\Windows\info.txt' -Raw).Trim()
 $user = "rdp"
 $serverIp = $server.clone.cloneServerIp
 $exePath = $server.clonerExe
-$fullPath = Resolve-Path -Path (Join-Path -Path $scriptDir -ChildPath "../Cloner/bin/Debug/net9.0/Cloner.exe") -ErrorAction SilentlyContinue
+$fullPath = Resolve-Path -Path (Join-Path -Path $scriptDir -ChildPath "../Cloner/bin/Debug/net10.0/Cloner.exe") -ErrorAction SilentlyContinue
 if ($fullPath -and (Test-Path $fullPath)) {
     $exePath = $fullPath.Path
 }

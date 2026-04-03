@@ -10,7 +10,7 @@
 using System;
 using System.Reflection;
 
-[assembly: System.Reflection.AssemblyMetadata("BuildVersion", "2026.04.02 15:03:12")]
+[assembly: System.Reflection.AssemblyMetadata("BuildVersion", "2026.04.03 09:34:31")]
 
 // Создано классом WriteCodeFragment MSBuild.
 

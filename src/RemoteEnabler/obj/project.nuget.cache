@@ -1,18 +1,15 @@
 {
   "version": 2,
-  "dgSpecHash": "SVnjDv1fR1w=",
+  "dgSpecHash": "lsoRsH6V3r0=",
   "success": true,
   "projectFilePath": "C:\\soft\\hephaestus\\src\\RemoteEnabler\\RemoteEnabler.csproj",
   "expectedPackageFiles": [
-    "C:\\Users\\k\\.nuget\\packages\\system.configuration.configurationmanager\\9.0.1\\system.configuration.configurationmanager.9.0.1.nupkg.sha512",
-    "C:\\Users\\k\\.nuget\\packages\\system.diagnostics.eventlog\\9.0.1\\system.diagnostics.eventlog.9.0.1.nupkg.sha512",
-    "C:\\Users\\k\\.nuget\\packages\\system.directoryservices\\9.0.1\\system.directoryservices.9.0.1.nupkg.sha512",
-    "C:\\Users\\k\\.nuget\\packages\\system.directoryservices.accountmanagement\\9.0.1\\system.directoryservices.accountmanagement.9.0.1.nupkg.sha512",
-    "C:\\Users\\k\\.nuget\\packages\\system.directoryservices.protocols\\9.0.1\\system.directoryservices.protocols.9.0.1.nupkg.sha512",
-    "C:\\Users\\k\\.nuget\\packages\\system.security.cryptography.protecteddata\\9.0.1\\system.security.cryptography.protecteddata.9.0.1.nupkg.sha512",
-    "C:\\Users\\k\\.nuget\\packages\\microsoft.netcore.app.runtime.win-x64\\9.0.14\\microsoft.netcore.app.runtime.win-x64.9.0.14.nupkg.sha512",
-    "C:\\Users\\k\\.nuget\\packages\\microsoft.windowsdesktop.app.runtime.win-x64\\9.0.14\\microsoft.windowsdesktop.app.runtime.win-x64.9.0.14.nupkg.sha512",
-    "C:\\Users\\k\\.nuget\\packages\\microsoft.aspnetcore.app.runtime.win-x64\\9.0.14\\microsoft.aspnetcore.app.runtime.win-x64.9.0.14.nupkg.sha512"
+    "C:\\Users\\k\\.nuget\\packages\\system.configuration.configurationmanager\\10.0.0\\system.configuration.configurationmanager.10.0.0.nupkg.sha512",
+    "C:\\Users\\k\\.nuget\\packages\\system.diagnostics.eventlog\\10.0.0\\system.diagnostics.eventlog.10.0.0.nupkg.sha512",
+    "C:\\Users\\k\\.nuget\\packages\\system.directoryservices\\10.0.0\\system.directoryservices.10.0.0.nupkg.sha512",
+    "C:\\Users\\k\\.nuget\\packages\\system.directoryservices.accountmanagement\\10.0.0\\system.directoryservices.accountmanagement.10.0.0.nupkg.sha512",
+    "C:\\Users\\k\\.nuget\\packages\\system.directoryservices.protocols\\10.0.0\\system.directoryservices.protocols.10.0.0.nupkg.sha512",
+    "C:\\Users\\k\\.nuget\\packages\\system.security.cryptography.protecteddata\\10.0.0\\system.security.cryptography.protecteddata.10.0.0.nupkg.sha512"
   ],
   "logs": []
 }

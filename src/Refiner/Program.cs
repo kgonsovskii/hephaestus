@@ -1,11 +1,14 @@
-﻿using System.Data;
-using System.Data.SqlClient;
+using Microsoft.Extensions.Configuration;
 using model;
+using Npgsql;
 
 namespace Refiner;
 
 internal static class Program
 {
+    private static string _connectionString =
+        "Host=127.0.0.1;Port=5432;Database=hephaestus;Username=tss;Password=123";
+
     private static void Log(string s)
     {
         Console.WriteLine(s);
@@ -13,6 +16,14 @@ internal static class Program
     
     private static async Task Main(string[] args)
     {
+        var configuration = new ConfigurationBuilder()
+            .SetBasePath(AppContext.BaseDirectory)
+            .AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
+            .AddEnvironmentVariables()
+            .Build();
+        _connectionString = configuration.GetConnectionString("Default")
+            ?? "Host=127.0.0.1;Port=5432;Database=hephaestus;Username=tss;Password=123";
+
         Console.WriteLine($"Version=" + VersionFetcher.Version());
    
         Killer.StartKilling(false);
@@ -110,19 +121,17 @@ internal static class Program
 
     private static async Task DbJob()
     {
-        await using var connection = new SqlConnection("Server=localhost\\SQLEXPRESS;Database=hephaestus;Trusted_Connection=True;TrustServerCertificate=True;");
+        await using var connection = new NpgsqlConnection(_connectionString);
         await connection.OpenAsync();
-        await using var command = new SqlCommand("dbo.Clean", connection);
-        command.CommandType = CommandType.StoredProcedure;
+        await using var command = new NpgsqlCommand("SELECT clean()", connection);
         await command.ExecuteNonQueryAsync();
     }
     
     private static async Task StatsJob()
     {
-        await using var connection = new SqlConnection("Server=localhost\\SQLEXPRESS;Database=hephaestus;Trusted_Connection=True;TrustServerCertificate=True;");
+        await using var connection = new NpgsqlConnection(_connectionString);
         await connection.OpenAsync();
-        await using var command = new SqlCommand("dbo.CalcStats", connection);
-        command.CommandType = CommandType.StoredProcedure;
+        await using var command = new NpgsqlCommand("SELECT calc_stats()", connection);
         await command.ExecuteNonQueryAsync();
     }
     

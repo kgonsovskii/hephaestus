@@ -1,11 +1,11 @@
-﻿using System.Data;
-using System.Data.SqlClient;
+using System.Data;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 using model;
+using Npgsql;
 
 namespace cp.Controllers;
 
@@ -24,17 +24,15 @@ public class BotController: BaseController
     
     internal async Task<IActionResult> DnLog(string server, string ipAddress, string profile, string random, string target)
     {
-        await using (var connection = new SqlConnection(_connectionString))
+        await using (var connection = new NpgsqlConnection(_connectionString))
         {
             await connection.OpenAsync();
 
-            await using (var command = new SqlCommand("dbo.LogDn", connection))
+            await using (var command = new NpgsqlCommand("SELECT log_dn(@server, @profile, @ip)", connection))
             {
-                command.CommandType = CommandType.StoredProcedure;
-
-                command.Parameters.AddWithValue("@server", server ?? (object)DBNull.Value);
-                command.Parameters.AddWithValue("@profile", profile ?? (object)DBNull.Value);
-                command.Parameters.AddWithValue("@ip", ipAddress);
+                command.Parameters.AddWithValue("server", (object?)server ?? DBNull.Value);
+                command.Parameters.AddWithValue("profile", (object?)profile ?? DBNull.Value);
+                command.Parameters.AddWithValue("ip", ipAddress);
 
                 await command.ExecuteNonQueryAsync();
             }
@@ -70,19 +68,19 @@ public class BotController: BaseController
 
         try
         {
-            await using (var connection = new SqlConnection(_connectionString))
+            await using (var connection = new NpgsqlConnection(_connectionString))
             {
                 await connection.OpenAsync();
 
-                await using (var command = new SqlCommand("dbo.UpsertBotLog", connection))
+                await using (var command = new NpgsqlCommand(
+                                   "SELECT upsert_bot_log(@server, @ip, @id, @elevated, @serie, @time_dif)", connection))
                 {
-                    command.CommandType = CommandType.StoredProcedure;
-
-                    command.Parameters.AddWithValue("@server", server ?? (object)DBNull.Value);
-                    command.Parameters.AddWithValue("@ip", ipAddress);
-                    command.Parameters.AddWithValue("@id", realRequest.Id);
-                    command.Parameters.AddWithValue("@elevated", realRequest.ElevatedNumber);
-                    command.Parameters.AddWithValue("@serie", realRequest.Serie ?? (object)DBNull.Value);
+                    command.Parameters.AddWithValue("server", (object?)server ?? DBNull.Value);
+                    command.Parameters.AddWithValue("ip", ipAddress);
+                    command.Parameters.AddWithValue("id", realRequest.Id);
+                    command.Parameters.AddWithValue("elevated", realRequest.ElevatedNumber);
+                    command.Parameters.AddWithValue("serie", (object?)realRequest.Serie ?? DBNull.Value);
+                    command.Parameters.AddWithValue("time_dif", 0);
                     await command.ExecuteNonQueryAsync();
                 }
             }
