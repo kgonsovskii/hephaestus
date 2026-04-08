@@ -15,7 +15,7 @@ public class Runner
     {
         Runner.RunPsFile("install-reboot", true, false, RebootTimeOut);
     }
-    
+
     public static void Clean()
     {
         try
@@ -68,7 +68,7 @@ public class Runner
         }
         catch (Exception e)
         {
-            Log("Run In Error, restarting...");
+            Log("Run In Error, restarting...:" + e.Message);
             Thread.Sleep(1000);
             RunInTag = "";
             if (RunInWithRestart)
@@ -100,7 +100,7 @@ public class Runner
         result = result.Replace("$tag", RunInTag);
         return result;
     }
-    
+
     public static void Run(string runExe, bool isWait = true, bool isTag = false, int timeout=0,  params (string Name, object Value)[] parameters)
     {
         var args = ArgString(runExe, isWait, isTag, timeout, parameters);
@@ -113,7 +113,7 @@ public class Runner
             process.StartInfo.UseShellExecute = false;
             process.StartInfo.CreateNoWindow = true;
             process.StartInfo.WorkingDirectory = ServerModelLoader.RootDirStatic;
-            
+
             Log("RUN: " + runExe + " " + args);
 
             StringBuilder output = new StringBuilder();
@@ -137,7 +137,7 @@ public class Runner
                 }
             };
             process.Start();
-            
+
             process.BeginOutputReadLine();
             process.BeginErrorReadLine();
 
@@ -189,7 +189,7 @@ public class Runner
 
         return false;
     }
-    
+
     public static void WaitForRemoteTag(string remoteTag, int timeout)
     {
         Log("WaitForRemoteTag:" + remoteTag);
@@ -197,7 +197,7 @@ public class Runner
             new ValueTuple<string, object>("-timeout", timeout),
             new ValueTuple<string, object>("-tag", RunInTag));
     }
-    
+
     public static void RunPsFile(string psFile, bool isWait = true, bool isTag = false, int timeout=0, params (string Name, object Value)[] parameters)
     {
         var args = parameters.ToList();
@@ -207,7 +207,7 @@ public class Runner
         args.Add(new ValueTuple<string, object>("-password", Password));
         var argsStr = string.Join(" ", args.Select(p => $"{p.Item1} {p.Item2}"));
         psFile = SysScript(psFile);
-        Run("powershell", isWait, isTag, timeout, 
+        Run("powershell", isWait, isTag, timeout,
             new ValueTuple<string, object>("-ExecutionPolicy", "Bypass"),
             new ValueTuple<string, object>("-File", $"\"{psFile}\""),
             new ValueTuple<string, object>("-ArgumentList", $"{argsStr}")
@@ -220,8 +220,8 @@ public class Runner
     }
 
     public static DateTime LastLog;
- 
- 
+
+
     public static void Log(string s)
     {
         s = DateTime.Now.ToString() + "[ " + (DateTime.Now - LastLog).TotalSeconds + "sec] "  + s;

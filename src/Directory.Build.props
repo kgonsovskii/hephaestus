@@ -4,6 +4,8 @@
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <!-- Use newest installed 10.x patch (e.g. 10.0.5) when exact 10.0.0 shared framework is absent -->
+    <RollForward>LatestPatch</RollForward>
     <!-- Shared package versions (referenced as $(PkgName) in *.csproj) -->
     <PkgNpgsqlVersion>10.0.0</PkgNpgsqlVersion>
     <PkgMicrosoftExtensionsVersion>10.0.0</PkgMicrosoftExtensionsVersion>

@@ -1,2 +1,30 @@
 4/3/2026 10:12:20 AM[ 1.1997643sec] No preparation for CloneServerIp 78.140.243.76
 4/3/2026 10:12:21 AM[ 1.0266837sec] ACCOMPLISHED.
+
+--- Confirming Input --- 
+Server: 78.140.240.81 
+Username: Administrator 
+Password: **************** 
+Command: Enable-PSRemoting -Force 
+Timeout: 70 
+Run RDP 
+[-] Logon Error           :  {0} - {1} -2 ARBITRATION_CODE_CONTINUE_LOGON
+[+] Connected to          :  {0} 78.140.240.81
+[+] User not currently logged in, creating new session 
+[+] Execution priv type   :  {0} elevated
+[+] Executing {0} from {1} enable-psremoting -force powershell.exe
+Finish keys 
+[+] Disconnecting from    :  {0} 78.140.240.81
+[+] Connection closed     :  {0} 78.140.240.81
+Reprint local tag: 7042843, True 
+RDP connection completed successfully. 
+
+--- Confirming Input --- 
+Server: 78.140.240.81 
+Username: Administrator 
+Password: **************** 
+Command: Enable-PSRemoting -Force 
+Timeout: 70 
+Run RDP 
+Reprint local tag: 9724937, False 
+RDP connection thread completed with error. 

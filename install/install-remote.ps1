@@ -1,12 +1,12 @@
 param(
     [Parameter(Position = 0)]
-    [string] $Server = '78.140.243.76',
+    [string] $Server = '78.140.240.81',
 
     [Parameter(Position = 1)]
     [string] $Login = 'Administrator',
 
     [Parameter(Position = 2)]
-    [string] $Password = 'W0HmJkdBFyArO061',
+    [string] $Password = 'hxsY4pati52tWTS0',
 
     [string] $CloneUrl = 'https://github.com/kgonsovskii/hephaestus.git',
 
