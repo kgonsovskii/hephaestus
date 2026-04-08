@@ -39,7 +39,10 @@ if (!File.Exists(pfxPath))
 
 var httpsPort = Math.Clamp(hostOpts.HttpsPort, 1, 65535);
 
-var serverCert = X509CertificateLoader.LoadPkcs12FromFile(pfxPath, password: null, keyStorageFlags: X509KeyStorageFlags.EphemeralKeySet);
+var pfxPassword = hostOpts.CertPfxPassword ?? "";
+var serverCert = string.IsNullOrEmpty(pfxPassword)
+    ? X509CertificateLoader.LoadPkcs12FromFile(pfxPath, password: null, keyStorageFlags: X509KeyStorageFlags.EphemeralKeySet)
+    : X509CertificateLoader.LoadPkcs12FromFile(pfxPath, pfxPassword, X509KeyStorageFlags.EphemeralKeySet);
 
 builder.WebHost.ConfigureKestrel(options =>
 {

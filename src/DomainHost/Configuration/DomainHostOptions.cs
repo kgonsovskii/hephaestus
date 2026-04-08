@@ -16,5 +16,7 @@ public sealed class DomainHostOptions
 
     public string CertPfxFileName { get; set; } = "hephaestus.pfx";
 
+    public string CertPfxPassword { get; set; } = "123";
+
     public int HttpsPort { get; set; } = 5443;
 }
