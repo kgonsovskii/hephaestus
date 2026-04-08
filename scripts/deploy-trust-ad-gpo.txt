@@ -1,6 +1,34 @@
 Deploy Hephaestus HTTPS trust on a protected Windows AD domain (no per-employee pop-ups)
 ========================================================================================
 
+About "Security Warning" / consent when installing a root locally
+-----------------------------------------------------------------
+Windows may show a dialog when software adds a certificate to Trusted Root (whether you use
+PowerShell X509Store.Add, Import-PfxCertificate, or sometimes certutil in an interactive session).
+
+Microsoft does not document a supported registry key to disable that consent for arbitrary CAs.
+The supported ways to avoid asking each employee are: deploy the public .cer via GPO (below) or MDM,
+or accept the prompt once on non-domain machines.
+
+On a single PC you can try scripts/install-hephaestus-trust-cer.ps1 (uses certutil first, then
+.NET as fallback). It is still not guaranteed silent on every Windows 11 build.
+
+Reference: https://learn.microsoft.com/en-us/windows-server/identity/ad-cs/configure-trusted-roots-disallowed-certificates
+certutil: https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/certutil
+
+PFX / private key prompts (strong key protection, UserProtected)
+-----------------------------------------------------------------
+Some PFX files embed flags that require user interaction when the private key is loaded
+(Import-PfxCertificate and .NET X509Certificate2 honor them). CertTool writes the repo PFX
+with ExportPkcs12 (modern PKCS#12) to reduce that; install-hephaestus-cert.ps1 uses Exportable
+and never UserProtected.
+
+If prompts still appear, check group policy: Computer Configuration → Administrative Templates
+→ System → Cryptography → "Force strong key protection for user keys stored on the computer"
+(HKLM\SOFTWARE\Policies\Microsoft\Cryptography ForceKeyProtection). Your security team decides
+whether that can be relaxed for automation.
+
+
 What is GPO?
   Group Policy Object. On Active Directory, your IT admin publishes settings once on the
   domain controller; all domain-joined PCs apply them automatically (after reboot or

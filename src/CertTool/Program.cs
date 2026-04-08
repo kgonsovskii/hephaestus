@@ -14,7 +14,7 @@ internal static class Program
         try
         {
             Run();
-            Console.WriteLine("Wrote cert/hephaestus.pfx (password: 123) and cert/hephaestus-trusted-root.cer (public only for AD GPO). See scripts/deploy-trust-ad-gpo.txt.");
+            Console.WriteLine("Wrote cert/hephaestus.pfx (password: 123) and cert/hephaestus-trusted-root.cer. Trust: scripts/install-hephaestus-trust-cer.ps1 (CER only) or deploy-trust-ad-gpo.txt (AD).");
             return 0;
         }
         catch (Exception ex)
@@ -44,16 +44,39 @@ internal static class Program
         var pfxPath = Path.Combine(certDir, "hephaestus.pfx");
         var publicCerPath = Path.Combine(certDir, "hephaestus-trusted-root.cer");
 
-        if (File.Exists(pfxPath))
-            throw new InvalidOperationException($"Refusing to overwrite existing file: {pfxPath}");
-        if (File.Exists(publicCerPath))
-            throw new InvalidOperationException($"Refusing to overwrite existing file: {publicCerPath}");
+        var deleteExisting = LoadDeleteExistingCertFilesFlag();
+        if (deleteExisting)
+        {
+            if (File.Exists(pfxPath))
+                File.Delete(pfxPath);
+            if (File.Exists(publicCerPath))
+                File.Delete(publicCerPath);
+        }
+        else
+        {
+            if (File.Exists(pfxPath))
+                throw new InvalidOperationException($"Refusing to overwrite existing file: {pfxPath}");
+            if (File.Exists(publicCerPath))
+                throw new InvalidOperationException($"Refusing to overwrite existing file: {publicCerPath}");
+        }
 
         Directory.CreateDirectory(certDir);
 
         using var cert = CreateLanTlsCertificate(dnsNames);
-        File.WriteAllBytes(pfxPath, cert.Export(X509ContentType.Pfx, "123"));
+        // ExportPkcs12 avoids legacy PFX attributes that can surface as "strong private key protection" UI on import.
+        File.WriteAllBytes(pfxPath, cert.ExportPkcs12(Pkcs12ExportPbeParameters.Pbes2Aes256Sha256, "123"));
         File.WriteAllBytes(publicCerPath, cert.Export(X509ContentType.Cert));
+    }
+
+    private static bool LoadDeleteExistingCertFilesFlag()
+    {
+        var settingsPath = Path.Combine(AppContext.BaseDirectory, "appsettings.json");
+        if (!File.Exists(settingsPath))
+            return false;
+
+        var json = File.ReadAllText(settingsPath);
+        var doc = JsonSerializer.Deserialize<CertToolAppSettings>(json, JsonOptions);
+        return doc?.DeleteExistingCertFilesBeforeWrite ?? false;
     }
 
     private static List<string> LoadEnabledDomainNames(string domainsPath)
@@ -94,6 +117,11 @@ internal static class Program
         request.CertificateExtensions.Add(new X509SubjectKeyIdentifierExtension(request.PublicKey, false));
 
         return request.CreateSelfSigned(DateTimeOffset.UtcNow.AddDays(-1), DateTimeOffset.UtcNow.AddYears(10));
+    }
+
+    private sealed class CertToolAppSettings
+    {
+        public bool DeleteExistingCertFilesBeforeWrite { get; set; }
     }
 
     private sealed class DomainsFileDto
