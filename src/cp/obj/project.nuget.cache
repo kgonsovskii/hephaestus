@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "FnOF7ubRvzQ=",
+  "dgSpecHash": "4y2yOoUCghA=",
   "success": true,
-  "projectFilePath": "c:\\soft\\hephaestus\\src\\cp\\cp.csproj",
+  "projectFilePath": "C:\\soft\\hephaestus\\src\\cp\\cp.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\k\\.nuget\\packages\\npgsql\\10.0.0\\npgsql.10.0.0.nupkg.sha512",
     "C:\\Users\\k\\.nuget\\packages\\smblibrary\\1.5.3.5\\smblibrary.1.5.3.5.nupkg.sha512"

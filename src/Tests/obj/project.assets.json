@@ -8494,8 +8494,8 @@
         "net10.0": {
           "targetAlias": "net10.0",
           "projectReferences": {
-            "c:\\soft\\hephaestus\\src\\cp\\cp.csproj": {
-              "projectPath": "c:\\soft\\hephaestus\\src\\cp\\cp.csproj"
+            "C:\\soft\\hephaestus\\src\\cp\\cp.csproj": {
+              "projectPath": "C:\\soft\\hephaestus\\src\\cp\\cp.csproj"
             },
             "C:\\soft\\hephaestus\\src\\model\\model.csproj": {
               "projectPath": "C:\\soft\\hephaestus\\src\\model\\model.csproj"

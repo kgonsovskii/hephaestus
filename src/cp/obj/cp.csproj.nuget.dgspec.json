@@ -1,21 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "c:\\soft\\hephaestus\\src\\cp\\cp.csproj": {}
+    "C:\\soft\\hephaestus\\src\\cp\\cp.csproj": {}
   },
   "projects": {
-    "c:\\soft\\hephaestus\\src\\cp\\cp.csproj": {
+    "C:\\soft\\hephaestus\\src\\cp\\cp.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "c:\\soft\\hephaestus\\src\\cp\\cp.csproj",
+        "projectUniqueName": "C:\\soft\\hephaestus\\src\\cp\\cp.csproj",
         "projectName": "cp",
-        "projectPath": "c:\\soft\\hephaestus\\src\\cp\\cp.csproj",
+        "projectPath": "C:\\soft\\hephaestus\\src\\cp\\cp.csproj",
         "packagesPath": "C:\\Users\\k\\.nuget\\packages",
-        "outputPath": "c:\\soft\\hephaestus\\src\\cp\\obj\\",
+        "outputPath": "C:\\soft\\hephaestus\\src\\cp\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "c:\\soft\\hephaestus\\src\\cp\\NuGet.Config",
-          "c:\\soft\\hephaestus\\src\\NuGet.Config",
+          "C:\\soft\\hephaestus\\src\\NuGet.Config",
           "C:\\Users\\k\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
