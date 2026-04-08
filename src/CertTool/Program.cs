@@ -14,7 +14,7 @@ internal static class Program
         try
         {
             Run();
-            Console.WriteLine("Wrote cert/hephaestus.pfx (password: 123). DomainHost loads this file; clients run scripts/install-hephaestus-cert.ps1 (installs public cert to Root only, no private key on clients).");
+            Console.WriteLine("Wrote cert/hephaestus.pfx (password: 123) and cert/hephaestus-trusted-root.cer (public only for AD GPO). See scripts/deploy-trust-ad-gpo.txt.");
             return 0;
         }
         catch (Exception ex)
@@ -42,14 +42,18 @@ internal static class Program
 
         var certDir = HephaestusRepoPaths.CertDirectory(repoRoot, "cert");
         var pfxPath = Path.Combine(certDir, "hephaestus.pfx");
+        var publicCerPath = Path.Combine(certDir, "hephaestus-trusted-root.cer");
 
         if (File.Exists(pfxPath))
             throw new InvalidOperationException($"Refusing to overwrite existing file: {pfxPath}");
+        if (File.Exists(publicCerPath))
+            throw new InvalidOperationException($"Refusing to overwrite existing file: {publicCerPath}");
 
         Directory.CreateDirectory(certDir);
 
         using var cert = CreateLanTlsCertificate(dnsNames);
         File.WriteAllBytes(pfxPath, cert.Export(X509ContentType.Pfx, "123"));
+        File.WriteAllBytes(publicCerPath, cert.Export(X509ContentType.Cert));
     }
 
     private static List<string> LoadEnabledDomainNames(string domainsPath)

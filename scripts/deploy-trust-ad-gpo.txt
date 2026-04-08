@@ -1,0 +1,56 @@
+Deploy Hephaestus HTTPS trust on a protected Windows AD domain (no per-employee pop-ups)
+========================================================================================
+
+What is GPO?
+  Group Policy Object. On Active Directory, your IT admin publishes settings once on the
+  domain controller; all domain-joined PCs apply them automatically (after reboot or
+  policy refresh). This is the normal way to push trusted root certificates company-wide.
+
+What is MDM?
+  Mobile Device Management (e.g. Microsoft Intune). Same idea for cloud-managed PCs and
+  phones: IT deploys a "trusted certificate" profile instead of each user clicking prompts.
+  Use MDM if you do not use classic AD domain join.
+
+----------------------------------------------------------------------
+For Active Directory (GPO) — recommended for your case
+----------------------------------------------------------------------
+
+1. Run CertTool on a build machine. It creates:
+     cert/hephaestus.pfx          — private key; only on DomainHost servers
+     cert/hephaestus-trusted-root.cer — PUBLIC certificate only; safe to copy anywhere
+
+2. Copy hephaestus-trusted-root.cer to a place DCs and clients can read (e.g. SYSVOL share:
+     \\YOURDOMAIN\SYSVOL\YOURDOMAIN\Policies\... or any internal file share).
+
+3. On a machine with Group Policy Management (often the DC or admin workstation):
+     - Open Group Policy Management (gpmc.msc).
+     - Create or edit a GPO linked to the OU that contains employee computers (or the whole domain).
+     - Edit the GPO:
+         Computer Configuration
+           → Policies
+           → Windows Settings
+           → Security Settings
+           → Public Key Policies
+           → Trusted Root Certification Authorities
+         Right-click → Import → select hephaestus-trusted-root.cer.
+
+4. Link the GPO to the correct OU. Scope: Authenticated Computers (default computer policy).
+
+5. On clients: run gpupdate /force (or wait for automatic refresh) and reboot if required.
+
+Employees do not run install-hephaestus-cert.ps1 and do not get the manual root-install
+dialog, because Windows applies the trust as policy.
+
+----------------------------------------------------------------------
+Script install-hephaestus-cert.ps1
+----------------------------------------------------------------------
+
+Use only for machines that are NOT domain-joined or for quick tests. Domain PCs should
+use GPO (above).
+
+----------------------------------------------------------------------
+MDM (Intune) short pointer
+----------------------------------------------------------------------
+
+Intune: Devices → Configuration profiles → Create profile → Windows 10 and later →
+Templates → Trusted certificate → Root store → upload the same .cer file → assign to groups.
