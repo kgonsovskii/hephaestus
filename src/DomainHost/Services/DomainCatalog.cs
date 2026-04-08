@@ -43,14 +43,12 @@ public sealed class DomainCatalog : IDomainCatalog
         return false;
     }
 
-    /// <summary>Turns <c>a.b.c</c> into <c>b.c</c>; returns empty when there is no dot.</summary>
     private static string StripLeftmostLabel(string host)
     {
         var i = host.IndexOf('.');
         return i < 0 ? "" : host[(i + 1)..];
     }
 
-    /// <summary>Lowercase and strip port (if present). Subdomains match via <see cref="TryGetBestMatch"/> suffix walk.</summary>
     private static string NormalizeHost(string host)
     {
         var h = host.Trim();

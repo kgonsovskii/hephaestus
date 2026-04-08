@@ -33,7 +33,7 @@ public sealed class HostsFileSyncService
         await File.WriteAllTextAsync(path, content, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false),
             cancellationToken).ConfigureAwait(false);
 
-        _logger.LogInformation("Wrote {Path} with {Count} domain(s) from database.", path, names.Count);
+        _logger.LogInformation("Wrote {Path} with {Count} domain(s) from domains.json.", path, names.Count);
         return 0;
     }
 }

@@ -4,22 +4,17 @@ public sealed class DomainHostOptions
 {
     public const string SectionName = "DomainHost";
 
-    /// <summary>Directory name to find by walking up from the content root (e.g. repo <c>web\</c>).</summary>
     public string WebRoot { get; set; } = "web";
 
-    /// <summary>How many parent directories to try when locating <see cref="WebRoot"/> (including the start folder).</summary>
     public int WebRootSearchMaxAscents { get; set; } = 10;
+
+    public string DomainsFileName { get; set; } = "domains.json";
 
     public int RefreshSeconds { get; set; } = 30;
 
-    public HttpsEndpointOptions Https { get; set; } = new();
-}
+    public string CertDirectoryName { get; set; } = "cert";
 
-public sealed class HttpsEndpointOptions
-{
-    public bool Enabled { get; set; }
+    public string CertPfxFileName { get; set; } = "hephaestus.pfx";
 
-    public string? PfxPath { get; set; }
-
-    public string? PfxPassword { get; set; }
+    public int HttpsPort { get; set; } = 5443;
 }

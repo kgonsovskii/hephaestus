@@ -2,8 +2,6 @@ namespace DomainHost.Models;
 
 public sealed class DomainRecord
 {
-    public required int Id { get; init; }
-
     public required bool Enabled { get; init; }
 
     public required string Domain { get; init; }

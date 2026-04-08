@@ -11,7 +11,7 @@ try
     builder.Services.Configure<DomainToolOptions>(
         builder.Configuration.GetSection(DomainToolOptions.SectionName));
 
-    builder.Services.AddSingleton<IDomainNameSource, NpgsqlDomainNameSource>();
+    builder.Services.AddSingleton<IDomainNameSource, JsonDomainNameSource>();
     builder.Services.AddSingleton<IHostsFileComposer, HostsFileComposer>();
     builder.Services.AddSingleton<HostsFileSyncService>();
 

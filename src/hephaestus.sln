@@ -31,6 +31,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DomainHost", "DomainHost\Do
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DomainTool", "DomainTool\DomainTool.csproj", "{E5F9A0B1-2C3D-4E5F-9A0B-1C2D3E4F5A6B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Commons", "Commons\Commons.csproj", "{3E5555C0-1D50-41E2-9E5D-4F9D0C2C28E8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -73,5 +75,9 @@ Global
 		{E5F9A0B1-2C3D-4E5F-9A0B-1C2D3E4F5A6B}.Debug|x64.Build.0 = Debug|x64
 		{E5F9A0B1-2C3D-4E5F-9A0B-1C2D3E4F5A6B}.Release|x64.ActiveCfg = Release|x64
 		{E5F9A0B1-2C3D-4E5F-9A0B-1C2D3E4F5A6B}.Release|x64.Build.0 = Release|x64
+		{3E5555C0-1D50-41E2-9E5D-4F9D0C2C28E8}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{3E5555C0-1D50-41E2-9E5D-4F9D0C2C28E8}.Debug|x64.Build.0 = Debug|Any CPU
+		{3E5555C0-1D50-41E2-9E5D-4F9D0C2C28E8}.Release|x64.ActiveCfg = Release|Any CPU
+		{3E5555C0-1D50-41E2-9E5D-4F9D0C2C28E8}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

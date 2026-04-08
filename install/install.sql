@@ -31,7 +31,6 @@ DROP VIEW IF EXISTS daily_server_serie_stats_view;
 DROP VIEW IF EXISTS download_log_view;
 DROP VIEW IF EXISTS bot_log_view;
 
-DROP TABLE IF EXISTS domains;
 DROP TABLE IF EXISTS dn_log;
 DROP TABLE IF EXISTS bot_log;
 
@@ -58,31 +57,6 @@ CREATE TABLE dn_log (
   last_seen         TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP,
   number_of_requests INT DEFAULT 1
 );
-
--- Served by DomainHost (Kestrel): Host -> web/<domain> or web/<domain_class>
-CREATE TABLE domains (
-  id             SERIAL PRIMARY KEY,
-  enabled        BOOLEAN NOT NULL DEFAULT TRUE,
-  domain         VARCHAR(255) NOT NULL,
-  ip             VARCHAR(45) NULL,
-  domain_class   VARCHAR(255) NOT NULL DEFAULT 'analytics',
-  content_type   VARCHAR(32) NOT NULL DEFAULT 'javascript',
-  redirect_url   TEXT NULL,
-  CONSTRAINT domains_domain_key UNIQUE (domain),
-  CONSTRAINT domains_content_type_check CHECK (
-    content_type IN ('javascript', 'html', 'redirect')
-  )
-);
-
-INSERT INTO domains (enabled, domain, ip, domain_class, content_type, redirect_url) VALUES
-  (TRUE, 'mc.yandex.ru', NULL, 'analytics', 'javascript', NULL),
-  (TRUE, 'mc.yandex.com', NULL, 'analytics', 'javascript', NULL),
-  (TRUE, 'analytics.google.com', NULL, 'analytics', 'javascript', NULL),
-  (TRUE, 'counter.yadro.ru', NULL, 'analytics', 'javascript', NULL),
-  (TRUE, 'top100.ru', NULL, 'analytics', 'javascript', NULL),
-  (TRUE, 'google-analytics.com', NULL, 'analytics', 'javascript', NULL),
-  (TRUE, 'dojkiporno.link', NULL, '', 'redirect', 'https://example.com/'),
-  (TRUE, 'sravni.ru', NULL, '', 'html', NULL);
 
 CREATE OR REPLACE FUNCTION upsert_bot_log(
   p_server   VARCHAR(15),
@@ -242,7 +216,6 @@ FROM (
 ALTER SCHEMA public OWNER TO tss;
 ALTER TABLE bot_log OWNER TO tss;
 ALTER TABLE dn_log OWNER TO tss;
-ALTER TABLE domains OWNER TO tss;
 ALTER VIEW bot_log_view OWNER TO tss;
 ALTER VIEW download_log_view OWNER TO tss;
 ALTER VIEW daily_server_serie_stats_view OWNER TO tss;
