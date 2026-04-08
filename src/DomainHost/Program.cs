@@ -1,4 +1,5 @@
 using System.Security.Cryptography.X509Certificates;
+using Commons;
 using DomainHost.Configuration;
 using DomainHost.Data;
 using DomainHost.Middleware;
@@ -13,12 +14,17 @@ builder.Services.Configure<DomainHostOptions>(
 var hostOpts = builder.Configuration.GetSection(DomainHostOptions.SectionName).Get<DomainHostOptions>()
     ?? new DomainHostOptions();
 
-var webRootFullPath = FindWebRoot(
-    Path.GetFullPath(builder.Environment.ContentRootPath),
-    hostOpts.WebRoot,
-    hostOpts.WebRootSearchMaxAscents)
-    ?? throw new InvalidOperationException(
-        $"DomainHost: could not find folder '{hostOpts.WebRoot}' with '{hostOpts.DomainsFileName}' within {hostOpts.WebRootSearchMaxAscents} ascents of '{builder.Environment.ContentRootPath}'.");
+var maxSteps = Math.Clamp(hostOpts.WebRootSearchMaxAscents, 1, 200);
+var start = Path.GetFullPath(builder.Environment.ContentRootPath);
+var repoRoot = HephaestusRepoPaths.ResolveRepositoryRoot(start, HephaestusRepoPaths.DefaultMarkerFileName, maxSteps);
+
+var webFolder = hostOpts.WebRoot.Trim().Trim(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+if (webFolder.Length == 0)
+    webFolder = "web";
+var webFull = HephaestusRepoPaths.WebDirectory(repoRoot, webFolder);
+if (!Directory.Exists(webFull))
+    throw new InvalidOperationException(
+        $"DomainHost: web directory not found at '{webFull}' (repository root '{repoRoot}').");
 
 var certDir = hostOpts.CertDirectoryName.Trim().Trim(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
 if (certDir.Length == 0)
@@ -27,7 +33,7 @@ var pfxName = hostOpts.CertPfxFileName.Trim();
 if (pfxName.Length == 0)
     pfxName = "hephaestus.pfx";
 
-var pfxPath = Path.GetFullPath(Path.Combine(webRootFullPath, "..", certDir, pfxName));
+var pfxPath = HephaestusRepoPaths.FileUnderCert(repoRoot, certDir, pfxName);
 if (!File.Exists(pfxPath))
     throw new InvalidOperationException($"DomainHost: certificate PFX not found: {pfxPath}. Run CertTool once.");
 
@@ -63,25 +69,3 @@ app.MapFallback(async ctx =>
 });
 
 await app.RunAsync();
-
-static string? FindWebRoot(string startDirectory, string folderName, int maxAscents)
-{
-    var name = folderName.Trim().Trim(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
-    if (name.Length == 0)
-        name = "web";
-
-    var current = startDirectory;
-    for (var step = 0; step < maxAscents; step++)
-    {
-        var candidate = Path.GetFullPath(Path.Combine(current, name));
-        if (Directory.Exists(candidate))
-            return candidate;
-
-        var parent = Directory.GetParent(current);
-        if (parent == null)
-            break;
-        current = parent.FullName;
-    }
-
-    return null;
-}

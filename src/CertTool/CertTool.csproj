@@ -4,5 +4,8 @@
         <OutputType>Exe</OutputType>
     </PropertyGroup>
 
+    <ItemGroup>
+        <ProjectReference Include="..\Commons\Commons.csproj" />
+    </ItemGroup>
 
 </Project>

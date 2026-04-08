@@ -2,9 +2,22 @@
   "version": 3,
   "targets": {
     "net10.0": {
+      "Commons/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "compile": {
+          "bin/placeholder/Commons.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Commons.dll": {}
+        }
+      },
       "model/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v10.0",
+        "dependencies": {
+          "Commons": "1.0.0"
+        },
         "compile": {
           "bin/placeholder/model.dll": {}
         },
@@ -15,6 +28,11 @@
     }
   },
   "libraries": {
+    "Commons/1.0.0": {
+      "type": "project",
+      "path": "../Commons/Commons.csproj",
+      "msbuildProject": "../Commons/Commons.csproj"
+    },
     "model/1.0.0": {
       "type": "project",
       "path": "../model/model.csproj",

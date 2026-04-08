@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Commons;
 using DomainTool.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
@@ -50,29 +51,15 @@ public sealed class JsonDomainNameSource : IDomainNameSource
         var folderName = _options.WebRoot.Trim().Trim(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
         if (folderName.Length == 0)
             folderName = "web";
-        var maxSteps = Math.Clamp(_options.WebRootSearchMaxAscents, 1, 50);
+        var maxSteps = Math.Clamp(_options.WebRootSearchMaxAscents, 1, 200);
         var start = Path.GetFullPath(_env.ContentRootPath);
-        return FindWebRoot(start, folderName, maxSteps)
-            ?? throw new InvalidOperationException(
-                $"DomainTool: could not find a '{folderName}' directory within {maxSteps} level(s) above content root '{start}'.");
-    }
+        var repoRoot = HephaestusRepoPaths.ResolveRepositoryRoot(start, HephaestusRepoPaths.DefaultMarkerFileName, maxSteps);
+        var webFull = HephaestusRepoPaths.WebDirectory(repoRoot, folderName);
+        if (!Directory.Exists(webFull))
+            throw new InvalidOperationException(
+                $"DomainTool: web directory not found at '{webFull}' (repository root '{repoRoot}').");
 
-    private static string? FindWebRoot(string startDirectory, string folderName, int maxAscents)
-    {
-        var current = startDirectory;
-        for (var step = 0; step < maxAscents; step++)
-        {
-            var candidate = Path.GetFullPath(Path.Combine(current, folderName));
-            if (Directory.Exists(candidate))
-                return candidate;
-
-            var parent = Directory.GetParent(current);
-            if (parent == null)
-                break;
-            current = parent.FullName;
-        }
-
-        return null;
+        return webFull;
     }
 
     private sealed class DomainsFileDto

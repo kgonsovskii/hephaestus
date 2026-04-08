@@ -19,6 +19,6 @@
     </Target>
 
     <ItemGroup>
-        <!-- Reference for PowerShell automation -->
+        <ProjectReference Include="..\Commons\Commons.csproj" />
     </ItemGroup>
 </Project>

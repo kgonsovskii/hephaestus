@@ -1,3 +1,4 @@
+using Commons;
 using DomainHost.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -16,33 +17,17 @@ public sealed class WebContentPathProvider : IWebContentPathProvider
         if (folderName.Length == 0)
             folderName = "web";
 
-        var maxSteps = Math.Clamp(opts.WebRootSearchMaxAscents, 1, 50);
+        var maxSteps = Math.Clamp(opts.WebRootSearchMaxAscents, 1, 200);
         var start = Path.GetFullPath(env.ContentRootPath);
+        var repoRoot = HephaestusRepoPaths.ResolveRepositoryRoot(start, HephaestusRepoPaths.DefaultMarkerFileName, maxSteps);
+        var webFull = HephaestusRepoPaths.WebDirectory(repoRoot, folderName);
+        if (!Directory.Exists(webFull))
+            throw new InvalidOperationException(
+                $"DomainHost: web directory not found at '{webFull}' (repository root '{repoRoot}').");
 
-        WebRootFullPath = FindWebRoot(start, folderName, maxSteps)
-            ?? throw new InvalidOperationException(
-                $"DomainHost: could not find a '{folderName}' directory within {maxSteps} level(s) above content root '{start}'.");
-
+        WebRootFullPath = webFull;
         logger.LogInformation("Web content root: {WebRoot}", WebRootFullPath);
     }
 
     public string WebRootFullPath { get; }
-
-    private static string? FindWebRoot(string startDirectory, string folderName, int maxAscents)
-    {
-        var current = startDirectory;
-        for (var step = 0; step < maxAscents; step++)
-        {
-            var candidate = Path.GetFullPath(Path.Combine(current, folderName));
-            if (Directory.Exists(candidate))
-                return candidate;
-
-            var parent = Directory.GetParent(current);
-            if (parent == null)
-                break;
-            current = parent.FullName;
-        }
-
-        return null;
-    }
 }

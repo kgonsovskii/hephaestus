@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text.Json;
+using Commons;
 
 internal static class Program
 {
@@ -24,11 +25,12 @@ internal static class Program
     private static void Run()
     {
         var start = Path.GetFullPath(AppContext.BaseDirectory);
-        var webRoot = FindWebRoot(start, "web", 10)
-            ?? throw new InvalidOperationException(
-                "Could not locate a 'web' folder with domains.json within 10 ascents of the executable.");
+        var repoRoot = HephaestusRepoPaths.ResolveRepositoryRoot(start);
+        var webRoot = HephaestusRepoPaths.WebDirectory(repoRoot, "web");
+        if (!Directory.Exists(webRoot))
+            throw new InvalidOperationException($"Web directory not found: {webRoot}");
 
-        var domainsPath = Path.Combine(webRoot, "domains.json");
+        var domainsPath = HephaestusRepoPaths.FileUnderWeb(repoRoot, "web", "domains.json");
         if (!File.Exists(domainsPath))
             throw new InvalidOperationException($"Missing domains file: {domainsPath}");
 
@@ -36,14 +38,11 @@ internal static class Program
         if (dnsNames.Count == 0)
             throw new InvalidOperationException("No enabled domains in domains.json.");
 
-        var repoRoot = Path.GetFullPath(Path.Combine(webRoot, ".."));
-        var certDir = Path.Combine(repoRoot, "cert");
-        var pfxPath = Path.Combine(certDir, "hephaestus.pfx");
-
+        var pfxPath = HephaestusRepoPaths.FileUnderCert(repoRoot, "cert", "hephaestus.pfx");
         if (File.Exists(pfxPath))
             throw new InvalidOperationException($"Refusing to overwrite existing file: {pfxPath}");
 
-        Directory.CreateDirectory(certDir);
+        Directory.CreateDirectory(Path.GetDirectoryName(pfxPath)!);
 
         using var cert = CreateSelfSigned(dnsNames);
         var pfxBytes = cert.Export(X509ContentType.Pfx, string.Empty);
@@ -88,24 +87,6 @@ internal static class Program
         request.CertificateExtensions.Add(san.Build());
 
         return request.CreateSelfSigned(DateTimeOffset.UtcNow.AddDays(-1), DateTimeOffset.UtcNow.AddYears(25));
-    }
-
-    private static string? FindWebRoot(string startDirectory, string folderName, int maxAscents)
-    {
-        var current = startDirectory;
-        for (var step = 0; step < maxAscents; step++)
-        {
-            var candidate = Path.GetFullPath(Path.Combine(current, folderName));
-            if (Directory.Exists(candidate) && File.Exists(Path.Combine(candidate, "domains.json")))
-                return candidate;
-
-            var parent = Directory.GetParent(current);
-            if (parent == null)
-                break;
-            current = parent.FullName;
-        }
-
-        return null;
     }
 
     private sealed class DomainsFileDto

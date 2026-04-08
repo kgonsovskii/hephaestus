@@ -1,6 +1,7 @@
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Commons;
 
 namespace model;
 
@@ -57,15 +58,7 @@ public static class ServerModelLoader
         return Path.Combine(ServerDir(serverName), "server.json");
     }
 
-    public static string SourceCertDirStatic
-    {
-        get
-        {
-            return  @"C:\soft\hephaestus\cert";
-        }
-    }
-
-    private const string RepoRootMarkerFile = "defaulticon.ico";
+    public static string SourceCertDirStatic => HephaestusRepoPaths.CertDirectory(RootDirStatic);
 
     public static string RootDirStatic
     {
@@ -74,22 +67,9 @@ public static class ServerModelLoader
             if (field == null)
             {
                 var dir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-                while (!string.IsNullOrEmpty(dir))
-                {
-                    if (File.Exists(Path.Combine(dir, RepoRootMarkerFile)))
-                    {
-                        field = dir;
-                        break;
-                    }
-
-                    dir = Directory.GetParent(dir)?.FullName;
-                }
-
-                if (field == null)
-                {
-                    throw new InvalidOperationException(
-                        $"Could not find repository root: no parent directory of the executable contains '{RepoRootMarkerFile}'.");
-                }
+                if (string.IsNullOrEmpty(dir))
+                    throw new InvalidOperationException("Could not resolve assembly directory for repository root.");
+                field = HephaestusRepoPaths.ResolveRepositoryRoot(dir);
             }
 
             return field!;

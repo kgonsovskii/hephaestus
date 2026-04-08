@@ -28,9 +28,22 @@
           }
         }
       },
+      "Commons/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "compile": {
+          "bin/placeholder/Commons.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Commons.dll": {}
+        }
+      },
       "model/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v10.0",
+        "dependencies": {
+          "Commons": "1.0.0"
+        },
         "compile": {
           "bin/placeholder/model.dll": {}
         },
@@ -77,6 +90,11 @@
         "smblibrary.nuspec"
       ]
     },
+    "Commons/1.0.0": {
+      "type": "project",
+      "path": "../Commons/Commons.csproj",
+      "msbuildProject": "../Commons/Commons.csproj"
+    },
     "model/1.0.0": {
       "type": "project",
       "path": "../model/model.csproj",
@@ -103,7 +121,6 @@
       "outputPath": "C:\\soft\\hephaestus\\src\\cp\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\soft\\hephaestus\\src\\cp\\NuGet.Config",
         "C:\\soft\\hephaestus\\src\\NuGet.Config",
         "C:\\Users\\k\\AppData\\Roaming\\NuGet\\NuGet.Config"
       ],
