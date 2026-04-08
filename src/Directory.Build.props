@@ -24,5 +24,7 @@
     <OutputPath>$(MSBuildThisFileDirectory)..\output\</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <!-- Ship x64-only apphosts; requires x64 .NET / ASP.NET Core runtime (not x86-only installs). -->
+    <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
 </Project>
