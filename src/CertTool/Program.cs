@@ -5,6 +5,9 @@ using Commons;
 
 internal static class Program
 {
+    private const string CaSubjectName = "CN=Hephaestus Development Root CA,O=Hephaestus";
+    private const string LeafSubjectName = "CN=Hephaestus TLS,O=Hephaestus";
+
     private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNameCaseInsensitive = true };
 
     private static int Main()
@@ -12,7 +15,8 @@ internal static class Program
         try
         {
             Run();
-            Console.WriteLine("Wrote cert/hephaestus.pfx (empty password). Trust it with scripts/install-hephaestus-cert-*.ps1");
+            Console.WriteLine("Wrote cert/hephaestus.pfx (server leaf, empty password) and cert/hephaestus-root.cer (trust this root once).");
+            Console.WriteLine("Run scripts/install-hephaestus-cert-*.ps1 to add the root to Trusted Root (not the PFX).");
             return 0;
         }
         catch (Exception ex)
@@ -38,15 +42,22 @@ internal static class Program
         if (dnsNames.Count == 0)
             throw new InvalidOperationException("No enabled domains in domains.json.");
 
-        var pfxPath = HephaestusRepoPaths.FileUnderCert(repoRoot, "cert", "hephaestus.pfx");
+        var certDir = HephaestusRepoPaths.CertDirectory(repoRoot, "cert");
+        var pfxPath = Path.Combine(certDir, "hephaestus.pfx");
+        var rootCerPath = Path.Combine(certDir, "hephaestus-root.cer");
+
         if (File.Exists(pfxPath))
             throw new InvalidOperationException($"Refusing to overwrite existing file: {pfxPath}");
+        if (File.Exists(rootCerPath))
+            throw new InvalidOperationException($"Refusing to overwrite existing file: {rootCerPath}");
 
-        Directory.CreateDirectory(Path.GetDirectoryName(pfxPath)!);
+        Directory.CreateDirectory(certDir);
 
-        using var cert = CreateSelfSigned(dnsNames);
-        var pfxBytes = cert.Export(X509ContentType.Pfx, string.Empty);
-        File.WriteAllBytes(pfxPath, pfxBytes);
+        using var caCert = CreateCaCertificate();
+        using var leafCert = CreateLeafCertificate(caCert, dnsNames);
+
+        File.WriteAllBytes(rootCerPath, caCert.Export(X509ContentType.Cert));
+        File.WriteAllBytes(pfxPath, leafCert.Export(X509ContentType.Pfx, string.Empty));
     }
 
     private static List<string> LoadEnabledDomainNames(string domainsPath)
@@ -65,17 +76,37 @@ internal static class Program
         return list;
     }
 
-    private static X509Certificate2 CreateSelfSigned(IReadOnlyList<string> dnsNames)
+    private static X509Certificate2 CreateCaCertificate()
     {
-        using var rsa = RSA.Create(2048);
-        var cn = dnsNames[0];
-        var subject = new X500DistinguishedName($"CN={cn}");
+        var rsa = RSA.Create(4096);
+        var subject = new X500DistinguishedName(CaSubjectName);
         var request = new CertificateRequest(subject, rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
 
+        request.CertificateExtensions.Add(new X509BasicConstraintsExtension(
+            certificateAuthority: true,
+            hasPathLengthConstraint: false,
+            pathLengthConstraint: 0,
+            critical: true));
+
+        request.CertificateExtensions.Add(new X509KeyUsageExtension(
+            X509KeyUsageFlags.KeyCertSign | X509KeyUsageFlags.CrlSign | X509KeyUsageFlags.DigitalSignature,
+            critical: true));
+
+        request.CertificateExtensions.Add(new X509SubjectKeyIdentifierExtension(request.PublicKey, false));
+
+        return request.CreateSelfSigned(DateTimeOffset.UtcNow.AddDays(-1), DateTimeOffset.UtcNow.AddYears(25));
+    }
+
+    private static X509Certificate2 CreateLeafCertificate(X509Certificate2 issuerCa, IReadOnlyList<string> dnsNames)
+    {
+        var leafRsa = RSA.Create(2048);
+        var subject = new X500DistinguishedName(LeafSubjectName);
+        var request = new CertificateRequest(subject, leafRsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+
+        request.CertificateExtensions.Add(new X509BasicConstraintsExtension(false, false, 0, true));
         request.CertificateExtensions.Add(new X509KeyUsageExtension(
             X509KeyUsageFlags.DigitalSignature | X509KeyUsageFlags.KeyEncipherment,
             critical: true));
-
         request.CertificateExtensions.Add(new X509EnhancedKeyUsageExtension(
             new OidCollection { new Oid("1.3.6.1.5.5.7.3.1") },
             critical: true));
@@ -83,10 +114,16 @@ internal static class Program
         var san = new SubjectAlternativeNameBuilder();
         foreach (var name in dnsNames)
             san.AddDnsName(name);
-
         request.CertificateExtensions.Add(san.Build());
 
-        return request.CreateSelfSigned(DateTimeOffset.UtcNow.AddDays(-1), DateTimeOffset.UtcNow.AddYears(25));
+        request.CertificateExtensions.Add(new X509SubjectKeyIdentifierExtension(request.PublicKey, false));
+
+        Span<byte> serial = stackalloc byte[8];
+        RandomNumberGenerator.Fill(serial);
+        serial[0] &= 0x7F;
+
+        using var publicLeaf = request.Create(issuerCa, DateTimeOffset.UtcNow.AddDays(-1), DateTimeOffset.UtcNow.AddYears(2), serial.ToArray());
+        return publicLeaf.CopyWithPrivateKey(leafRsa);
     }
 
     private sealed class DomainsFileDto
