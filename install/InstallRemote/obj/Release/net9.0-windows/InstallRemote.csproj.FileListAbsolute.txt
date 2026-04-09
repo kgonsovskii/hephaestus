@@ -1,0 +1,16 @@
+C:\soft\hephaestus\install\InstallRemote\bin\Release\net9.0-windows\install-remote.exe
+C:\soft\hephaestus\install\InstallRemote\bin\Release\net9.0-windows\install-remote.deps.json
+C:\soft\hephaestus\install\InstallRemote\bin\Release\net9.0-windows\install-remote.runtimeconfig.json
+C:\soft\hephaestus\install\InstallRemote\bin\Release\net9.0-windows\install-remote.dll
+C:\soft\hephaestus\install\InstallRemote\bin\Release\net9.0-windows\install-remote.pdb
+C:\soft\hephaestus\install\InstallRemote\obj\Release\net9.0-windows\InstallRemote.GeneratedMSBuildEditorConfig.editorconfig
+C:\soft\hephaestus\install\InstallRemote\obj\Release\net9.0-windows\InstallRemote.AssemblyInfoInputs.cache
+C:\soft\hephaestus\install\InstallRemote\obj\Release\net9.0-windows\InstallRemote.AssemblyInfo.cs
+C:\soft\hephaestus\install\InstallRemote\obj\Release\net9.0-windows\InstallRemote.csproj.CoreCompileInputs.cache
+C:\soft\hephaestus\install\InstallRemote\obj\Release\net9.0-windows\InstallRemote.sourcelink.json
+C:\soft\hephaestus\install\InstallRemote\obj\Release\net9.0-windows\install-remote.dll
+C:\soft\hephaestus\install\InstallRemote\obj\Release\net9.0-windows\refint\install-remote.dll
+C:\soft\hephaestus\install\InstallRemote\obj\Release\net9.0-windows\install-remote.pdb
+C:\soft\hephaestus\install\InstallRemote\obj\Release\net9.0-windows\InstallRemote.genruntimeconfig.cache
+C:\soft\hephaestus\install\InstallRemote\obj\Release\net9.0-windows\ref\install-remote.dll
+C:\soft\hephaestus\install\InstallRemote\bin\Release\net9.0-windows\install-remote.txt

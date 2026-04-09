@@ -1,0 +1,10 @@
+# Remote bootstrap for install-remote.ps1, InstallRemote (C#), and install-remote.sh — edit only this file.
+# Must be valid bash when executed on the Linux host (after base64 decode or via ssh bash -s).
+
+export DEBIAN_FRONTEND=noninteractive
+apt-get update
+apt-get install -y git ca-certificates
+CLONE_DIR="${HOME}/hephaestus"
+rm -rf "$CLONE_DIR"
+git clone --depth 1 https://github.com/kgonsovskii/hephaestus.git "$CLONE_DIR"
+bash "$CLONE_DIR/install/install.sh"

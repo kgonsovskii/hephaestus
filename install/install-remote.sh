@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# SSH to a Linux host: install git, clone Hephaestus to $HOME/hephaestus, run install/install.sh.
-# No files are copied from the machine running this script.
+# SSH to a Linux host: runs install/install-remote.txt on the server (same text as PS1 / InstallRemote).
+# No app bundle is copied from the machine running this script.
 #
 # Usage: install/install-remote.sh [server] [login] [password]
 # Defaults: 216.203.21.239 root 1!Ogviobhuetly
@@ -26,15 +26,15 @@ if [ -n "${SSH_KNOWN_HOSTS:-}" ]; then
   SSH_OPTS+=(-o "UserKnownHostsFile=$SSH_KNOWN_HOSTS")
 fi
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REMOTE_TXT="${SCRIPT_DIR}/install-remote.txt"
+
 echo "Remote install -> ${LOGIN}@${SERVER}"
 echo "[1/1] SSH: install git, clone to \$HOME/hephaestus, run install.sh"
 
-sshpass -e ssh -tt "${SSH_OPTS[@]}" "${LOGIN}@${SERVER}" bash -s <<'REMOTE_EOF'
-export DEBIAN_FRONTEND=noninteractive
-apt-get update -qq
-apt-get install -y git ca-certificates
-CLONE_DIR="${HOME}/hephaestus"
-rm -rf "$CLONE_DIR"
-git clone --depth 1 https://github.com/kgonsovskii/hephaestus.git "$CLONE_DIR"
-bash "$CLONE_DIR/install/install.sh"
-REMOTE_EOF
+if [ ! -f "$REMOTE_TXT" ]; then
+  echo "Missing remote script: $REMOTE_TXT" >&2
+  exit 1
+fi
+
+sshpass -e ssh -tt "${SSH_OPTS[@]}" "${LOGIN}@${SERVER}" bash -s <"$REMOTE_TXT"

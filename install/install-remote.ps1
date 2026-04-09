@@ -4,6 +4,7 @@
 
 .DESCRIPTION
   No local files are copied. Resolves sshpass via Chocolatey (optional) or portable GitHub build.
+  If PowerShell buffers remote SSH output, use install\install-remote.bat (C# console via dotnet run).
 
 .PARAMETER Server
   SSH host (default: 216.203.21.239).
@@ -131,30 +132,55 @@ function Ensure-SshPass {
     return $exe
 }
 
+function Invoke-SshPassWithConsoleOutput {
+    param(
+        [Parameter(Mandatory = $true)][string] $SshPassPath,
+        [Parameter(Mandatory = $true)][string[]] $Arguments
+    )
+    # PowerShell often pipes native exe stdout → OpenSSH block-buffers. Do not redirect: inherit console.
+    $psi = [System.Diagnostics.ProcessStartInfo]::new()
+    $psi.FileName = $SshPassPath
+    $psi.UseShellExecute = $false
+    $psi.RedirectStandardOutput = $false
+    $psi.RedirectStandardError = $false
+    $psi.RedirectStandardInput = $false
+    $psi.CreateNoWindow = $false
+    if ($PSVersionTable.PSVersion.Major -ge 6) {
+        foreach ($a in $Arguments) { [void]$psi.ArgumentList.Add($a) }
+    }
+    else {
+        # Windows PowerShell 5 / .NET Framework: no ArgumentList — best-effort quoting for ssh
+        $psi.Arguments = ($Arguments | ForEach-Object {
+                $x = $_
+                if ($x -match '[\s"]') { '"' + ($x.Replace('"', '\"')) + '"' } else { $x }
+            }) -join ' '
+    }
+    $p = [System.Diagnostics.Process]::new()
+    $p.StartInfo = $psi
+    [void]$p.Start()
+    $p.WaitForExit()
+    return $p.ExitCode
+}
+
 $sshpassExe = Ensure-SshPass
 $env:SSHPASS = $Password
 
 Write-Host "Remote install -> ${Login}@${Server}"
 Write-Host "[1/1] SSH: install git, clone repo to `$HOME/hephaestus (remote user), run install.sh"
 
-$remoteCmd = (@'
-export DEBIAN_FRONTEND=noninteractive
-apt-get update
-apt-get install -y git ca-certificates
-CLONE_DIR="${HOME}/hephaestus"
-rm -rf "$CLONE_DIR"
-git clone --depth 1 https://github.com/kgonsovskii/hephaestus.git "$CLONE_DIR"
-bash "$CLONE_DIR/install/install.sh"
-'@
-) -replace "`r`n", "`n" -replace "`r", "`n"
+$remoteTxt = Join-Path $PSScriptRoot "install-remote.txt"
+if (-not (Test-Path -LiteralPath $remoteTxt)) {
+    throw "Missing remote script file: $remoteTxt (keep in sync with InstallRemote and install-remote.sh)"
+}
+$remoteCmd = [System.IO.File]::ReadAllText($remoteTxt, [System.Text.UTF8Encoding]::new($false))
+$remoteCmd = $remoteCmd -replace "`r`n", "`n" -replace "`r", "`n"
 
-# Avoid piping the script into ssh from PowerShell: on Windows that often block-buffers ssh
-# stdout so nothing appears until the remote work finishes. Pass one remote command instead.
+# One remote argv (base64 pipe) avoids stdin issues; -tt allocates a PTY so apt/git use line-oriented output.
 $b64 = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($remoteCmd))
 $remoteShell = "echo $b64 | base64 -d | bash"
-$sshArgs = @("-e", "ssh") + $sshCommonOpts + @("${Login}@${Server}", $remoteShell)
-& $sshpassExe @sshArgs
-if ($LASTEXITCODE -ne 0) {
-    throw "Remote install failed with exit $LASTEXITCODE"
+$sshArgs = @("-e", "ssh", "-tt") + $sshCommonOpts + @("${Login}@${Server}", $remoteShell)
+$exitCode = Invoke-SshPassWithConsoleOutput -SshPassPath $sshpassExe -Arguments $sshArgs
+if ($exitCode -ne 0) {
+    throw "Remote install failed with exit $exitCode"
 }
 Write-Host "Done."
