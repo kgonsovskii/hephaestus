@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Orchestrates `dotnet publish` for DomainHost into the repository `release/` folder (linux-x64, framework-dependent). -->
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <RootNamespace>PublishDomainHost</RootNamespace>
+  </PropertyGroup>
+
+  <Target Name="PublishDomainHost">
+    <PropertyGroup>
+      <_RepoRoot>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\..'))</_RepoRoot>
+      <_PublishDir>$([System.IO.Path]::Combine($(_RepoRoot), 'release'))</_PublishDir>
+    </PropertyGroup>
+    <MSBuild
+      Projects="$(MSBuildThisFileDirectory)..\DomainHost\DomainHost.csproj"
+      Targets="Publish"
+      Properties="Configuration=Release;RuntimeIdentifier=linux-x64;SelfContained=false;PublishDir=$(_PublishDir)" />
+  </Target>
+</Project>

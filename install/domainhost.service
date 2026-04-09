@@ -1,0 +1,16 @@
+[Unit]
+Description=Hephaestus DomainHost (HTTPS)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=@@REPO_ROOT@@/release
+ExecStart=/usr/bin/dotnet DomainHost.dll
+Restart=on-failure
+RestartSec=5
+Environment=DOTNET_PRINT_TELEMETRY_MESSAGE=false
+Environment=ASPNETCORE_ENVIRONMENT=Production
+
+[Install]
+WantedBy=multi-user.target
