@@ -1,97 +1,120 @@
+<#
+.SYNOPSIS
+  Uploads the install/ folder over SSH and runs install.sh on the remote host.
+
+.DESCRIPTION
+  If sshpass is not on PATH, installs the Windows port via Chocolatey (package sshpass-win64),
+  then continues. Requires Chocolatey (choco) and Administrator rights for that one-time install.
+
+.PARAMETER Server
+  SSH host (default: 216.203.21.239).
+
+.PARAMETER Login
+  SSH user (default: root).
+
+.PARAMETER Password
+  SSH password (default: set in script).
+
+.EXAMPLE
+  .\install\install-remote.ps1
+.EXAMPLE
+  .\install\install-remote.ps1 -Server 10.0.0.5 -Login deploy -Password 'secret'
+#>
+[CmdletBinding()]
 param(
-    [Parameter(Position = 0)]
-    [string] $Server = '78.140.240.81',
-
-    [Parameter(Position = 1)]
-    [string] $Login = 'Administrator',
-
-    [Parameter(Position = 2)]
-    [string] $Password = 'hxsY4pati52tWTS0',
-
-    [string] $CloneUrl = 'https://github.com/kgonsovskii/hephaestus.git',
-
-    [string] $CloneParent = 'C:\Delta'
+    [string] $Server = "216.203.21.239",
+    [string] $Login = "root",
+    [string] $Password = "1!Ogviobhuetly"
 )
 
-$ErrorActionPreference = 'Stop'
-$here = if ($PSScriptRoot) { $PSScriptRoot } else { Split-Path -Parent $MyInvocation.MyCommand.Path }
-. (Join-Path $here 'install-remote-commons.ps1')
+Set-StrictMode -Version Latest
+$ErrorActionPreference = "Stop"
 
-$rdpDir = [System.IO.Path]::GetFullPath((Join-Path $here '..\rdp'))
-$exe = Join-Path $rdpDir 'RemoteEnabler.exe'
-if (-not (Test-Path -LiteralPath $exe)) {
-    throw "RemoteEnabler not found: $exe"
+$scriptDir = $PSScriptRoot
+if (-not $scriptDir) { $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path }
+
+$remoteDir = "/tmp/hephaestus-install"
+$remoteBundle = "/tmp/hephaestus-install-bundle.tgz"
+
+function Update-PathFromEnvironment {
+    $machine = [Environment]::GetEnvironmentVariable("Path", "Machine")
+    $user = [Environment]::GetEnvironmentVariable("Path", "User")
+    $env:Path = "$machine;$user"
+    $chocoBin = Join-Path $env:ProgramData "chocolatey\bin"
+    if (Test-Path $chocoBin) { $env:Path = "$chocoBin;$env:Path" }
 }
 
-& $exe $Server $Login $Password
+function Get-SshPassExecutable {
+    foreach ($name in @("sshpass.exe", "sshpass")) {
+        $cmd = Get-Command $name -ErrorAction SilentlyContinue
+        if ($cmd) { return $cmd.Source }
+    }
+    $libRoot = if ($env:ChocolateyInstall) { Join-Path $env:ChocolateyInstall "lib" } else { Join-Path $env:ProgramData "chocolatey\lib" }
+    $found = Get-ChildItem -Path $libRoot -Filter "sshpass.exe" -Recurse -ErrorAction SilentlyContinue |
+        Select-Object -First 1
+    if ($found) { return $found.FullName }
+    return $null
+}
 
-$cred = [pscredential]::new($Login, (ConvertTo-SecureString $Password -AsPlainText -Force))
+function Ensure-SshPass {
+    $exe = Get-SshPassExecutable
+    if ($exe) {
+        Write-Verbose "Using sshpass: $exe"
+        return $exe
+    }
 
+    $choco = Get-Command choco.exe -ErrorAction SilentlyContinue
+    if (-not $choco) {
+        throw "sshpass not found and Chocolatey (choco) is not on PATH. Install Chocolatey: https://chocolatey.org/install — or install sshpass manually and re-run."
+    }
+
+    $principal = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
+    if (-not $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+        throw "sshpass is missing. Installing it via Chocolatey requires Administrator. Right-click PowerShell -> Run as administrator, then re-run this script."
+    }
+
+    Write-Host "Installing sshpass (sshpass-win64) via Chocolatey..."
+    $chocoArgs = @("install", "sshpass-win64", "-y", "--no-progress", "--limit-output")
+    & choco.exe @chocoArgs
+    if ($LASTEXITCODE -ne 0) {
+        throw "choco install sshpass-win64 failed (exit $LASTEXITCODE)."
+    }
+
+    Update-PathFromEnvironment
+
+    $exe = Get-SshPassExecutable
+    if (-not $exe) {
+        throw "sshpass.exe still not found after Chocolatey install. Restart the shell or add Chocolatey bin to PATH."
+    }
+    Write-Host "sshpass ready: $exe"
+    return $exe
+}
+
+if (-not (Get-Command tar.exe -ErrorAction SilentlyContinue)) {
+    Write-Error "tar.exe is required (Windows 10+ includes it)."
+}
+
+$sshpassExe = Ensure-SshPass
+
+$env:SSHPASS = $Password
+
+Write-Host "Remote install -> ${Login}@${Server} ($remoteDir)"
+
+$bundle = Join-Path ([System.IO.Path]::GetTempPath()) ("hephaestus-install-" + [Guid]::NewGuid().ToString("n") + ".tar.gz")
 try {
-    $trusted = Get-Item WSMan:\localhost\Client\TrustedHosts -ErrorAction Stop
-    $cur = $trusted.Value
-    if ($cur -notmatch [regex]::Escape($Server)) {
-        $newVal = if ([string]::IsNullOrWhiteSpace($cur)) { $Server } else { "$cur,$Server" }
-        Set-Item WSMan:\localhost\Client\TrustedHosts -Value $newVal -Force
-    }
-} catch {
+    & tar.exe czf $bundle -C $scriptDir .
+    if ($LASTEXITCODE -ne 0) { throw "tar failed with exit $LASTEXITCODE" }
+
+    & $sshpassExe -e scp -o StrictHostKeyChecking=accept-new $bundle "${Login}@${Server}:${remoteBundle}"
+    if ($LASTEXITCODE -ne 0) { throw "scp failed with exit $LASTEXITCODE" }
+
+    $unpack = "rm -rf $remoteDir && mkdir -p $remoteDir && tar xzf $remoteBundle -C $remoteDir && rm -f $remoteBundle"
+    & $sshpassExe -e ssh -o StrictHostKeyChecking=accept-new "${Login}@${Server}" $unpack
+    if ($LASTEXITCODE -ne 0) { throw "remote unpack failed with exit $LASTEXITCODE" }
+
+    & $sshpassExe -e ssh -o StrictHostKeyChecking=accept-new "${Login}@${Server}" "bash $remoteDir/install.sh"
+    if ($LASTEXITCODE -ne 0) { throw "remote install.sh failed with exit $LASTEXITCODE" }
 }
-
-Invoke-RemotePreInstallReboot -ComputerName $Server -Credential $cred
-
-$srcLocal = Join-Path $here 'install-local.ps1'
-if (-not (Test-Path -LiteralPath $srcLocal)) {
-    throw "Missing $srcLocal"
+finally {
+    Remove-Item -LiteralPath $bundle -Force -ErrorAction SilentlyContinue
 }
-$bodyLocal = Get-Content -LiteralPath $srcLocal -Raw -ErrorAction Stop
-
-Write-Host "=== WinRM: copy install-local.ps1 -> $CloneParent , then run ===" -ForegroundColor Cyan
-$session = New-RemotePwshSession -ComputerName $Server -Credential $cred -RetryUntilConnected $true
-$remoteLocal = [System.IO.Path]::GetFullPath((Join-Path $CloneParent 'install-local.ps1'))
-try {
-    try {
-        Invoke-Command -Session $session -ScriptBlock {
-            param($Parent, $LocalText)
-            if (Test-Path -LiteralPath $Parent) {
-                Remove-Item -LiteralPath $Parent -Recurse -Force
-            }
-            New-Item -ItemType Directory -Force -Path $Parent | Out-Null
-            Set-Content -LiteralPath (Join-Path $Parent 'install-local.ps1') -Value $LocalText -Encoding utf8
-        } -ArgumentList $CloneParent, $bodyLocal -ErrorAction Stop
-
-        Invoke-Command -Session $session -ScriptBlock {
-            param($ScriptPath, $cu, $cp)
-            & $ScriptPath -CloneUrl $cu -CloneParent $cp
-        } -ArgumentList $remoteLocal, $CloneUrl, $CloneParent -ErrorAction Stop
-    } catch {
-        Write-Host "install-local failed: $($_.Exception.Message)" -ForegroundColor Red
-        throw
-    }
-
-    Write-Host '=== WinRM: Winlogon auto-login (before reboot) ===' -ForegroundColor Cyan
-    Invoke-Command -Session $session -ScriptBlock {
-        param($Username, $Pass)
-        $regPath = 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon'
-        Set-ItemProperty -Path $regPath -Name 'AutoAdminLogon' -Value '1'
-        Set-ItemProperty -Path $regPath -Name 'DefaultUserName' -Value $Username
-        Set-ItemProperty -Path $regPath -Name 'DefaultPassword' -Value $Pass
-        Set-ItemProperty -Path $regPath -Name 'DefaultDomainName' -Value $env:COMPUTERNAME
-        Write-Host "Auto-login configured for user '$Username'."
-    } -ArgumentList $Login, $Password
-
-    Write-Host '=== WinRM: Restart-Computer -Force (remote) ===' -ForegroundColor Cyan
-    try {
-        Invoke-Command -Session $session -ScriptBlock { Restart-Computer -Force }
-    } catch {
-        Write-Host "remote reboot sent (session drop is normal): $($_.Exception.Message)" -ForegroundColor Yellow
-    }
-} finally {
-    Remove-PSSession -Session $session -ErrorAction SilentlyContinue
-}
-
-Write-Host '=== sleep 10s after remote reboot (before install-remote2) ===' -ForegroundColor Cyan
-Start-Sleep -Seconds 10
-
-& (Join-Path $here 'install-remote2.ps1') -Server $Server -Login $Login -Password $Password -CloneParent $CloneParent
-
-Write-Host '=== install-remote finished ===' -ForegroundColor Green

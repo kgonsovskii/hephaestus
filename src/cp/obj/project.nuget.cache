@@ -1,11 +1,14 @@
 {
   "version": 2,
-  "dgSpecHash": "vjuE+gu5WR4=",
+  "dgSpecHash": "Jif0CHWkQts=",
   "success": true,
   "projectFilePath": "C:\\soft\\hephaestus\\src\\cp\\cp.csproj",
   "expectedPackageFiles": [
-    "C:\\Users\\k\\.nuget\\packages\\npgsql\\10.0.0\\npgsql.10.0.0.nupkg.sha512",
-    "C:\\Users\\k\\.nuget\\packages\\smblibrary\\1.5.3.5\\smblibrary.1.5.3.5.nupkg.sha512"
+    "C:\\Users\\k\\.nuget\\packages\\microsoft.extensions.dependencyinjection.abstractions\\8.0.2\\microsoft.extensions.dependencyinjection.abstractions.8.0.2.nupkg.sha512",
+    "C:\\Users\\k\\.nuget\\packages\\microsoft.extensions.logging.abstractions\\8.0.2\\microsoft.extensions.logging.abstractions.8.0.2.nupkg.sha512",
+    "C:\\Users\\k\\.nuget\\packages\\npgsql\\9.0.3\\npgsql.9.0.3.nupkg.sha512",
+    "C:\\Users\\k\\.nuget\\packages\\smblibrary\\1.5.3.5\\smblibrary.1.5.3.5.nupkg.sha512",
+    "C:\\Users\\k\\.nuget\\packages\\system.buffers\\4.5.1\\system.buffers.4.5.1.nupkg.sha512"
   ],
   "logs": []
 }

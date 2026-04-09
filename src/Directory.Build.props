@@ -1,20 +1,20 @@
 <Project>
   <PropertyGroup Condition="'$(UsingMicrosoftNETSdk)' == 'true'">
-    <TargetFramework>net10.0</TargetFramework>
+    <TargetFramework>net9.0</TargetFramework>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <!-- Use newest installed 10.x patch (e.g. 10.0.5) when exact 10.0.0 shared framework is absent -->
+    <!-- Use newest installed 9.x patch when exact 9.0.0 shared framework is absent -->
     <RollForward>LatestPatch</RollForward>
     <!-- Shared package versions (referenced as $(PkgName) in *.csproj) -->
-    <PkgNpgsqlVersion>10.0.0</PkgNpgsqlVersion>
-    <PkgMicrosoftExtensionsVersion>10.0.0</PkgMicrosoftExtensionsVersion>
-    <PkgMicrosoftNetTestSdkVersion>18.0.0</PkgMicrosoftNetTestSdkVersion>
+    <PkgNpgsqlVersion>9.0.3</PkgNpgsqlVersion>
+    <PkgMicrosoftExtensionsVersion>9.0.0</PkgMicrosoftExtensionsVersion>
+    <PkgMicrosoftNetTestSdkVersion>17.12.44</PkgMicrosoftNetTestSdkVersion>
     <PkgMSTestVersion>4.0.2</PkgMSTestVersion>
     <PkgFluentAssertionsVersion>7.2.0</PkgFluentAssertionsVersion>
     <PkgHtmlAgilityPackVersion>1.12.4</PkgHtmlAgilityPackVersion>
     <PkgMicrosoftPowerShellSdkVersion>7.5.4</PkgMicrosoftPowerShellSdkVersion>
-    <PkgSystemDirectoryServicesAccountManagementVersion>10.0.0</PkgSystemDirectoryServicesAccountManagementVersion>
+    <PkgSystemDirectoryServicesAccountManagementVersion>9.0.0</PkgSystemDirectoryServicesAccountManagementVersion>
     <PkgSMBLibraryVersion>1.5.3.5</PkgSMBLibraryVersion>
   </PropertyGroup>
 

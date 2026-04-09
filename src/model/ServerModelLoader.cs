@@ -60,21 +60,23 @@ public static class ServerModelLoader
 
     public static string SourceCertDirStatic => HephaestusRepoPaths.CertDirectory(RootDirStatic);
 
+    private static string? _rootDirStatic;
+
     public static string RootDirStatic
     {
         get
         {
-            if (field == null)
+            if (_rootDirStatic is null)
             {
                 var dir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
                 if (string.IsNullOrEmpty(dir))
                     throw new InvalidOperationException("Could not resolve assembly directory for repository root.");
-                field = HephaestusRepoPaths.ResolveRepositoryRoot(dir);
+                _rootDirStatic = HephaestusRepoPaths.ResolveRepositoryRoot(dir);
             }
 
-            return field!;
+            return _rootDirStatic;
         }
-    } = null;
+    }
 
     public static string RootDataStatic
     {

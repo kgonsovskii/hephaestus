@@ -63,8 +63,8 @@ internal static class Program
         Directory.CreateDirectory(certDir);
 
         using var cert = CreateLanTlsCertificate(dnsNames);
-        // ExportPkcs12 avoids legacy PFX attributes that can surface as "strong private key protection" UI on import.
-        File.WriteAllBytes(pfxPath, cert.ExportPkcs12(Pkcs12ExportPbeParameters.Pbes2Aes256Sha256, "123"));
+        // .NET 9: use Export(X509ContentType.Pfx); ExportPkcs12/Pkcs12ExportPbeParameters require a newer TFM.
+        File.WriteAllBytes(pfxPath, cert.Export(X509ContentType.Pfx, "123"));
         File.WriteAllBytes(publicCerPath, cert.Export(X509ContentType.Cert));
     }
 

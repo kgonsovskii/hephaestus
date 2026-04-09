@@ -1,5 +1,6 @@
 -- PostgreSQL: run as superuser against maintenance DB, e.g.:
---   psql -U postgres -d postgres -v ON_ERROR_STOP=1 -f install.sql
+--   psql -U postgres -d postgres -v ON_ERROR_STOP=1 -f setup-postgres.sql
+-- Database name: hephaestus
 
 DO $$
 BEGIN
