@@ -14,6 +14,9 @@ $ErrorActionPreference = "Stop"
   There is no supported registry setting to turn off the Windows "install root certificate?" consent UI.
   For domain PCs without per-user prompts, deploy this .cer via GPO (see scripts/deploy-trust-ad-gpo.txt).
 
+  For a fully silent policy-backed install on one PC (Local Computer Group Policy trusted root),
+  use scripts/install-hephaestus-trust-local-gpo.ps1 (elevated; certutil -GroupPolicy + gpupdate).
+
   This script tries certutil first (addstore Root), then falls back to System.Security.Cryptography.X509Certificates.X509Store.Add.
 #>
 

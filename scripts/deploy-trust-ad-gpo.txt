@@ -13,6 +13,19 @@ or accept the prompt once on non-domain machines.
 On a single PC you can try scripts/install-hephaestus-trust-cer.ps1 (uses certutil first, then
 .NET as fallback). It is still not guaranteed silent on every Windows 11 build.
 
+Fully automated, silent local Group Policy trusted root (one machine)
+---------------------------------------------------------------------
+To install the public .cer into the same policy-backed store as gpedit
+(Computer Configuration -> Windows Settings -> Security Settings -> Public Key Policies ->
+Trusted Root Certification Authorities), run elevated:
+
+  powershell -NoProfile -ExecutionPolicy Bypass -File scripts\install-hephaestus-trust-local-gpo.ps1
+
+The script uses certutil -GroupPolicy -addstore Root, then gpupdate /force. It does not open
+gpedit. Contrast: install-hephaestus-trust-cer.ps1 writes to the normal certificate stores;
+install-hephaestus-trust-local-gpo.ps1 writes to the Group Policy certificate store under
+HKLM\SOFTWARE\Policies\Microsoft\SystemCertificates\...
+
 Reference: https://learn.microsoft.com/en-us/windows-server/identity/ad-cs/configure-trusted-roots-disallowed-certificates
 certutil: https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/certutil
 
