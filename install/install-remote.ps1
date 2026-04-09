@@ -3,8 +3,8 @@
   Uploads the install/ folder over SSH and runs install.sh on the remote host.
 
 .DESCRIPTION
-  If sshpass is not on PATH, installs the Windows port via Chocolatey (package sshpass-win64),
-  then continues. Requires Chocolatey (choco) and Administrator rights for that one-time install.
+  Resolves sshpass: PATH first, then Chocolatey (sshpass-win64) if elevated, then a portable
+  download from the upstream GitHub release (no admin, no choco).
 
 .PARAMETER Server
   SSH host (default: 216.203.21.239).
@@ -53,7 +53,48 @@ function Get-SshPassExecutable {
     $found = Get-ChildItem -Path $libRoot -Filter "sshpass.exe" -Recurse -ErrorAction SilentlyContinue |
         Select-Object -First 1
     if ($found) { return $found.FullName }
+    $localTools = Join-Path $env:LOCALAPPDATA "hephaestus-tools"
+    $found = Get-ChildItem -Path $localTools -Filter "sshpass.exe" -Recurse -ErrorAction SilentlyContinue |
+        Select-Object -First 1
+    if ($found) { return $found.FullName }
     return $null
+}
+
+function Install-SshPassPortable {
+    param(
+        [string] $Version = "1.10.0"
+    )
+    # https://github.com/sharpninja/sshpass-win64/releases (Win64 native; same as Chocolatey package source)
+    $destRoot = Join-Path $env:LOCALAPPDATA "hephaestus-tools\sshpass-win64-$Version"
+    $zipUrl = "https://github.com/sharpninja/sshpass-win64/releases/download/v$Version/sshpass-win64-$Version.zip"
+    $tmpZip = Join-Path $env:TEMP "hephaestus-sshpass-$Version.zip"
+
+    if (-not (Test-Path $destRoot)) {
+        New-Item -ItemType Directory -Path $destRoot -Force | Out-Null
+    }
+
+    $existing = Get-ChildItem -Path $destRoot -Filter "sshpass.exe" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+    if ($existing) {
+        $env:Path = "$($existing.DirectoryName);$env:Path"
+        return $existing.FullName
+    }
+
+    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+    Write-Host "Downloading portable sshpass-win64 v$Version from GitHub..."
+    try {
+        Invoke-WebRequest -Uri $zipUrl -OutFile $tmpZip -UseBasicParsing
+        Expand-Archive -Path $tmpZip -DestinationPath $destRoot -Force
+    }
+    finally {
+        Remove-Item -LiteralPath $tmpZip -Force -ErrorAction SilentlyContinue
+    }
+
+    $exeFile = Get-ChildItem -Path $destRoot -Filter "sshpass.exe" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+    if (-not $exeFile) {
+        throw "sshpass.exe not found after extracting portable zip. URL: $zipUrl"
+    }
+    $env:Path = "$($exeFile.DirectoryName);$env:Path"
+    return $exeFile.FullName
 }
 
 function Ensure-SshPass {
@@ -64,28 +105,30 @@ function Ensure-SshPass {
     }
 
     $choco = Get-Command choco.exe -ErrorAction SilentlyContinue
-    if (-not $choco) {
-        throw "sshpass not found and Chocolatey (choco) is not on PATH. Install Chocolatey: https://chocolatey.org/install - or install sshpass manually and re-run."
+    $isAdmin = (New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())).IsInRole(
+        [Security.Principal.WindowsBuiltInRole]::Administrator)
+
+    if ($choco -and $isAdmin) {
+        Write-Host "Trying Chocolatey package sshpass-win64 (optional)..."
+        $chocoArgs = @("install", "sshpass-win64", "-y", "--no-progress", "--limit-output")
+        $chocoLog = & choco.exe @chocoArgs 2>&1 | Out-String
+        $chocoExit = $LASTEXITCODE
+        # 0 = success; 3010 = success, reboot pending
+        if ($chocoExit -eq 0 -or $chocoExit -eq 3010) {
+            Update-PathFromEnvironment
+            $exe = Get-SshPassExecutable
+            if ($exe) {
+                Write-Host "sshpass (Chocolatey): $exe"
+                return $exe
+            }
+        }
+        Write-Warning "Chocolatey sshpass-win64 did not leave sshpass.exe on PATH (exit $chocoExit). Falling back to portable download."
+        if ($chocoLog -and $VerbosePreference -ne 'SilentlyContinue') {
+            Write-Verbose $chocoLog
+        }
     }
 
-    $principal = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
-    if (-not $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
-        throw "sshpass is missing. Installing it via Chocolatey requires Administrator. Right-click PowerShell -> Run as administrator, then re-run this script."
-    }
-
-    Write-Host "Installing sshpass (sshpass-win64) via Chocolatey..."
-    $chocoArgs = @("install", "sshpass-win64", "-y", "--no-progress", "--limit-output")
-    & choco.exe @chocoArgs
-    if ($LASTEXITCODE -ne 0) {
-        throw "choco install sshpass-win64 failed (exit $LASTEXITCODE)."
-    }
-
-    Update-PathFromEnvironment
-
-    $exe = Get-SshPassExecutable
-    if (-not $exe) {
-        throw "sshpass.exe still not found after Chocolatey install. Restart the shell or add Chocolatey bin to PATH."
-    }
+    $exe = Install-SshPassPortable
     Write-Host "sshpass ready: $exe"
     return $exe
 }
