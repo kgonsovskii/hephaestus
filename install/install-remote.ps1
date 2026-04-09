@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-  SSH to a Linux host: install git, clone Hephaestus under /home/hephaestus, run install/install.sh.
+  SSH to a Linux host: install git, clone Hephaestus to the login user's $HOME/hephaestus, run install/install.sh.
 
 .DESCRIPTION
   No local files are copied. Resolves sshpass via Chocolatey (optional) or portable GitHub build.
@@ -28,9 +28,6 @@ param(
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
-
-$cloneDir = "/home/hephaestus"
-$repoUrl = "https://github.com/kgonsovskii/hephaestus.git"
 
 $sshCommonOpts = @(
     "-o", "StrictHostKeyChecking=accept-new",
@@ -138,16 +135,17 @@ $sshpassExe = Ensure-SshPass
 $env:SSHPASS = $Password
 
 Write-Host "Remote install -> ${Login}@${Server}"
-Write-Host "[1/1] SSH: install git, clone repo to ${cloneDir}, run install.sh"
+Write-Host "[1/1] SSH: install git, clone repo to `$HOME/hephaestus (remote user), run install.sh"
 
-$remoteCmd = (@"
+$remoteCmd = (@'
 export DEBIAN_FRONTEND=noninteractive
 apt-get update
 apt-get install -y git ca-certificates
-rm -rf ${cloneDir}
-git clone --depth 1 ${repoUrl} ${cloneDir}
-bash ${cloneDir}/install/install.sh
-"@
+CLONE_DIR="${HOME}/hephaestus"
+rm -rf "$CLONE_DIR"
+git clone --depth 1 https://github.com/kgonsovskii/hephaestus.git "$CLONE_DIR"
+bash "$CLONE_DIR/install/install.sh"
+'@
 ) -replace "`r`n", "`n" -replace "`r", "`n"
 
 # Avoid piping the script into ssh from PowerShell: on Windows that often block-buffers ssh

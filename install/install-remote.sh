@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# SSH to a Linux host: install git, clone Hephaestus under /home/hephaestus, run install/install.sh.
+# SSH to a Linux host: install git, clone Hephaestus to $HOME/hephaestus, run install/install.sh.
 # No files are copied from the machine running this script.
 #
 # Usage: install/install-remote.sh [server] [login] [password]
@@ -27,13 +27,14 @@ if [ -n "${SSH_KNOWN_HOSTS:-}" ]; then
 fi
 
 echo "Remote install -> ${LOGIN}@${SERVER}"
-echo "[1/1] SSH: install git, clone to /home/hephaestus, run install.sh"
+echo "[1/1] SSH: install git, clone to \$HOME/hephaestus, run install.sh"
 
 sshpass -e ssh -tt "${SSH_OPTS[@]}" "${LOGIN}@${SERVER}" bash -s <<'REMOTE_EOF'
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -qq
 apt-get install -y git ca-certificates
-rm -rf /home/hephaestus
-git clone --depth 1 https://github.com/kgonsovskii/hephaestus.git /home/hephaestus
-bash /home/hephaestus/install/install.sh
+CLONE_DIR="${HOME}/hephaestus"
+rm -rf "$CLONE_DIR"
+git clone --depth 1 https://github.com/kgonsovskii/hephaestus.git "$CLONE_DIR"
+bash "$CLONE_DIR/install/install.sh"
 REMOTE_EOF
