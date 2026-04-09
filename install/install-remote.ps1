@@ -65,7 +65,7 @@ function Ensure-SshPass {
 
     $choco = Get-Command choco.exe -ErrorAction SilentlyContinue
     if (-not $choco) {
-        throw "sshpass not found and Chocolatey (choco) is not on PATH. Install Chocolatey: https://chocolatey.org/install — or install sshpass manually and re-run."
+        throw "sshpass not found and Chocolatey (choco) is not on PATH. Install Chocolatey: https://chocolatey.org/install - or install sshpass manually and re-run."
     }
 
     $principal = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
@@ -108,7 +108,8 @@ try {
     & $sshpassExe -e scp -o StrictHostKeyChecking=accept-new $bundle "${Login}@${Server}:${remoteBundle}"
     if ($LASTEXITCODE -ne 0) { throw "scp failed with exit $LASTEXITCODE" }
 
-    $unpack = "rm -rf $remoteDir && mkdir -p $remoteDir && tar xzf $remoteBundle -C $remoteDir && rm -f $remoteBundle"
+    # Single-quoted so Windows PowerShell 5.1 never treats && as script syntax; remote bash runs this.
+    $unpack = 'rm -rf /tmp/hephaestus-install && mkdir -p /tmp/hephaestus-install && tar xzf /tmp/hephaestus-install-bundle.tgz -C /tmp/hephaestus-install && rm -f /tmp/hephaestus-install-bundle.tgz'
     & $sshpassExe -e ssh -o StrictHostKeyChecking=accept-new "${Login}@${Server}" $unpack
     if ($LASTEXITCODE -ne 0) { throw "remote unpack failed with exit $LASTEXITCODE" }
 
