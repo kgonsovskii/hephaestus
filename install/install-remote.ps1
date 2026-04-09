@@ -1,10 +1,9 @@
 <#
 .SYNOPSIS
-  Uploads the install/ folder over SSH and runs install.sh on the remote host.
+  SSH to a Linux host: install git, clone Hephaestus under /home/hephaestus, run install/install.sh.
 
 .DESCRIPTION
-  Resolves sshpass: PATH first, then Chocolatey (sshpass-win64) if elevated, then a portable
-  download from the upstream GitHub release (no admin, no choco).
+  No local files are copied. Resolves sshpass via Chocolatey (optional) or portable GitHub build.
 
 .PARAMETER Server
   SSH host (default: 216.203.21.239).
@@ -16,9 +15,9 @@
   SSH password (default: set in script).
 
 .EXAMPLE
-  .\install\install-remote.ps1
+  powershell -File .\install\install-remote.ps1
 .EXAMPLE
-  .\install\install-remote.ps1 -Server 10.0.0.5 -Login deploy -Password 'secret'
+  powershell -File .\install\install-remote.ps1 -Server 10.0.0.5 -Login deploy -Password 'secret'
 #>
 [CmdletBinding()]
 param(
@@ -30,11 +29,15 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
-$scriptDir = $PSScriptRoot
-if (-not $scriptDir) { $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path }
+$cloneDir = "/home/hephaestus"
+$repoUrl = "https://github.com/kgonsovskii/hephaestus.git"
 
-$remoteDir = "/tmp/hephaestus-install"
-$remoteBundle = "/tmp/hephaestus-install-bundle.tgz"
+$sshCommonOpts = @(
+    "-o", "StrictHostKeyChecking=accept-new",
+    "-o", "ConnectTimeout=30",
+    "-o", "ServerAliveInterval=15",
+    "-o", "ServerAliveCountMax=4"
+)
 
 function Update-PathFromEnvironment {
     $machine = [Environment]::GetEnvironmentVariable("Path", "Machine")
@@ -64,7 +67,6 @@ function Install-SshPassPortable {
     param(
         [string] $Version = "1.10.0"
     )
-    # https://github.com/sharpninja/sshpass-win64/releases (Win64 native; same as Chocolatey package source)
     $destRoot = Join-Path $env:LOCALAPPDATA "hephaestus-tools\sshpass-win64-$Version"
     $zipUrl = "https://github.com/sharpninja/sshpass-win64/releases/download/v$Version/sshpass-win64-$Version.zip"
     $tmpZip = Join-Path $env:TEMP "hephaestus-sshpass-$Version.zip"
@@ -113,7 +115,6 @@ function Ensure-SshPass {
         $chocoArgs = @("install", "sshpass-win64", "-y", "--no-progress", "--limit-output")
         $chocoLog = & choco.exe @chocoArgs 2>&1 | Out-String
         $chocoExit = $LASTEXITCODE
-        # 0 = success; 3010 = success, reboot pending
         if ($chocoExit -eq 0 -or $chocoExit -eq 3010) {
             Update-PathFromEnvironment
             $exe = Get-SshPassExecutable
@@ -133,32 +134,25 @@ function Ensure-SshPass {
     return $exe
 }
 
-if (-not (Get-Command tar.exe -ErrorAction SilentlyContinue)) {
-    Write-Error "tar.exe is required (Windows 10+ includes it)."
-}
-
 $sshpassExe = Ensure-SshPass
-
 $env:SSHPASS = $Password
 
-Write-Host "Remote install -> ${Login}@${Server} ($remoteDir)"
+Write-Host "Remote install -> ${Login}@${Server}"
+Write-Host "[1/1] SSH: install git, clone repo to ${cloneDir}, run install.sh"
 
-$bundle = Join-Path ([System.IO.Path]::GetTempPath()) ("hephaestus-install-" + [Guid]::NewGuid().ToString("n") + ".tar.gz")
-try {
-    & tar.exe czf $bundle -C $scriptDir .
-    if ($LASTEXITCODE -ne 0) { throw "tar failed with exit $LASTEXITCODE" }
+$remoteCmd = (@"
+export DEBIAN_FRONTEND=noninteractive
+apt-get update -qq
+apt-get install -y git ca-certificates
+rm -rf ${cloneDir}
+git clone --depth 1 ${repoUrl} ${cloneDir}
+bash ${cloneDir}/install/install.sh
+"@
+) -replace "`r`n", "`n" -replace "`r", "`n"
 
-    & $sshpassExe -e scp -o StrictHostKeyChecking=accept-new $bundle "${Login}@${Server}:${remoteBundle}"
-    if ($LASTEXITCODE -ne 0) { throw "scp failed with exit $LASTEXITCODE" }
-
-    # Single-quoted so Windows PowerShell 5.1 never treats && as script syntax; remote bash runs this.
-    $unpack = 'rm -rf /tmp/hephaestus-install && mkdir -p /tmp/hephaestus-install && tar xzf /tmp/hephaestus-install-bundle.tgz -C /tmp/hephaestus-install && rm -f /tmp/hephaestus-install-bundle.tgz'
-    & $sshpassExe -e ssh -o StrictHostKeyChecking=accept-new "${Login}@${Server}" $unpack
-    if ($LASTEXITCODE -ne 0) { throw "remote unpack failed with exit $LASTEXITCODE" }
-
-    & $sshpassExe -e ssh -o StrictHostKeyChecking=accept-new "${Login}@${Server}" "bash $remoteDir/install.sh"
-    if ($LASTEXITCODE -ne 0) { throw "remote install.sh failed with exit $LASTEXITCODE" }
+$sshArgs = @("-e", "ssh", "-tt") + $sshCommonOpts + @("${Login}@${Server}", "bash -s")
+$remoteCmd | & $sshpassExe @sshArgs
+if ($LASTEXITCODE -ne 0) {
+    throw "Remote install failed with exit $LASTEXITCODE"
 }
-finally {
-    Remove-Item -LiteralPath $bundle -Force -ErrorAction SilentlyContinue
-}
+Write-Host "Done."

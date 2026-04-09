@@ -1,13 +1,11 @@
 #!/usr/bin/env bash
-# Uploads this install/ directory to the server over SSH and runs install.sh remotely.
-# Requires: sshpass (e.g. apt install sshpass / brew install sshpass)
+# SSH to a Linux host: install git, clone Hephaestus under /home/hephaestus, run install/install.sh.
+# No files are copied from the machine running this script.
 #
 # Usage: install/install-remote.sh [server] [login] [password]
 # Defaults: 216.203.21.239 root 1!Ogviobhuetly
+# Requires: sshpass (e.g. apt install sshpass / brew install sshpass)
 set -euo pipefail
-
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-readonly REMOTE_DIR=/tmp/hephaestus-install
 
 readonly DEFAULT_SERVER=216.203.21.239
 readonly DEFAULT_LOGIN=root
@@ -23,14 +21,19 @@ if ! command -v sshpass >/dev/null 2>&1; then
 fi
 
 export SSHPASS="$PASSWORD"
-SSH_OPTS=(-o StrictHostKeyChecking=accept-new)
+SSH_OPTS=(-o StrictHostKeyChecking=accept-new -o ConnectTimeout=30 -o ServerAliveInterval=15 -o ServerAliveCountMax=4)
 if [ -n "${SSH_KNOWN_HOSTS:-}" ]; then
   SSH_OPTS+=(-o "UserKnownHostsFile=$SSH_KNOWN_HOSTS")
 fi
 
-echo "Remote install -> ${LOGIN}@${SERVER} (${REMOTE_DIR})"
+echo "Remote install -> ${LOGIN}@${SERVER}"
+echo "[1/1] SSH: install git, clone to /home/hephaestus, run install.sh"
 
-tar czf - -C "$SCRIPT_DIR" . | sshpass -e ssh "${SSH_OPTS[@]}" "${LOGIN}@${SERVER}" \
-  "rm -rf ${REMOTE_DIR} && mkdir -p ${REMOTE_DIR} && tar xzf - -C ${REMOTE_DIR}"
-
-sshpass -e ssh "${SSH_OPTS[@]}" "${LOGIN}@${SERVER}" "bash ${REMOTE_DIR}/install.sh"
+sshpass -e ssh -tt "${SSH_OPTS[@]}" "${LOGIN}@${SERVER}" bash -s <<'REMOTE_EOF'
+export DEBIAN_FRONTEND=noninteractive
+apt-get update -qq
+apt-get install -y git ca-certificates
+rm -rf /home/hephaestus
+git clone --depth 1 https://github.com/kgonsovskii/hephaestus.git /home/hephaestus
+bash /home/hephaestus/install/install.sh
+REMOTE_EOF

@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Full stack: Git, .NET 9 SDK, PostgreSQL (hephaestus), Technitium DNS, clone app to /opt/hephaestus.
+# Full stack: Git, .NET 9 SDK, PostgreSQL (hephaestus), Technitium DNS.
+# (Clone the repo on the server first, e.g. install-remote.ps1 / install-remote.sh, then run this script.)
 # Run: sudo bash install/install.sh
 set -euo pipefail
 export DEBIAN_FRONTEND=noninteractive
@@ -14,4 +15,3 @@ bash "$SCRIPT_DIR/install-git.sh"
 bash "$SCRIPT_DIR/install-net.sh"
 bash "$SCRIPT_DIR/install-postgres.sh"
 bash "$SCRIPT_DIR/install-dns.sh"
-bash "$SCRIPT_DIR/install-soft.sh"
