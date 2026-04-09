@@ -142,7 +142,7 @@ Write-Host "[1/1] SSH: install git, clone repo to ${cloneDir}, run install.sh"
 
 $remoteCmd = (@"
 export DEBIAN_FRONTEND=noninteractive
-apt-get update -qq
+apt-get update
 apt-get install -y git ca-certificates
 rm -rf ${cloneDir}
 git clone --depth 1 ${repoUrl} ${cloneDir}
@@ -150,8 +150,12 @@ bash ${cloneDir}/install/install.sh
 "@
 ) -replace "`r`n", "`n" -replace "`r", "`n"
 
-$sshArgs = @("-e", "ssh", "-tt") + $sshCommonOpts + @("${Login}@${Server}", "bash -s")
-$remoteCmd | & $sshpassExe @sshArgs
+# Avoid piping the script into ssh from PowerShell: on Windows that often block-buffers ssh
+# stdout so nothing appears until the remote work finishes. Pass one remote command instead.
+$b64 = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($remoteCmd))
+$remoteShell = "echo $b64 | base64 -d | bash"
+$sshArgs = @("-e", "ssh") + $sshCommonOpts + @("${Login}@${Server}", $remoteShell)
+& $sshpassExe @sshArgs
 if ($LASTEXITCODE -ne 0) {
     throw "Remote install failed with exit $LASTEXITCODE"
 }
