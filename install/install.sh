@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Full stack: uninstall (service + release/), Git, .NET 9 SDK, PostgreSQL (hephaestus), Technitium DNS,
 # then restore solution + publish DomainHost + domainhost.service (install-soft fails if service not active).
+# On success, powers off the host (job done).
 # (Clone the repo on the server first, e.g. install-remote.ps1 / install-remote.sh, then run this script.)
 # Run: sudo bash install/install.sh
 set -euo pipefail
@@ -18,4 +19,5 @@ bash "$SCRIPT_DIR/install-net.sh"
 bash "$SCRIPT_DIR/install-postgres.sh"
 bash "$SCRIPT_DIR/install-dns.sh"
 bash "$SCRIPT_DIR/install-soft.sh"
-echo "Install complete: domainhost.service is $(systemctl is-active domainhost.service 2>/dev/null || echo 'unknown')."
+sync
+shutdown -h now
