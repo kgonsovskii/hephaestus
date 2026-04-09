@@ -31,4 +31,6 @@ run_as_postgres() {
   fi
 }
 
-run_as_postgres psql -d postgres -v ON_ERROR_STOP=1 -f "$SQL"
+# psql must not use -f with a path under /root/... when run as user postgres (permission denied).
+# Root opens the file for stdin; postgres inherits the fd.
+run_as_postgres psql -d postgres -v ON_ERROR_STOP=1 < "$SQL"
