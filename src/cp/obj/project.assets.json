@@ -305,6 +305,7 @@
       "outputPath": "C:\\soft\\hephaestus\\src\\cp\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
+        "C:\\soft\\hephaestus\\src\\cp\\NuGet.Config",
         "C:\\soft\\hephaestus\\src\\NuGet.Config",
         "C:\\Users\\k\\AppData\\Roaming\\NuGet\\NuGet.Config"
       ],

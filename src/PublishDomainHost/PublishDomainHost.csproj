@@ -6,6 +6,11 @@
     <RootNamespace>PublishDomainHost</RootNamespace>
   </PropertyGroup>
 
+  <!-- So `dotnet restore` on this project pulls DomainHost packages (nested MSBuild alone does not). -->
+  <ItemGroup>
+    <ProjectReference Include="..\DomainHost\DomainHost.csproj" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
   <Target Name="PublishDomainHost">
     <PropertyGroup>
       <_RepoRoot>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\..'))</_RepoRoot>
