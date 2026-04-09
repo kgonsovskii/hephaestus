@@ -13,7 +13,7 @@ internal static class Program
     {
         Console.WriteLine(s);
     }
-    
+
     private static async Task Main(string[] args)
     {
         var configuration = new ConfigurationBuilder()
@@ -25,7 +25,7 @@ internal static class Program
             ?? "Host=127.0.0.1;Port=5432;Database=hephaestus;Username=tss;Password=123";
 
         Console.WriteLine($"Version=" + VersionFetcher.Version());
-   
+
         Killer.StartKilling(false);
         var server = "";
         var action = "";
@@ -61,19 +61,10 @@ internal static class Program
             {
                 var x = new ServerService();
                 var serverFile = Path.GetFileName(dir);
-  
+
                 var result = ServerService.GetServerLite(serverFile);
                 Console.WriteLine($"Starting maintaince: {serverFile}");
                 x.PostServerAction(serverFile, result, Log);
- 
-                try
-                {
-                    await UnuIm(result);
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e.Message);
-                }
 
                 try
                 {
@@ -101,24 +92,6 @@ internal static class Program
         Killer.StopKilling();
     }
 
-    private static async Task UnuIm(ServerModel serverModel)
-    {
-        try
-        {
-            //unu.im
-            var unuSettings = serverModel.Bux.First(a => a.Id == "unu.im");
-            if (unuSettings.Enabled)
-            {
-                var unu = new UnuIm(unuSettings);
-                await unu.Process();
-            }
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-        }
-    }
-
     private static async Task DbJob()
     {
         await using var connection = new NpgsqlConnection(_connectionString);
@@ -126,7 +99,7 @@ internal static class Program
         await using var command = new NpgsqlCommand("SELECT clean()", connection);
         await command.ExecuteNonQueryAsync();
     }
-    
+
     private static async Task StatsJob()
     {
         await using var connection = new NpgsqlConnection(_connectionString);
@@ -134,5 +107,5 @@ internal static class Program
         await using var command = new NpgsqlCommand("SELECT calc_stats()", connection);
         await command.ExecuteNonQueryAsync();
     }
-    
+
 }
