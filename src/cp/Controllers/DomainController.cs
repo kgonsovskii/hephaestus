@@ -3,6 +3,7 @@ using Domain;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
 using model;
 
 namespace cp.Controllers;
@@ -14,16 +15,50 @@ public class DomainController : BaseController
 
     private readonly IDomainRepository _domains;
     private readonly IWebContentClassCatalog _classes;
+    private readonly DomainCatalog _domainCatalog;
+    private readonly IDomainMaintenance _domainMaintenance;
+    private readonly ILogger<DomainController> _logger;
 
     public DomainController(
         ServerService serverService,
         IConfiguration configuration,
         IMemoryCache memoryCache,
         IDomainRepository domains,
-        IWebContentClassCatalog classes) : base(serverService, configuration, memoryCache)
+        IWebContentClassCatalog classes,
+        DomainCatalog domainCatalog,
+        IDomainMaintenance domainMaintenance,
+        ILogger<DomainController> logger) : base(serverService, configuration, memoryCache)
     {
         _domains = domains;
         _classes = classes;
+        _domainCatalog = domainCatalog;
+        _domainMaintenance = domainMaintenance;
+        _logger = logger;
+    }
+
+    /// <summary>Reloads <see cref="DomainCatalog"/> from disk and runs <see cref="IDomainMaintenance.RunAsync"/> (same work as Refiner's domain loop).</summary>
+    private async Task<string?> AfterDomainsPersistedAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            var enabled = await _domains.LoadEnabledDomainsAsync(cancellationToken).ConfigureAwait(false);
+            _domainCatalog.Replace(enabled);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Could not refresh domain catalog after domains.json change.");
+        }
+
+        try
+        {
+            await _domainMaintenance.RunAsync(cancellationToken).ConfigureAwait(false);
+            return null;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Technitium DNS sync failed after domains.json change.");
+            return ex.Message;
+        }
     }
 
     [HttpGet("domains")]
@@ -52,7 +87,10 @@ public class DomainController : BaseController
             .Select(r => r.ToDomainRecord())
             .ToList();
         await _domains.SaveDomainsAsync(records, cancellationToken).ConfigureAwait(false);
-        TempData[TempDataMessageKey] = "Domains saved.";
+        var dnsErr = await AfterDomainsPersistedAsync(cancellationToken).ConfigureAwait(false);
+        TempData[TempDataMessageKey] = dnsErr is null
+            ? "Domains saved; DNS/catalog updated."
+            : $"Domains saved. Technitium sync failed: {dnsErr}";
         return RedirectToAction(nameof(Index));
     }
 
@@ -89,9 +127,21 @@ public class DomainController : BaseController
         }
 
         await _domains.SaveDomainsAsync(list.Select(r => r.ToDomainRecord()).ToList(), cancellationToken).ConfigureAwait(false);
-        TempData[TempDataMessageKey] = added == 0
+        var baseMsg = added == 0
             ? "No new domains added (duplicates or empty lines skipped)."
             : $"Added {added} domain(s).";
+        if (added > 0)
+        {
+            var dnsErr = await AfterDomainsPersistedAsync(cancellationToken).ConfigureAwait(false);
+            TempData[TempDataMessageKey] = dnsErr is null
+                ? baseMsg + " DNS/catalog updated."
+                : $"{baseMsg} Technitium sync failed: {dnsErr}";
+        }
+        else
+        {
+            TempData[TempDataMessageKey] = baseMsg;
+        }
+
         return RedirectToAction(nameof(Index));
     }
 }

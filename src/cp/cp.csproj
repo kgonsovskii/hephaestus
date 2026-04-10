@@ -47,26 +47,4 @@
     <AdditionalFiles Include="Views\Shared\Components\Pack\Default.cshtml" />
   </ItemGroup>
 
-  <ItemGroup>
-    <_ContentIncludedByDefault Remove="bin\Debug\net9.0\Nuget.config" />
-    <_ContentIncludedByDefault Remove="bin\Debug\net9.0\Web.config" />
-    <_ContentIncludedByDefault Remove="bin\Release\net10.0\Nuget.config" />
-    <_ContentIncludedByDefault Remove="bin\Release\net10.0\Web.config" />
-    <_ContentIncludedByDefault Remove="bin\Debug\net9.0\appsettings.Development.json" />
-    <_ContentIncludedByDefault Remove="bin\Debug\net9.0\appsettings.json" />
-    <_ContentIncludedByDefault Remove="bin\Debug\net9.0\cp.deps.json" />
-    <_ContentIncludedByDefault Remove="bin\Debug\net9.0\cp.runtimeconfig.json" />
-    <_ContentIncludedByDefault Remove="bin\Debug\net9.0\cp.staticwebassets.endpoints.json" />
-    <_ContentIncludedByDefault Remove="bin\Release\net10.0\appsettings.Development.json" />
-    <_ContentIncludedByDefault Remove="bin\Release\net10.0\appsettings.json" />
-    <_ContentIncludedByDefault Remove="bin\Release\net10.0\cp.deps.json" />
-    <_ContentIncludedByDefault Remove="bin\Release\net10.0\cp.runtimeconfig.json" />
-    <_ContentIncludedByDefault Remove="bin\Release\net10.0\cp.staticwebassets.endpoints.json" />
-    <_ContentIncludedByDefault Remove="bin\Debug\net9.0\Views\Shared\_TabContent.cshtml" />
-    <_ContentIncludedByDefault Remove="bin\Release\net10.0\Views\Shared\_TabContent.cshtml" />
-    <_ContentIncludedByDefault Remove="_buildobj\Domain.csproj.nuget.dgspec.json" />
-    <_ContentIncludedByDefault Remove="_buildobj\project.assets.json" />
-    <_ContentIncludedByDefault Remove="_buildobj\Release\Commons.sourcelink.json" />
-  </ItemGroup>
-
 </Project>
