@@ -50,14 +50,14 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\soft\\hephaestus\\src\\Packer\\Packer.csproj",
+      "projectUniqueName": "c:\\soft\\hephaestus\\src\\Packer\\Packer.csproj",
       "projectName": "Packer",
-      "projectPath": "C:\\soft\\hephaestus\\src\\Packer\\Packer.csproj",
+      "projectPath": "c:\\soft\\hephaestus\\src\\Packer\\Packer.csproj",
       "packagesPath": "C:\\Users\\k\\.nuget\\packages",
-      "outputPath": "C:\\soft\\hephaestus\\src\\Packer\\obj\\",
+      "outputPath": "c:\\soft\\hephaestus\\src\\Packer\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\soft\\hephaestus\\src\\NuGet.Config",
+        "c:\\soft\\hephaestus\\src\\NuGet.Config",
         "C:\\Users\\k\\AppData\\Roaming\\NuGet\\NuGet.Config"
       ],
       "originalTargetFrameworks": [

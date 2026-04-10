@@ -32,14 +32,14 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\soft\\hephaestus\\src\\CertTool\\CertTool.csproj",
+      "projectUniqueName": "c:\\soft\\hephaestus\\src\\CertTool\\CertTool.csproj",
       "projectName": "CertTool",
-      "projectPath": "C:\\soft\\hephaestus\\src\\CertTool\\CertTool.csproj",
+      "projectPath": "c:\\soft\\hephaestus\\src\\CertTool\\CertTool.csproj",
       "packagesPath": "C:\\Users\\k\\.nuget\\packages",
-      "outputPath": "C:\\soft\\hephaestus\\src\\CertTool\\obj\\",
+      "outputPath": "c:\\soft\\hephaestus\\src\\CertTool\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\soft\\hephaestus\\src\\NuGet.Config",
+        "c:\\soft\\hephaestus\\src\\NuGet.Config",
         "C:\\Users\\k\\AppData\\Roaming\\NuGet\\NuGet.Config"
       ],
       "originalTargetFrameworks": [
@@ -52,8 +52,8 @@
         "net9.0": {
           "targetAlias": "net9.0",
           "projectReferences": {
-            "C:\\soft\\hephaestus\\src\\Commons\\Commons.csproj": {
-              "projectPath": "C:\\soft\\hephaestus\\src\\Commons\\Commons.csproj"
+            "c:\\soft\\hephaestus\\src\\Commons\\Commons.csproj": {
+              "projectPath": "c:\\soft\\hephaestus\\src\\Commons\\Commons.csproj"
             }
           }
         }

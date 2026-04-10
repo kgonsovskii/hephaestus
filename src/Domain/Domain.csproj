@@ -3,6 +3,8 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="$(PkgMicrosoftExtensionsVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="$(PkgMicrosoftExtensionsVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="$(PkgMicrosoftExtensionsVersion)" />
     <ProjectReference Include="..\Commons\Commons.csproj" />
   </ItemGroup>
 

@@ -1,5 +1,3 @@
-using Db;
-using Domain;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 

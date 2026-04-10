@@ -10,6 +10,9 @@ public sealed class DomainHostOptions
 
     public string DomainsFileName { get; set; } = "domains.json";
 
+    /// <summary>JSON file listing domain names to skip for Technitium sync (same folder as <see cref="DomainsFileName"/>).</summary>
+    public string DomainsIgnoreFileName { get; set; } = "domains-ignore.json";
+
     public int RefreshSeconds { get; set; } = 30;
 
     public string CertDirectoryName { get; set; } = "cert";

@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "C:\\soft\\hephaestus\\src\\Packer\\Packer.csproj": {}
+    "c:\\soft\\hephaestus\\src\\Packer\\Packer.csproj": {}
   },
   "projects": {
-    "C:\\soft\\hephaestus\\src\\Commons\\Commons.csproj": {
+    "c:\\soft\\hephaestus\\src\\Commons\\Commons.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\soft\\hephaestus\\src\\Commons\\Commons.csproj",
+        "projectUniqueName": "c:\\soft\\hephaestus\\src\\Commons\\Commons.csproj",
         "projectName": "Commons",
-        "projectPath": "C:\\soft\\hephaestus\\src\\Commons\\Commons.csproj",
+        "projectPath": "c:\\soft\\hephaestus\\src\\Commons\\Commons.csproj",
         "packagesPath": "C:\\Users\\k\\.nuget\\packages",
-        "outputPath": "C:\\soft\\hephaestus\\src\\Commons\\obj\\",
+        "outputPath": "c:\\soft\\hephaestus\\src\\Commons\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\soft\\hephaestus\\src\\NuGet.Config",
+          "c:\\soft\\hephaestus\\src\\NuGet.Config",
           "C:\\Users\\k\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
@@ -87,8 +87,8 @@
           "net9.0": {
             "targetAlias": "net9.0",
             "projectReferences": {
-              "C:\\soft\\hephaestus\\src\\Commons\\Commons.csproj": {
-                "projectPath": "C:\\soft\\hephaestus\\src\\Commons\\Commons.csproj"
+              "c:\\soft\\hephaestus\\src\\Commons\\Commons.csproj": {
+                "projectPath": "c:\\soft\\hephaestus\\src\\Commons\\Commons.csproj"
               }
             }
           }
@@ -128,17 +128,17 @@
         }
       }
     },
-    "C:\\soft\\hephaestus\\src\\Packer\\Packer.csproj": {
+    "c:\\soft\\hephaestus\\src\\Packer\\Packer.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\soft\\hephaestus\\src\\Packer\\Packer.csproj",
+        "projectUniqueName": "c:\\soft\\hephaestus\\src\\Packer\\Packer.csproj",
         "projectName": "Packer",
-        "projectPath": "C:\\soft\\hephaestus\\src\\Packer\\Packer.csproj",
+        "projectPath": "c:\\soft\\hephaestus\\src\\Packer\\Packer.csproj",
         "packagesPath": "C:\\Users\\k\\.nuget\\packages",
-        "outputPath": "C:\\soft\\hephaestus\\src\\Packer\\obj\\",
+        "outputPath": "c:\\soft\\hephaestus\\src\\Packer\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\soft\\hephaestus\\src\\NuGet.Config",
+          "c:\\soft\\hephaestus\\src\\NuGet.Config",
           "C:\\Users\\k\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
