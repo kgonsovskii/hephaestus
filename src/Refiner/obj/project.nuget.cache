@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "Ato74ZCnjjs=",
+  "dgSpecHash": "Avq5fuzrbKo=",
   "success": true,
-  "projectFilePath": "c:\\soft\\newway\\hephaestus\\src\\Refiner\\Refiner.csproj",
+  "projectFilePath": "C:\\soft\\newway\\hephaestus\\src\\Refiner\\Refiner.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\k\\.nuget\\packages\\microsoft.extensions.configuration\\9.0.0\\microsoft.extensions.configuration.9.0.0.nupkg.sha512",
     "C:\\Users\\k\\.nuget\\packages\\microsoft.extensions.configuration.abstractions\\9.0.0\\microsoft.extensions.configuration.abstractions.9.0.0.nupkg.sha512",

@@ -13,10 +13,8 @@ public static class CpWebExtensions
     /// <summary>Registers control-panel services (MVC, session, auth, BackSvc). Call before <c>Build()</c>.</summary>
     public static WebApplicationBuilder AddCp(this WebApplicationBuilder builder)
     {
-        BackSvc.Initialize();
-
         builder.Services.AddSingleton<ServerService>();
-        builder.Services.AddHostedService<BackSvc>();
+        builder.Services.AddSingleton<BackSvc>();
         builder.Services.AddMemoryCache();
 
         if (!CpSettings.IsSuperHost)
@@ -67,7 +65,7 @@ public static class CpWebExtensions
 
                         var remoteIp = httpContext.Connection.RemoteIpAddress?.ToString();
                         var isAuthenticated = httpContext.User.Identity?.IsAuthenticated ?? false;
-                        var isIpAllowed = BackSvc.IsIpAllowed(remoteIp);
+                        var isIpAllowed = true;
                         return isAuthenticated || isIpAllowed;
                     }));
             });

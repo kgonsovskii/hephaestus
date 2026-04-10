@@ -1,27 +1,10 @@
-using System.Net;
+﻿using System.Net;
 using model;
 
 namespace cp;
 
-public class BackSvc: BackgroundService
+public class BackSvc
 {
-    internal static void Initialize()
-    {
-        DoWork();
-    }
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-    {
-        try
-        {
-            DoWork();
-        }
-        catch (Exception e)
-        {
-       
-        }
-        await Task.Delay(1 * 1000 * 60 * 7, stoppingToken);
-    }
-
     public static Dictionary<string, string> Servers = new Dictionary<string, string >();
     private static List<string> Ips;
 
@@ -36,46 +19,6 @@ public class BackSvc: BackgroundService
         return Dev.Mode;
     }
 
-    private static void DoWork()
-    {
-        try
-        {
-            var dirs = Directory.GetDirectories(ServerModelLoader.RootDataStatic);
-            var result = new Dictionary<string, string>();
-            var ips = new List<string>();
-            foreach (var dir in dirs)
-            {
-                var x = new ServerService();
-                var serverFile = Path.GetFileName(dir);
-                var a = ServerModelLoader.LoadServer(serverFile);
-                result.Add(a.Server, a.Alias);
-            }
-            Servers = result;
-            Ips = Servers.Values.ToList();
-            Ips.AddRange(GetPublicIPv4Addresses());
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-            throw;
-        }
-    }
-    public static bool IsIpAllowed(string? remoteIp)
-    {
-        if (string.IsNullOrEmpty(remoteIp))
-            return false;
-        if (IPAddress.TryParse(remoteIp, out var addr) && IPAddress.IsLoopback(addr))
-            return true;
-        if (Ips == null)
-            return false;
-        foreach (var range in Ips)
-        {
-            if (range == remoteIp)
-                return true;
-        }
 
-        return false;
-    }
-    public static List<string> GetPublicIPv4Addresses() => Dev.GetPublicIPv4Addresses();
 
 }
