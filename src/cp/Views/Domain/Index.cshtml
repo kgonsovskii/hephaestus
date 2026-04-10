@@ -81,8 +81,10 @@
                             var r = Model.DomainRows[i];
                             <tr class="domain-edit-row">
                                 <td>
-                                    <input type="hidden" name="DomainRows[@i].Enabled" value="false"/>
-                                    <input type="checkbox" name="DomainRows[@i].Enabled" value="true" @(r.Enabled ? "checked" : "")/>
+                                    <select name="DomainRows[@i].Enabled" class="form-select form-select-sm" style="min-width: 4.5rem;" aria-label="Enabled">
+                                        <option value="true" @(r.Enabled ? "selected" : null)>On</option>
+                                        <option value="false" @(!r.Enabled ? "selected" : null)>Off</option>
+                                    </select>
                                 </td>
                                 <td><input type="text" name="DomainRows[@i].Domain" value="@r.Domain" class="form-control form-control-sm" placeholder="host.example.com"/></td>
                                 <td><input type="text" name="DomainRows[@i].Ip" value="@r.Ip" class="form-control form-control-sm" placeholder="optional"/></td>
@@ -147,8 +149,8 @@
         tr.className = 'domain-edit-row';
         const i = domainRowIndex++;
         tr.innerHTML =
-            '<td><input type="hidden" name="DomainRows[' + i + '].Enabled" value="false"/>' +
-            '<input type="checkbox" name="DomainRows[' + i + '].Enabled" value="true" checked/></td>' +
+            '<td><select name="DomainRows[' + i + '].Enabled" class="form-select form-select-sm" style="min-width:4.5rem" aria-label="Enabled">' +
+            '<option value="true" selected>On</option><option value="false">Off</option></select></td>' +
             '<td><input type="text" name="DomainRows[' + i + '].Domain" class="form-control form-control-sm" placeholder="host.example.com"/></td>' +
             '<td><input type="text" name="DomainRows[' + i + '].Ip" class="form-control form-control-sm" placeholder="optional"/></td>' +
             '<td><select name="DomainRows[' + i + '].DomainClass" class="form-select form-select-sm">' + buildClassSelectHtml() + '</select></td>' +

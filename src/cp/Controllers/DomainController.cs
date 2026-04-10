@@ -93,11 +93,10 @@ public class DomainController : BaseController
         }
 
         await _domains.SaveDomainsAsync(list.Select(r => r.ToDomainRecord()).ToList(), cancellationToken).ConfigureAwait(false);
-        if (added > 0)
-            _hostsChanged.NotifyHostsChanged();
+        _hostsChanged.NotifyHostsChanged();
 
         TempData[TempDataMessageKey] = added == 0
-            ? "No new domains added (duplicates or empty lines skipped)."
+            ? "No new domains added (duplicates or empty lines skipped); hosted sync will run shortly."
             : $"Added {added} domain(s); hosted sync will run shortly.";
         return RedirectToAction(nameof(Index));
     }
