@@ -13,6 +13,8 @@ public interface IDomainMaintenance : IMaintenance
 /// <summary>
 /// Aligns Technitium with <c>domains.json</c>: creates/deletes <b>Primary</b> zones to match enabled rows (minus ignore list),
 /// optionally applies global DNS forwarders and recursion policy, then sets A/AAAA at each name (TTL from Technitium default record TTL in Settings).
+/// For each zone, also ensures the zone apex and a <c>*.zone</c> wildcard get A/AAAA (same targets as the canonical row for that zone; apex row preferred when present),
+/// then applies per-row records so explicit hostnames can override. Wildcard sync does not request PTR (not meaningful for <c>*</c>).
 /// Skips names in <c>domains-ignore.json</c> (next to <c>domains.json</c> under the Hephaestus data root). Does not delete Technitium <c>internal</c> zones.
 /// When a domain has no <c>ip</c>, uses <see cref="NetworkAddressPreference"/> for both v4 and v6.
 /// When <c>ip</c> lists only IPv4, still fills IPv6 from <see cref="NetworkAddressPreference"/> so AAAA can be published.
@@ -151,6 +153,46 @@ public sealed class DomainMaintenance : IDomainMaintenance
                     _logger.LogWarning(ex, "Could not DNSSEC-sign Technitium zone {Zone}.", name);
                 }
             }
+        }
+
+        // Apex + wildcard per zone so every subdomain resolves without listing each host (explicit rows below may override).
+        var canonicalByZone = new Dictionary<string, Domain.Models.DomainRecord>(StringComparer.OrdinalIgnoreCase);
+        foreach (var row in records)
+        {
+            var fqdn = row.Domain.Trim();
+            if (fqdn.Length == 0 || ignored.Contains(fqdn))
+                continue;
+            var zone = TechnitiumDnsClient.FindZoneForFqdn(fqdn, zoneNames);
+            if (zone == null)
+                continue;
+            if (!canonicalByZone.TryGetValue(zone, out var existing))
+            {
+                canonicalByZone[zone] = row;
+                continue;
+            }
+
+            if (string.Equals(fqdn.TrimEnd('.'), zone.TrimEnd('.'), StringComparison.OrdinalIgnoreCase))
+                canonicalByZone[zone] = row;
+        }
+
+        foreach (var pair in canonicalByZone)
+        {
+            var zone = pair.Key;
+            var row = pair.Value;
+            ParseTargetAddresses(row.Ip, out var v4, out var v6);
+            var apexFqdn = zone.TrimEnd('.');
+            var wildcardFqdn = TechnitiumDnsClient.WildcardFqdn(zone);
+            _logger.LogInformation(
+                "Technitium DNS sync zone baseline {Zone}: apex {Apex} + wildcard {Wildcard} IPv4={Ipv4} IPv6={Ipv6}",
+                zone,
+                apexFqdn,
+                wildcardFqdn,
+                v4?.ToString() ?? "-",
+                v6?.ToString() ?? "-");
+            await _dns.SyncAaaaAsync(token, apexFqdn, zone, v4, v6, opts.PtrEnabled, cancellationToken)
+                .ConfigureAwait(false);
+            await _dns.SyncAaaaAsync(token, wildcardFqdn, zone, v4, v6, ptrAndReverseZone: false, cancellationToken)
+                .ConfigureAwait(false);
         }
 
         foreach (var row in records)

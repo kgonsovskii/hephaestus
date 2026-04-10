@@ -137,6 +137,13 @@ public sealed class TechnitiumDnsClient
         return null;
     }
 
+    /// <summary>FQDN for a wildcard under <paramref name="zoneName"/> (e.g. <c>example.com</c> → <c>*.example.com</c>).</summary>
+    public static string WildcardFqdn(string zoneName)
+    {
+        var z = zoneName.Trim().TrimEnd('.');
+        return "*." + z;
+    }
+
     public async Task SyncAaaaAsync(
         string token,
         string fqdn,
