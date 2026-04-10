@@ -34,22 +34,26 @@
         <div class="card-header"><strong>Bulk add</strong></div>
         <div class="card-body">
             <form method="post" action="@Url.Action("Bulk", "Domain")">
-                <div class="mb-2">
-                    <label class="form-label">Hostnames (one per line)</label>
-                    <textarea name="bulkDomainLines" class="form-control font-monospace" rows="6" placeholder="host1.example.com&#10;host2.example.com"></textarea>
+                <div class="row g-2 align-items-start flex-column flex-md-row">
+                    <div class="col" style="min-width: 0;">
+                        <label class="form-label mb-1">Hostnames (one per line)</label>
+                        <textarea name="bulkDomainLines" class="form-control font-monospace" rows="6" placeholder="host1.example.com&#10;host2.example.com"></textarea>
+                    </div>
+                    <div class="col-12 col-md-auto d-flex flex-column gap-2" style="width: 13rem; max-width: 100%;">
+                        <div>
+                            <label class="form-label mb-1" for="bulkClassSelect">Class</label>
+                            <select id="bulkClassSelect" name="bulkClass" class="form-select" title="Class for all new rows">
+                                <option value="">(default → analytics)</option>
+                                @foreach (var c in Model.ClassFolderNames)
+                                {
+                                    var sel = string.Equals(c, WebSiteLayout.DefaultDomainClassFolderName, StringComparison.OrdinalIgnoreCase);
+                                    <option value="@c" @(sel ? "selected" : null)>@c</option>
+                                }
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-secondary w-100">Add domains</button>
+                    </div>
                 </div>
-                <div class="mb-2">
-                    <label class="form-label">Class for all new rows</label>
-                    <select name="bulkClass" class="form-select" style="max-width: 20rem">
-                        <option value="">(default → analytics)</option>
-                        @foreach (var c in Model.ClassFolderNames)
-                        {
-                            var sel = string.Equals(c, WebSiteLayout.DefaultDomainClassFolderName, StringComparison.OrdinalIgnoreCase);
-                            <option value="@c" @(sel ? "selected" : null)>@c</option>
-                        }
-                    </select>
-                </div>
-                <button type="submit" class="btn btn-secondary">Add domains</button>
             </form>
         </div>
     </div>
