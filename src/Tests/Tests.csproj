@@ -18,7 +18,6 @@
       <ProjectReference Include="..\cp\cp.csproj" />
       <ProjectReference Include="..\model\model.csproj" />
       <ProjectReference Include="..\Refiner\Refiner.csproj" />
-      <ProjectReference Include="..\TroyanBuilder\TroyanBuilder.csproj" />
     </ItemGroup>
 
     <ItemGroup>

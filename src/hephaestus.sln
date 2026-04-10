@@ -18,8 +18,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "stuff", "stuff", "{3B6BF360
 		php\download.php = php\download.php
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TroyanBuilder", "TroyanBuilder\TroyanBuilder.csproj", "{23BA5BE3-4C29-4A88-8669-713F80CB85BB}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{0F5E06DE-DE2F-4497-B093-C248AD257E86}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Packer", "Packer\Packer.csproj", "{434EFAE8-FFD7-4458-861E-1EB2CEA0B5C1}"
@@ -71,10 +69,6 @@ Global
 		{7524DAF6-7B3C-45DA-8404-745F2DE85E8A}.Debug|x64.Build.0 = Debug|x64
 		{7524DAF6-7B3C-45DA-8404-745F2DE85E8A}.Release|x64.ActiveCfg = Release|x64
 		{7524DAF6-7B3C-45DA-8404-745F2DE85E8A}.Release|x64.Build.0 = Release|x64
-		{23BA5BE3-4C29-4A88-8669-713F80CB85BB}.Debug|x64.ActiveCfg = Debug|x64
-		{23BA5BE3-4C29-4A88-8669-713F80CB85BB}.Debug|x64.Build.0 = Debug|x64
-		{23BA5BE3-4C29-4A88-8669-713F80CB85BB}.Release|x64.ActiveCfg = Release|x64
-		{23BA5BE3-4C29-4A88-8669-713F80CB85BB}.Release|x64.Build.0 = Release|x64
 		{0F5E06DE-DE2F-4497-B093-C248AD257E86}.Debug|x64.ActiveCfg = Debug|x64
 		{0F5E06DE-DE2F-4497-B093-C248AD257E86}.Debug|x64.Build.0 = Debug|x64
 		{0F5E06DE-DE2F-4497-B093-C248AD257E86}.Release|x64.ActiveCfg = Release|x64

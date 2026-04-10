@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "8La1kk5fKZ8=",
+  "dgSpecHash": "bnn1SKk4HyA=",
   "success": true,
-  "projectFilePath": "c:\\soft\\newway\\hephaestus\\src\\cp\\cp.csproj",
+  "projectFilePath": "C:\\soft\\newway\\hephaestus\\src\\cp\\cp.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\k\\.nuget\\packages\\microsoft.extensions.dependencyinjection.abstractions\\8.0.2\\microsoft.extensions.dependencyinjection.abstractions.8.0.2.nupkg.sha512",
     "C:\\Users\\k\\.nuget\\packages\\microsoft.extensions.logging.abstractions\\8.0.2\\microsoft.extensions.logging.abstractions.8.0.2.nupkg.sha512",

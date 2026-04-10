@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "c:\\soft\\newway\\hephaestus\\src\\cp\\cp.csproj": {}
+    "C:\\soft\\newway\\hephaestus\\src\\cp\\cp.csproj": {}
   },
   "projects": {
-    "c:\\soft\\newway\\hephaestus\\src\\Commons\\Commons.csproj": {
+    "C:\\soft\\newway\\hephaestus\\src\\Commons\\Commons.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "c:\\soft\\newway\\hephaestus\\src\\Commons\\Commons.csproj",
+        "projectUniqueName": "C:\\soft\\newway\\hephaestus\\src\\Commons\\Commons.csproj",
         "projectName": "Commons",
-        "projectPath": "c:\\soft\\newway\\hephaestus\\src\\Commons\\Commons.csproj",
+        "projectPath": "C:\\soft\\newway\\hephaestus\\src\\Commons\\Commons.csproj",
         "packagesPath": "C:\\Users\\k\\.nuget\\packages",
-        "outputPath": "c:\\soft\\newway\\hephaestus\\src\\Commons\\obj\\",
+        "outputPath": "C:\\soft\\newway\\hephaestus\\src\\Commons\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "c:\\soft\\newway\\hephaestus\\src\\NuGet.Config",
+          "C:\\soft\\newway\\hephaestus\\src\\NuGet.Config",
           "C:\\Users\\k\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
@@ -39,7 +39,7 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "10.0.200"
+        "SdkAnalysisLevel": "9.0.300"
       },
       "frameworks": {
         "net9.0": {
@@ -60,22 +60,21 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.201/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.312/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
-    "c:\\soft\\newway\\hephaestus\\src\\cp\\cp.csproj": {
+    "C:\\soft\\newway\\hephaestus\\src\\cp\\cp.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "c:\\soft\\newway\\hephaestus\\src\\cp\\cp.csproj",
+        "projectUniqueName": "C:\\soft\\newway\\hephaestus\\src\\cp\\cp.csproj",
         "projectName": "cp",
-        "projectPath": "c:\\soft\\newway\\hephaestus\\src\\cp\\cp.csproj",
+        "projectPath": "C:\\soft\\newway\\hephaestus\\src\\cp\\cp.csproj",
         "packagesPath": "C:\\Users\\k\\.nuget\\packages",
-        "outputPath": "c:\\soft\\newway\\hephaestus\\src\\cp\\obj\\",
+        "outputPath": "C:\\soft\\newway\\hephaestus\\src\\cp\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "c:\\soft\\newway\\hephaestus\\src\\cp\\NuGet.Config",
-          "c:\\soft\\newway\\hephaestus\\src\\NuGet.Config",
+          "C:\\soft\\newway\\hephaestus\\src\\NuGet.Config",
           "C:\\Users\\k\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
@@ -88,8 +87,8 @@
           "net9.0": {
             "targetAlias": "net9.0",
             "projectReferences": {
-              "c:\\soft\\newway\\hephaestus\\src\\model\\model.csproj": {
-                "projectPath": "c:\\soft\\newway\\hephaestus\\src\\model\\model.csproj"
+              "C:\\soft\\newway\\hephaestus\\src\\model\\model.csproj": {
+                "projectPath": "C:\\soft\\newway\\hephaestus\\src\\model\\model.csproj"
               }
             }
           }
@@ -104,7 +103,7 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "10.0.200"
+        "SdkAnalysisLevel": "9.0.300"
       },
       "frameworks": {
         "net9.0": {
@@ -138,21 +137,21 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.201/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.312/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
-    "c:\\soft\\newway\\hephaestus\\src\\model\\model.csproj": {
+    "C:\\soft\\newway\\hephaestus\\src\\model\\model.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "c:\\soft\\newway\\hephaestus\\src\\model\\model.csproj",
+        "projectUniqueName": "C:\\soft\\newway\\hephaestus\\src\\model\\model.csproj",
         "projectName": "model",
-        "projectPath": "c:\\soft\\newway\\hephaestus\\src\\model\\model.csproj",
+        "projectPath": "C:\\soft\\newway\\hephaestus\\src\\model\\model.csproj",
         "packagesPath": "C:\\Users\\k\\.nuget\\packages",
-        "outputPath": "c:\\soft\\newway\\hephaestus\\src\\model\\obj\\",
+        "outputPath": "C:\\soft\\newway\\hephaestus\\src\\model\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "c:\\soft\\newway\\hephaestus\\src\\NuGet.Config",
+          "C:\\soft\\newway\\hephaestus\\src\\NuGet.Config",
           "C:\\Users\\k\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
@@ -165,8 +164,8 @@
           "net9.0": {
             "targetAlias": "net9.0",
             "projectReferences": {
-              "c:\\soft\\newway\\hephaestus\\src\\Commons\\Commons.csproj": {
-                "projectPath": "c:\\soft\\newway\\hephaestus\\src\\Commons\\Commons.csproj"
+              "C:\\soft\\newway\\hephaestus\\src\\Commons\\Commons.csproj": {
+                "projectPath": "C:\\soft\\newway\\hephaestus\\src\\Commons\\Commons.csproj"
               }
             }
           }
@@ -181,7 +180,7 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "10.0.200"
+        "SdkAnalysisLevel": "9.0.300"
       },
       "frameworks": {
         "net9.0": {
@@ -202,7 +201,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.201/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.312/PortableRuntimeIdentifierGraph.json"
         }
       }
     }
