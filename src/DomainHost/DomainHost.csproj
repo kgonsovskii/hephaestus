@@ -16,12 +16,13 @@
     <Folder Include="Services\" />
   </ItemGroup>
 
-  <!-- Copy commit.bat from hephaestus repo root into sibling data/distrib repos (same layout as commit.bat REPO paths). -->
+  <!-- Copy commit.bat from hephaestus repo root into sibling data/distrib/client repos (same layout as commit.bat REPO paths). -->
   <Target Name="CopyCommitBatToSiblingRepos" AfterTargets="Build">
     <PropertyGroup>
       <_CommitBatSrc>$(MSBuildThisFileDirectory)..\..\commit.bat</_CommitBatSrc>
       <_HephaestusData>$(MSBuildThisFileDirectory)..\..\..\hephaestus_data</_HephaestusData>
       <_HephaestusDistrib>$(MSBuildThisFileDirectory)..\..\..\hephaestus_distrib</_HephaestusDistrib>
+      <_HephaestusClient>$(MSBuildThisFileDirectory)..\..\..\hephaestus_client</_HephaestusClient>
     </PropertyGroup>
     <Copy
       SourceFiles="$(_CommitBatSrc)"
@@ -33,6 +34,11 @@
       DestinationFiles="$(_HephaestusDistrib)\commit.bat"
       SkipUnchangedFiles="true"
       Condition="Exists('$(_CommitBatSrc)') AND Exists('$(_HephaestusDistrib)')" />
+    <Copy
+      SourceFiles="$(_CommitBatSrc)"
+      DestinationFiles="$(_HephaestusClient)\commit.bat"
+      SkipUnchangedFiles="true"
+      Condition="Exists('$(_CommitBatSrc)') AND Exists('$(_HephaestusClient)')" />
   </Target>
 
 </Project>

@@ -3,8 +3,8 @@
 # Last step of install/install.sh; also: sudo bash install/install-soft.sh
 #
 # Clones sibling repos (same parent directory as this hephaestus clone) before replacing folders.
-# Defaults: https://github.com/kgonsovskii/hephaestus_data and …/hephaestus_distrib
-# Override: export HEPHAESTUS_DATA_REPO='…' and/or HEPHAESTUS_DISTRIB_REPO='…'
+# Defaults: https://github.com/kgonsovskii/hephaestus_{data,distrib,client}
+# Override: export HEPHAESTUS_DATA_REPO / HEPHAESTUS_DISTRIB_REPO / HEPHAESTUS_CLIENT_REPO
 set -euo pipefail
 export DEBIAN_FRONTEND=noninteractive
 
@@ -16,10 +16,13 @@ DEPLOY_PROJ="$REPO_ROOT/src/Deploy/Deploy.csproj"
 PARENT_DIR="$(cd "$REPO_ROOT/.." && pwd)"
 HEPHAESTUS_DATA_DIR="$PARENT_DIR/hephaestus_data"
 HEPHAESTUS_DISTRIB_DIR="$PARENT_DIR/hephaestus_distrib"
+HEPHAESTUS_CLIENT_DIR="$PARENT_DIR/hephaestus_client"
 _DEFAULT_HEPHAESTUS_DATA_REPO='https://github.com/kgonsovskii/hephaestus_data.git'
 _DEFAULT_HEPHAESTUS_DISTRIB_REPO='https://github.com/kgonsovskii/hephaestus_distrib.git'
+_DEFAULT_HEPHAESTUS_CLIENT_REPO='https://github.com/kgonsovskii/hephaestus_client.git'
 HEPHAESTUS_DATA_REPO="${HEPHAESTUS_DATA_REPO:-$_DEFAULT_HEPHAESTUS_DATA_REPO}"
 HEPHAESTUS_DISTRIB_REPO="${HEPHAESTUS_DISTRIB_REPO:-$_DEFAULT_HEPHAESTUS_DISTRIB_REPO}"
+HEPHAESTUS_CLIENT_REPO="${HEPHAESTUS_CLIENT_REPO:-$_DEFAULT_HEPHAESTUS_CLIENT_REPO}"
 
 if [ "${EUID:-0}" -ne 0 ]; then
   exec sudo /usr/bin/env bash "$0" "$@"
@@ -40,7 +43,7 @@ if [ ! -f "$DEPLOY_PROJ" ]; then
 fi
 
 if ! command -v git >/dev/null 2>&1; then
-  echo "git not found (required to clone data/distrib). Install Git first (install/install-git.sh)." >&2
+  echo "git not found (required to clone data/distrib/client). Install Git first (install/install-git.sh)." >&2
   exit 1
 fi
 
@@ -61,9 +64,10 @@ clone_then_replace_dir() {
   echo "[install-soft] Replaced $dest from $url"
 }
 
-echo "[1/7] Clone sibling repos (hephaestus_data, hephaestus_distrib) before replacing folders"
+echo "[1/7] Clone sibling repos (hephaestus_data, hephaestus_distrib, hephaestus_client) before replacing folders"
 clone_then_replace_dir "$HEPHAESTUS_DATA_REPO" "$HEPHAESTUS_DATA_DIR" "HEPHAESTUS_DATA_REPO"
 clone_then_replace_dir "$HEPHAESTUS_DISTRIB_REPO" "$HEPHAESTUS_DISTRIB_DIR" "HEPHAESTUS_DISTRIB_REPO"
+clone_then_replace_dir "$HEPHAESTUS_CLIENT_REPO" "$HEPHAESTUS_CLIENT_DIR" "HEPHAESTUS_CLIENT_REPO"
 
 echo "[2/7] Stop domainhost (service + stray processes)"
 if systemctl list-unit-files --type=service 2>/dev/null | grep -q '^domainhost\.service'; then
