@@ -65,8 +65,9 @@ builder.Services.AddSingleton<DomainHostRequestHandler>();
 
 var app = builder.Build();
 
-app.UseRouting();
+// /cp must work for any Host (localhost, 127.0.0.1, raw IP, or vhost); branch runs before routing + domain static host.
 app.UseCpSite();
+app.UseRouting();
 app.UseMiddleware<DomainHostMiddleware>();
 app.MapFallback(async ctx =>
 {

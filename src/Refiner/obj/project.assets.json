@@ -1655,14 +1655,14 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\soft\\newway\\hephaestus\\src\\Refiner\\Refiner.csproj",
+      "projectUniqueName": "c:\\soft\\newway\\hephaestus\\src\\Refiner\\Refiner.csproj",
       "projectName": "Refiner",
-      "projectPath": "C:\\soft\\newway\\hephaestus\\src\\Refiner\\Refiner.csproj",
+      "projectPath": "c:\\soft\\newway\\hephaestus\\src\\Refiner\\Refiner.csproj",
       "packagesPath": "C:\\Users\\k\\.nuget\\packages",
-      "outputPath": "C:\\soft\\newway\\hephaestus\\src\\Refiner\\obj\\",
+      "outputPath": "c:\\soft\\newway\\hephaestus\\src\\Refiner\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\soft\\newway\\hephaestus\\src\\NuGet.Config",
+        "c:\\soft\\newway\\hephaestus\\src\\NuGet.Config",
         "C:\\Users\\k\\AppData\\Roaming\\NuGet\\NuGet.Config"
       ],
       "originalTargetFrameworks": [
@@ -1675,14 +1675,14 @@
         "net9.0": {
           "targetAlias": "net9.0",
           "projectReferences": {
-            "C:\\soft\\newway\\hephaestus\\src\\Db\\Db.csproj": {
-              "projectPath": "C:\\soft\\newway\\hephaestus\\src\\Db\\Db.csproj"
+            "c:\\soft\\newway\\hephaestus\\src\\Db\\Db.csproj": {
+              "projectPath": "c:\\soft\\newway\\hephaestus\\src\\Db\\Db.csproj"
             },
-            "C:\\soft\\newway\\hephaestus\\src\\Domain\\Domain.csproj": {
-              "projectPath": "C:\\soft\\newway\\hephaestus\\src\\Domain\\Domain.csproj"
+            "c:\\soft\\newway\\hephaestus\\src\\Domain\\Domain.csproj": {
+              "projectPath": "c:\\soft\\newway\\hephaestus\\src\\Domain\\Domain.csproj"
             },
-            "C:\\soft\\newway\\hephaestus\\src\\model\\model.csproj": {
-              "projectPath": "C:\\soft\\newway\\hephaestus\\src\\model\\model.csproj"
+            "c:\\soft\\newway\\hephaestus\\src\\model\\model.csproj": {
+              "projectPath": "c:\\soft\\newway\\hephaestus\\src\\model\\model.csproj"
             }
           }
         }
@@ -1697,7 +1697,7 @@
         "auditLevel": "low",
         "auditMode": "direct"
       },
-      "SdkAnalysisLevel": "9.0.300"
+      "SdkAnalysisLevel": "10.0.200"
     },
     "frameworks": {
       "net9.0": {
@@ -1732,7 +1732,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.312/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.201/PortableRuntimeIdentifierGraph.json"
       }
     }
   }

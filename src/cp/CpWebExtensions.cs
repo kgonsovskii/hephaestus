@@ -1,6 +1,7 @@
 using cp.Controllers;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using model;
 
@@ -75,11 +76,43 @@ public static class CpWebExtensions
         return builder;
     }
 
-    /// <summary>Maps the cp middleware branch at <see cref="CpSettings.SitePathPrefix"/> (e.g. <c>/cp</c>). Call after <c>Build()</c>, before host middleware that should not see <c>/cp</c> requests.</summary>
+    /// <summary>
+    /// Host-agnostic control panel: any Host header (localhost, 127.0.0.1, LAN IP, or a vhost) + path under
+    /// <see cref="CpSettings.SitePathPrefix"/> is handled here. Uses <c>UseWhen</c> + path rewrite (not <c>Map</c> alone)
+    /// so stripped paths like <c>/</c> match MVC after <c>/cp</c>.
+    /// </summary>
     public static WebApplication UseCpSite(this WebApplication app)
     {
-        app.Map(CpSettings.SitePathPrefix, ConfigureCpBranch);
+        var prefix = new PathString(CpSettings.SitePathPrefix);
+        app.UseWhen(
+            ctx => ctx.Request.Path.StartsWithSegments(prefix, StringComparison.OrdinalIgnoreCase, out _, out _),
+            branch =>
+            {
+                branch.Use(RewriteCpPrefix);
+                ConfigureCpBranch(branch);
+            });
         return app;
+    }
+
+    /// <summary>Move <c>/cp</c> to <see cref="HttpRequest.PathBase"/> and leave the remainder for MVC (exact <c>/cp</c> → path <c>/</c>).</summary>
+    private static async Task RewriteCpPrefix(HttpContext context, RequestDelegate next)
+    {
+        var prefix = new PathString(CpSettings.SitePathPrefix);
+        if (!context.Request.Path.StartsWithSegments(prefix, StringComparison.OrdinalIgnoreCase, out var matched, out var remaining))
+        {
+            await next(context).ConfigureAwait(false);
+            return;
+        }
+
+        PathString rest = remaining;
+        if (!rest.HasValue || string.IsNullOrEmpty(rest.Value))
+            rest = new PathString("/");
+        else if (rest.Value![0] != '/')
+            rest = new PathString("/" + rest.Value);
+
+        context.Request.Path = rest;
+        context.Request.PathBase = context.Request.PathBase.Add(matched);
+        await next(context).ConfigureAwait(false);
     }
 
     private static void ConfigureCpBranch(IApplicationBuilder cp)

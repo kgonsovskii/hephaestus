@@ -16,6 +16,14 @@
     <Folder Include="Services\" />
   </ItemGroup>
 
+  <!-- Same as RefinerTool: configuration (ConnectionStrings, DomainHost, Technitium, Refiner intervals). Without this, Stats maintenance skips (no ConnectionStrings:Default). -->
+  <ItemGroup>
+    <None Include="..\Commons\appsettings.json" Link="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </None>
+  </ItemGroup>
+
   <!-- Copy commit.bat from hephaestus repo root into sibling data/distrib/client repos (same layout as commit.bat REPO paths). -->
   <Target Name="CopyCommitBatToSiblingRepos" AfterTargets="Build">
     <PropertyGroup>
