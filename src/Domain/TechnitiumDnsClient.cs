@@ -29,6 +29,33 @@ public sealed class TechnitiumDnsClient
             ?? throw new InvalidOperationException("Technitium login: missing token.");
     }
 
+    /// <summary>
+    /// Sets global DNS forwarders for the Technitium server (<c>api/settings/set</c>).
+    /// A/AAAA record TTL is not set here; omit <c>ttl</c> on records so Technitium uses <c>defaultRecordTtl</c> from server settings.
+    /// </summary>
+    public async Task ApplyGlobalForwardersAsync(string token, TechnitiumOptions options, CancellationToken cancellationToken)
+    {
+        if (!options.ForwarderEnabled)
+            return;
+        var list = (options.Forwarders ?? "").Trim();
+        if (list.Length == 0)
+            return;
+        var url = $"api/settings/set?token={Q(token)}&forwarders={Q(list)}";
+        await ApiGetOkAsync(url, cancellationToken).ConfigureAwait(false);
+        _logger.LogDebug("Technitium global forwarders set to {Forwarders}", list);
+    }
+
+    /// <summary>Sets Technitium <c>recursion</c> (<c>api/settings/set</c>), e.g. <c>Allow</c> for all networks.</summary>
+    public async Task ApplyRecursionPolicyAsync(string token, TechnitiumOptions options, CancellationToken cancellationToken)
+    {
+        var policy = (options.Recursion ?? "").Trim();
+        if (policy.Length == 0)
+            return;
+        var url = $"api/settings/set?token={Q(token)}&recursion={Q(policy)}";
+        await ApiGetOkAsync(url, cancellationToken).ConfigureAwait(false);
+        _logger.LogDebug("Technitium recursion policy set to {Recursion}", policy);
+    }
+
     public async Task<IReadOnlyList<TechnitiumZoneSnapshot>> ListZonesAsync(string token, CancellationToken cancellationToken)
     {
         var url = $"api/zones/list?token={Q(token)}";
@@ -116,13 +143,12 @@ public sealed class TechnitiumDnsClient
         string zone,
         IPAddress? desiredV4,
         IPAddress? desiredV6,
-        int ttl,
         bool ptrAndReverseZone,
         CancellationToken cancellationToken)
     {
-        await SyncOneAsync(token, fqdn, zone, "A", desiredV4?.ToString(), ttl, ptrAndReverseZone, cancellationToken)
+        await SyncOneAsync(token, fqdn, zone, "A", desiredV4?.ToString(), ptrAndReverseZone, cancellationToken)
             .ConfigureAwait(false);
-        await SyncOneAsync(token, fqdn, zone, "AAAA", desiredV6?.ToString(), ttl, ptrAndReverseZone, cancellationToken)
+        await SyncOneAsync(token, fqdn, zone, "AAAA", desiredV6?.ToString(), ptrAndReverseZone, cancellationToken)
             .ConfigureAwait(false);
     }
 
@@ -132,7 +158,6 @@ public sealed class TechnitiumDnsClient
         string zone,
         string type,
         string? desiredIp,
-        int ttl,
         bool ptrAndReverseZone,
         CancellationToken cancellationToken)
     {
@@ -153,7 +178,7 @@ public sealed class TechnitiumDnsClient
         {
             var upd =
                 $"api/zones/records/update?token={Q(token)}&domain={Q(fqdn)}&zone={Q(zone)}&type={Q(type)}" +
-                $"&ipAddress={Q(existing)}&newIpAddress={Q(desiredIp)}&ttl={ttl}" + ptrQs;
+                $"&ipAddress={Q(existing)}&newIpAddress={Q(desiredIp)}" + ptrQs;
             await ApiGetOkAsync(upd, cancellationToken).ConfigureAwait(false);
             _logger.LogInformation("Technitium updated {Type} {Domain} -> {Ip}", type, fqdn, desiredIp);
         }
@@ -161,7 +186,7 @@ public sealed class TechnitiumDnsClient
         {
             var add =
                 $"api/zones/records/add?token={Q(token)}&domain={Q(fqdn)}&zone={Q(zone)}&type={Q(type)}" +
-                $"&ipAddress={Q(desiredIp)}&ttl={ttl}&overwrite=true" + ptrQs;
+                $"&ipAddress={Q(desiredIp)}&overwrite=true" + ptrQs;
             await ApiGetOkAsync(add, cancellationToken).ConfigureAwait(false);
             _logger.LogInformation("Technitium added {Type} {Domain} -> {Ip}", type, fqdn, desiredIp);
         }

@@ -12,7 +12,8 @@ public interface IDomainMaintenance : IMaintenance
 
 /// <summary>
 /// Aligns Technitium with <c>domains.json</c>: creates/deletes <b>Primary</b> zones to match enabled rows (minus ignore list),
-/// then sets A/AAAA at each name. Skips names in <c>domains-ignore.json</c>. Does not delete Technitium <c>internal</c> zones.
+/// optionally applies global DNS forwarders and recursion policy, then sets A/AAAA at each name (TTL from Technitium default record TTL in Settings).
+/// Skips names in <c>domains-ignore.json</c>. Does not delete Technitium <c>internal</c> zones.
 /// When a domain has no <c>ip</c>, uses <see cref="NetworkAddressPreference"/>.
 /// </summary>
 public sealed class DomainMaintenance : IDomainMaintenance
@@ -70,6 +71,24 @@ public sealed class DomainMaintenance : IDomainMaintenance
         }
 
         var token = await _dns.LoginAsync(opts.User, opts.Password, cancellationToken).ConfigureAwait(false);
+
+        try
+        {
+            await _dns.ApplyGlobalForwardersAsync(token, opts, cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Could not set Technitium global DNS forwarders.");
+        }
+
+        try
+        {
+            await _dns.ApplyRecursionPolicyAsync(token, opts, cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Could not set Technitium recursion policy.");
+        }
 
         var zoneSnapshots = await _dns.ListZonesAsync(token, cancellationToken).ConfigureAwait(false);
         var zoneNames = new HashSet<string>(zoneSnapshots.Select(z => z.Name), StringComparer.OrdinalIgnoreCase);
@@ -152,7 +171,7 @@ public sealed class DomainMaintenance : IDomainMaintenance
             }
 
             ParseTargetAddresses(row.Ip, out var v4, out var v6);
-            await _dns.SyncAaaaAsync(token, fqdn, zone, v4, v6, opts.RecordTtlSeconds, opts.PtrEnabled, cancellationToken)
+            await _dns.SyncAaaaAsync(token, fqdn, zone, v4, v6, opts.PtrEnabled, cancellationToken)
                 .ConfigureAwait(false);
         }
     }

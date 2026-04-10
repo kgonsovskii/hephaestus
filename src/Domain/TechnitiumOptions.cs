@@ -14,8 +14,20 @@ public sealed class TechnitiumOptions
 
     public string Password { get; set; } = "admin";
 
-    /// <summary>TTL in seconds for created/updated A/AAAA records when not overridden.</summary>
-    public int RecordTtlSeconds { get; set; } = 300;
+    /// <summary>
+    /// When true, sets Technitium global DNS forwarders (<c>api/settings/set</c> <c>forwarders</c>) each maintenance run.
+    /// When false, forwarders are not changed.
+    /// </summary>
+    public bool ForwarderEnabled { get; set; } = true;
+
+    /// <summary>Comma-separated forwarder addresses (Technitium format), e.g. <c>8.8.8.8</c> or <c>8.8.8.8,1.1.1.1</c>.</summary>
+    public string Forwarders { get; set; } = "8.8.8.8";
+
+    /// <summary>
+    /// Technitium Settings <c>recursion</c>: <c>Allow</c> resolves any domain (not restricted to private networks).
+    /// Other values: <c>AllowOnlyForPrivateNetworks</c>, <c>Deny</c>, <c>UseSpecifiedNetworkACL</c>. Empty = do not change.
+    /// </summary>
+    public string Recursion { get; set; } = "Allow";
 
     /// <summary>Sign primary zones with DNSSEC (<c>api/zones/dnssec/sign</c>) when created or still unsigned.</summary>
     public bool DnssecEnabled { get; set; } = true;
