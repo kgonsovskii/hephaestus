@@ -88,13 +88,13 @@ public static class NetworkAddressPreference
         return false;
     }
 
-    private static bool IsIpv6UniqueLocal(IPAddress a)
+    internal static bool IsIpv6UniqueLocal(IPAddress a)
     {
         var s = a.ToString();
         return s.StartsWith("fd", StringComparison.OrdinalIgnoreCase) || s.StartsWith("fc", StringComparison.OrdinalIgnoreCase);
     }
 
-    private static bool IsIpv6GlobalUnicast(IPAddress a)
+    internal static bool IsIpv6GlobalUnicast(IPAddress a)
     {
         // 2000::/3 global unicast; exclude documentation etc.
         var bytes = a.GetAddressBytes();

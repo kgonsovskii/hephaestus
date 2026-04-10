@@ -10003,6 +10003,7 @@
   },
   "projectFileDependencyGroups": {
     "net9.0": [
+      "Commons >= 1.0.0",
       "FluentAssertions >= 7.2.0",
       "HtmlAgilityPack >= 1.12.4",
       "MSTest.TestAdapter >= 4.0.2",
@@ -10040,6 +10041,9 @@
         "net9.0": {
           "targetAlias": "net9.0",
           "projectReferences": {
+            "C:\\soft\\hephaestus\\src\\Commons\\Commons.csproj": {
+              "projectPath": "C:\\soft\\hephaestus\\src\\Commons\\Commons.csproj"
+            },
             "C:\\soft\\hephaestus\\src\\cp\\cp.csproj": {
               "projectPath": "C:\\soft\\hephaestus\\src\\cp\\cp.csproj"
             },

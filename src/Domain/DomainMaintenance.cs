@@ -14,7 +14,8 @@ public interface IDomainMaintenance : IMaintenance
 /// Aligns Technitium with <c>domains.json</c>: creates/deletes <b>Primary</b> zones to match enabled rows (minus ignore list),
 /// optionally applies global DNS forwarders and recursion policy, then sets A/AAAA at each name (TTL from Technitium default record TTL in Settings).
 /// Skips names in <c>domains-ignore.json</c>. Does not delete Technitium <c>internal</c> zones.
-/// When a domain has no <c>ip</c>, uses <see cref="NetworkAddressPreference"/>.
+/// When a domain has no <c>ip</c>, uses <see cref="NetworkAddressPreference"/> for both v4 and v6.
+/// When <c>ip</c> lists only IPv4, still fills IPv6 from <see cref="NetworkAddressPreference"/> so AAAA can be published.
 /// </summary>
 public sealed class DomainMaintenance : IDomainMaintenance
 {
@@ -203,6 +204,13 @@ public sealed class DomainMaintenance : IDomainMaintenance
                 v4 = ip;
             else if (ip.AddressFamily == AddressFamily.InterNetworkV6)
                 v6 = ip;
+        }
+
+        // Explicit list may include only IPv4; still publish AAAA using this host's preferred IPv6 when available.
+        if (v6 == null)
+        {
+            NetworkAddressPreference.TryGetPreferredAddresses(out _, out var preferredV6);
+            v6 = preferredV6;
         }
     }
 }

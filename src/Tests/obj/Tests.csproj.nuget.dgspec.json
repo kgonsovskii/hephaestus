@@ -464,6 +464,9 @@
           "net9.0": {
             "targetAlias": "net9.0",
             "projectReferences": {
+              "C:\\soft\\hephaestus\\src\\Commons\\Commons.csproj": {
+                "projectPath": "C:\\soft\\hephaestus\\src\\Commons\\Commons.csproj"
+              },
               "C:\\soft\\hephaestus\\src\\cp\\cp.csproj": {
                 "projectPath": "C:\\soft\\hephaestus\\src\\cp\\cp.csproj"
               },
