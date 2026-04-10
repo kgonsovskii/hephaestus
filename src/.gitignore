@@ -67,6 +67,9 @@ built/
 # Local isolated `dotnet build -o` output folders (e.g. agent builds)
 **/_bld*/
 
+# Local `dotnet publish -o` test output (e.g. _pubtest, _pubtest2)
+**/_pubtest*
+
 # Visual Studio 2015 cache/options directory
 .vs/
 # Uncomment if you have tasks that create the project's static files in wwwroot
