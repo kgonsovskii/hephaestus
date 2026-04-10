@@ -9,6 +9,7 @@ public static class ServiceCollectionEx
     public static void AddDomainServices(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddSingleton<IDomainRepository, JsonFileDomainRepository>();
+        services.AddSingleton<IDomainHostsChangedSignal, DomainHostsChangedSignal>();
         services.Configure<DomainHostOptions>(
             configuration.GetSection(DomainHostOptions.SectionName));
         services.Configure<TechnitiumOptions>(

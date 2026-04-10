@@ -1,31 +1,43 @@
+using System.Threading.Channels;
+
 namespace Domain;
 
-/// <summary>Broadcast wake for <see cref="IDomainHostsChangedSignal"/> using a rotating <see cref="TaskCompletionSource{T}"/>.</summary>
+/// <summary>
+/// Wake signal with one queue per waiter so <see cref="NotifyHostsChanged"/> reliably reaches both
+/// Refiner (Technitium) and <see cref="DomainCatalogRefreshService"/>.
+/// </summary>
 public sealed class DomainHostsChangedSignal : IDomainHostsChangedSignal
 {
-    private readonly object _lock = new();
-    private TaskCompletionSource<bool> _pending = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    private static Channel<bool> CreateChannel() =>
+        Channel.CreateUnbounded<bool>(new UnboundedChannelOptions
+        {
+            SingleReader = true,
+            SingleWriter = false,
+            AllowSynchronousContinuations = false
+        });
+
+    private readonly Channel<bool> _refinerWake = CreateChannel();
+    private readonly Channel<bool> _catalogWake = CreateChannel();
 
     public void NotifyHostsChanged()
     {
-        TaskCompletionSource<bool> previous;
-        lock (_lock)
-        {
-            previous = _pending;
-            _pending = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-        }
-
-        previous.TrySetResult(true);
+        _refinerWake.Writer.TryWrite(true);
+        _catalogWake.Writer.TryWrite(true);
     }
 
-    public Task WhenHostsChangedAsync(CancellationToken cancellationToken = default)
-    {
-        TaskCompletionSource<bool> tcs;
-        lock (_lock)
-        {
-            tcs = _pending;
-        }
+    public Task WhenRefinerWakeAsync(CancellationToken cancellationToken = default) =>
+        _refinerWake.Reader.ReadAsync(cancellationToken).AsTask();
 
-        return tcs.Task.WaitAsync(cancellationToken);
+    public Task WhenCatalogWakeAsync(CancellationToken cancellationToken = default) =>
+        _catalogWake.Reader.ReadAsync(cancellationToken).AsTask();
+
+    public void DrainExtraRefinerSignals()
+    {
+        while (_refinerWake.Reader.TryRead(out _)) { }
+    }
+
+    public void DrainExtraCatalogSignals()
+    {
+        while (_catalogWake.Reader.TryRead(out _)) { }
     }
 }

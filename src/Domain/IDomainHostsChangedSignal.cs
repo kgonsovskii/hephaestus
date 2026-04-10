@@ -2,14 +2,23 @@ namespace Domain;
 
 /// <summary>
 /// Lets callers request an early run of hosted work that reacts to <c>domains.json</c> changes
-/// (<see cref="Refiner.RefinerBackgroundService"/> domain maintenance, <see cref="DomainCatalogRefreshService"/>).
-/// Does not run work inline — only wakes waiters so the next scheduled loop iteration runs soon.
+/// (Technitium sync loop and <see cref="DomainCatalogRefreshService"/>).
+/// Does not run work inline — only queues a wake so hosted loops skip the rest of their sleep.
 /// </summary>
 public interface IDomainHostsChangedSignal
 {
-    /// <summary>Wake any waiter (Refiner domain loop, catalog refresh) so they do not sleep the full interval.</summary>
+    /// <summary>Wake Refiner domain maintenance and catalog refresh (each gets one signal).</summary>
     void NotifyHostsChanged();
 
-    /// <summary>Completes when <see cref="NotifyHostsChanged"/> is called; multiple waiters on the same generation share one completion.</summary>
-    Task WhenHostsChangedAsync(CancellationToken cancellationToken = default);
+    /// <summary>Refiner <c>RunDomainLoopWithWakeAsync</c> waits on this after each Technitium run.</summary>
+    Task WhenRefinerWakeAsync(CancellationToken cancellationToken = default);
+
+    /// <summary><see cref="DomainCatalogRefreshService"/> waits on this between refreshes.</summary>
+    Task WhenCatalogWakeAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>After <see cref="WhenRefinerWakeAsync"/> wins a race, drops any extra refiner tokens (burst of saves → one early run).</summary>
+    void DrainExtraRefinerSignals();
+
+    /// <summary>After <see cref="WhenCatalogWakeAsync"/> wins a race, drops extra catalog tokens.</summary>
+    void DrainExtraCatalogSignals();
 }

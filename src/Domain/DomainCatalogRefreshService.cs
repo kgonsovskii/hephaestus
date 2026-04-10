@@ -10,16 +10,19 @@ public sealed class DomainCatalogRefreshService : BackgroundService
     private readonly DomainCatalog _catalog;
     private readonly ILogger<DomainCatalogRefreshService> _logger;
     private readonly TimeSpan _interval;
+    private readonly IDomainHostsChangedSignal _hostsChanged;
 
     public DomainCatalogRefreshService(
         IDomainRepository repository,
         DomainCatalog catalog,
         IOptions<DomainHostOptions> options,
-        ILogger<DomainCatalogRefreshService> logger)
+        ILogger<DomainCatalogRefreshService> logger,
+        IDomainHostsChangedSignal hostsChanged)
     {
         _repository = repository;
         _catalog = catalog;
         _logger = logger;
+        _hostsChanged = hostsChanged;
         var sec = Math.Clamp(options.Value.RefreshSeconds, 5, 3600);
         _interval = TimeSpan.FromSeconds(sec);
     }
@@ -28,14 +31,26 @@ public sealed class DomainCatalogRefreshService : BackgroundService
     {
         await RefreshOnce(stoppingToken).ConfigureAwait(false);
 
-        using var timer = new PeriodicTimer(_interval);
-        try
+        while (!stoppingToken.IsCancellationRequested)
         {
-            while (await timer.WaitForNextTickAsync(stoppingToken).ConfigureAwait(false))
-                await RefreshOnce(stoppingToken).ConfigureAwait(false);
-        }
-        catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
-        {
+            try
+            {
+                using var linked = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken);
+                var delayTask = Task.Delay(_interval, linked.Token);
+                var wakeTask = _hostsChanged.WhenCatalogWakeAsync(stoppingToken);
+                var winner = await Task.WhenAny(delayTask, wakeTask).ConfigureAwait(false);
+                if (winner == wakeTask)
+                {
+                    linked.Cancel();
+                    _hostsChanged.DrainExtraCatalogSignals();
+                }
+            }
+            catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+            {
+                break;
+            }
+
+            await RefreshOnce(stoppingToken).ConfigureAwait(false);
         }
     }
 

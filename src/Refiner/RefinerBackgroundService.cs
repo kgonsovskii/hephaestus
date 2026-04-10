@@ -17,25 +17,65 @@ public sealed class RefinerBackgroundService : BackgroundService
     private readonly IOptionsMonitor<RefinerOptions> _options;
     private readonly IStatsMaintenance _statsMaintenance;
     private readonly IDomainMaintenance _domainMaintenance;
+    private readonly IDomainHostsChangedSignal _hostsChanged;
 
     public RefinerBackgroundService(
         ILogger<RefinerBackgroundService> logger,
         IOptionsMonitor<RefinerOptions> options,
         IStatsMaintenance statsMaintenance,
-        IDomainMaintenance domainMaintenance)
+        IDomainMaintenance domainMaintenance,
+        IDomainHostsChangedSignal hostsChanged)
     {
         _logger = logger;
         _options = options;
         _statsMaintenance = statsMaintenance;
         _domainMaintenance = domainMaintenance;
+        _hostsChanged = hostsChanged;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         await Task.WhenAll(
                 RunLoopAsync(_statsMaintenance, () => _options.CurrentValue.StatsInterval, "stats", stoppingToken),
-                RunLoopAsync(_domainMaintenance, () => _options.CurrentValue.DomainInterval, "domain", stoppingToken))
+                RunDomainLoopWithWakeAsync(stoppingToken))
             .ConfigureAwait(false);
+    }
+
+    /// <summary>Same as stats loop, but sleeps until interval elapses <b>or</b> <see cref="IDomainHostsChangedSignal.NotifyHostsChanged"/>.</summary>
+    private async Task RunDomainLoopWithWakeAsync(CancellationToken stoppingToken)
+    {
+        while (!stoppingToken.IsCancellationRequested)
+        {
+            try
+            {
+                await _domainMaintenance.RunAsync(stoppingToken).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Refiner {Label} maintenance failed", "domain");
+            }
+
+            var interval = _options.CurrentValue.DomainInterval;
+            if (interval <= TimeSpan.Zero)
+                interval = TimeSpan.FromMinutes(1);
+
+            try
+            {
+                using var linked = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken);
+                var delayTask = Task.Delay(interval, linked.Token);
+                var wakeTask = _hostsChanged.WhenRefinerWakeAsync(stoppingToken);
+                var winner = await Task.WhenAny(delayTask, wakeTask).ConfigureAwait(false);
+                if (winner == wakeTask)
+                {
+                    linked.Cancel();
+                    _hostsChanged.DrainExtraRefinerSignals();
+                }
+            }
+            catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+            {
+                break;
+            }
+        }
     }
 
     private async Task RunLoopAsync(
