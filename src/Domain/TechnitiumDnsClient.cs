@@ -168,6 +168,10 @@ public sealed class TechnitiumDnsClient
         {
             if (existing != null)
                 await DeleteRecordAsync(token, fqdn, zone, type, existing, cancellationToken).ConfigureAwait(false);
+            else if (string.Equals(type, "AAAA", StringComparison.OrdinalIgnoreCase))
+                _logger.LogInformation(
+                    "Technitium AAAA not set for {Domain}: no IPv6 target (add v6 in domains.json ip or ensure a routable IPv6 via NetworkAddressPreference when ip is empty)",
+                    fqdn);
             return;
         }
 

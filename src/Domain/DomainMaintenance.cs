@@ -171,6 +171,12 @@ public sealed class DomainMaintenance : IDomainMaintenance
             }
 
             ParseTargetAddresses(row.Ip, out var v4, out var v6);
+            _logger.LogInformation(
+                "Technitium DNS sync {Domain}: IPv4={Ipv4} IPv6={Ipv6} zone={Zone} (AAAA is written only when IPv6 is set)",
+                fqdn,
+                v4?.ToString() ?? "-",
+                v6?.ToString() ?? "-",
+                zone);
             await _dns.SyncAaaaAsync(token, fqdn, zone, v4, v6, opts.PtrEnabled, cancellationToken)
                 .ConfigureAwait(false);
         }
