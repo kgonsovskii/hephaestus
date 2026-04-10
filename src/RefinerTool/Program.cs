@@ -1,3 +1,5 @@
+using Db;
+using Domain;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -7,10 +9,9 @@ try
 {
     var builder = Host.CreateApplicationBuilder(args);
 
-    builder.Services.Configure<RefinerOptions>(
-        builder.Configuration.GetSection(RefinerOptions.SectionName));
-    builder.Services.AddSingleton<IStatsMaintenance, StatsMaintenance>();
-    builder.Services.AddSingleton<IDomainMaintenance, DomainMaintenance>();
+    builder.Services.AddDomainServices(builder.Configuration);
+    builder.Services.AddDbServices(builder.Configuration);
+    builder.Services.AddRefiner(builder.Configuration);
 
     builder.Logging.ClearProviders();
     builder.Logging.AddConsole();

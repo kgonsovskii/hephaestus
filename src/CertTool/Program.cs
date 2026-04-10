@@ -3,6 +3,8 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text.Json;
 using Commons;
 
+namespace CertTool;
+
 internal static class Program
 {
     private const string SubjectName = "CN=Hephaestus LAN TLS,O=Hephaestus";

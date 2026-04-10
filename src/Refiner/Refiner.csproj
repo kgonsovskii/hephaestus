@@ -5,6 +5,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Db\Db.csproj" />
+    <ProjectReference Include="..\Domain\Domain.csproj" />
     <ProjectReference Include="..\model\model.csproj" />
   </ItemGroup>
 
@@ -12,7 +14,6 @@
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="$(PkgMicrosoftExtensionsVersion)" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="$(PkgMicrosoftExtensionsVersion)" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="$(PkgMicrosoftExtensionsVersion)" />
-    <PackageReference Include="Npgsql" Version="$(PkgNpgsqlVersion)" />
   </ItemGroup>
 
 </Project>

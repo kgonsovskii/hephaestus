@@ -1,0 +1,10 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="$(PkgMicrosoftExtensionsVersion)" />
+    <ProjectReference Include="..\Commons\Commons.csproj" />
+    <PackageReference Include="Npgsql" Version="$(PkgNpgsqlVersion)" />
+  </ItemGroup>
+
+</Project>

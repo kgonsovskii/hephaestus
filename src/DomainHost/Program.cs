@@ -1,20 +1,15 @@
 using System.Security.Cryptography.X509Certificates;
 using Commons;
-using DomainHost.Configuration;
-using DomainHost.Data;
-using DomainHost.Middleware;
-using DomainHost.Services;
+using Db;
+using Domain;
+using DomainHost;
 using Refiner;
-using Microsoft.AspNetCore.Server.Kestrel.Core;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.Configure<DomainHostOptions>(
-    builder.Configuration.GetSection(DomainHostOptions.SectionName));
-builder.Services.Configure<RefinerOptions>(
-    builder.Configuration.GetSection(RefinerOptions.SectionName));
-builder.Services.AddSingleton<IStatsMaintenance, StatsMaintenance>();
-builder.Services.AddSingleton<IDomainMaintenance, DomainMaintenance>();
+builder.Services.AddDomainServices(builder.Configuration);
+builder.Services.AddDbServices(builder.Configuration);
+builder.Services.AddRefiner(builder.Configuration);
 builder.Services.AddHostedService<RefinerBackgroundService>();
 
 var hostOpts = builder.Configuration.GetSection(DomainHostOptions.SectionName).Get<DomainHostOptions>()
@@ -59,13 +54,10 @@ builder.WebHost.ConfigureKestrel(options =>
     options.ListenAnyIP(httpsPort, listen => listen.UseHttps(serverCert));
 });
 
-builder.Services.AddSingleton<DomainCatalog>();
-builder.Services.AddSingleton<IDomainCatalog>(sp => sp.GetRequiredService<DomainCatalog>());
-builder.Services.AddSingleton<IWebContentPathProvider, WebContentPathProvider>();
-builder.Services.AddSingleton<IDomainRepository, JsonFileDomainRepository>();
+
 builder.Services.AddSingleton<IWebFileResolver, WebFileResolver>();
 builder.Services.AddSingleton<DomainHostRequestHandler>();
-builder.Services.AddHostedService<DomainCatalogRefreshService>();
+
 
 var app = builder.Build();
 

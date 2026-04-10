@@ -7,28 +7,62 @@
   If PowerShell buffers remote SSH output, use install\install-remote.bat (C# console via dotnet run).
 
 .PARAMETER Server
-  SSH host (default: 216.203.21.239).
+  SSH host (default when any switch is used: 216.203.21.239). Omit all three to read install-remote-creds.txt.
 
 .PARAMETER Login
-  SSH user (default: root).
+  SSH user (default when any switch is used: root).
 
 .PARAMETER Password
-  SSH password (default: set in script).
+  SSH password (default when any switch is used: legacy script default). Omit all three to read install-remote-creds.txt.
 
 .EXAMPLE
   powershell -File .\install\install-remote.ps1
+  (requires install\install-remote-creds.txt: three lines — host, login, password)
 .EXAMPLE
   powershell -File .\install\install-remote.ps1 -Server 10.0.0.5 -Login deploy -Password 'secret'
 #>
 [CmdletBinding()]
 param(
-    [string] $Server = "216.203.21.239",
-    [string] $Login = "root",
-    [string] $Password = "1!Ogviobhuetly"
+    [string] $Server,
+    [string] $Login,
+    [string] $Password
 )
+
+$credsPath = Join-Path $PSScriptRoot "install-remote-creds.txt"
+if ($PSBoundParameters.Count -eq 0) {
+    if (-not (Test-Path -LiteralPath $credsPath)) {
+        throw "No -Server/-Login/-Password and missing file: $credsPath (three lines: host, login, password)."
+    }
+    $triple = Read-InstallRemoteCredsFile -Path $credsPath
+    $Server = $triple.Server
+    $Login = $triple.Login
+    $Password = $triple.Password
+}
+else {
+    if (-not $PSBoundParameters.ContainsKey("Server")) { $Server = "216.203.21.239" }
+    if (-not $PSBoundParameters.ContainsKey("Login")) { $Login = "root" }
+    if (-not $PSBoundParameters.ContainsKey("Password")) { $Password = "1!Ogviobhuetly" }
+}
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
+
+function Read-InstallRemoteCredsFile {
+    param([Parameter(Mandatory = $true)][string] $Path)
+    $lines = Get-Content -LiteralPath $Path -Encoding utf8
+    $taken = [System.Collections.Generic.List[string]]::new()
+    foreach ($line in $lines) {
+        $t = $line.Trim()
+        if ($t.Length -eq 0) { continue }
+        if ($t.StartsWith("#")) { continue }
+        [void]$taken.Add($t)
+        if ($taken.Count -ge 3) { break }
+    }
+    if ($taken.Count -lt 3) {
+        throw "${Path}: need three non-empty, non-comment lines (SSH host, login, password); got $($taken.Count)."
+    }
+    return [pscustomobject]@{ Server = $taken[0]; Login = $taken[1]; Password = $taken[2] }
+}
 
 $sshCommonOpts = @(
     "-o", "StrictHostKeyChecking=accept-new",

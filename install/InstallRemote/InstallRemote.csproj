@@ -10,5 +10,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Content Include="..\install-remote.txt" CopyToOutputDirectory="PreserveNewest" Link="install-remote.txt" />
+    <Content Include="..\install-remote-creds.txt" CopyToOutputDirectory="PreserveNewest" Link="install-remote-creds.txt" />
   </ItemGroup>
 </Project>

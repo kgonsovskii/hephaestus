@@ -7,7 +7,12 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Commons\Commons.csproj" />
+    <ProjectReference Include="..\Db\Db.csproj" />
     <ProjectReference Include="..\Refiner\Refiner.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Services\" />
   </ItemGroup>
 
 </Project>

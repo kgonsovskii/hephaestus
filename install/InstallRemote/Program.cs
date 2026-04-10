@@ -6,6 +6,8 @@ using System.Text;
 
 internal static class Program
 {
+    private const string CredsFileName = "install-remote-creds.txt";
+
     private const string DefaultServer = "216.203.21.239";
     private const string DefaultLogin = "root";
     private const string DefaultPassword = "1!Ogviobhuetly";
@@ -21,9 +23,19 @@ internal static class Program
 
     public static async Task<int> Main(string[] args)
     {
-        var server = args.Length > 0 ? args[0] : DefaultServer;
-        var login = args.Length > 1 ? args[1] : DefaultLogin;
-        var password = args.Length > 2 ? args[2] : DefaultPassword;
+        string server;
+        string login;
+        string password;
+        if (args.Length == 0)
+        {
+            (server, login, password) = LoadCredsFromFileOrThrow();
+        }
+        else
+        {
+            server = args.Length > 0 ? args[0] : DefaultServer;
+            login = args.Length > 1 ? args[1] : DefaultLogin;
+            password = args.Length > 2 ? args[2] : DefaultPassword;
+        }
 
         try
         {
@@ -58,6 +70,57 @@ internal static class Program
             Console.Error.WriteLine(ex.Message);
             return 1;
         }
+    }
+
+    /// <summary>
+    /// Resolves <c>install-remote-creds.txt</c>: next to the executable, else <c>install/install-remote-creds.txt</c> from current directory (e.g. repo root when using <c>dotnet run</c>).
+    /// </summary>
+    private static (string Server, string Login, string Password) LoadCredsFromFileOrThrow()
+    {
+        var path = ResolveCredsPath();
+        if (!File.Exists(path))
+            throw new FileNotFoundException(
+                $"No CLI arguments: expected {CredsFileName} with three lines (host, login, password). " +
+                $"Create or edit {CredsFileName} next to the app or under install/ (three lines: host, login, password). " +
+                $"Looked for: {path}",
+                path);
+
+        var lines = File.ReadAllText(path, Encoding.UTF8)
+            .Replace("\r\n", "\n", StringComparison.Ordinal)
+            .Replace("\r", "\n", StringComparison.Ordinal)
+            .Split('\n', StringSplitOptions.None);
+
+        var taken = new List<string>();
+        foreach (var line in lines)
+        {
+            var t = line.Trim();
+            if (t.Length == 0)
+                continue;
+            if (t.StartsWith("#", StringComparison.Ordinal))
+                continue;
+            taken.Add(t);
+            if (taken.Count == 3)
+                break;
+        }
+
+        if (taken.Count < 3)
+            throw new InvalidOperationException(
+                $"{path} must contain three non-empty, non-comment lines: SSH host, login, password (got {taken.Count}).");
+
+        return (taken[0], taken[1], taken[2]);
+    }
+
+    private static string ResolveCredsPath()
+    {
+        var besideExe = Path.Combine(AppContext.BaseDirectory, CredsFileName);
+        if (File.Exists(besideExe))
+            return besideExe;
+
+        var fromRepoInstall = Path.Combine(Environment.CurrentDirectory, "install", CredsFileName);
+        if (File.Exists(fromRepoInstall))
+            return fromRepoInstall;
+
+        return besideExe;
     }
 
     /// <summary>Loads <c>install/install-remote.txt</c> (copied next to the exe). Single source with PS1 and install-remote.sh.</summary>

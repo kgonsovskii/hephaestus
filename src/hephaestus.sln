@@ -1,4 +1,4 @@
-
+﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "model", "model\model.csproj", "{A7BC8490-5D7C-42A3-A5C1-81B55E73AF55}"
 EndProject
@@ -29,13 +29,15 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CertTool", "CertTool\CertTo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DomainHost", "DomainHost\DomainHost.csproj", "{C4D8E1F2-3A5B-4D6C-9E0F-112233445566}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DomainTool", "DomainTool\DomainTool.csproj", "{E5F9A0B1-2C3D-4E5F-9A0B-1C2D3E4F5A6B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Domain", "Domain\Domain.csproj", "{E5F9A0B1-2C3D-4E5F-9A0B-1C2D3E4F5A6B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RefinerTool", "RefinerTool\RefinerTool.csproj", "{A0B1C2D3-E4F5-4678-9ABC-DEF012345678}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Commons", "Commons\Commons.csproj", "{3E5555C0-1D50-41E2-9E5D-4F9D0C2C28E8}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Publish", "Publish\Publish.csproj", "{A1B2C3D4-E5F6-4789-A012-3456789ABCDE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Db", "Db\Db.csproj", "{1C1F1A4D-D2A2-4D8C-825A-82BC570AD0CA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -91,5 +93,9 @@ Global
 		{A1B2C3D4-E5F6-4789-A012-3456789ABCDE}.Debug|x64.Build.0 = Debug|x64
 		{A1B2C3D4-E5F6-4789-A012-3456789ABCDE}.Release|x64.ActiveCfg = Release|x64
 		{A1B2C3D4-E5F6-4789-A012-3456789ABCDE}.Release|x64.Build.0 = Release|x64
+		{1C1F1A4D-D2A2-4D8C-825A-82BC570AD0CA}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{1C1F1A4D-D2A2-4D8C-825A-82BC570AD0CA}.Debug|x64.Build.0 = Debug|Any CPU
+		{1C1F1A4D-D2A2-4D8C-825A-82BC570AD0CA}.Release|x64.ActiveCfg = Release|Any CPU
+		{1C1F1A4D-D2A2-4D8C-825A-82BC570AD0CA}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
