@@ -12,6 +12,19 @@
     <PackageReference Include="Npgsql" Version="$(PkgNpgsqlVersion)" />
   </ItemGroup>
 
+  <!-- Minimal appsettings for local Razor tooling; DomainHost publish merges Commons/appsettings.json only.
+       Including these in publish/output duplicates Commons/appsettings.json → NETSDK1152. -->
+  <ItemGroup>
+    <Content Update="appsettings.json">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+    </Content>
+    <Content Update="appsettings.Development.json">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
+
   <ItemGroup>
     <None Include="Web.config">
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
