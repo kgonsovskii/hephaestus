@@ -33,7 +33,7 @@
     <div class="card mb-4">
         <div class="card-header"><strong>Bulk add</strong></div>
         <div class="card-body">
-            <form method="post" asp-controller="Domain" asp-action="Bulk">
+            <form method="post" action="@Url.Action("Bulk", "Domain")">
                 <div class="mb-2">
                     <label class="form-label">Hostnames (one per line)</label>
                     <textarea name="bulkDomainLines" class="form-control font-monospace" rows="6" placeholder="host1.example.com&#10;host2.example.com"></textarea>
@@ -57,7 +57,7 @@
     <div class="card">
         <div class="card-header"><strong>Edit domains</strong></div>
         <div class="card-body">
-            <form method="post" asp-controller="Domain" asp-action="Save">
+            <form method="post" action="@Url.Action("Save", "Domain")">
                 <div class="table-responsive">
                     <table class="table table-sm align-middle">
                         <thead>

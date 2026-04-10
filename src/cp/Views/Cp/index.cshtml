@@ -1,6 +1,10 @@
 @model cp.Models.CpIndexViewModel
 @{
 Layout = "~/Views/Shared/_Layout.cshtml";
+    var dnsHost = Context.Request.Host.Host;
+    var dnsUiUrl = dnsHost.Contains(':') && !dnsHost.StartsWith('[')
+        ? $"http://[{dnsHost}]:5380/"
+        : $"http://{dnsHost}:5380/";
 }
 
 <!DOCTYPE html>
@@ -171,6 +175,9 @@ Layout = "~/Views/Shared/_Layout.cshtml";
                     </li>
                     <li class="nav-item" role="presentation">
                         <a class="nav-link" href="@Url.Action("Index", "Domain")">Domains</a>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link" href="@dnsUiUrl" target="_blank" rel="noopener noreferrer">DNS</a>
                     </li>
                     <li class="nav-item" role="presentation">
                         <button class="nav-link" id="bux-tab" data-bs-toggle="tab" data-bs-target="#bux" type="button" role="tab" aria-controls="bux" aria-selected="false">Bux</button>
