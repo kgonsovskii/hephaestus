@@ -65,7 +65,7 @@ built/
 **/SonarQube.xml
 
 # Local isolated `dotnet build -o` output folders (e.g. agent builds)
-_bldcp*/
+**/_bld*/
 
 # Visual Studio 2015 cache/options directory
 .vs/
