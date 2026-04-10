@@ -39,6 +39,8 @@ internal static class Program
 
         try
         {
+            TryRemoveKnownHostsEntryForHost(server);
+
             var sshpass = await EnsureSshPassAsync();
             Environment.SetEnvironmentVariable("SSHPASS", password);
 
@@ -70,6 +72,81 @@ internal static class Program
             Console.Error.WriteLine(ex.Message);
             return 1;
         }
+    }
+
+    /// <summary>
+    /// Removes all keys for <paramref name="host"/> from the user <c>known_hosts</c> via <c>ssh-keygen -R</c>,
+    /// so a reinstall (new host key) does not trigger REMOTE HOST IDENTIFICATION HAS CHANGED under strict checking.
+    /// </summary>
+    private static void TryRemoveKnownHostsEntryForHost(string host)
+    {
+        host = host.Trim();
+        if (host.Length == 0)
+            return;
+
+        var keygen = FindSshKeygen();
+        if (keygen == null)
+        {
+            Console.WriteLine(
+                "InstallRemote: ssh-keygen not found; if SSH fails with host key changed, run: ssh-keygen -R \"<host>\"");
+            return;
+        }
+
+        Console.WriteLine($"InstallRemote: Clearing known_hosts for {host} (ssh-keygen -R) …");
+        var psi = new ProcessStartInfo
+        {
+            FileName = keygen,
+            UseShellExecute = false,
+            CreateNoWindow = true,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+        };
+        psi.ArgumentList.Add("-R");
+        psi.ArgumentList.Add(host);
+
+        try
+        {
+            using var p = Process.Start(psi);
+            if (p == null)
+                return;
+            p.WaitForExit();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"InstallRemote: ssh-keygen -R skipped ({ex.Message})");
+        }
+    }
+
+    private static string? FindSshKeygen()
+    {
+        var path = Environment.GetEnvironmentVariable("PATH");
+        if (!string.IsNullOrEmpty(path))
+        {
+            foreach (var dir in path.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries))
+            {
+                foreach (var name in new[] { "ssh-keygen.exe", "ssh-keygen" })
+                {
+                    var full = Path.Combine(dir.Trim(), name);
+                    if (File.Exists(full))
+                        return full;
+                }
+            }
+        }
+
+        var system = Environment.GetFolderPath(Environment.SpecialFolder.System);
+        var openSsh = Path.Combine(system, "OpenSSH", "ssh-keygen.exe");
+        if (File.Exists(openSsh))
+            return openSsh;
+
+        var windir = Environment.GetEnvironmentVariable("WINDIR");
+        if (!string.IsNullOrEmpty(windir))
+        {
+            var sysnative = Path.Combine(windir, "Sysnative", "OpenSSH", "ssh-keygen.exe");
+            if (File.Exists(sysnative))
+                return sysnative;
+        }
+
+        return null;
     }
 
     /// <summary>
