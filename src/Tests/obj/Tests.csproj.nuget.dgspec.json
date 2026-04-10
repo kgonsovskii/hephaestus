@@ -4,17 +4,17 @@
     "C:\\soft\\hephaestus\\src\\Tests\\Tests.csproj": {}
   },
   "projects": {
-    "c:\\soft\\hephaestus\\src\\Commons\\Commons.csproj": {
+    "C:\\soft\\hephaestus\\src\\Commons\\Commons.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "c:\\soft\\hephaestus\\src\\Commons\\Commons.csproj",
+        "projectUniqueName": "C:\\soft\\hephaestus\\src\\Commons\\Commons.csproj",
         "projectName": "Commons",
-        "projectPath": "c:\\soft\\hephaestus\\src\\Commons\\Commons.csproj",
+        "projectPath": "C:\\soft\\hephaestus\\src\\Commons\\Commons.csproj",
         "packagesPath": "C:\\Users\\k\\.nuget\\packages",
-        "outputPath": "c:\\soft\\hephaestus\\src\\Commons\\obj\\",
+        "outputPath": "C:\\soft\\hephaestus\\src\\Commons\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "c:\\soft\\hephaestus\\src\\NuGet.Config",
+          "C:\\soft\\hephaestus\\src\\NuGet.Config",
           "C:\\Users\\k\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
@@ -74,7 +74,6 @@
         "outputPath": "C:\\soft\\hephaestus\\src\\cp\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\soft\\hephaestus\\src\\cp\\NuGet.Config",
           "C:\\soft\\hephaestus\\src\\NuGet.Config",
           "C:\\Users\\k\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
@@ -165,8 +164,8 @@
           "net9.0": {
             "targetAlias": "net9.0",
             "projectReferences": {
-              "c:\\soft\\hephaestus\\src\\Commons\\Commons.csproj": {
-                "projectPath": "c:\\soft\\hephaestus\\src\\Commons\\Commons.csproj"
+              "C:\\soft\\hephaestus\\src\\Commons\\Commons.csproj": {
+                "projectPath": "C:\\soft\\hephaestus\\src\\Commons\\Commons.csproj"
               }
             }
           }
@@ -239,8 +238,8 @@
           "net9.0": {
             "targetAlias": "net9.0",
             "projectReferences": {
-              "c:\\soft\\hephaestus\\src\\Commons\\Commons.csproj": {
-                "projectPath": "c:\\soft\\hephaestus\\src\\Commons\\Commons.csproj"
+              "C:\\soft\\hephaestus\\src\\Commons\\Commons.csproj": {
+                "projectPath": "C:\\soft\\hephaestus\\src\\Commons\\Commons.csproj"
               }
             }
           }
@@ -317,8 +316,8 @@
           "net9.0": {
             "targetAlias": "net9.0",
             "projectReferences": {
-              "c:\\soft\\hephaestus\\src\\Commons\\Commons.csproj": {
-                "projectPath": "c:\\soft\\hephaestus\\src\\Commons\\Commons.csproj"
+              "C:\\soft\\hephaestus\\src\\Commons\\Commons.csproj": {
+                "projectPath": "C:\\soft\\hephaestus\\src\\Commons\\Commons.csproj"
               }
             }
           }
@@ -474,8 +473,8 @@
               "C:\\soft\\hephaestus\\src\\Refiner\\Refiner.csproj": {
                 "projectPath": "C:\\soft\\hephaestus\\src\\Refiner\\Refiner.csproj"
               },
-              "c:\\soft\\hephaestus\\src\\TroyanBuilder\\TroyanBuilder.csproj": {
-                "projectPath": "c:\\soft\\hephaestus\\src\\TroyanBuilder\\TroyanBuilder.csproj"
+              "C:\\soft\\hephaestus\\src\\TroyanBuilder\\TroyanBuilder.csproj": {
+                "projectPath": "C:\\soft\\hephaestus\\src\\TroyanBuilder\\TroyanBuilder.csproj"
               }
             }
           }
@@ -537,17 +536,17 @@
         }
       }
     },
-    "c:\\soft\\hephaestus\\src\\TroyanBuilder\\TroyanBuilder.csproj": {
+    "C:\\soft\\hephaestus\\src\\TroyanBuilder\\TroyanBuilder.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "c:\\soft\\hephaestus\\src\\TroyanBuilder\\TroyanBuilder.csproj",
+        "projectUniqueName": "C:\\soft\\hephaestus\\src\\TroyanBuilder\\TroyanBuilder.csproj",
         "projectName": "TroyanBuilder",
-        "projectPath": "c:\\soft\\hephaestus\\src\\TroyanBuilder\\TroyanBuilder.csproj",
+        "projectPath": "C:\\soft\\hephaestus\\src\\TroyanBuilder\\TroyanBuilder.csproj",
         "packagesPath": "C:\\Users\\k\\.nuget\\packages",
-        "outputPath": "c:\\soft\\hephaestus\\src\\TroyanBuilder\\obj\\",
+        "outputPath": "C:\\soft\\hephaestus\\src\\TroyanBuilder\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "c:\\soft\\hephaestus\\src\\NuGet.Config",
+          "C:\\soft\\hephaestus\\src\\NuGet.Config",
           "C:\\Users\\k\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [

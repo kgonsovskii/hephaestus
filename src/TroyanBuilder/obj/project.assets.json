@@ -7772,14 +7772,14 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "c:\\soft\\hephaestus\\src\\TroyanBuilder\\TroyanBuilder.csproj",
+      "projectUniqueName": "C:\\soft\\hephaestus\\src\\TroyanBuilder\\TroyanBuilder.csproj",
       "projectName": "TroyanBuilder",
-      "projectPath": "c:\\soft\\hephaestus\\src\\TroyanBuilder\\TroyanBuilder.csproj",
+      "projectPath": "C:\\soft\\hephaestus\\src\\TroyanBuilder\\TroyanBuilder.csproj",
       "packagesPath": "C:\\Users\\k\\.nuget\\packages",
-      "outputPath": "c:\\soft\\hephaestus\\src\\TroyanBuilder\\obj\\",
+      "outputPath": "C:\\soft\\hephaestus\\src\\TroyanBuilder\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "c:\\soft\\hephaestus\\src\\NuGet.Config",
+        "C:\\soft\\hephaestus\\src\\NuGet.Config",
         "C:\\Users\\k\\AppData\\Roaming\\NuGet\\NuGet.Config"
       ],
       "originalTargetFrameworks": [

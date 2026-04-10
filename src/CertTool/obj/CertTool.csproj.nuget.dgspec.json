@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "c:\\soft\\hephaestus\\src\\CertTool\\CertTool.csproj": {}
+    "C:\\soft\\hephaestus\\src\\CertTool\\CertTool.csproj": {}
   },
   "projects": {
-    "c:\\soft\\hephaestus\\src\\CertTool\\CertTool.csproj": {
+    "C:\\soft\\hephaestus\\src\\CertTool\\CertTool.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "c:\\soft\\hephaestus\\src\\CertTool\\CertTool.csproj",
+        "projectUniqueName": "C:\\soft\\hephaestus\\src\\CertTool\\CertTool.csproj",
         "projectName": "CertTool",
-        "projectPath": "c:\\soft\\hephaestus\\src\\CertTool\\CertTool.csproj",
+        "projectPath": "C:\\soft\\hephaestus\\src\\CertTool\\CertTool.csproj",
         "packagesPath": "C:\\Users\\k\\.nuget\\packages",
-        "outputPath": "c:\\soft\\hephaestus\\src\\CertTool\\obj\\",
+        "outputPath": "C:\\soft\\hephaestus\\src\\CertTool\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "c:\\soft\\hephaestus\\src\\NuGet.Config",
+          "C:\\soft\\hephaestus\\src\\NuGet.Config",
           "C:\\Users\\k\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
@@ -27,8 +27,8 @@
           "net9.0": {
             "targetAlias": "net9.0",
             "projectReferences": {
-              "c:\\soft\\hephaestus\\src\\Commons\\Commons.csproj": {
-                "projectPath": "c:\\soft\\hephaestus\\src\\Commons\\Commons.csproj"
+              "C:\\soft\\hephaestus\\src\\Commons\\Commons.csproj": {
+                "projectPath": "C:\\soft\\hephaestus\\src\\Commons\\Commons.csproj"
               }
             }
           }
@@ -68,17 +68,17 @@
         }
       }
     },
-    "c:\\soft\\hephaestus\\src\\Commons\\Commons.csproj": {
+    "C:\\soft\\hephaestus\\src\\Commons\\Commons.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "c:\\soft\\hephaestus\\src\\Commons\\Commons.csproj",
+        "projectUniqueName": "C:\\soft\\hephaestus\\src\\Commons\\Commons.csproj",
         "projectName": "Commons",
-        "projectPath": "c:\\soft\\hephaestus\\src\\Commons\\Commons.csproj",
+        "projectPath": "C:\\soft\\hephaestus\\src\\Commons\\Commons.csproj",
         "packagesPath": "C:\\Users\\k\\.nuget\\packages",
-        "outputPath": "c:\\soft\\hephaestus\\src\\Commons\\obj\\",
+        "outputPath": "C:\\soft\\hephaestus\\src\\Commons\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "c:\\soft\\hephaestus\\src\\NuGet.Config",
+          "C:\\soft\\hephaestus\\src\\NuGet.Config",
           "C:\\Users\\k\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [

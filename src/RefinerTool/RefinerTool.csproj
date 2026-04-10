@@ -9,10 +9,4 @@
     <ProjectReference Include="..\Refiner\Refiner.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Update="appsettings.Refiner.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
 </Project>
