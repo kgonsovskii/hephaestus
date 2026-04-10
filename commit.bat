@@ -1,8 +1,8 @@
 @echo off
 setlocal EnableExtensions
 
-rem === Paths relative to this .bat (keep it in the hephaestus repo root) ===
-set "REPO1=%~dp0"
+rem === Paths relative to this .bat ===
+set "REPO1=%~dp0..\hephaestus"
 set "REPO2=%~dp0..\hephaestus_data"
 set "REPO3=%~dp0..\hephaestus_distrib"
 
