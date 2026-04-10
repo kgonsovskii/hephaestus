@@ -52,9 +52,12 @@ public sealed class WebFileResolver : IWebFileResolver
     private IEnumerable<string> EnumerateContentRoots(DomainRecord record)
     {
         var web = _paths.WebRootFullPath;
-        yield return Path.Combine(web, record.Domain);
-        if (!string.IsNullOrWhiteSpace(record.DomainClass))
-            yield return Path.Combine(web, record.DomainClass.Trim());
+        // Priority: per-host folder under sites/, then shared class under classes/ (empty class → analytics).
+        yield return Path.Combine(web, WebSiteLayout.SitesFolderName, record.Domain);
+        var cls = string.IsNullOrWhiteSpace(record.DomainClass)
+            ? WebSiteLayout.DefaultDomainClassFolderName
+            : record.DomainClass.Trim();
+        yield return Path.Combine(web, WebSiteLayout.ClassesFolderName, cls);
     }
 
     private static bool TryDefaultIndex(

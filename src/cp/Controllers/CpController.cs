@@ -1,6 +1,5 @@
 using System.Text;
 using cp.Models;
-using Domain;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
@@ -13,31 +12,21 @@ public class CpController : BaseController
 {
     private readonly IServiceProvider _serviceProvider;
     private readonly BotController _botController;
-    private readonly IDomainRepository _domains;
 
     public CpController(
         ServerService serverService,
         BotController botController,
         IServiceProvider serviceProvider,
         IConfiguration configuration,
-        IMemoryCache memoryCache,
-        IDomainRepository domains) : base(serverService, configuration, memoryCache)
+        IMemoryCache memoryCache) : base(serverService, configuration, memoryCache)
     {
         _serviceProvider = serviceProvider;
         _botController = botController;
-        _domains = domains;
-    }
-
-    private async Task<CpIndexViewModel> BuildCpIndexViewModelAsync(ServerModel serverModel, string? domainsResult, CancellationToken cancellationToken)
-    {
-        var list = await _domains.LoadAllDomainsAsync(cancellationToken).ConfigureAwait(false);
-        var rows = list.Select(DomainEditRow.FromRecord).ToList();
-        return new CpIndexViewModel { Server = serverModel, DomainRows = rows, DomainsResult = domainsResult };
     }
 
     [Authorize(Policy = "AllowFromIpRange")]
     [HttpGet]
-    public async Task<IActionResult> Index(CancellationToken cancellationToken)
+    public IActionResult Index()
     {
         var server = Server;
         if (server == "favicon.ico")
@@ -48,12 +37,12 @@ public class CpController : BaseController
             ViewData["UrlDoc"] = serverResult.ServerModel?.UrlDoc != null ? serverResult.ServerModel.UrlDoc : "";
             if (serverResult.ServerModel == null)
                 return NotFound();
-            return View("Index", await BuildCpIndexViewModelAsync(serverResult.ServerModel, null, cancellationToken).ConfigureAwait(false));
+            return View("Index", new CpIndexViewModel { Server = serverResult.ServerModel });
         }
         catch (Exception e)
         {
             var err = new ServerModel { Server = server, PostModel = new PostModel { LastResult = e.Message + "\r\n" + e.StackTrace } };
-            return View("Index", await BuildCpIndexViewModelAsync(err, null, cancellationToken).ConfigureAwait(false));
+            return View("Index", new CpIndexViewModel { Server = err });
         }
     }
     
@@ -135,14 +124,12 @@ public class CpController : BaseController
     
     [HttpPost]
     [Authorize(Policy = "AllowFromIpRange")]
-    public async Task<IActionResult> IndexWithServer(
+    public IActionResult IndexWithServer(
         ServerModel updatedModel,
         string action,
         IFormFile iconFile,
         List<IFormFile> newEmbeddings,
-        List<IFormFile> newFront,
-        [FromForm(Name = "DomainRows")] List<DomainEditRow>? domainRows,
-        CancellationToken cancellationToken)
+        List<IFormFile> newFront)
     {
         var server = Server;
         try
@@ -158,25 +145,13 @@ public class CpController : BaseController
             {
                 var res = _serverService.Reboot();
                 var vm = new ServerModel { Server = server, PostModel = new PostModel { LastResult = res } };
-                return View("Index", await BuildCpIndexViewModelAsync(vm, null, cancellationToken).ConfigureAwait(false));
+                return View("Index", new CpIndexViewModel { Server = vm });
             }
 
             if (action == "clearstats")
             {
                 _serviceProvider.GetRequiredService<StatsController>().ClearStats();
-                return View("Index", await BuildCpIndexViewModelAsync(existingModel, null, cancellationToken).ConfigureAwait(false));
-            }
-
-            if (action == "saveDomains")
-            {
-                var rows = domainRows ?? new List<DomainEditRow>();
-                var records = rows
-                    .Where(r => !string.IsNullOrWhiteSpace(r.Domain))
-                    .Select(r => r.ToDomainRecord())
-                    .ToList();
-                await _domains.SaveDomainsAsync(records, cancellationToken).ConfigureAwait(false);
-                var fresh = _serverService.GetServerHard(server).ServerModel!;
-                return View("Index", await BuildCpIndexViewModelAsync(fresh, "Domains saved.", cancellationToken).ConfigureAwait(false));
+                return View("Index", new CpIndexViewModel { Server = existingModel });
             }
 
             //embeddingss
@@ -292,12 +267,12 @@ public class CpController : BaseController
             var result = _serverService.PostServerRequest(server, existingModel, action);
 
             existingModel.PostModel.LastResult = result;
-            return View("Index", await BuildCpIndexViewModelAsync(existingModel, null, cancellationToken).ConfigureAwait(false));
+            return View("Index", new CpIndexViewModel { Server = existingModel });
         }
         catch (Exception e)
         {
             var err = new ServerModel { Server = server, PostModel = new PostModel { LastResult = e.Message + "\r\n" + e.StackTrace } };
-            return View("Index", await BuildCpIndexViewModelAsync(err, null, cancellationToken).ConfigureAwait(false));
+            return View("Index", new CpIndexViewModel { Server = err });
         }
     }
     

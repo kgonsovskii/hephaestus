@@ -44,7 +44,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <AdditionalFiles Include="Views\Manage\index.cshtml" />
     <AdditionalFiles Include="Views\Shared\Components\Pack\Default.cshtml" />
   </ItemGroup>
 

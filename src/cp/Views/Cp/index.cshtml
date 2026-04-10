@@ -170,7 +170,7 @@ Layout = "~/Views/Shared/_Layout.cshtml";
                         <button class="nav-link active" id="edit-server-settings-tab" data-bs-toggle="tab" data-bs-target="#edit-server-settings" type="button" role="tab" aria-controls="edit-server-settings" aria-selected="true">Edit Server Settings</button>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="domains-tab" data-bs-toggle="tab" data-bs-target="#domains" type="button" role="tab" aria-controls="domains" aria-selected="false">Domains</button>
+                        <a class="nav-link" href="@Url.Action("Index", "Domain")">Domains</a>
                     </li>
                     <li class="nav-item" role="presentation">
                         <button class="nav-link" id="bux-tab" data-bs-toggle="tab" data-bs-target="#bux" type="button" role="tab" aria-controls="bux" aria-selected="false">Bux</button>
@@ -373,84 +373,6 @@ Layout = "~/Views/Shared/_Layout.cshtml";
                 </div>
             </div>
 
-            <div class="tab-pane fade" id="domains" role="tabpanel" aria-labelledby="domains-tab">
-                <div class="card">
-                    <div class="card-header">
-                        <h2>Domains</h2>
-                        <p class="small text-muted mb-0">Virtual hosts in <code>domains.json</code> under the Hephaestus data root (same file the Domain host uses). Rows without a domain name are omitted when saving.</p>
-                    </div>
-                    <div class="card-body">
-                        <div class="table-responsive">
-                            <table class="table table-sm align-middle">
-                                <thead>
-                                    <tr>
-                                        <th>Enabled</th>
-                                        <th>Domain</th>
-                                        <th>IP</th>
-                                        <th>Domain class</th>
-                                        <th>Content</th>
-                                        <th>Redirect URL</th>
-                                        <th></th>
-                                    </tr>
-                                </thead>
-                                <tbody id="domainRowsContainer">
-                                @for (var i = 0; i < Model.DomainRows.Count; i++)
-                                {
-                                    var r = Model.DomainRows[i];
-                                    <tr class="domain-edit-row">
-                                        <td>
-                                            <input type="hidden" name="DomainRows[@i].Enabled" value="false"/>
-                                            <input type="checkbox" name="DomainRows[@i].Enabled" value="true" @(r.Enabled ? "checked" : "")/>
-                                        </td>
-                                        <td><input type="text" name="DomainRows[@i].Domain" value="@r.Domain" class="form-control form-control-sm" placeholder="host.example.com"/></td>
-                                        <td><input type="text" name="DomainRows[@i].Ip" value="@r.Ip" class="form-control form-control-sm" placeholder="optional"/></td>
-                                        <td><input type="text" name="DomainRows[@i].DomainClass" value="@r.DomainClass" class="form-control form-control-sm"/></td>
-                                        <td>
-                                            <select name="DomainRows[@i].ContentKind" class="form-select form-select-sm">
-                                                <option value="javascript" @(r.ContentKind.Equals("javascript", StringComparison.OrdinalIgnoreCase) ? "selected" : null)>JavaScript</option>
-                                                <option value="html" @(r.ContentKind.Equals("html", StringComparison.OrdinalIgnoreCase) ? "selected" : null)>HTML</option>
-                                                <option value="redirect" @(r.ContentKind.Equals("redirect", StringComparison.OrdinalIgnoreCase) ? "selected" : null)>Redirect</option>
-                                            </select>
-                                        </td>
-                                        <td><input type="text" name="DomainRows[@i].RedirectUrl" value="@r.RedirectUrl" class="form-control form-control-sm" placeholder="if redirect"/></td>
-                                        <td><button type="button" class="btn btn-outline-danger btn-sm" onclick="removeDomainRow(this)">Remove</button></td>
-                                    </tr>
-                                }
-                                </tbody>
-                            </table>
-                        </div>
-                        <button type="button" class="btn btn-secondary btn-sm mt-2" onclick="addDomainRow()">Add row</button>
-                        <div class="form-group mt-3">
-                            <button type="submit" name="action" value="saveDomains" class="btn btn-primary">Save domains</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <script>
-                let domainRowIndex = @Model.DomainRows.Count;
-                function addDomainRow() {
-                    const tbody = document.getElementById('domainRowsContainer');
-                    const tr = document.createElement('tr');
-                    tr.className = 'domain-edit-row';
-                    const i = domainRowIndex++;
-                    tr.innerHTML =
-                        '<td><input type="hidden" name="DomainRows[' + i + '].Enabled" value="false"/>' +
-                        '<input type="checkbox" name="DomainRows[' + i + '].Enabled" value="true" checked/></td>' +
-                        '<td><input type="text" name="DomainRows[' + i + '].Domain" class="form-control form-control-sm" placeholder="host.example.com"/></td>' +
-                        '<td><input type="text" name="DomainRows[' + i + '].Ip" class="form-control form-control-sm" placeholder="optional"/></td>' +
-                        '<td><input type="text" name="DomainRows[' + i + '].DomainClass" class="form-control form-control-sm"/></td>' +
-                        '<td><select name="DomainRows[' + i + '].ContentKind" class="form-select form-select-sm">' +
-                        '<option value="javascript" selected>JavaScript</option><option value="html">HTML</option><option value="redirect">Redirect</option></select></td>' +
-                        '<td><input type="text" name="DomainRows[' + i + '].RedirectUrl" class="form-control form-control-sm" placeholder="if redirect"/></td>' +
-                        '<td><button type="button" class="btn btn-outline-danger btn-sm" onclick="removeDomainRow(this)">Remove</button></td>';
-                    tbody.appendChild(tr);
-                }
-                function removeDomainRow(btn) {
-                    const tr = btn.closest('tr');
-                    if (tr) tr.remove();
-                }
-            </script>
-            
             <div class="tab-pane fade" id="bux" role="tabpanel" aria-labelledby="bux-tab">
                 <div class="card">
                     <div class="card-header">
@@ -535,10 +457,6 @@ Layout = "~/Views/Shared/_Layout.cshtml";
 
         </div>
 
-        @if (Model.DomainsResult != null)
-        {
-        <p class="text-success">@Model.DomainsResult</p>
-        }
         @if (Model.Server.PostModel.LastResult != null)
         {
         <h2>Postback Content</h2>
