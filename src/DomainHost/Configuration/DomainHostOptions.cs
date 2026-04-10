@@ -18,5 +18,9 @@ public sealed class DomainHostOptions
 
     public string CertPfxPassword { get; set; } = "123";
 
-    public int HttpsPort { get; set; } = 5443;
+    /// <summary>HTTP listen port. Default 80.</summary>
+    public int HttpPort { get; set; } = 80;
+
+    /// <summary>HTTPS listen port. Default 443.</summary>
+    public int HttpsPort { get; set; } = 443;
 }
