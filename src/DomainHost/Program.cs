@@ -1,5 +1,6 @@
 using System.Security.Cryptography.X509Certificates;
 using Commons;
+using cp;
 using Db;
 using Domain;
 using DomainHost;
@@ -7,6 +8,7 @@ using Refiner;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.AddCp();
 builder.Services.AddDomainServices(builder.Configuration);
 builder.Services.AddDbServices(builder.Configuration);
 builder.Services.AddRefiner(builder.Configuration);
@@ -63,6 +65,8 @@ builder.Services.AddSingleton<DomainHostRequestHandler>();
 
 var app = builder.Build();
 
+app.UseRouting();
+app.UseCpSite();
 app.UseMiddleware<DomainHostMiddleware>();
 app.MapFallback(async ctx =>
 {

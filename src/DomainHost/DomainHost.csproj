@@ -7,6 +7,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Commons\Commons.csproj" />
+    <ProjectReference Include="..\cp\cp.csproj" />
     <ProjectReference Include="..\Db\Db.csproj" />
     <ProjectReference Include="..\Refiner\Refiner.csproj" />
   </ItemGroup>

@@ -1,4 +1,5 @@
-﻿using model;
+using System.Net;
+using model;
 
 namespace cp;
 
@@ -59,15 +60,20 @@ public class BackSvc: BackgroundService
             throw;
         }
     }
-    public static bool IsIpAllowed(string remoteIp)
+    public static bool IsIpAllowed(string? remoteIp)
     {
+        if (string.IsNullOrEmpty(remoteIp))
+            return false;
+        if (IPAddress.TryParse(remoteIp, out var addr) && IPAddress.IsLoopback(addr))
+            return true;
+        if (Ips == null)
+            return false;
         foreach (var range in Ips)
         {
-            if (range == remoteIp.ToString())
-            {
+            if (range == remoteIp)
                 return true;
-            }
         }
+
         return false;
     }
     public static List<string> GetPublicIPv4Addresses() => Dev.GetPublicIPv4Addresses();
