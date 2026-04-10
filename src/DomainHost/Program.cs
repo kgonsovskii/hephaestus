@@ -71,7 +71,9 @@ builder.WebHost.ConfigureKestrel(options =>
 
 
 builder.Services.AddSingleton<IWebFileResolver, WebFileResolver>();
+builder.Services.AddSingleton<WebStaticRevision>();
 builder.Services.AddSingleton<DomainHostRequestHandler>();
+builder.Services.AddHostedService<WebRootFileWatcherHostedService>();
 
 
 var app = builder.Build();

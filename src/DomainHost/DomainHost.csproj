@@ -12,10 +12,6 @@
     <ProjectReference Include="..\Refiner\Refiner.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Services\" />
-  </ItemGroup>
-
   <!-- appsettings.json comes from ProjectReference to Commons (single copy; avoids NETSDK1152 vs cp). -->
 
   <!-- Copy commit.bat from hephaestus repo root into sibling data/distrib/client repos (same layout as commit.bat REPO paths). -->

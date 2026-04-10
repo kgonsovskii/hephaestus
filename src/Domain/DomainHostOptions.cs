@@ -34,4 +34,10 @@ public sealed class DomainHostOptions
 
     /// <summary>HTTPS listen port. Default 443.</summary>
     public int HttpsPort { get; set; } = 443;
+
+    /// <summary>
+    /// <c>Cache-Control: public, max-age=…</c> for vhost static files and redirects under <see cref="WebRoot"/> (not <c>/cp</c>).
+    /// When the web tree changes, the host bumps a revision so ETags invalidate. Default 60 seconds.
+    /// </summary>
+    public int StaticFileCacheMaxAgeSeconds { get; set; } = 60;
 }
