@@ -28,7 +28,7 @@ public sealed class JsonFileDomainRepository : IDomainRepository
 
     public async Task<IReadOnlyList<DomainRecord>> LoadEnabledDomainsAsync(CancellationToken cancellationToken)
     {
-        var path = Path.Combine(_webPaths.WebRootFullPath, _domainsFileName);
+        var path = Path.Combine(_webPaths.DataRootFullPath, _domainsFileName);
         await using var stream = File.OpenRead(path);
         var doc = await JsonSerializer.DeserializeAsync<DomainsFileDto>(stream, SerializerOptions, cancellationToken)
             .ConfigureAwait(false);

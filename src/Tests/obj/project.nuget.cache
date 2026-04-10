@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "UBvgf6egp/c=",
+  "dgSpecHash": "fo60BIRhXJE=",
   "success": true,
-  "projectFilePath": "C:\\soft\\hephaestus\\src\\Tests\\Tests.csproj",
+  "projectFilePath": "C:\\soft\\newway\\hephaestus\\src\\Tests\\Tests.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\k\\.nuget\\packages\\fluentassertions\\7.2.0\\fluentassertions.7.2.0.nupkg.sha512",
     "C:\\Users\\k\\.nuget\\packages\\htmlagilitypack\\1.12.4\\htmlagilitypack.1.12.4.nupkg.sha512",
@@ -153,9 +153,9 @@
       "code": "NU1603",
       "level": "Warning",
       "message": "Tests depends on Microsoft.NET.Test.Sdk (>= 17.12.44) but Microsoft.NET.Test.Sdk 17.12.44 was not found. Microsoft.NET.Test.Sdk 17.13.0 was resolved instead.",
-      "projectPath": "C:\\soft\\hephaestus\\src\\Tests\\Tests.csproj",
+      "projectPath": "C:\\soft\\newway\\hephaestus\\src\\Tests\\Tests.csproj",
       "warningLevel": 1,
-      "filePath": "C:\\soft\\hephaestus\\src\\Tests\\Tests.csproj",
+      "filePath": "C:\\soft\\newway\\hephaestus\\src\\Tests\\Tests.csproj",
       "libraryId": "Microsoft.NET.Test.Sdk",
       "targetGraphs": [
         "net9.0"

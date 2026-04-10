@@ -4,17 +4,25 @@ public sealed class DomainHostOptions
 {
     public const string SectionName = "DomainHost";
 
+    /// <summary>
+    /// Directory name to resolve by walking parents from the process content root. Expected beside the repo clone
+    /// (e.g. <c>C:\soft\hephaestus_data</c> next to <c>C:\soft\hephaestus</c>), not inside it. Default <c>hephaestus_data</c>.
+    /// </summary>
+    public string HephaestusDataDirectoryName { get; set; } = "hephaestus_data";
+
+    /// <summary>Static site folder under the resolved Hephaestus data directory. Default <c>web</c>.</summary>
     public string WebRoot { get; set; } = "web";
 
     public int WebRootSearchMaxAscents { get; set; } = 10;
 
     public string DomainsFileName { get; set; } = "domains.json";
 
-    /// <summary>JSON file listing domain names to skip for Technitium sync (same folder as <see cref="DomainsFileName"/>).</summary>
+    /// <summary>JSON file listing domain names to skip for Technitium sync (same folder as <see cref="DomainsFileName"/>, i.e. Hephaestus data root).</summary>
     public string DomainsIgnoreFileName { get; set; } = "domains-ignore.json";
 
     public int RefreshSeconds { get; set; } = 30;
 
+    /// <summary>Certificate folder under the resolved Hephaestus data directory. Default <c>cert</c>.</summary>
     public string CertDirectoryName { get; set; } = "cert";
 
     public string CertPfxFileName { get; set; } = "hephaestus.pfx";

@@ -13,7 +13,7 @@ public interface IDomainMaintenance : IMaintenance
 /// <summary>
 /// Aligns Technitium with <c>domains.json</c>: creates/deletes <b>Primary</b> zones to match enabled rows (minus ignore list),
 /// optionally applies global DNS forwarders and recursion policy, then sets A/AAAA at each name (TTL from Technitium default record TTL in Settings).
-/// Skips names in <c>domains-ignore.json</c>. Does not delete Technitium <c>internal</c> zones.
+/// Skips names in <c>domains-ignore.json</c> (next to <c>domains.json</c> under the Hephaestus data root). Does not delete Technitium <c>internal</c> zones.
 /// When a domain has no <c>ip</c>, uses <see cref="NetworkAddressPreference"/> for both v4 and v6.
 /// When <c>ip</c> lists only IPv4, still fills IPv6 from <see cref="NetworkAddressPreference"/> so AAAA can be published.
 /// </summary>
@@ -55,7 +55,7 @@ public sealed class DomainMaintenance : IDomainMaintenance
         var ignoreName = hostOpts.DomainsIgnoreFileName.Trim();
         if (ignoreName.Length == 0)
             ignoreName = "domains-ignore.json";
-        var ignorePath = Path.Combine(_webPaths.WebRootFullPath, ignoreName);
+        var ignorePath = Path.Combine(_webPaths.DataRootFullPath, ignoreName);
         if (!File.Exists(ignorePath))
             throw new FileNotFoundException($"domains-ignore file not found: {ignorePath}");
 

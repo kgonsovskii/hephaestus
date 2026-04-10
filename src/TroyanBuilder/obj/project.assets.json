@@ -7772,14 +7772,14 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\soft\\hephaestus\\src\\TroyanBuilder\\TroyanBuilder.csproj",
+      "projectUniqueName": "C:\\soft\\newway\\hephaestus\\src\\TroyanBuilder\\TroyanBuilder.csproj",
       "projectName": "TroyanBuilder",
-      "projectPath": "C:\\soft\\hephaestus\\src\\TroyanBuilder\\TroyanBuilder.csproj",
+      "projectPath": "C:\\soft\\newway\\hephaestus\\src\\TroyanBuilder\\TroyanBuilder.csproj",
       "packagesPath": "C:\\Users\\k\\.nuget\\packages",
-      "outputPath": "C:\\soft\\hephaestus\\src\\TroyanBuilder\\obj\\",
+      "outputPath": "C:\\soft\\newway\\hephaestus\\src\\TroyanBuilder\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\soft\\hephaestus\\src\\NuGet.Config",
+        "C:\\soft\\newway\\hephaestus\\src\\NuGet.Config",
         "C:\\Users\\k\\AppData\\Roaming\\NuGet\\NuGet.Config"
       ],
       "originalTargetFrameworks": [
@@ -7792,8 +7792,8 @@
         "net9.0": {
           "targetAlias": "net9.0",
           "projectReferences": {
-            "C:\\soft\\hephaestus\\src\\model\\model.csproj": {
-              "projectPath": "C:\\soft\\hephaestus\\src\\model\\model.csproj"
+            "C:\\soft\\newway\\hephaestus\\src\\model\\model.csproj": {
+              "projectPath": "C:\\soft\\newway\\hephaestus\\src\\model\\model.csproj"
             }
           }
         }

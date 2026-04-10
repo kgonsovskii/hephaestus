@@ -16,16 +16,18 @@ var hostOpts = builder.Configuration.GetSection(DomainHostOptions.SectionName).G
     ?? new DomainHostOptions();
 
 var maxSteps = Math.Clamp(hostOpts.WebRootSearchMaxAscents, 1, 200);
-var start = Path.GetFullPath(builder.Environment.ContentRootPath);
-var repoRoot = HephaestusRepoPaths.ResolveRepositoryRoot(start, HephaestusRepoPaths.DefaultMarkerFileName, maxSteps);
+var dataDirName = hostOpts.HephaestusDataDirectoryName.Trim().Trim(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+if (dataDirName.Length == 0)
+    dataDirName = HephaestusRepoPaths.DefaultDataDirectoryName;
+var dataRoot = HephaestusRepoPaths.ResolveHephaestusDataRootFromAppBase(dataDirName, maxSteps);
 
 var webFolder = hostOpts.WebRoot.Trim().Trim(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
 if (webFolder.Length == 0)
     webFolder = "web";
-var webFull = HephaestusRepoPaths.WebDirectory(repoRoot, webFolder);
+var webFull = HephaestusRepoPaths.WebDirectory(dataRoot, webFolder);
 if (!Directory.Exists(webFull))
     throw new InvalidOperationException(
-        $"DomainHost: web directory not found at '{webFull}' (repository root '{repoRoot}').");
+        $"DomainHost: web directory not found at '{webFull}' (Hephaestus data root '{dataRoot}').");
 
 var certDir = hostOpts.CertDirectoryName.Trim().Trim(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
 if (certDir.Length == 0)
@@ -34,7 +36,7 @@ var pfxName = hostOpts.CertPfxFileName.Trim();
 if (pfxName.Length == 0)
     pfxName = "hephaestus.pfx";
 
-var pfxPath = HephaestusRepoPaths.FileUnderCert(repoRoot, certDir, pfxName);
+var pfxPath = HephaestusRepoPaths.FileUnderCert(dataRoot, certDir, pfxName);
 if (!File.Exists(pfxPath))
     throw new InvalidOperationException($"DomainHost: certificate PFX not found: {pfxPath}. Run CertTool once.");
 

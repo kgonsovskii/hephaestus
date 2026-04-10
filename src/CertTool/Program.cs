@@ -16,7 +16,7 @@ internal static class Program
         try
         {
             Run();
-            Console.WriteLine("Wrote cert/hephaestus.pfx (password: 123) and cert/hephaestus-trusted-root.cer. Trust: scripts/install-hephaestus-trust-cer.ps1 (CER only) or deploy-trust-ad-gpo.txt (AD).");
+            Console.WriteLine($"Wrote hephaestus_data/cert/hephaestus.pfx (password: 123) and hephaestus-trusted-root.cer. Trust: scripts/install-hephaestus-trust-cer.ps1 (CER only) or deploy-trust-ad-gpo.txt (AD).");
             return 0;
         }
         catch (Exception ex)
@@ -29,12 +29,12 @@ internal static class Program
     private static void Run()
     {
         var start = Path.GetFullPath(AppContext.BaseDirectory);
-        var repoRoot = HephaestusRepoPaths.ResolveRepositoryRoot(start);
-        var webRoot = HephaestusRepoPaths.WebDirectory(repoRoot, "web");
+        var dataRoot = HephaestusRepoPaths.ResolveHephaestusDataRoot(start);
+        var webRoot = HephaestusRepoPaths.WebDirectory(dataRoot, "web");
         if (!Directory.Exists(webRoot))
             throw new InvalidOperationException($"Web directory not found: {webRoot}");
 
-        var domainsPath = HephaestusRepoPaths.FileUnderWeb(repoRoot, "web", "domains.json");
+        var domainsPath = HephaestusRepoPaths.FileUnderDataRoot(dataRoot, "domains.json");
         if (!File.Exists(domainsPath))
             throw new InvalidOperationException($"Missing domains file: {domainsPath}");
 
@@ -42,7 +42,7 @@ internal static class Program
         if (dnsNames.Count == 0)
             throw new InvalidOperationException("No enabled domains in domains.json.");
 
-        var certDir = HephaestusRepoPaths.CertDirectory(repoRoot, "cert");
+        var certDir = HephaestusRepoPaths.CertDirectory(dataRoot, "cert");
         var pfxPath = Path.Combine(certDir, "hephaestus.pfx");
         var publicCerPath = Path.Combine(certDir, "hephaestus-trusted-root.cer");
 

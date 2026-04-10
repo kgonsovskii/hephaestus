@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "cpe//OdTVgU=",
+  "dgSpecHash": "y5HVeMCKcBY=",
   "success": true,
-  "projectFilePath": "C:\\soft\\hephaestus\\src\\TroyanBuilder\\TroyanBuilder.csproj",
+  "projectFilePath": "C:\\soft\\newway\\hephaestus\\src\\TroyanBuilder\\TroyanBuilder.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\k\\.nuget\\packages\\humanizer.core\\2.14.1\\humanizer.core.2.14.1.nupkg.sha512",
     "C:\\Users\\k\\.nuget\\packages\\json.more.net\\2.0.2\\json.more.net.2.0.2.nupkg.sha512",

@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "C:\\soft\\hephaestus\\src\\Refiner\\Refiner.csproj": {}
+    "C:\\soft\\newway\\hephaestus\\src\\Refiner\\Refiner.csproj": {}
   },
   "projects": {
-    "C:\\soft\\hephaestus\\src\\Commons\\Commons.csproj": {
+    "C:\\soft\\newway\\hephaestus\\src\\Commons\\Commons.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\soft\\hephaestus\\src\\Commons\\Commons.csproj",
+        "projectUniqueName": "C:\\soft\\newway\\hephaestus\\src\\Commons\\Commons.csproj",
         "projectName": "Commons",
-        "projectPath": "C:\\soft\\hephaestus\\src\\Commons\\Commons.csproj",
+        "projectPath": "C:\\soft\\newway\\hephaestus\\src\\Commons\\Commons.csproj",
         "packagesPath": "C:\\Users\\k\\.nuget\\packages",
-        "outputPath": "C:\\soft\\hephaestus\\src\\Commons\\obj\\",
+        "outputPath": "C:\\soft\\newway\\hephaestus\\src\\Commons\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\soft\\hephaestus\\src\\NuGet.Config",
+          "C:\\soft\\newway\\hephaestus\\src\\NuGet.Config",
           "C:\\Users\\k\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
@@ -64,17 +64,17 @@
         }
       }
     },
-    "C:\\soft\\hephaestus\\src\\Db\\Db.csproj": {
+    "C:\\soft\\newway\\hephaestus\\src\\Db\\Db.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\soft\\hephaestus\\src\\Db\\Db.csproj",
+        "projectUniqueName": "C:\\soft\\newway\\hephaestus\\src\\Db\\Db.csproj",
         "projectName": "Db",
-        "projectPath": "C:\\soft\\hephaestus\\src\\Db\\Db.csproj",
+        "projectPath": "C:\\soft\\newway\\hephaestus\\src\\Db\\Db.csproj",
         "packagesPath": "C:\\Users\\k\\.nuget\\packages",
-        "outputPath": "C:\\soft\\hephaestus\\src\\Db\\obj\\",
+        "outputPath": "C:\\soft\\newway\\hephaestus\\src\\Db\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\soft\\hephaestus\\src\\NuGet.Config",
+          "C:\\soft\\newway\\hephaestus\\src\\NuGet.Config",
           "C:\\Users\\k\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
@@ -87,8 +87,8 @@
           "net9.0": {
             "targetAlias": "net9.0",
             "projectReferences": {
-              "C:\\soft\\hephaestus\\src\\Commons\\Commons.csproj": {
-                "projectPath": "C:\\soft\\hephaestus\\src\\Commons\\Commons.csproj"
+              "C:\\soft\\newway\\hephaestus\\src\\Commons\\Commons.csproj": {
+                "projectPath": "C:\\soft\\newway\\hephaestus\\src\\Commons\\Commons.csproj"
               }
             }
           }
@@ -138,17 +138,17 @@
         }
       }
     },
-    "C:\\soft\\hephaestus\\src\\Domain\\Domain.csproj": {
+    "C:\\soft\\newway\\hephaestus\\src\\Domain\\Domain.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\soft\\hephaestus\\src\\Domain\\Domain.csproj",
+        "projectUniqueName": "C:\\soft\\newway\\hephaestus\\src\\Domain\\Domain.csproj",
         "projectName": "Domain",
-        "projectPath": "C:\\soft\\hephaestus\\src\\Domain\\Domain.csproj",
+        "projectPath": "C:\\soft\\newway\\hephaestus\\src\\Domain\\Domain.csproj",
         "packagesPath": "C:\\Users\\k\\.nuget\\packages",
-        "outputPath": "C:\\soft\\hephaestus\\src\\Domain\\obj\\",
+        "outputPath": "C:\\soft\\newway\\hephaestus\\src\\Domain\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\soft\\hephaestus\\src\\NuGet.Config",
+          "C:\\soft\\newway\\hephaestus\\src\\NuGet.Config",
           "C:\\Users\\k\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
@@ -161,8 +161,8 @@
           "net9.0": {
             "targetAlias": "net9.0",
             "projectReferences": {
-              "C:\\soft\\hephaestus\\src\\Commons\\Commons.csproj": {
-                "projectPath": "C:\\soft\\hephaestus\\src\\Commons\\Commons.csproj"
+              "C:\\soft\\newway\\hephaestus\\src\\Commons\\Commons.csproj": {
+                "projectPath": "C:\\soft\\newway\\hephaestus\\src\\Commons\\Commons.csproj"
               }
             }
           }
@@ -216,17 +216,17 @@
         }
       }
     },
-    "C:\\soft\\hephaestus\\src\\model\\model.csproj": {
+    "C:\\soft\\newway\\hephaestus\\src\\model\\model.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\soft\\hephaestus\\src\\model\\model.csproj",
+        "projectUniqueName": "C:\\soft\\newway\\hephaestus\\src\\model\\model.csproj",
         "projectName": "model",
-        "projectPath": "C:\\soft\\hephaestus\\src\\model\\model.csproj",
+        "projectPath": "C:\\soft\\newway\\hephaestus\\src\\model\\model.csproj",
         "packagesPath": "C:\\Users\\k\\.nuget\\packages",
-        "outputPath": "C:\\soft\\hephaestus\\src\\model\\obj\\",
+        "outputPath": "C:\\soft\\newway\\hephaestus\\src\\model\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\soft\\hephaestus\\src\\NuGet.Config",
+          "C:\\soft\\newway\\hephaestus\\src\\NuGet.Config",
           "C:\\Users\\k\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
@@ -239,8 +239,8 @@
           "net9.0": {
             "targetAlias": "net9.0",
             "projectReferences": {
-              "C:\\soft\\hephaestus\\src\\Commons\\Commons.csproj": {
-                "projectPath": "C:\\soft\\hephaestus\\src\\Commons\\Commons.csproj"
+              "C:\\soft\\newway\\hephaestus\\src\\Commons\\Commons.csproj": {
+                "projectPath": "C:\\soft\\newway\\hephaestus\\src\\Commons\\Commons.csproj"
               }
             }
           }
@@ -280,17 +280,17 @@
         }
       }
     },
-    "C:\\soft\\hephaestus\\src\\Refiner\\Refiner.csproj": {
+    "C:\\soft\\newway\\hephaestus\\src\\Refiner\\Refiner.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\soft\\hephaestus\\src\\Refiner\\Refiner.csproj",
+        "projectUniqueName": "C:\\soft\\newway\\hephaestus\\src\\Refiner\\Refiner.csproj",
         "projectName": "Refiner",
-        "projectPath": "C:\\soft\\hephaestus\\src\\Refiner\\Refiner.csproj",
+        "projectPath": "C:\\soft\\newway\\hephaestus\\src\\Refiner\\Refiner.csproj",
         "packagesPath": "C:\\Users\\k\\.nuget\\packages",
-        "outputPath": "C:\\soft\\hephaestus\\src\\Refiner\\obj\\",
+        "outputPath": "C:\\soft\\newway\\hephaestus\\src\\Refiner\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\soft\\hephaestus\\src\\NuGet.Config",
+          "C:\\soft\\newway\\hephaestus\\src\\NuGet.Config",
           "C:\\Users\\k\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
@@ -303,14 +303,14 @@
           "net9.0": {
             "targetAlias": "net9.0",
             "projectReferences": {
-              "C:\\soft\\hephaestus\\src\\Db\\Db.csproj": {
-                "projectPath": "C:\\soft\\hephaestus\\src\\Db\\Db.csproj"
+              "C:\\soft\\newway\\hephaestus\\src\\Db\\Db.csproj": {
+                "projectPath": "C:\\soft\\newway\\hephaestus\\src\\Db\\Db.csproj"
               },
-              "C:\\soft\\hephaestus\\src\\Domain\\Domain.csproj": {
-                "projectPath": "C:\\soft\\hephaestus\\src\\Domain\\Domain.csproj"
+              "C:\\soft\\newway\\hephaestus\\src\\Domain\\Domain.csproj": {
+                "projectPath": "C:\\soft\\newway\\hephaestus\\src\\Domain\\Domain.csproj"
               },
-              "C:\\soft\\hephaestus\\src\\model\\model.csproj": {
-                "projectPath": "C:\\soft\\hephaestus\\src\\model\\model.csproj"
+              "C:\\soft\\newway\\hephaestus\\src\\model\\model.csproj": {
+                "projectPath": "C:\\soft\\newway\\hephaestus\\src\\model\\model.csproj"
               }
             }
           }

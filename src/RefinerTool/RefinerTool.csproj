@@ -9,4 +9,12 @@
     <ProjectReference Include="..\Refiner\Refiner.csproj" />
   </ItemGroup>
 
+  <!-- Same source of truth as DomainHost/Install: Technitium + DomainHost paths. Without this, Technitium:Enabled defaults to false and DNS sync never runs. -->
+  <ItemGroup>
+    <None Include="..\Commons\appsettings.json" Link="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

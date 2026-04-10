@@ -58,7 +58,26 @@ public static class ServerModelLoader
         return Path.Combine(ServerDir(serverName), "server.json");
     }
 
-    public static string SourceCertDirStatic => HephaestusRepoPaths.CertDirectory(RootDirStatic);
+    public static string SourceCertDirStatic => HephaestusRepoPaths.CertDirectory(HephaestusDataRootStatic);
+
+    private static string? _hephaestusDataRootStatic;
+
+    /// <summary>Resolved <c>hephaestus_data</c> directory (see <c>HephaestusRepoPaths.ResolveHephaestusDataRoot</c>).</summary>
+    public static string HephaestusDataRootStatic
+    {
+        get
+        {
+            if (_hephaestusDataRootStatic is null)
+            {
+                var dir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+                if (string.IsNullOrEmpty(dir))
+                    throw new InvalidOperationException("Could not resolve assembly directory for Hephaestus data root.");
+                _hephaestusDataRootStatic = HephaestusRepoPaths.ResolveHephaestusDataRoot(dir);
+            }
+
+            return _hephaestusDataRootStatic;
+        }
+    }
 
     private static string? _rootDirStatic;
 
