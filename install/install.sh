@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Full stack: uninstall (service + release/), Git, .NET 9 SDK, PostgreSQL (hephaestus), Technitium DNS,
-# then restore solution + publish DomainHost + domainhost.service (install-soft fails if service not active).
+# then restore solution + Deploy (DeployDomain) + domainhost.service (install-soft fails if service not active).
 # On success, powers off the host (job done).
 # (Clone the repo on the server first, e.g. install-remote.ps1 / install-remote.sh, then run this script.)
 # Run: sudo bash install/install.sh
