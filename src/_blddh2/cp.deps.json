@@ -1,0 +1,104 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v9.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v9.0": {
+      "cp/1.0.0": {
+        "dependencies": {
+          "Domain": "1.0.0",
+          "Npgsql": "9.0.3",
+          "SMBLibrary": "1.5.3.5",
+          "model": "1.0.0"
+        },
+        "runtime": {
+          "cp.dll": {}
+        }
+      },
+      "Npgsql/9.0.3": {
+        "runtime": {
+          "lib/net8.0/Npgsql.dll": {
+            "assemblyVersion": "9.0.3.0",
+            "fileVersion": "9.0.3.0"
+          }
+        }
+      },
+      "SMBLibrary/1.5.3.5": {
+        "runtime": {
+          "lib/netstandard2.0/SMBLibrary.dll": {
+            "assemblyVersion": "1.5.3.5",
+            "fileVersion": "1.5.3.5"
+          }
+        }
+      },
+      "Commons/1.0.0": {
+        "runtime": {
+          "Commons.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      },
+      "Domain/1.0.0": {
+        "dependencies": {
+          "Commons": "1.0.0"
+        },
+        "runtime": {
+          "Domain.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      },
+      "model/1.0.0": {
+        "dependencies": {
+          "Commons": "1.0.0"
+        },
+        "runtime": {
+          "model.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      }
+    }
+  },
+  "libraries": {
+    "cp/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Npgsql/9.0.3": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-tPvY61CxOAWxNsKLEBg+oR646X4Bc8UmyQ/tJszL/7mEmIXQnnBhVJZrZEEUv0Bstu0mEsHZD5At3EO8zQRAYw==",
+      "path": "npgsql/9.0.3",
+      "hashPath": "npgsql.9.0.3.nupkg.sha512"
+    },
+    "SMBLibrary/1.5.3.5": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-f/EJ3TMwqpBhnJ4U1Q98Xveg+bXG16JdFZbQJHiGMH63otzdsb7IsCQx+0cLqz0tuSBtPqS5Mf6XIv0rUA7jzQ==",
+      "path": "smblibrary/1.5.3.5",
+      "hashPath": "smblibrary.1.5.3.5.nupkg.sha512"
+    },
+    "Commons/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Domain/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "model/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}
