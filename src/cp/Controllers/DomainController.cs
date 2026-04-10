@@ -13,6 +13,7 @@ public class DomainController : BaseController
     public const string TempDataMessageKey = "DomainUiMessage";
 
     private readonly IDomainRepository _domains;
+    private readonly DomainCatalog _catalog;
     private readonly IWebContentClassCatalog _classes;
     private readonly IDomainHostsChangedSignal _hostsChanged;
 
@@ -21,10 +22,12 @@ public class DomainController : BaseController
         IConfiguration configuration,
         IMemoryCache memoryCache,
         IDomainRepository domains,
+        DomainCatalog catalog,
         IWebContentClassCatalog classes,
         IDomainHostsChangedSignal hostsChanged) : base(serverService, configuration, memoryCache)
     {
         _domains = domains;
+        _catalog = catalog;
         _classes = classes;
         _hostsChanged = hostsChanged;
     }
@@ -55,6 +58,7 @@ public class DomainController : BaseController
             .Select(r => r.ToDomainRecord())
             .ToList();
         await _domains.SaveDomainsAsync(records, cancellationToken).ConfigureAwait(false);
+        await ReplaceInMemoryCatalogAsync(cancellationToken).ConfigureAwait(false);
         _hostsChanged.NotifyHostsChanged();
         TempData[TempDataMessageKey] = "Domains saved; hosted sync will run shortly.";
         return RedirectToAction(nameof(Index));
@@ -93,11 +97,23 @@ public class DomainController : BaseController
         }
 
         await _domains.SaveDomainsAsync(list.Select(r => r.ToDomainRecord()).ToList(), cancellationToken).ConfigureAwait(false);
+        await ReplaceInMemoryCatalogAsync(cancellationToken).ConfigureAwait(false);
         _hostsChanged.NotifyHostsChanged();
 
         TempData[TempDataMessageKey] = added == 0
             ? "No new domains added (duplicates or empty lines skipped); hosted sync will run shortly."
             : $"Added {added} domain(s); hosted sync will run shortly.";
         return RedirectToAction(nameof(Index));
+    }
+
+    /// <summary>
+    /// Updates the in-process host→site map (same data as <see cref="DomainCatalog"/>) so the next vhost request
+    /// matches domains.json. Hosted <see cref="DomainCatalogRefreshService"/> may run slightly later; without this,
+    /// routing could stay stale until the next refresh interval after a control-panel save.
+    /// </summary>
+    private async Task ReplaceInMemoryCatalogAsync(CancellationToken cancellationToken)
+    {
+        var enabled = await _domains.LoadEnabledDomainsAsync(cancellationToken).ConfigureAwait(false);
+        _catalog.Replace(enabled);
     }
 }

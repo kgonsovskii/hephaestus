@@ -8,6 +8,17 @@ using Refiner;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// appsettings.json is linked from Commons and copied to output (BaseDirectory), but the project ContentRoot
+// usually has no physical file, so Technitium/Refiner/ConnectionStrings never bind. RefinerTool avoids this by
+// setting ContentRoot to BaseDirectory. Merge the built copy so DNS (Technitium) and DB stats see real config.
+builder.Configuration.AddJsonFile(Path.Combine(AppContext.BaseDirectory, "appsettings.json"), optional: true,
+    reloadOnChange: true);
+if (builder.Environment.IsDevelopment())
+{
+    builder.Configuration.AddJsonFile(Path.Combine(AppContext.BaseDirectory, "appsettings.Development.json"),
+        optional: true, reloadOnChange: true);
+}
+
 builder.AddCp();
 builder.Services.AddDomainServices(builder.Configuration);
 builder.Services.AddDbServices(builder.Configuration);

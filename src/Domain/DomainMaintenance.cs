@@ -49,9 +49,13 @@ public sealed class DomainMaintenance : IDomainMaintenance
         var opts = _technitium.CurrentValue;
         if (!opts.Enabled)
         {
-            _logger.LogDebug("Technitium sync skipped (Technitium:Enabled is false).");
+            _logger.LogWarning(
+                "Technitium DNS sync skipped (Technitium:Enabled is false). " +
+                "If you expect DNS updates, ensure appsettings.json is loaded (DomainHost merges the copy under the exe / BaseDirectory) and Technitium:Enabled is true.");
             return;
         }
+
+        _logger.LogInformation("Technitium DNS sync starting (BaseUrl={BaseUrl}).", opts.BaseUrl.Trim());
 
         var hostOpts = _hostOptions.Value;
         var ignoreName = hostOpts.DomainsIgnoreFileName.Trim();
@@ -179,7 +183,7 @@ public sealed class DomainMaintenance : IDomainMaintenance
         {
             var zone = pair.Key;
             var row = pair.Value;
-            ParseTargetAddresses(row.Ip, out var v4, out var v6);
+            DomainIpFieldParser.ParseTargetAddresses(row.Ip, out var v4, out var v6);
             var apexFqdn = zone.TrimEnd('.');
             var wildcardFqdn = TechnitiumDnsClient.WildcardFqdn(zone);
             _logger.LogInformation(
@@ -213,7 +217,7 @@ public sealed class DomainMaintenance : IDomainMaintenance
                 continue;
             }
 
-            ParseTargetAddresses(row.Ip, out var v4, out var v6);
+            DomainIpFieldParser.ParseTargetAddresses(row.Ip, out var v4, out var v6);
             _logger.LogInformation(
                 "Technitium DNS sync {Domain}: IPv4={Ipv4} IPv6={Ipv6} zone={Zone} (AAAA is written only when IPv6 is set)",
                 fqdn,
@@ -222,37 +226,6 @@ public sealed class DomainMaintenance : IDomainMaintenance
                 zone);
             await _dns.SyncAaaaAsync(token, fqdn, zone, v4, v6, opts.PtrEnabled, cancellationToken)
                 .ConfigureAwait(false);
-        }
-    }
-
-    private static void ParseTargetAddresses(string? ipField, out IPAddress? v4, out IPAddress? v6)
-    {
-        v4 = null;
-        v6 = null;
-        if (string.IsNullOrWhiteSpace(ipField))
-        {
-            NetworkAddressPreference.TryGetPreferredAddresses(out v4, out v6);
-            return;
-        }
-
-        foreach (var part in ipField.Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries))
-        {
-            var t = part.Trim();
-            if (t.Length == 0)
-                continue;
-            if (!IPAddress.TryParse(t, out var ip))
-                continue;
-            if (ip.AddressFamily == AddressFamily.InterNetwork)
-                v4 = ip;
-            else if (ip.AddressFamily == AddressFamily.InterNetworkV6)
-                v6 = ip;
-        }
-
-        // Explicit list may include only IPv4; still publish AAAA using this host's preferred IPv6 when available.
-        if (v6 == null)
-        {
-            NetworkAddressPreference.TryGetPreferredAddresses(out _, out var preferredV6);
-            v6 = preferredV6;
         }
     }
 }

@@ -60,7 +60,6 @@ public sealed class DomainCatalogRefreshService : BackgroundService
         {
             var rows = await _repository.LoadEnabledDomainsAsync(ct).ConfigureAwait(false);
             _catalog.Replace(rows);
-            _logger.LogInformation("Domain catalog refreshed: {Count} host(s).", rows.Count);
         }
         catch (Exception ex)
         {

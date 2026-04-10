@@ -1,6 +1,7 @@
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using Domain.Models;
+using Microsoft.Extensions.Logging;
 
 namespace Domain;
 
@@ -11,8 +12,14 @@ public interface IDomainCatalog
 
 public sealed class DomainCatalog : IDomainCatalog
 {
+    private readonly ILogger<DomainCatalog> _logger;
     private ImmutableDictionary<string, DomainRecord> _byHost =
         ImmutableDictionary<string, DomainRecord>.Empty;
+
+    public DomainCatalog(ILogger<DomainCatalog> logger)
+    {
+        _logger = logger;
+    }
 
     public void Replace(IEnumerable<DomainRecord> records)
     {
@@ -28,6 +35,17 @@ public sealed class DomainCatalog : IDomainCatalog
         }
 
         _byHost = builder.ToImmutable();
+
+        foreach (var r in builder.Values.OrderBy(x => x.Domain, StringComparer.OrdinalIgnoreCase))
+        {
+            DomainIpFieldParser.ParseTargetAddresses(r.Ip, out var v4, out var v6);
+            _logger.LogInformation(
+                "Domain catalog entry {Domain}: ip={Ip} ipv4={Ipv4} ipv6={Ipv6}",
+                r.Domain,
+                string.IsNullOrWhiteSpace(r.Ip) ? "(default)" : r.Ip.Trim(),
+                v4?.ToString() ?? "-",
+                v6?.ToString() ?? "-");
+        }
     }
 
     public bool TryGetBestMatch(string host, [NotNullWhen(true)] out DomainRecord? record)
