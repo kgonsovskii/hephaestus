@@ -1625,6 +1625,7 @@
         "type": "project",
         "framework": ".NETCoreApp,Version=v9.0",
         "dependencies": {
+          "Domain": "1.0.0",
           "Npgsql": "9.0.3",
           "SMBLibrary": "1.5.3.5",
           "model": "1.0.0"

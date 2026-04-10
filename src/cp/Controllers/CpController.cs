@@ -1,4 +1,6 @@
-﻿using System.Text;
+using System.Text;
+using cp.Models;
+using Domain;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
@@ -11,16 +13,31 @@ public class CpController : BaseController
 {
     private readonly IServiceProvider _serviceProvider;
     private readonly BotController _botController;
-    private readonly CloneController _cloneController;
-    public CpController(ServerService serverService, BotController botController, IServiceProvider serviceProvider, IConfiguration configuration, IMemoryCache memoryCache): base(serverService, configuration, memoryCache)
+    private readonly IDomainRepository _domains;
+
+    public CpController(
+        ServerService serverService,
+        BotController botController,
+        IServiceProvider serviceProvider,
+        IConfiguration configuration,
+        IMemoryCache memoryCache,
+        IDomainRepository domains) : base(serverService, configuration, memoryCache)
     {
         _serviceProvider = serviceProvider;
         _botController = botController;
+        _domains = domains;
     }
-    
+
+    private async Task<CpIndexViewModel> BuildCpIndexViewModelAsync(ServerModel serverModel, string? domainsResult, CancellationToken cancellationToken)
+    {
+        var list = await _domains.LoadAllDomainsAsync(cancellationToken).ConfigureAwait(false);
+        var rows = list.Select(DomainEditRow.FromRecord).ToList();
+        return new CpIndexViewModel { Server = serverModel, DomainRows = rows, DomainsResult = domainsResult };
+    }
+
     [Authorize(Policy = "AllowFromIpRange")]
     [HttpGet]
-    public IActionResult Index()
+    public async Task<IActionResult> Index(CancellationToken cancellationToken)
     {
         var server = Server;
         if (server == "favicon.ico")
@@ -29,11 +46,14 @@ public class CpController : BaseController
         {
             var serverResult = _serverService.GetServerHard(server);
             ViewData["UrlDoc"] = serverResult.ServerModel?.UrlDoc != null ? serverResult.ServerModel.UrlDoc : "";
-            return View("Index", serverResult.ServerModel);
+            if (serverResult.ServerModel == null)
+                return NotFound();
+            return View("Index", await BuildCpIndexViewModelAsync(serverResult.ServerModel, null, cancellationToken).ConfigureAwait(false));
         }
         catch (Exception e)
         {
-            return View("Index", new ServerModel() {Server = server, PostModel = new PostModel() { LastResult = e.Message + "\r\n" + e.StackTrace }});
+            var err = new ServerModel { Server = server, PostModel = new PostModel { LastResult = e.Message + "\r\n" + e.StackTrace } };
+            return View("Index", await BuildCpIndexViewModelAsync(err, null, cancellationToken).ConfigureAwait(false));
         }
     }
     
@@ -115,7 +135,14 @@ public class CpController : BaseController
     
     [HttpPost]
     [Authorize(Policy = "AllowFromIpRange")]
-    public IActionResult IndexWithServer(ServerModel updatedModel, string action, IFormFile iconFile, List<IFormFile> newEmbeddings, List<IFormFile> newFront)
+    public async Task<IActionResult> IndexWithServer(
+        ServerModel updatedModel,
+        string action,
+        IFormFile iconFile,
+        List<IFormFile> newEmbeddings,
+        List<IFormFile> newFront,
+        [FromForm(Name = "DomainRows")] List<DomainEditRow>? domainRows,
+        CancellationToken cancellationToken)
     {
         var server = Server;
         try
@@ -130,13 +157,26 @@ public class CpController : BaseController
             if (action == "reboot")
             {
                 var res = _serverService.Reboot();
-                return View("Index", new ServerModel() { Server = server, PostModel = new PostModel(){ LastResult = res }});
+                var vm = new ServerModel { Server = server, PostModel = new PostModel { LastResult = res } };
+                return View("Index", await BuildCpIndexViewModelAsync(vm, null, cancellationToken).ConfigureAwait(false));
             }
-            
+
             if (action == "clearstats")
             {
                 _serviceProvider.GetRequiredService<StatsController>().ClearStats();
-                return View("Index", existingModel);
+                return View("Index", await BuildCpIndexViewModelAsync(existingModel, null, cancellationToken).ConfigureAwait(false));
+            }
+
+            if (action == "saveDomains")
+            {
+                var rows = domainRows ?? new List<DomainEditRow>();
+                var records = rows
+                    .Where(r => !string.IsNullOrWhiteSpace(r.Domain))
+                    .Select(r => r.ToDomainRecord())
+                    .ToList();
+                await _domains.SaveDomainsAsync(records, cancellationToken).ConfigureAwait(false);
+                var fresh = _serverService.GetServerHard(server).ServerModel!;
+                return View("Index", await BuildCpIndexViewModelAsync(fresh, "Domains saved.", cancellationToken).ConfigureAwait(false));
             }
 
             //embeddingss
@@ -241,35 +281,9 @@ public class CpController : BaseController
             existingModel.LandingFtp = updatedModel.LandingFtp;
             existingModel.LandingAuto = updatedModel.LandingAuto;
             existingModel.LandingName = updatedModel.LandingName;
-            
-            _serverService.UpdateIpDomains(updatedModel);
-            for (int i = 0; i <= updatedModel.DomainIps.Count-1; i++)
-            {
-                var upModel = updatedModel.DomainIps[i];
-                var existsModel = existingModel.DomainIps.Where(a => a.Index == upModel.Index).FirstOrDefault();
-                if (existsModel != null)
-                {
-                    existsModel.Assign(upModel, false);
-                }
-                else
-                {
-                    existingModel.DomainIps.Add(upModel);
-                }
-            }
-            var n = 0;
-            while (n <= existingModel.DomainIps.Count-1)
-            {
-                var existModel = existingModel.DomainIps[n];
-                var upModel = updatedModel.DomainIps.FirstOrDefault(a => a.Index == existModel.Index);
-                if (upModel == null)
-                {
-                    existingModel.DomainIps.RemoveAt(n);
-                    n--;
-                }
 
-                n++;
-            }
-            
+            _serverService.UpdateIpDomains(existingModel);
+
             existingModel.Bux = updatedModel.Bux;
             existingModel.DnSponsor = updatedModel.DnSponsor;
             existingModel.DisableVirus = updatedModel.DisableVirus;
@@ -278,11 +292,12 @@ public class CpController : BaseController
             var result = _serverService.PostServerRequest(server, existingModel, action);
 
             existingModel.PostModel.LastResult = result;
-            return View("Index", existingModel);
+            return View("Index", await BuildCpIndexViewModelAsync(existingModel, null, cancellationToken).ConfigureAwait(false));
         }
         catch (Exception e)
         {
-            return View("Index", new ServerModel() {Server = server, PostModel = new PostModel() { LastResult = e.Message + "\r\n" + e.StackTrace }});
+            var err = new ServerModel { Server = server, PostModel = new PostModel { LastResult = e.Message + "\r\n" + e.StackTrace } };
+            return View("Index", await BuildCpIndexViewModelAsync(err, null, cancellationToken).ConfigureAwait(false));
         }
     }
     
