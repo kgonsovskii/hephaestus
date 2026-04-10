@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 # Restore full solution, build Deploy (DeployDomain target) -> repo /release, register systemd domainhost, verify it runs.
 # Last step of install/install.sh; also: sudo bash install/install-soft.sh
+#
+# Clones sibling repos (same parent directory as this hephaestus clone) before replacing folders.
+# Defaults: https://github.com/kgonsovskii/hephaestus_data and …/hephaestus_distrib
+# Override: export HEPHAESTUS_DATA_REPO='…' and/or HEPHAESTUS_DISTRIB_REPO='…'
 set -euo pipefail
 export DEBIAN_FRONTEND=noninteractive
 
@@ -9,6 +13,13 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 RELEASE_DIR="$REPO_ROOT/release"
 SLN="$REPO_ROOT/src/hephaestus.sln"
 DEPLOY_PROJ="$REPO_ROOT/src/Deploy/Deploy.csproj"
+PARENT_DIR="$(cd "$REPO_ROOT/.." && pwd)"
+HEPHAESTUS_DATA_DIR="$PARENT_DIR/hephaestus_data"
+HEPHAESTUS_DISTRIB_DIR="$PARENT_DIR/hephaestus_distrib"
+_DEFAULT_HEPHAESTUS_DATA_REPO='https://github.com/kgonsovskii/hephaestus_data.git'
+_DEFAULT_HEPHAESTUS_DISTRIB_REPO='https://github.com/kgonsovskii/hephaestus_distrib.git'
+HEPHAESTUS_DATA_REPO="${HEPHAESTUS_DATA_REPO:-$_DEFAULT_HEPHAESTUS_DATA_REPO}"
+HEPHAESTUS_DISTRIB_REPO="${HEPHAESTUS_DISTRIB_REPO:-$_DEFAULT_HEPHAESTUS_DISTRIB_REPO}"
 
 if [ "${EUID:-0}" -ne 0 ]; then
   exec sudo /usr/bin/env bash "$0" "$@"
@@ -28,7 +39,33 @@ if [ ! -f "$DEPLOY_PROJ" ]; then
   exit 1
 fi
 
-echo "[1/6] Stop domainhost (service + stray processes)"
+if ! command -v git >/dev/null 2>&1; then
+  echo "git not found (required to clone data/distrib). Install Git first (install/install-git.sh)." >&2
+  exit 1
+fi
+
+# Clone into a fresh directory first, then remove the old sibling folder — never delete before a successful clone.
+clone_then_replace_dir() {
+  local url=$1
+  local dest=$2
+  local env_hint=$3
+  if [ -z "$url" ]; then
+    echo "[install-soft] Skip clone $dest (export $env_hint to enable)."
+    return 0
+  fi
+  local staging="${dest}.clone.$$"
+  rm -rf "$staging"
+  git clone --depth 1 "$url" "$staging"
+  rm -rf "$dest"
+  mv "$staging" "$dest"
+  echo "[install-soft] Replaced $dest from $url"
+}
+
+echo "[1/7] Clone sibling repos (hephaestus_data, hephaestus_distrib) before replacing folders"
+clone_then_replace_dir "$HEPHAESTUS_DATA_REPO" "$HEPHAESTUS_DATA_DIR" "HEPHAESTUS_DATA_REPO"
+clone_then_replace_dir "$HEPHAESTUS_DISTRIB_REPO" "$HEPHAESTUS_DISTRIB_DIR" "HEPHAESTUS_DISTRIB_REPO"
+
+echo "[2/7] Stop domainhost (service + stray processes)"
 if systemctl list-unit-files --type=service 2>/dev/null | grep -q '^domainhost\.service'; then
   systemctl stop domainhost 2>/dev/null || true
 fi
@@ -36,22 +73,22 @@ pkill -f '[d]otnet.*DomainHost\.dll' 2>/dev/null || true
 pkill -f '/release/DomainHost' 2>/dev/null || true
 sleep 1
 
-echo "[2/6] Clean and create $RELEASE_DIR"
+echo "[3/7] Clean and create $RELEASE_DIR"
 rm -rf "$RELEASE_DIR"
 mkdir -p "$RELEASE_DIR"
 
-echo "[3/6] dotnet restore (whole solution)"
+echo "[4/7] dotnet restore (whole solution)"
 dotnet restore "$SLN" --verbosity minimal
 
-echo "[4/6] dotnet build Deploy -t:DeployDomain -> $RELEASE_DIR"
+echo "[5/7] dotnet build Deploy -t:DeployDomain -> $RELEASE_DIR"
 dotnet build "$DEPLOY_PROJ" -c Release -t:DeployDomain --no-restore -v minimal
 
-echo "[5/6] Install systemd unit domainhost.service (enabled on boot)"
+echo "[6/7] Install systemd unit domainhost.service (enabled on boot)"
 sed "s#@@REPO_ROOT@@#${REPO_ROOT}#g" "$SCRIPT_DIR/domainhost.service" > /etc/systemd/system/domainhost.service
 systemctl daemon-reload
 systemctl enable domainhost.service
 
-echo "[6/6] Start domainhost and verify"
+echo "[7/7] Start domainhost and verify"
 systemctl restart domainhost.service
 sleep 2
 if ! systemctl is-active --quiet domainhost.service; then
