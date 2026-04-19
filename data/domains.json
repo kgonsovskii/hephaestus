@@ -33,7 +33,7 @@
       "redirectUrl": null
     },
     {
-      "enabled": true,
+      "enabled": false,
       "domain": "4545454",
       "ip": null,
       "domainClass": "analytics",
