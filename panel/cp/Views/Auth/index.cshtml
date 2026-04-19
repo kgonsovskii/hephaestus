@@ -1,4 +1,4 @@
-﻿@{
+@{
 Layout = "_Layout";
 }
 @{
@@ -12,6 +12,7 @@ Layout = "_Layout";
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    @await Html.PartialAsync("_CpBaseHref")
     <title>Redirecting</title>
 </head>
 <body>
@@ -23,14 +24,14 @@ Layout = "_Layout";
         document.cookie = '@cookieString';
 
         // Perform the redirect
-        window.location.href = '@Url.Action("Index", "Cp")';
+        window.location.href = '../';
     </script>
 }
 
 
 <h2>Login</h2>
 
-<form method="post" action="~/auth">
+<form method="post" action="Auth">
     <div>
         <label for="username">Username</label>
         <input type="text" id="username" name="username" required/>

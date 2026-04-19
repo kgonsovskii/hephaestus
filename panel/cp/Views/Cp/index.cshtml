@@ -12,6 +12,7 @@ Layout = "~/Views/Shared/_Layout.cshtml";
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    @await Html.PartialAsync("_CpBaseHref")
     <title>Edit Server Settings</title>
     <style>
         .form-group {
@@ -174,10 +175,10 @@ Layout = "~/Views/Shared/_Layout.cshtml";
                         <button class="nav-link active" id="edit-server-settings-tab" data-bs-toggle="tab" data-bs-target="#edit-server-settings" type="button" role="tab" aria-controls="edit-server-settings" aria-selected="true">Edit Server Settings</button>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <a class="nav-link" href="@Url.Action("Index", "Domain")">Domains</a>
+                        <a class="nav-link" href="domains">Domains</a>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <a class="nav-link" href="@Url.Action("Index", "Clone")">Clone</a>
+                        <a class="nav-link" href="clone">Clone</a>
                     </li>
                     <li class="nav-item" role="presentation">
                         <a class="nav-link" href="@dnsUiUrl" target="_blank" rel="noopener noreferrer">DNS</a>
@@ -296,9 +297,9 @@ Layout = "~/Views/Shared/_Layout.cshtml";
                                     
                                     <hr/>
                                     
-                                    <a href="/stats/dayly" target="_blank">View Daily Statistics</a>&nbsp;&nbsp;&nbsp;       
-                                    <a href="/stats/botlog" target="_blank">BotLog</a>
-                                    <a href="/stats/downloadlog" target="_blank">DownloadLog</a>
+                                    <a href="Stats/dayly" target="_blank">View Daily Statistics</a>&nbsp;&nbsp;&nbsp;
+                                    <a href="Stats/botlog" target="_blank">BotLog</a>
+                                    <a href="Stats/downloadlog" target="_blank">DownloadLog</a>
 
                                     
                                     <div class="form-group mt-3">

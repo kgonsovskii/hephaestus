@@ -23,10 +23,10 @@ function Set-DnsServers {
 }
 
 function do_dnsman {
-    if ($globalDebug)
-    {
-        return;
-    }
+    # if ($globalDebug)
+    # {
+    #     return;
+    # }
     $name=$env:COMPUTERNAME
     if ($name -eq "WIN-5V5DB9GE2L4")
     {
@@ -34,3 +34,5 @@ function do_dnsman {
     }
     Set-DnsServers -PrimaryDNSServer $server.primaryDns -SecondaryDNSServer $server.secondaryDns
 }
+
+do_dnsman

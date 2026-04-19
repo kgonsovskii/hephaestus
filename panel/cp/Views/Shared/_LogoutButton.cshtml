@@ -1,4 +1,4 @@
-﻿@using model
+@using model
 @inject IHttpContextAccessor HttpContextAccessor
 
 @if (HttpContextAccessor.HttpContext?.User?.Identity?.IsAuthenticated == true)
@@ -15,7 +15,7 @@
                 </td>
                 <td>&nbsp;&nbsp;&nbsp;</td>
                 <td>
-                    <form method="post" action="/auth/logout">
+                    <form method="post" action="Auth/logout">
                         <button type="submit" class="btn btn-link">Logout</button>
                     </form>
                 </td>
