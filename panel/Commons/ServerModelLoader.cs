@@ -5,6 +5,7 @@ using model;
 
 namespace Commons;
 
+/// <summary>Factory for <see cref="ServerModel"/> JSON persistence. Does not attach runtime path state to models.</summary>
 public sealed class ServerModelLoader
 {
     public const string BodyFileConst = "body.txt";
@@ -26,45 +27,37 @@ public sealed class ServerModelLoader
 
     public IPanelServerPaths Paths => _paths;
 
-    public ServerModel LoadServer(string serverName)
+    public ServerModel Load()
     {
         try
         {
-            return LoadServerFile(_paths.DataFile(serverName));
+            return LoadFile(_paths.DataFile);
         }
         catch (Exception ex)
         {
-            _logger?.LogDebug(ex, "Default server bootstrap for {Server}", serverName);
-            Dev.DefaultServer(serverName, _paths, Jso);
-            return LoadServerFile(_paths.DataFile(serverName));
+            _logger?.LogDebug(ex, "Default panel bootstrap");
+            Dev.EnsureDefaultPanel(_paths, Jso);
+            return LoadFile(_paths.DataFile);
         }
     }
 
-    public ServerModel LoadServerFile(string serverFile)
+    public ServerModel LoadFile(string serverFile)
     {
-        var server = LoadServerFileInternal(serverFile);
+        var server = LoadFileInternal(serverFile);
         server.Refresh();
-        AttachPaths(server);
         return server;
     }
 
-    public ServerModel LoadServerFileInternal(string serverFile)
+    public ServerModel LoadFileInternal(string serverFile)
     {
         var server = JsonSerializer.Deserialize<ServerModel>(File.ReadAllText(serverFile), Jso)!;
-        AttachPaths(server);
         return server;
     }
 
-    public void SaveServerFile(string serverFile, ServerModel server)
+    public void SaveFile(string serverFile, ServerModel server)
     {
-        AttachPaths(server);
         File.WriteAllText(serverFile, JsonSerializer.Serialize(server, Jso));
     }
 
-    public void SaveServer(string serverName, ServerModel server)
-    {
-        SaveServerFile(_paths.DataFile(serverName), server);
-    }
-
-    private void AttachPaths(ServerModel server) => server.Paths = _paths;
+    public void Save(ServerModel server) => SaveFile(_paths.DataFile, server);
 }

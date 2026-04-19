@@ -22,7 +22,7 @@ public partial class ServerService
 
     public void UpdateTabs(ServerModel server)
     {
-        var profilesDir = Path.Combine(server.UserDataDir, "profiles");
+        var profilesDir = Path.Combine(Paths.UserDataDir, "profiles");
         if (Directory.Exists(profilesDir) == false)
             Directory.CreateDirectory(profilesDir);
 

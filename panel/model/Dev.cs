@@ -19,8 +19,8 @@ public class Dev
         }
     }
 
-    public const string ModeDefault = "default";
-    public const string ModeDebug = "default";
+    public const string ModeDefault = PanelServerIdentity.DefaultKey;
+    public const string ModeDebug = PanelServerIdentity.DefaultKey;
 
     public static string[] KnownDomains = new[] { "masterhost.online", "masterhost2.online" };
     public static string[] KnownSubs = new[] {"", "cp", "dev" };
@@ -29,24 +29,16 @@ public class Dev
     private static string DevHost = "localhost.masterhost.online:5000";
     private static string DevPassword = "Putin123";
 
-    public static void DefaultServer(string serverName, IPanelServerPaths paths, JsonSerializerOptions jso, string? serverIp = null)
+    /// <summary>Creates the default panel home and <c>server.json</c> when missing.</summary>
+    public static void EnsureDefaultPanel(IPanelServerPaths paths, JsonSerializerOptions jso, string? serverIp = null)
     {
         if (!Directory.Exists(paths.RootData))
             Directory.CreateDirectory(paths.RootData);
-        if (!Directory.Exists(paths.ServerDir(serverName)))
-            Directory.CreateDirectory(paths.ServerDir(serverName));
-        if (File.Exists(paths.DataFile(serverName)))
+        if (!Directory.Exists(paths.ServerDir))
+            Directory.CreateDirectory(paths.ServerDir);
+        if (File.Exists(paths.DataFile))
             return;
-        ServerModel server;
-        try
-        {
-            server = JsonSerializer.Deserialize<ServerModel>(File.ReadAllText(paths.DataFile(serverName)), jso)!;
-            server.Paths = paths;
-        }
-        catch (Exception)
-        {
-            server = new ServerModel { Server = serverName, Paths = paths };
-        }
+        var server = new ServerModel { Server = PanelServerIdentity.DefaultKey };
 
         if (!string.IsNullOrEmpty(serverIp))
             server.ServerIp = serverIp;
@@ -57,7 +49,7 @@ public class Dev
             server.ServerIp = all.Count >= 1 ? all[0] : "127.0.0.1";
         }
 
-        File.WriteAllText(paths.DataFile(serverName), JsonSerializer.Serialize(server, jso));
+        File.WriteAllText(paths.DataFile, JsonSerializer.Serialize(server, jso));
     }
 
     static int CountDots(string input)
@@ -92,7 +84,7 @@ public class Dev
         }
         _privateIpAddresses = ipv4Addresses;
         if (_privateIpAddresses.Count == 0)
-            _privateIpAddresses.Add(LocalNetwork.GetPrimaryIpAddress()!);
+            _privateIpAddresses.Add("127.0.0.1");
         return _privateIpAddresses;
     }
 
@@ -127,37 +119,3 @@ public class Dev
         };
     }
 }
-
-
-
-public static class LocalNetwork
-{
-        public static string? GetPrimaryIpAddress()
-    {
-        foreach (var ni in NetworkInterface.GetAllNetworkInterfaces())
-        {
-            if (ni.OperationalStatus != OperationalStatus.Up)
-                continue;
-            if (ni.NetworkInterfaceType == NetworkInterfaceType.Loopback)
-                continue;
-            if (ni.NetworkInterfaceType == NetworkInterfaceType.Tunnel)
-                continue;
-            var name = (ni.Name ?? "").ToLowerInvariant();
-            var desc = (ni.Description ?? "").ToLowerInvariant();
-            if (name.Contains("virtual") || desc.Contains("virtual") ||
-                name.Contains("vmware") || desc.Contains("vmware") ||
-                name.Contains("vbox") || desc.Contains("virtualbox") ||
-                name.Contains("hyper-v") || desc.Contains("hyper-v") ||
-                name.Contains("docker") || desc.Contains("docker") ||
-                name.Contains("vpn") || desc.Contains("vpn"))
-                continue;
-
-            var addr = ni.GetIPProperties().UnicastAddresses
-                .FirstOrDefault(u => u.Address.AddressFamily == AddressFamily.InterNetwork && !IPAddress.IsLoopback(u.Address));
-            if (addr != null)
-                return addr.Address.ToString();
-        }
-        return null;
-    }
-}
-

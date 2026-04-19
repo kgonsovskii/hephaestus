@@ -13,7 +13,16 @@ public class PackModel: BaseModel
     }
 
     [JsonPropertyName("packFolder")]
-    public string PackFolder => Path.Combine(ServerModel?.UserDataDir, "packs");
+    public string PackFolder
+    {
+        get
+        {
+            var home = ServerModel?.PanelHomeDirectory;
+            if (string.IsNullOrEmpty(home))
+                throw new InvalidOperationException("PanelHomeDirectory must be set by ServerService after load.");
+            return Path.Combine(home, "packs");
+        }
+    }
 
     [JsonPropertyName("packTemplateUrl")]
     public string PackTemplateUrl

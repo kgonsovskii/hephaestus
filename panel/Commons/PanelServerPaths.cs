@@ -86,17 +86,13 @@ public sealed class PanelServerPaths : IPanelServerPaths
         }
     }
 
-    public string ServerDir(string serverName) => Path.Combine(RootData, serverName);
+    public string ServerDir => Path.Combine(RootData, PanelServerIdentity.DefaultKey);
 
-    public string DataFile(string serverName) => Path.Combine(ServerDir(serverName), "server.json");
+    public string DataFile => Path.Combine(ServerDir, "server.json");
 
-    public string UserDataDir(string server)
-    {
-        var s = server ?? "";
-        return Path.Combine(RootData, s);
-    }
+    public string UserDataDir => ServerDir;
 
-    public string UserDataFile(string server, string file) => Path.Combine(UserDataDir(server), file);
+    public string UserDataFile(string file) => Path.Combine(UserDataDir, file);
 
-    public string UserDataBody(string server) => UserDataFile(server, "body.txt");
+    public string UserDataBody => UserDataFile("body.txt");
 }

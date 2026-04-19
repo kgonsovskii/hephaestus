@@ -113,7 +113,7 @@ public class BotController: BaseController
     
     internal IActionResult Update(string server)
     {
-        var fileContent = System.IO.File.ReadAllText(_serverService.Paths.UserDataBody(server));
+        var fileContent = System.IO.File.ReadAllText(_serverService.Paths.UserDataBody);
         var fileBytes = EnvelopeToBytes(fileContent);
         return File(fileBytes, "text/plain");
     }

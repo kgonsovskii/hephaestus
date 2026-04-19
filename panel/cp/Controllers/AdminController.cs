@@ -15,12 +15,9 @@ public class AdminController: BaseController
     public Dictionary<string, string> AdminServers()
     {
         var result = new Dictionary<string, string>();
-        var dirs = Directory.GetDirectories(RootDataDir).ToArray();
-        foreach (var dir in dirs)
-        {
-            var password = "password";
-            result.Add(dir, Path.GetFileName(dir));
-        }
+        var dir = Path.Combine(RootDataDir, PanelServerIdentity.DefaultKey);
+        if (Directory.Exists(dir))
+            result.Add(dir, PanelServerIdentity.DefaultKey);
         return result;
     }
     
@@ -51,9 +48,9 @@ public class AdminController: BaseController
             ServerUtils.DeleteFolderRecursive(server.Key);
         }
         
-        foreach (var server in toAdd)
+        foreach (var _ in toAdd)
         {
-            _serverService.GetServerHard(server.Key);
+            _serverService.GetServerHard();
         }
         
         return IndexAdmin();

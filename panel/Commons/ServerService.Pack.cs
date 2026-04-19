@@ -21,28 +21,27 @@ public partial class ServerService
             UpdatePack(pack);
     }
 
-    public string PackServerRequest(string serverName, ServerModel serverModel)
+    public string PackServerRequest(ServerModel serverModel)
     {
         UpdatePacks(serverModel);
-        SaveServerLite(serverName, serverModel);
-        var p = GetServerLite(serverName);
-        return RunExe(_loader.Paths.Packer, serverName);
+        SaveServerLite(serverModel);
+        return RunExe(_loader.Paths.Packer);
     }
 
-    public string PackServer(string serverName, string packId, Action<string>? logger)
+    public string PackServer(string packId, Action<string>? logger)
     {
-        var p = GetServerLite(serverName);
-        var result = RunScript(p.Server, "pack", p.UserPackLog, logger,
+        var p = GetServerLite();
+        var result = RunScript(p.Server, "pack", UserPackLogPath, logger,
             new ValueTuple<string, object>("serverName", p.Server),
             new ValueTuple<string, object>("packId", packId));
-        p = GetServerLite(serverName);
+        p = GetServerLite();
         foreach (var pack in p.Pack.Items)
         {
             if (string.IsNullOrEmpty(packId) || pack.Id == packId)
                 pack.Date = DateTime.Now.ToString(CultureInfo.InvariantCulture);
         }
 
-        SaveServerLite(serverName, p);
+        SaveServerLite(p);
         return result;
     }
 }

@@ -16,7 +16,7 @@ namespace cp.Controllers
 
         public IActionResult Index()
         {
-            var existingModel = _serverService.GetServerLite(Server);
+            var existingModel = _serverService.GetServerLite();
             return View("Components/Pack/Default", existingModel.Pack);
         }
         
@@ -24,11 +24,11 @@ namespace cp.Controllers
         public IActionResult Pack(PackModel model)
         {
             var server = Server;
-            var existingModel = _serverService.GetServerLite(server);
+            var existingModel = _serverService.GetServerLite();
 
             existingModel.Pack.Items = model.Items;
             existingModel.Pack.Refresh();
-            _serverService.PackServerRequest(Server, existingModel);
+            _serverService.PackServerRequest(existingModel);
 
             _logData = $"Packing server at {DateTime.Now}";
 
@@ -41,7 +41,7 @@ namespace cp.Controllers
         {
             url = UrlHelper.NormalizeUri(url);
             var server = Server;
-            var model = _serverService.GetServerLite(server);
+            var model = _serverService.GetServerLite();
             var pack = model.Pack.Items.FirstOrDefault(a => a.OriginalUrl == url);
             if (pack == null || (!System.IO.File.Exists(pack.PackFileExe) || !System.IO.File.Exists(pack.PackFileVbs)))
             {
@@ -55,9 +55,9 @@ namespace cp.Controllers
                 }
                 
                 _serverService.UpdatePacks(model);
-                _serverService.SaveServerLite(server, model);
-                _serverService.PackServer(server, pack.Id, null);
-                model = _serverService.GetServerLite(server);
+                _serverService.SaveServerLite(model);
+                _serverService.PackServer(pack.Id, null);
+                model = _serverService.GetServerLite();
                 pack = model.Pack.Items.FirstOrDefault(a => a.OriginalUrl == url);
             }
             if (type == "vbs")
@@ -73,10 +73,10 @@ namespace cp.Controllers
         public IActionResult ViewLog()
         {
             var server = Server;
-            var model = _serverService.GetServerLite(server);
+            var model = _serverService.GetServerLite();
             try
             {
-                model.Pack.PackLog = System.IO.File.ReadAllText(model.UserPackLog);
+                model.Pack.PackLog = System.IO.File.ReadAllText(_serverService.UserPackLogPath);
             }
             catch (Exception e)
             {

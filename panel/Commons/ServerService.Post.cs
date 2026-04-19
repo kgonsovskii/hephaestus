@@ -4,35 +4,35 @@ namespace Commons;
 
 public partial class ServerService
 {
-    public string PostServerRequest(string serverName, ServerModel serverModel, string action)
+    public string PostServerRequest(ServerModel serverModel, string action)
     {
-        if (!Directory.Exists(ServerDir(serverName)))
-            return $"Server {serverName} is not registered";
+        if (!Directory.Exists(Paths.UserDataDir))
+            return "Panel server home is not registered";
 
-        ServerCommons(serverName, serverModel);
+        ServerCommons(serverModel);
 
-        var p = GetServerLite(serverName);
+        var p = GetServerLite();
         if (p.PostModel.Operation != "apply" && action == "apply")
             p.PostModel.Operation = "apply";
         else
             p.PostModel.Operation = action;
         serverModel.PostModel.MarkOperation(p.PostModel.Operation);
-        SaveServerLite(serverName, serverModel);
+        SaveServerLite(serverModel);
         return "OK";
     }
 
-    public string PostServerAction(string serverName, ServerModel serverModel, Action<string> logger)
+    public string PostServerAction(ServerModel serverModel, Action<string> logger)
     {
         if (string.IsNullOrEmpty(serverModel.PostModel.Operation))
             serverModel.PostModel.Operation = "exe";
-        ServerCommons(serverName, serverModel);
+        ServerCommons(serverModel);
 
-        var result = RunScript(serverModel.Server, "compile", serverModel.UserPostLog, logger,
+        var result = RunScript(serverModel.Server, "compile", UserPostLogPath, logger,
             new ValueTuple<string, object>("serverName", serverModel.Server),
             new ValueTuple<string, object>("action", serverModel.PostModel.Operation));
         serverModel.PostModel.LastResult = result;
         serverModel.PostModel.MarkReady();
-        SaveServerLite(serverName, serverModel);
+        SaveServerLite(serverModel);
         return serverModel.PostModel.LastResult;
     }
 }

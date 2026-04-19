@@ -9,16 +9,12 @@ internal static class CpPipeline
 {
     public static void DataServe(IApplicationBuilder app)
     {
-        var rootData = app.ApplicationServices.GetRequiredService<IPanelServerPaths>().RootData;
-        foreach (var rec in BackSvc.Servers)
+        var paths = app.ApplicationServices.GetRequiredService<IPanelServerPaths>();
+        app.UseStaticFiles(new StaticFileOptions
         {
-            var path = Path.Join(rootData, rec.Key);
-            app.UseStaticFiles(new StaticFileOptions
-            {
-                FileProvider = new PhysicalFileProvider(path),
-                RequestPath = "/data"
-            });
-        }
+            FileProvider = new PhysicalFileProvider(paths.UserDataDir),
+            RequestPath = "/data"
+        });
     }
 
     public static void ForwarderMode(IApplicationBuilder app)

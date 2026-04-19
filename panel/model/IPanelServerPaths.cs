@@ -1,11 +1,11 @@
 namespace model;
 
-/// <summary>Resolved panel paths (Hephaestus data root, repository clone, per-server dirs, tool exes).</summary>
+/// <summary>Resolved panel paths (Hephaestus data root, repository clone, single server home under <see cref="PanelServerIdentity.DefaultKey"/>, tool exes).</summary>
 public interface IPanelServerPaths
 {
     string HephaestusDataRoot { get; }
 
-    /// <summary>Root directory containing one folder per server name (server.json, etc.).</summary>
+    /// <summary>Root directory containing server homes (each named <see cref="PanelServerIdentity.DefaultKey"/>).</summary>
     string RootData { get; }
 
     string RootDir { get; }
@@ -23,9 +23,15 @@ public interface IPanelServerPaths
     string Packer { get; }
     string CertTool { get; }
 
-    string ServerDir(string serverName);
-    string DataFile(string serverName);
-    string UserDataDir(string server);
-    string UserDataFile(string server, string file);
-    string UserDataBody(string server);
+    /// <summary>Home directory for the only server (<c>.../default</c>).</summary>
+    string ServerDir { get; }
+
+    string DataFile { get; }
+
+    /// <summary>Same as <see cref="ServerDir"/> (user payload lives in the server home).</summary>
+    string UserDataDir { get; }
+
+    string UserDataFile(string file);
+
+    string UserDataBody { get; }
 }
