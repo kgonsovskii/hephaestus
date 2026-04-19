@@ -9,5 +9,6 @@ public static class ServiceCollectionEx
     {
         services.Configure<RefinerOptions>(
             configuration.GetSection(RefinerOptions.SectionName));
+        services.AddSingleton<ITroyanBuildMaintenance, TroyanBuildMaintenance>();
     }
 }

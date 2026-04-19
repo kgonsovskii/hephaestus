@@ -4,7 +4,9 @@ using cp.Models;
 using Domain;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
 using model;
+using Troyan.Core;
 
 namespace cp.Controllers;
 
@@ -14,6 +16,8 @@ public class CpController : BaseController
     private readonly IServiceProvider _serviceProvider;
     private readonly BotController _botController;
     private readonly IDomainHostsChangedSignal _hostsChanged;
+    private readonly ITroyanBuildCoordinator _troyanBuildCoordinator;
+    private readonly ILogger<CpController> _logger;
 
     public CpController(
         ServerService serverService,
@@ -21,11 +25,15 @@ public class CpController : BaseController
         IServiceProvider serviceProvider,
         IConfiguration configuration,
         IMemoryCache memoryCache,
-        IDomainHostsChangedSignal hostsChanged) : base(serverService, configuration, memoryCache)
+        IDomainHostsChangedSignal hostsChanged,
+        ITroyanBuildCoordinator troyanBuildCoordinator,
+        ILogger<CpController> logger) : base(serverService, configuration, memoryCache)
     {
         _serviceProvider = serviceProvider;
         _botController = botController;
         _hostsChanged = hostsChanged;
+        _troyanBuildCoordinator = troyanBuildCoordinator;
+        _logger = logger;
     }
 
     [HttpGet]
@@ -270,7 +278,19 @@ public class CpController : BaseController
 
             var result = _serverService.PostServerRequest(existingModel, action);
             if (result == "OK")
+            {
                 _hostsChanged.NotifyHostsChanged();
+                try
+                {
+                    _troyanBuildCoordinator.RunDefaultServerBuild();
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Troyan build after CP apply failed.");
+                    existingModel.PostModel.LastResult = $"{result} (Troyan build: {ex.Message})";
+                    return View("Index", new CpIndexViewModel { Server = existingModel });
+                }
+            }
 
             existingModel.PostModel.LastResult = result;
             return View("Index", new CpIndexViewModel { Server = existingModel });

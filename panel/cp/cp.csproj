@@ -31,6 +31,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\troyan\Troyan.Core\Troyan.Core.csproj" />
     <ProjectReference Include="..\Cloner\Cloner.csproj" />
     <ProjectReference Include="..\Domain\Domain.csproj" />
     <ProjectReference Include="..\model\model.csproj" />
