@@ -6,7 +6,7 @@ using Microsoft.Extensions.Options;
 
 namespace DomainHost;
 
-/// <summary>Runs <see cref="RemoteInstallRunner"/> on the DomainHost machine (Linux + sshpass). Optional <see cref="DomainHostOptions.ClonerInternalApiKey"/> gate.</summary>
+/// <summary>Runs <see cref="RemoteInstallRunner"/> on DomainHost (Linux: PATH sshpass; Windows: <see cref="SshPassBootstrap"/>). Optional <see cref="DomainHostOptions.ClonerInternalApiKey"/> gate.</summary>
 public sealed class InstallRemoteInternalMiddleware
 {
     private readonly RequestDelegate _next;
@@ -77,9 +77,9 @@ public sealed class InstallRemoteInternalMiddleware
             var scriptPath = Path.Combine(repoRoot, "install", RemoteInstallRunner.DefaultRemoteScriptFileName);
             var script = RemoteInstallRunner.LoadRemoteScriptFromFile(scriptPath);
 
-            var sshpass = RemoteInstallRunner.FindSshPassOnPath()
-                          ?? throw new InvalidOperationException(
-                              "sshpass not found on PATH (e.g. apt install sshpass).");
+            var sshpass = await SshPassBootstrap
+                .EnsureAsync(msg => _logger.LogInformation("[sshpass] {Message}", msg), context.RequestAborted)
+                .ConfigureAwait(false);
 
             var code = await RemoteInstallRunner.RunRemoteInstallAsync(
                     sshpass,

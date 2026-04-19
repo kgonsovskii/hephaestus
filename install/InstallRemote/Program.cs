@@ -1,5 +1,4 @@
 using InstallRemote;
-using InstallRemoteTool;
 
 internal static class Program
 {
@@ -19,7 +18,7 @@ internal static class Program
             Console.WriteLine($"Remote install -> {login}@{server}");
             Console.WriteLine("[1/1] SSH: install git, clone repo to $HOME/hephaestus (remote user), run install.sh");
 
-            var sshpass = await WindowsSshPassBootstrap.EnsureAsync().ConfigureAwait(false);
+            var sshpass = await SshPassBootstrap.EnsureAsync(msg => Console.WriteLine(msg), default).ConfigureAwait(false);
 
             var code = await RemoteInstallRunner.RunRemoteInstallAsync(
                     sshpass,

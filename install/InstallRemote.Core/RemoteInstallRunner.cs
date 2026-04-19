@@ -3,7 +3,7 @@ using System.Text;
 
 namespace InstallRemote;
 
-/// <summary>Cross-platform SSH remote install (sshpass + remote bash script). Windows sshpass discovery lives in the install-remote executable project.</summary>
+/// <summary>Cross-platform SSH remote install (sshpass + remote bash script). Windows sshpass discovery: <see cref="SshPassBootstrap"/>.</summary>
 public static class RemoteInstallRunner
 {
     public const string DefaultRemoteScriptFileName = "install-remote.txt";

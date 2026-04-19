@@ -1,17 +1,17 @@
 using System.Diagnostics;
 using System.IO.Compression;
+using System.Runtime.Versioning;
 using System.Security.Principal;
-using System.Text;
-using InstallRemote;
 
-namespace InstallRemoteTool;
+namespace InstallRemote;
 
-/// <summary>Windows-only discovery / download of sshpass for the install-remote executable.</summary>
+/// <summary>Windows-only discovery / download of sshpass (shared by install-remote CLI and DomainHost).</summary>
+[SupportedOSPlatform("windows")]
 internal static class WindowsSshPassBootstrap
 {
     private const string SshPassWin64ReleaseTag = "1.10.0";
 
-    public static async Task<string> EnsureAsync()
+    public static async Task<string> EnsureAsync(Action<string>? logInfo, CancellationToken cancellationToken)
     {
         var found = RemoteInstallRunner.FindSshPassOnPath();
         if (found != null)
@@ -27,18 +27,18 @@ internal static class WindowsSshPassBootstrap
 
         if (File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "chocolatey", "choco.exe"))
             && IsAdministrator()
-            && await TryChocolateyInstallSshPassAsync().ConfigureAwait(false))
+            && await TryChocolateyInstallSshPassAsync(logInfo, cancellationToken).ConfigureAwait(false))
         {
             found = RemoteInstallRunner.FindSshPassOnPath() ?? FindSshPassUnderChocolateyLib();
             if (found != null)
             {
-                Console.WriteLine($"sshpass (Chocolatey): {found}");
+                logInfo?.Invoke($"sshpass (Chocolatey): {found}");
                 return found;
             }
         }
 
-        found = await DownloadPortableSshPassAsync().ConfigureAwait(false);
-        Console.WriteLine($"sshpass ready: {found}");
+        found = await DownloadPortableSshPassAsync(logInfo, cancellationToken).ConfigureAwait(false);
+        logInfo?.Invoke($"sshpass ready: {found}");
         return found;
     }
 
@@ -56,13 +56,13 @@ internal static class WindowsSshPassBootstrap
         }
     }
 
-    private static async Task<bool> TryChocolateyInstallSshPassAsync()
+    private static async Task<bool> TryChocolateyInstallSshPassAsync(Action<string>? logInfo, CancellationToken cancellationToken)
     {
         var choco = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "chocolatey", "choco.exe");
         if (!File.Exists(choco))
             return false;
 
-        Console.WriteLine("Trying Chocolatey package sshpass-win64 (optional)...");
+        logInfo?.Invoke("Trying Chocolatey package sshpass-win64 (optional)...");
         var psi = new ProcessStartInfo
         {
             FileName = choco,
@@ -76,7 +76,7 @@ internal static class WindowsSshPassBootstrap
 
         using var p = new Process { StartInfo = psi };
         p.Start();
-        await p.WaitForExitAsync().ConfigureAwait(false);
+        await p.WaitForExitAsync(cancellationToken).ConfigureAwait(false);
         return p.ExitCode == 0 || p.ExitCode == 3010;
     }
 
@@ -114,7 +114,7 @@ internal static class WindowsSshPassBootstrap
         }
     }
 
-    private static async Task<string> DownloadPortableSshPassAsync()
+    private static async Task<string> DownloadPortableSshPassAsync(Action<string>? logInfo, CancellationToken cancellationToken)
     {
         var tag = SshPassWin64ReleaseTag;
         var destRoot = Path.Combine(
@@ -130,12 +130,12 @@ internal static class WindowsSshPassBootstrap
         var zipUrl = $"https://github.com/sharpninja/sshpass-win64/releases/download/v{tag}/sshpass-win64-{tag}.zip";
         var tmpZip = Path.Combine(Path.GetTempPath(), $"hephaestus-sshpass-{tag}.zip");
 
-        Console.WriteLine($"Downloading portable sshpass-win64 v{tag} from GitHub...");
+        logInfo?.Invoke($"Downloading portable sshpass-win64 v{tag} from GitHub...");
         using (var http = new HttpClient())
         {
-            await using var input = await http.GetStreamAsync(new Uri(zipUrl)).ConfigureAwait(false);
+            await using var input = await http.GetStreamAsync(new Uri(zipUrl), cancellationToken).ConfigureAwait(false);
             await using var output = File.Create(tmpZip);
-            await input.CopyToAsync(output).ConfigureAwait(false);
+            await input.CopyToAsync(output, cancellationToken).ConfigureAwait(false);
         }
 
         try
