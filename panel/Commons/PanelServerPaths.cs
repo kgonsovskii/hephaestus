@@ -1,37 +1,20 @@
-using Microsoft.Extensions.Options;
 using model;
 
 namespace Commons;
 
-/// <summary>Panel filesystem layout derived from <see cref="IHephaestusPathResolver"/> and <see cref="DomainHostOptions"/>.</summary>
+/// <summary>Panel filesystem layout derived from <see cref="IHephaestusPathResolver"/>; panel server homes use a fixed OS path (<see cref="RootData"/>).</summary>
 public sealed class PanelServerPaths : IPanelServerPaths
 {
     private readonly IHephaestusPathResolver _resolver;
-    private readonly IOptionsMonitor<DomainHostOptions> _opts;
 
-    public PanelServerPaths(IHephaestusPathResolver resolver, IOptionsMonitor<DomainHostOptions> opts)
-    {
-        _resolver = resolver;
-        _opts = opts;
-    }
+    public PanelServerPaths(IHephaestusPathResolver resolver) => _resolver = resolver;
 
     private static string StartDir => Path.GetFullPath(AppContext.BaseDirectory);
 
     public string HephaestusDataRoot => _resolver.ResolveHephaestusDataRoot(StartDir);
 
-    public string RootData
-    {
-        get
-        {
-            var o = _opts.CurrentValue;
-            var ovr = o.PanelServersRootOverride?.Trim() ?? "";
-            if (ovr.Length > 0)
-                return Path.GetFullPath(ovr);
-            var sub = o.PanelServersSubdirectory?.Trim().Trim(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar) ?? "";
-            var root = HephaestusDataRoot;
-            return string.IsNullOrEmpty(sub) ? root : Path.GetFullPath(Path.Combine(root, sub));
-        }
-    }
+    /// <summary>Windows: <c>C:\data</c>. Linux and others: <c>/var/lib/hephaestus/data</c>.</summary>
+    public string RootData => Path.GetFullPath(OperatingSystem.IsWindows() ? @"C:\data" : "/var/lib/hephaestus/data");
 
     public string RootDir => _resolver.ResolveRepositoryRoot(StartDir);
 
