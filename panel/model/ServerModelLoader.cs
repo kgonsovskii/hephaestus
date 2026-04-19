@@ -128,17 +128,6 @@ public static class ServerModelLoader
         }
     }
 
-    public static string Refiner
-    {
-        get
-        {
-            var result = Path.Combine(RootDirStatic, "output","refiner.exe");
-            if (!File.Exists(result))
-                result = Path.Combine(CpDirStatic, "refiner.exe");
-            return result;
-        }
-    }
-
     public static string Packer
     {
         get
