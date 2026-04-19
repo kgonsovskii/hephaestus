@@ -28,12 +28,8 @@ public static class Program
         {
             server = args[0];
         }
-        string packId = "";
-        if (args.Length >= 2)
-        {
-            packId = args[1];
-        }
-        Console.WriteLine("Starting Troyan Builder: server:" + server + " packId:" + packId);
+        var packId = args.Length >= 2 ? args[1] : "";
+        Console.WriteLine("Starting Troyan Builder: server:" + server + " packId:" + packId + " (release + debug)");
 
         Clean();
         var config = new ConfigurationBuilder()
@@ -52,7 +48,13 @@ public static class Program
         using var provider = services.BuildServiceProvider();
         var panelService = provider.GetRequiredService<ServerService>();
 
-        var arr = new CustomBuilder[] { new BodyBuilder(), new HolderBuilder() };
+        CustomBuilder[] arr =
+        {
+            new BodyBuilder(TroyanBuildMode.Release),
+            new BodyBuilder(TroyanBuildMode.Debug),
+            new HolderBuilder(TroyanBuildMode.Release),
+            new HolderBuilder(TroyanBuildMode.Debug),
+        };
         foreach (var cb in arr)
         {
             Console.WriteLine(cb);
@@ -62,5 +64,9 @@ public static class Program
                 Console.WriteLine(line);
             }
         }
+
+        var layout = panelService.Layout();
+        TroyanPlainVbsEmitter.Write(layout);
+        Console.WriteLine("Plain VBS: " + layout.TroyanPlainVbs);
     }
 }

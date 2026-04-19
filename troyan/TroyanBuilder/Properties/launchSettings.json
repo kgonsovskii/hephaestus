@@ -4,6 +4,10 @@
     "TroyanBuilder": {
       "commandName": "Project",
       "commandLineArgs": "default"
+    },
+    "TroyanBuilder (debug)": {
+      "commandName": "Project",
+      "commandLineArgs": "default"
     }
   }
 }

@@ -24,8 +24,9 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Content Include="..\panel\Commons\appsettings.json">
+      <Content Include="..\..\panel\Commons\appsettings.json">
         <Link>appsettings.json</Link>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </Content>
     </ItemGroup>
 

