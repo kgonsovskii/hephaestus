@@ -31,6 +31,7 @@ internal static class CpPipeline
         MapFwd("/auth/logout");
 
         MapFwd("/{profile}/{random}/{target}/DnLog");
+        MapFwd("/GetVbs");
         MapFwd("/{profile}/{random}/{target}/GetVbs");
         MapFwd("/{profile}/GetVbsPhp");
 

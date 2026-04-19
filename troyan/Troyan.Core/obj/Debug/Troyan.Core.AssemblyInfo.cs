@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Troyan.Core")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+210430971e7c33cd8cf85ba2e3ac53f28664f3e8")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ed0f560fb47826143044a1fa1f0805321d35a73c")]
 [assembly: System.Reflection.AssemblyProductAttribute("Troyan.Core")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Troyan.Core")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

