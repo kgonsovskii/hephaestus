@@ -13,7 +13,7 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.0" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\src\Commons\appsettings.json" Link="appsettings.json">
+    <None Include="..\..\panel\Commons\appsettings.json" Link="appsettings.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

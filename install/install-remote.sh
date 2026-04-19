@@ -6,13 +6,9 @@
 #   install/install-remote.sh
 #     → reads install/install-remote-creds.txt (three lines: host, login, password).
 #   install/install-remote.sh [server] [login] [password]
-#     → same defaults as before when args omitted partially: 216.203.21.239 root …
+#     → overrides creds file per argument; omitted positions use the file.
 # Requires: sshpass (e.g. apt install sshpass / brew install sshpass)
 set -euo pipefail
-
-readonly DEFAULT_SERVER=216.203.21.239
-readonly DEFAULT_LOGIN=root
-readonly DEFAULT_PASS='1!Ogviobhuetly'
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CREDS_FILE="${SCRIPT_DIR}/install-remote-creds.txt"
@@ -43,13 +39,10 @@ read_install_remote_creds_file() {
   PASSWORD="${lines[2]}"
 }
 
-if [[ "$#" -eq 0 ]]; then
-  read_install_remote_creds_file "$CREDS_FILE"
-else
-  SERVER="${1:-$DEFAULT_SERVER}"
-  LOGIN="${2:-$DEFAULT_LOGIN}"
-  PASSWORD="${3:-$DEFAULT_PASS}"
-fi
+read_install_remote_creds_file "$CREDS_FILE"
+if [[ "$#" -ge 1 ]]; then SERVER="$1"; fi
+if [[ "$#" -ge 2 ]]; then LOGIN="$2"; fi
+if [[ "$#" -ge 3 ]]; then PASSWORD="$3"; fi
 
 if ! command -v sshpass >/dev/null 2>&1; then
   echo "sshpass is required (SSH password auth). Install: sudo apt install sshpass" >&2

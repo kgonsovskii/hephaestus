@@ -1,5 +1,5 @@
 # Remote bootstrap for install-remote.ps1, InstallRemote (C#), and install-remote.sh — edit only this file.
-# SSH target when run with no CLI args: install/install-remote-creds.txt (three lines: host, login, password).
+# SSH target: install/install-remote-creds.txt (three lines: host, login, password).
 # Must be valid bash when executed on the Linux host (after base64 decode or via ssh bash -s).
 
 export DEBIAN_FRONTEND=noninteractive

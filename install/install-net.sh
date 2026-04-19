@@ -19,10 +19,25 @@ if ! dpkg-query -W -f='${Status}' dotnet-sdk-9.0 2>/dev/null | grep -q 'install 
   apt-get update
 fi
 
-apt-get install -y dotnet-sdk-9.0
+# Install SDK and matching shared runtimes together. Ubuntu/PPA splits can leave
+# dotnet-sdk newer than Microsoft.NETCore.App (e.g. sdk wants 9.0.15, only 9.0.14 on disk).
+apt-get install -y dotnet-sdk-9.0 dotnet-runtime-9.0 aspnetcore-runtime-9.0
+
+apt-get install -y --only-upgrade \
+  dotnet-host \
+  dotnet-runtime-9.0 \
+  aspnetcore-runtime-9.0 \
+  dotnet-sdk-9.0 \
+  2>/dev/null || true
 
 if ! dotnet --list-sdks | grep -q '^9\.'; then
   echo ".NET 9 SDK not detected after install (dotnet-sdk-9.0)." >&2
+  exit 1
+fi
+
+if ! dotnet --info >/dev/null 2>&1; then
+  echo "dotnet failed self-check (SDK vs Microsoft.NETCore.App version mismatch is common)." >&2
+  echo "Try: sudo apt update && sudo apt install -y --only-upgrade dotnet-host dotnet-runtime-9.0 aspnetcore-runtime-9.0 dotnet-sdk-9.0" >&2
   exit 1
 fi
 

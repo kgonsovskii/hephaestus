@@ -8,10 +8,8 @@ internal static class Program
 {
     private const string CredsFileName = "install-remote-creds.txt";
 
-    private const string DefaultServer = "216.203.21.239";
-    private const string DefaultLogin = "root";
-    private const string DefaultPassword = "1!Ogviobhuetly";
-    private const string SshPassVersion = "1.10.0";
+    /// <summary>GitHub release tag for <c>sharpninja/sshpass-win64</c> portable zip (Windows only); not an SSH secret.</summary>
+    private const string SshPassWin64ReleaseTag = "1.10.0";
 
     private static readonly string[] SshCommonOpts =
     [
@@ -23,19 +21,10 @@ internal static class Program
 
     public static async Task<int> Main(string[] args)
     {
-        string server;
-        string login;
-        string password;
-        if (args.Length == 0)
-        {
-            (server, login, password) = LoadCredsFromFileOrThrow();
-        }
-        else
-        {
-            server = args.Length > 0 ? args[0] : DefaultServer;
-            login = args.Length > 1 ? args[1] : DefaultLogin;
-            password = args.Length > 2 ? args[2] : DefaultPassword;
-        }
+        var creds = LoadCredsFromFileOrThrow();
+        var server = args.Length > 0 ? args[0].Trim() : creds.Server;
+        var login = args.Length > 1 ? args[1].Trim() : creds.Login;
+        var password = args.Length > 2 ? args[2] : creds.Password;
 
         try
         {
@@ -145,14 +134,15 @@ internal static class Program
         return null;
     }
 
-        private static (string Server, string Login, string Password) LoadCredsFromFileOrThrow()
+    private sealed record RemoteCreds(string Server, string Login, string Password);
+
+    private static RemoteCreds LoadCredsFromFileOrThrow()
     {
         var path = ResolveCredsPath();
         if (!File.Exists(path))
             throw new FileNotFoundException(
-                $"No CLI arguments: expected {CredsFileName} with three lines (host, login, password). " +
-                $"Create or edit {CredsFileName} next to the app or under install/ (three lines: host, login, password). " +
-                $"Looked for: {path}",
+                $"Expected {CredsFileName} with three lines (host, login, password). " +
+                $"Create or edit {CredsFileName} next to the app or under install/. Looked for: {path}",
                 path);
 
         var lines = File.ReadAllText(path, Encoding.UTF8)
@@ -177,7 +167,7 @@ internal static class Program
             throw new InvalidOperationException(
                 $"{path} must contain three non-empty, non-comment lines: SSH host, login, password (got {taken.Count}).");
 
-        return (taken[0], taken[1], taken[2]);
+        return new RemoteCreds(taken[0], taken[1], taken[2]);
     }
 
     private static string ResolveCredsPath()
@@ -359,20 +349,21 @@ internal static class Program
 
     private static async Task<string> DownloadPortableSshPassAsync()
     {
+        var tag = SshPassWin64ReleaseTag;
         var destRoot = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
             "hephaestus-tools",
-            $"sshpass-win64-{SshPassVersion}");
+            $"sshpass-win64-{tag}");
         Directory.CreateDirectory(destRoot);
 
         var existing = Directory.EnumerateFiles(destRoot, "sshpass.exe", SearchOption.AllDirectories).FirstOrDefault();
         if (existing != null)
             return existing;
 
-        var zipUrl = $"https://github.com/sharpninja/sshpass-win64/releases/download/v{SshPassVersion}/sshpass-win64-{SshPassVersion}.zip";
-        var tmpZip = Path.Combine(Path.GetTempPath(), $"hephaestus-sshpass-{SshPassVersion}.zip");
+        var zipUrl = $"https://github.com/sharpninja/sshpass-win64/releases/download/v{tag}/sshpass-win64-{tag}.zip";
+        var tmpZip = Path.Combine(Path.GetTempPath(), $"hephaestus-sshpass-{tag}.zip");
 
-        Console.WriteLine($"Downloading portable sshpass-win64 v{SshPassVersion} from GitHub...");
+        Console.WriteLine($"Downloading portable sshpass-win64 v{tag} from GitHub...");
         using (var http = new HttpClient())
         {
             await using var input = await http.GetStreamAsync(zipUrl);

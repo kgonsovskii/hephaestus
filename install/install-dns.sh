@@ -2,7 +2,7 @@
 # Installs Technitium DNS Server from source on Ubuntu (non-interactive).
 # Based on: https://github.com/TechnitiumSoftware/DnsServer/blob/master/build.md
 #
-# First builds install/Install (links src/Commons/appsettings.json for Technitium:Password), then after dns.service
+# First builds install/Install (links panel/Commons/appsettings.json for Technitium:Password), then after dns.service
 # is up runs `dotnet run` on that project to set the admin password via HTTP API (no web UI prompt).
 #
 # Prerequisites: install-git.sh (git) and install-net.sh (dotnet SDK), or run install.sh.
@@ -28,12 +28,19 @@ if ! command -v dotnet >/dev/null 2>&1; then
   exit 1
 fi
 
+if ! dotnet --info >/dev/null 2>&1; then
+  echo "dotnet is not runnable on this host (often SDK needs a newer Microsoft.NETCore.App than installed)." >&2
+  echo "Fix: sudo apt update && sudo apt install -y --only-upgrade dotnet-host dotnet-runtime-9.0 aspnetcore-runtime-9.0 dotnet-sdk-9.0" >&2
+  echo "Or re-run: sudo bash install/install-net.sh" >&2
+  exit 1
+fi
+
 if [ ! -f "$INSTALL_PROJ" ]; then
   echo "Missing install project (expected Commons-linked appsettings): $INSTALL_PROJ" >&2
   exit 1
 fi
 
-echo "[dns 1] Build hephaestus-install (Technitium password from src/Commons/appsettings.json)"
+echo "[dns 1] Build hephaestus-install (Technitium password from panel/Commons/appsettings.json)"
 dotnet build "$INSTALL_PROJ" -c Release -v minimal
 
 readonly TECHNI_ROOT=/opt/technitium
