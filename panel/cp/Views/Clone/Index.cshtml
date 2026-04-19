@@ -1,0 +1,169 @@
+@model model.CloneModel
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clone</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</head>
+<body>
+<header class="container mt-2">
+    @await Html.PartialAsync("_LogoutButton")
+</header>
+<div class="container mt-4 mb-5">
+    <p><a href="@Url.Action("Index", "Cp")">← Control panel</a></p>
+    <h1>Clone</h1>
+    <p class="text-muted small">
+        Remote install via <code>install-remote.sh</code> (Linux) or <code>install-remote.bat</code> (Windows). Log streams in real time.
+    </p>
+
+    <ul class="small text-muted mb-3">
+        <li>Ubuntu 22+ or Windows Server (or newer desktop Windows)</li>
+        <li>1 GB RAM, 1 public IP, 25 GB disk</li>
+    </ul>
+
+    <div class="row">
+        <div class="col-md-6">
+            <label asp-for="CloneServerIp" class="form-label">Server IP</label>
+            <input asp-for="CloneServerIp" name="CloneServerIp" value="@Model.CloneServerIp" id="cloneServerIp" class="form-control" />
+        </div>
+        <div class="col-md-6">
+            <label asp-for="CloneUser" class="form-label">User</label>
+            <input asp-for="CloneUser" name="CloneUser" value="@Model.CloneUser" id="cloneUser" class="form-control" />
+        </div>
+    </div>
+
+    <div class="row mt-3">
+        <div class="col-md-6">
+            <label asp-for="ClonePassword" class="form-label">Password</label>
+            <input asp-for="ClonePassword" name="ClonePassword" value="@Model.ClonePassword" id="clonePassword" type="password" class="form-control" />
+        </div>
+    </div>
+
+    <div class="row mt-3">
+        <div class="col-md-6 d-flex gap-2 flex-wrap align-items-end">
+            <button type="button" class="btn btn-primary" id="cloneServerBtn">Start remote install</button>
+            <button type="button" class="btn btn-outline-danger" id="cloneStopBtn" disabled>Stop</button>
+        </div>
+    </div>
+
+    <div id="cloneResult" class="mt-2"></div>
+    <pre id="cloneLog" class="mt-3 p-2 bg-dark text-light small" style="min-height:12rem; max-height:32rem; overflow:auto;"></pre>
+</div>
+
+<script>
+(function () {
+    const clonePostUrl = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Url.Action("CloneServer", "Clone")));
+    const cloneStopUrl = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Url.Action("Stop", "Clone")));
+    const pathBase = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Context.Request.PathBase.Value ?? ""));
+
+    const startBtn = document.getElementById("cloneServerBtn");
+    const stopBtn = document.getElementById("cloneStopBtn");
+    let activeWs = null;
+    let currentRunId = null;
+
+    function setStopEnabled(on) {
+        stopBtn.disabled = !on;
+    }
+
+    function appendResult(html) {
+        const resultEl = document.getElementById("cloneResult");
+        resultEl.insertAdjacentHTML("beforeend", html);
+    }
+
+    function closeWs() {
+        if (activeWs && activeWs.readyState === WebSocket.OPEN)
+            activeWs.close();
+        activeWs = null;
+    }
+
+    stopBtn.addEventListener("click", async function () {
+        if (!currentRunId)
+            return;
+        setStopEnabled(false);
+        try {
+            const res = await fetch(cloneStopUrl, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                credentials: "same-origin",
+                body: JSON.stringify({ runId: currentRunId })
+            });
+            const data = res.ok ? await res.json() : null;
+            if (data && data.stopped)
+                appendResult('<div class="alert alert-warning mt-2">Stop requested.</div>');
+            else if (!res.ok)
+                appendResult('<div class="alert alert-danger mt-2">Stop failed (HTTP ' + res.status + ').</div>');
+            else
+                appendResult('<div class="alert alert-secondary mt-2">Stop had no effect (run may have finished).</div>');
+            currentRunId = null;
+            setStopEnabled(false);
+        } catch (e) {
+            console.error(e);
+            appendResult('<div class="alert alert-danger mt-2">' + e + '</div>');
+        }
+        closeWs();
+    });
+
+    startBtn.addEventListener("click", async function () {
+        const serverIp = document.getElementById("cloneServerIp").value;
+        const user = document.getElementById("cloneUser").value;
+        const password = document.getElementById("clonePassword").value;
+        const logEl = document.getElementById("cloneLog");
+        const resultEl = document.getElementById("cloneResult");
+        logEl.textContent = "";
+        resultEl.innerHTML = "";
+        closeWs();
+        currentRunId = null;
+        setStopEnabled(false);
+
+        try {
+            const res = await fetch(clonePostUrl, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                credentials: "same-origin",
+                body: JSON.stringify({ cloneServerIp: serverIp, cloneUser: user, clonePassword: password })
+            });
+            if (!res.ok) {
+                resultEl.innerHTML = '<div class="alert alert-danger">HTTP ' + res.status + '</div>';
+                return;
+            }
+            const data = await res.json();
+            const runId = data.runId;
+            currentRunId = runId;
+            setStopEnabled(true);
+            resultEl.innerHTML = '<div class="alert alert-info">Queued. Streaming log…</div>';
+
+            const proto = location.protocol === "https:" ? "wss:" : "ws:";
+            const pb = (pathBase.endsWith("/") ? pathBase.slice(0, -1) : pathBase) || "";
+            const wsPath = (pb ? pb + "/" : "/") + "clone-ws?runId=" + encodeURIComponent(runId);
+            const ws = new WebSocket(proto + "//" + location.host + wsPath);
+            activeWs = ws;
+
+            ws.onmessage = function (ev) { logEl.textContent += ev.data; logEl.scrollTop = logEl.scrollHeight; };
+            ws.onclose = function (ev) {
+                appendResult('<div class="alert alert-secondary mt-2">WebSocket closed.</div>');
+                activeWs = null;
+                if (ev.code === 1000) {
+                    currentRunId = null;
+                    setStopEnabled(false);
+                }
+            };
+            ws.onerror = function () {
+                appendResult('<div class="alert alert-warning mt-2">WebSocket error.</div>');
+            };
+        } catch (e) {
+            console.error(e);
+            resultEl.innerHTML = '<div class="alert alert-danger">' + e + '</div>';
+            currentRunId = null;
+            setStopEnabled(false);
+        }
+    });
+})();
+</script>
+</body>
+</html>

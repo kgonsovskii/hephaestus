@@ -1,0 +1,12 @@
+c:\soft\newway\install\InstallRemote.Core\bin\Debug\net9.0\InstallRemote.Core.deps.json
+c:\soft\newway\install\InstallRemote.Core\bin\Debug\net9.0\InstallRemote.Core.dll
+c:\soft\newway\install\InstallRemote.Core\bin\Debug\net9.0\InstallRemote.Core.pdb
+c:\soft\newway\install\InstallRemote.Core\obj\Debug\net9.0\InstallRemote.Core.GeneratedMSBuildEditorConfig.editorconfig
+c:\soft\newway\install\InstallRemote.Core\obj\Debug\net9.0\InstallRemote.Core.AssemblyInfoInputs.cache
+c:\soft\newway\install\InstallRemote.Core\obj\Debug\net9.0\InstallRemote.Core.AssemblyInfo.cs
+c:\soft\newway\install\InstallRemote.Core\obj\Debug\net9.0\InstallRemote.Core.csproj.CoreCompileInputs.cache
+c:\soft\newway\install\InstallRemote.Core\obj\Debug\net9.0\InstallRemote.Core.sourcelink.json
+c:\soft\newway\install\InstallRemote.Core\obj\Debug\net9.0\InstallRemote.Core.dll
+c:\soft\newway\install\InstallRemote.Core\obj\Debug\net9.0\refint\InstallRemote.Core.dll
+c:\soft\newway\install\InstallRemote.Core\obj\Debug\net9.0\InstallRemote.Core.pdb
+c:\soft\newway\install\InstallRemote.Core\obj\Debug\net9.0\ref\InstallRemote.Core.dll
