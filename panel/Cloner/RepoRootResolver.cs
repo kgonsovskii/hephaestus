@@ -2,15 +2,15 @@ using Microsoft.Extensions.Logging;
 
 namespace Cloner;
 
-internal static class RepoRootResolver
+public static class RepoRootResolver
 {
-    internal static string Resolve(string? configuredRoot, ILogger logger)
+    public static string Resolve(string? configuredRoot, ILogger logger)
     {
         var t = configuredRoot?.Trim() ?? "";
         if (t.Length > 0)
         {
             var install = Path.Combine(t, "install");
-            if (Directory.Exists(install) && File.Exists(Path.Combine(install, "install-remote.sh")))
+            if (Directory.Exists(install) && File.Exists(Path.Combine(install, "install-remote.txt")))
                 return Path.GetFullPath(t);
         }
 
@@ -19,7 +19,7 @@ internal static class RepoRootResolver
         for (var i = 0; i < 12; i++)
         {
             var install = Path.Combine(current, "install");
-            if (Directory.Exists(install) && File.Exists(Path.Combine(install, "install-remote.sh")))
+            if (Directory.Exists(install) && File.Exists(Path.Combine(install, "install-remote.txt")))
                 return current;
 
             var parent = Directory.GetParent(current);
@@ -29,7 +29,7 @@ internal static class RepoRootResolver
         }
 
         logger.LogWarning(
-            "Cloner: could not find repo root (folder with install/install-remote.sh). Set {Section}:{Prop} in appsettings.",
+            "Cloner: could not find repo root (folder with install/install-remote.txt). Set {Section}:{Prop} in appsettings.",
             ClonerOptions.SectionName,
             nameof(ClonerOptions.RepoRoot));
         return start;

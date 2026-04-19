@@ -106,6 +106,7 @@ public static class CpWebExtensions
     private static void ConfigureCpBranch(IApplicationBuilder cp)
     {
         cp.UseDeveloperExceptionPage();
+        cp.UseWebSockets();
 
         CpPipeline.DataServe(cp);
 

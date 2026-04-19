@@ -4,9 +4,12 @@ namespace Cloner;
 
 public interface IClonerRemoteInstall
 {
-    /// <summary>Queues install-remote (bat on Windows, sh on Linux). Returns id for <see cref="TrySubscribeLogReader"/> / WebSocket.</summary>
+    /// <summary>Queues remote install (in-process SSH on DomainHost, or HTTP to DomainHost when configured). Returns id for <see cref="TrySubscribeLogReader"/> / WebSocket.</summary>
     Task<Guid> StartRemoteInstallAsync(string host, string user, string password, CancellationToken cancellationToken = default);
 
     /// <summary>Log lines for an active or recently finished run; null if unknown run id.</summary>
     ChannelReader<string>? TrySubscribeLogReader(Guid runId);
+
+    /// <summary>Cancels a queued or running install for <paramref name="runId"/>; returns false if the id is unknown or already finished.</summary>
+    bool TryStop(Guid runId);
 }

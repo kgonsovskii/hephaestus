@@ -177,6 +177,9 @@ Layout = "~/Views/Shared/_Layout.cshtml";
                         <a class="nav-link" href="@Url.Action("Index", "Domain")">Domains</a>
                     </li>
                     <li class="nav-item" role="presentation">
+                        <a class="nav-link" href="@Url.Action("Index", "Clone")">Clone</a>
+                    </li>
+                    <li class="nav-item" role="presentation">
                         <a class="nav-link" href="@dnsUiUrl" target="_blank" rel="noopener noreferrer">DNS</a>
                     </li>
                     <li class="nav-item" role="presentation">
@@ -193,9 +196,6 @@ Layout = "~/Views/Shared/_Layout.cshtml";
                     </li>
                     <li class="nav-item" role="docs">
                         <button class="nav-link" id="docs-tab" data-bs-toggle="tab" data-bs-target="#docs" type="button" role="tab" aria-controls="docs" aria-selected="false">Documents</button>
-                    </li>
-                    <li class="nav-item" role="clone">
-                        <button class="nav-link" id="clone-tab" data-bs-toggle="tab" data-bs-target="#clone" type="button" role="tab" aria-controls="clone" aria-selected="false">Clone</button>
                     </li>
                 </ul>
 
@@ -444,19 +444,6 @@ Layout = "~/Views/Shared/_Layout.cshtml";
                             <br/>
                             <br/>
                             <a href="@Model.Server.UrlDoc" target="_blank">Goto Google Document</a>&nbsp;&nbsp;&nbsp;
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="tab-pane fade" id="clone" role="tabpanel" aria-labelledby="clone-tab">
-                <div class="card">
-                    <div class="card-header">
-                        <h2>Clone</h2>
-                    </div>
-                    <div class="card-body">
-                        <div class="row">
-                            @await Component.InvokeAsync("Clone", Model.Server.CloneModel)
                         </div>
                     </div>
                 </div>

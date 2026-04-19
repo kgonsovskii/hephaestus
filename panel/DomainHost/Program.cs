@@ -68,7 +68,7 @@ builder.Services.AddHostedService<WebRootFileWatcherHostedService>();
 
 var app = builder.Build();
 
-
+app.UseMiddleware<InstallRemoteInternalMiddleware>();
 app.UseCpSite();
 app.UseRouting();
 app.UseMiddleware<DomainHostMiddleware>();

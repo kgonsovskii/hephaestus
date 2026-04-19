@@ -9,6 +9,9 @@
     <RollForward>LatestPatch</RollForward>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="..\InstallRemote.Core\InstallRemote.Core.csproj" />
+  </ItemGroup>
+  <ItemGroup>
     <Content Include="..\install-remote.txt" CopyToOutputDirectory="PreserveNewest" Link="install-remote.txt" />
     <Content Include="..\install-remote-creds.txt" CopyToOutputDirectory="PreserveNewest" Link="install-remote-creds.txt" />
   </ItemGroup>

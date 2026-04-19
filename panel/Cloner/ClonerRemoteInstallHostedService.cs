@@ -1,6 +1,3 @@
-using System.Diagnostics;
-using System.Runtime.InteropServices;
-using System.Text;
 using System.Threading.Channels;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -11,15 +8,18 @@ namespace Cloner;
 public sealed class ClonerRemoteInstallHostedService : BackgroundService
 {
     private readonly ClonerRemoteInstallService _coordinator;
+    private readonly IClonerInstallExecutor _executor;
     private readonly IOptionsMonitor<ClonerOptions> _options;
     private readonly ILogger<ClonerRemoteInstallHostedService> _logger;
 
     public ClonerRemoteInstallHostedService(
         ClonerRemoteInstallService coordinator,
+        IClonerInstallExecutor executor,
         IOptionsMonitor<ClonerOptions> options,
         ILogger<ClonerRemoteInstallHostedService> logger)
     {
         _coordinator = coordinator;
+        _executor = executor;
         _options = options;
         _logger = logger;
     }
@@ -30,12 +30,31 @@ public sealed class ClonerRemoteInstallHostedService : BackgroundService
         {
             try
             {
-                await RunInstallProcessAsync(job, stoppingToken).ConfigureAwait(false);
+                await RunOneJobAsync(job, stoppingToken).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException)
+            {
+                if (!stoppingToken.IsCancellationRequested)
+                {
+                    try
+                    {
+                        await job.LogWriter.WriteAsync("[stopped]", CancellationToken.None).ConfigureAwait(false);
+                    }
+                    catch (ChannelClosedException)
+                    {
+                    }
+                }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Cloner: install failed for {RunId}", job.RunId);
-                await job.LogWriter.WriteAsync($"[error] {ex.Message}", stoppingToken).ConfigureAwait(false);
+                try
+                {
+                    await job.LogWriter.WriteAsync($"[error] {ex.Message}", stoppingToken).ConfigureAwait(false);
+                }
+                catch (OperationCanceledException)
+                {
+                }
             }
             finally
             {
@@ -45,71 +64,26 @@ public sealed class ClonerRemoteInstallHostedService : BackgroundService
         }
     }
 
-    private async Task RunInstallProcessAsync(RemoteInstallJob job, CancellationToken stoppingToken)
+    private async Task RunOneJobAsync(RemoteInstallJob job, CancellationToken stoppingToken)
     {
-        var repoRoot = RepoRootResolver.Resolve(_options.CurrentValue.RepoRoot, _logger);
-        var installDir = Path.Combine(repoRoot, "install");
-        if (!Directory.Exists(installDir))
-            throw new DirectoryNotFoundException($"install directory not found: {installDir}");
-
-        var psi = new ProcessStartInfo
-        {
-            WorkingDirectory = installDir,
-            UseShellExecute = false,
-            CreateNoWindow = true,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            StandardOutputEncoding = Encoding.UTF8,
-            StandardErrorEncoding = Encoding.UTF8
-        };
-
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-        {
-            var bat = Path.Combine(installDir, "install-remote.bat");
-            if (!File.Exists(bat))
-                throw new FileNotFoundException("install-remote.bat not found.", bat);
-            psi.FileName = bat;
-            psi.ArgumentList.Add(job.Host);
-            psi.ArgumentList.Add(job.User);
-            psi.ArgumentList.Add(job.Password);
-        }
-        else
-        {
-            var sh = Path.Combine(installDir, "install-remote.sh");
-            if (!File.Exists(sh))
-                throw new FileNotFoundException("install-remote.sh not found.", sh);
-            psi.FileName = "/bin/bash";
-            psi.ArgumentList.Add(sh);
-            psi.ArgumentList.Add(job.Host);
-            psi.ArgumentList.Add(job.User);
-            psi.ArgumentList.Add(job.Password);
-        }
-
-        using var proc = new Process { StartInfo = psi, EnableRaisingEvents = true };
-        if (!proc.Start())
-            throw new InvalidOperationException("Failed to start install-remote process.");
+        using var linked = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken, job.RunCancellationToken);
+        var ct = linked.Token;
+        ct.ThrowIfCancellationRequested();
 
         _logger.LogInformation(
-            "Cloner: started install-remote for {RunId} (pid {Pid})",
+            "Cloner: starting remote install {RunId} for {Host} (executor: {Executor})",
             job.RunId,
-            proc.Id);
+            job.Host,
+            _options.CurrentValue.Executor);
 
-        var stdout = ReadStreamAsync(proc.StandardOutput, job.LogWriter, stoppingToken);
-        var stderr = ReadStreamAsync(proc.StandardError, job.LogWriter, stoppingToken);
-        await proc.WaitForExitAsync(stoppingToken).ConfigureAwait(false);
-        await Task.WhenAll(stdout, stderr).ConfigureAwait(false); // drain after exit so buffers cannot deadlock
+        var exit = await _executor.ExecuteAsync(job, ct).ConfigureAwait(false);
 
-        await job.LogWriter.WriteAsync($"[exit] {proc.ExitCode}", stoppingToken).ConfigureAwait(false);
-    }
-
-    private static async Task ReadStreamAsync(StreamReader reader, ChannelWriter<string> log, CancellationToken ct)
-    {
-        while (!ct.IsCancellationRequested)
+        try
         {
-            var line = await reader.ReadLineAsync().ConfigureAwait(false);
-            if (line == null)
-                break;
-            await log.WriteAsync(line, ct).ConfigureAwait(false);
+            await job.LogWriter.WriteAsync($"[exit] {exit}", ct).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
         }
     }
 }

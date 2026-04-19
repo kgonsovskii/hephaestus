@@ -7,7 +7,6 @@ using model;
 namespace cp.Controllers;
 
 [Authorize(Policy = "AllowFromIpRange")]
-[Route("[controller]")]
 public class CloneController : BaseController
 {
     private readonly IClonerRemoteInstall _remoteInstall;
@@ -21,9 +20,10 @@ public class CloneController : BaseController
         _remoteInstall = remoteInstall;
     }
 
+    [HttpGet("clone")]
     public IActionResult Index()
     {
-        return View("Components/Clone/Default", new CloneModel());
+        return View("~/Views/Clone/Index.cshtml", new CloneModel());
     }
 
     [HttpPost("clone")]
@@ -37,5 +37,15 @@ public class CloneController : BaseController
             .ConfigureAwait(false);
 
         return Json(new { runId });
+    }
+
+    [HttpPost("clone/stop")]
+    public IActionResult Stop([FromBody] CloneStopRequest? body)
+    {
+        if (body == null || body.RunId == Guid.Empty)
+            return BadRequest(new { error = "runId required" });
+
+        var stopped = _remoteInstall.TryStop(body.RunId);
+        return Json(new { stopped });
     }
 }

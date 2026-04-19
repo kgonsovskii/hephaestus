@@ -37,4 +37,7 @@ public sealed class DomainHostOptions
     public string RepositoryMarkerFileName { get; set; } = null!;
 
     public int RepositoryRootSearchMaxAscents { get; set; }
+
+    /// <summary>When set, enables <c>POST /internal/install-remote</c> for the control panel (must match <c>Cloner:DomainHostExecutorApiKey</c>).</summary>
+    public string? ClonerInternalApiKey { get; set; }
 }

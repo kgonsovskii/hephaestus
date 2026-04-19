@@ -2,9 +2,10 @@ using System.Threading.Channels;
 
 namespace Cloner;
 
-internal sealed record RemoteInstallJob(
+public sealed record RemoteInstallJob(
     Guid RunId,
     string Host,
     string User,
     string Password,
-    ChannelWriter<string> LogWriter);
+    ChannelWriter<string> LogWriter,
+    CancellationToken RunCancellationToken);

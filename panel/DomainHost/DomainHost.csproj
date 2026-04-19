@@ -13,6 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\install\InstallRemote.Core\InstallRemote.Core.csproj" />
     <ProjectReference Include="..\Cloner\Cloner.csproj" />
     <ProjectReference Include="..\Commons\Commons.csproj" />
     <ProjectReference Include="..\cp\cp.csproj" />
