@@ -52,7 +52,7 @@ public static class Program
         using var provider = services.BuildServiceProvider();
         var panelService = provider.GetRequiredService<ServerService>();
 
-        var arr = new CustomBuilder[]{new BodyBuilderDebug(), new BodyBuilderRelease(), new HolderBuilderDebug(), new HolderBuilderRelease()};
+        var arr = new CustomBuilder[] { new BodyBuilder(), new HolderBuilder() };
         foreach (var cb in arr)
         {
             Console.WriteLine(cb);

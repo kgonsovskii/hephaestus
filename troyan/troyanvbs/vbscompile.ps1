@@ -56,7 +56,7 @@ Function Check-Array {
     }
 }
 
-$holderPs = Encode-FileToBase64 -inFile $server.holderRelease
+$holderPs = Encode-FileToBase64 -inFile $server.holderPs1
 
 $holder = Get-Content -Path (Join-Path -Path $scriptDir -ChildPath "holder.vbs")
 

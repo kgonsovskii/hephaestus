@@ -28,12 +28,10 @@ public sealed class ServerLayoutPaths
     [JsonPropertyName("troyanVbsRelease")] public string TroyanVbsRelease => Path.Join(TroyanOutputDir, "troyan.release.vbs");
 
     [JsonPropertyName("body")] public string Body => Path.Join(TroyanOutputDir, "body.txt");
-    [JsonPropertyName("bodyRelease")] public string BodyRelease => Path.Join(TroyanOutputDir, "body.release.ps1");
-    [JsonPropertyName("bodyDebug")] public string BodyDebug => Path.Join(TroyanOutputDir, "body.debug.ps1");
+    [JsonPropertyName("bodyPs1")] public string BodyPs1 => Path.Join(TroyanOutputDir, "body.ps1");
 
     [JsonPropertyName("holder")] public string Holder => Path.Join(TroyanOutputDir, "holder.txt");
-    [JsonPropertyName("holderRelease")] public string HolderRelease => Path.Join(TroyanOutputDir, "holder.release.ps1");
-    [JsonPropertyName("holderDebug")] public string HolderDebug => Path.Join(TroyanOutputDir, "holder.debug.ps1");
+    [JsonPropertyName("holderPs1")] public string HolderPs1 => Path.Join(TroyanOutputDir, "holder.ps1");
 
     public string UserDataFile(string file) => _paths.UserDataFile(file);
 

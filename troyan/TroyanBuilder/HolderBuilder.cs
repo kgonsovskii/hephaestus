@@ -1,12 +1,12 @@
 namespace TroyanBuilder;
 
-public abstract class HolderBuilder: CustomBuilder
+public sealed class HolderBuilder : CustomBuilder
 {
     protected override string SourceDir => Path.Combine(L.TroyanScriptDir, "holder");
-    protected override string OutputFile => L.Holder;
-    
-    protected override string[] PriorityTasks => new [] { "autorun" };
-    protected override string[] UnpriorityTasks => new [] {"autoupdate" };
+    protected override string OutputFile => L.HolderPs1;
+
+    protected override string[] PriorityTasks => new[] { "autorun" };
+    protected override string[] UnpriorityTasks => new[] { "autoupdate" };
     protected override string EntryPoint => "holder";
 
     protected override void InternalBuild(string server)
@@ -24,7 +24,7 @@ $xbody = ""__BODY""
         var outputPath = Path.Combine(L.TroyanScriptDir, "holder", "consts_autoextract.ps1");
         File.WriteAllText(outputPath, template);
     }
-    
+
     protected override List<SourceFile> GetSourceFiles()
     {
         var sourceFiles = base.GetSourceFiles();
@@ -32,14 +32,4 @@ $xbody = ""__BODY""
         sourceFiles.Insert(0, new SourceFile("consts_body", this));
         return sourceFiles;
     }
-}
-
-public class HolderBuilderDebug : HolderBuilder
-{
-    protected override string OutputFile => L.HolderDebug;
-}
-
-public class HolderBuilderRelease : HolderBuilder
-{
-    protected override string OutputFile => L.HolderRelease;
 }

@@ -1,4 +1,4 @@
 call _clean.bat
 call _install.bat
 
-powershell ./holder.release.ps1
+powershell ./holder.ps1
