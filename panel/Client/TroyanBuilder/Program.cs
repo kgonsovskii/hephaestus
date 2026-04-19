@@ -5,13 +5,13 @@ namespace TroyanBuilder;
 public class Program
 {
     public static bool ObfuscateDebug = false;
-    
+
     public static bool ObfuscateRelease = false;
-    
+
     public static bool RandomCode = false;
-    
+
     public static bool RandomDo = false;
-    
+
     static void Clean()
     {
         var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Hephaestus");
@@ -23,13 +23,6 @@ public class Program
             Console.WriteLine("Contents deleted.");
         }
 
-    }
-    static void Main2()
-    {
-        Clean();
-        var data = File.ReadAllText(@"C:\soft\hephaestus\troyan\troyanps\holder\holder.ps1");
-        data = new PowerShellObfuscator().Obfuscate(data);
-        File.WriteAllText(@"C:\soft\hephaestus\troyan\_output\1.ps1", data);
     }
 
     static void Main(string[] args)
@@ -45,7 +38,7 @@ public class Program
             packId = args[1];
         }
         Console.WriteLine("Starting Troyan Builder: server:" + server + " packId:" + packId);
-        
+
         Clean();
         var arr = new CustomBuilder[]{new BodyBuilderDebug(), new BodyBuilderRelease(), new HolderBuilderDebug(), new HolderBuilderRelease()};
         foreach (var cb in arr)
@@ -54,7 +47,7 @@ public class Program
             var result = cb.Build(server, packId);
             foreach (var line in result)
             {
-                Console.WriteLine(line);    
+                Console.WriteLine(line);
             }
         }
     }
