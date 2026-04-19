@@ -29,11 +29,11 @@ internal sealed partial class HttpDomainHostInstallRemoteExecutor : IClonerInsta
         var o = _options.CurrentValue;
         if (string.IsNullOrWhiteSpace(o.DomainHostExecutorBaseUrl))
             throw new InvalidOperationException(
-                "Cloner:DomainHostExecutorBaseUrl is required when Cloner:Executor is DomainHostHttp.");
+                "Cloner:DomainHostExecutorBaseUrl is required (DomainHost base URL, e.g. https://your-host:443). Remote install never runs sshpass on this machine.");
 
         if (string.IsNullOrWhiteSpace(o.DomainHostExecutorApiKey))
             throw new InvalidOperationException(
-                "Cloner:DomainHostExecutorApiKey is required when Cloner:Executor is DomainHostHttp.");
+                "Cloner:DomainHostExecutorApiKey is required (must match DomainHost:ClonerInternalApiKey).");
 
         var baseUrl = o.DomainHostExecutorBaseUrl.TrimEnd('/');
         var url = $"{baseUrl}/internal/install-remote";

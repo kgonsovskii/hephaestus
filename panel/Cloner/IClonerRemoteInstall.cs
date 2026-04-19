@@ -4,7 +4,7 @@ namespace Cloner;
 
 public interface IClonerRemoteInstall
 {
-    /// <summary>Queues remote install (in-process SSH on DomainHost, or HTTP to DomainHost when configured). Returns id for <see cref="TrySubscribeLogReader"/> / WebSocket.</summary>
+    /// <summary>Queues remote install (HTTP to DomainHost <c>/internal/install-remote</c>; no local SSH process on the panel host). Returns id for <see cref="TrySubscribeLogReader"/> / WebSocket.</summary>
     Task<Guid> StartRemoteInstallAsync(string host, string user, string password, CancellationToken cancellationToken = default);
 
     /// <summary>Log lines for an active or recently finished run; null if unknown run id.</summary>

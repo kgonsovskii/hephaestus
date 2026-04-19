@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "c:\\soft\\newway\\install\\InstallRemote.Core\\InstallRemote.Core.csproj": {}
+    "C:\\soft\\newway\\install\\InstallRemote.Core\\InstallRemote.Core.csproj": {}
   },
   "projects": {
-    "c:\\soft\\newway\\install\\InstallRemote.Core\\InstallRemote.Core.csproj": {
+    "C:\\soft\\newway\\install\\InstallRemote.Core\\InstallRemote.Core.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "c:\\soft\\newway\\install\\InstallRemote.Core\\InstallRemote.Core.csproj",
+        "projectUniqueName": "C:\\soft\\newway\\install\\InstallRemote.Core\\InstallRemote.Core.csproj",
         "projectName": "InstallRemote.Core",
-        "projectPath": "c:\\soft\\newway\\install\\InstallRemote.Core\\InstallRemote.Core.csproj",
+        "projectPath": "C:\\soft\\newway\\install\\InstallRemote.Core\\InstallRemote.Core.csproj",
         "packagesPath": "C:\\Users\\k\\.nuget\\packages\\",
-        "outputPath": "c:\\soft\\newway\\install\\InstallRemote.Core\\obj\\",
+        "outputPath": "C:\\soft\\newway\\install\\InstallRemote.Core\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\k\\AppData\\Roaming\\NuGet\\NuGet.Config"

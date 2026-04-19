@@ -12,9 +12,7 @@ public static class ClonerServiceCollectionExtensions
         services.Configure<ClonerOptions>(configuration.GetSection(ClonerOptions.SectionName));
         services.AddSingleton<ClonerRemoteInstallService>();
         services.AddSingleton<IClonerRemoteInstall>(sp => sp.GetRequiredService<ClonerRemoteInstallService>());
-        services.AddSingleton<InProcessClonerInstallExecutor>();
-        services.AddSingleton<HttpDomainHostInstallRemoteExecutor>();
-        services.AddSingleton<IClonerInstallExecutor, ClonerInstallExecutorRouter>();
+        services.AddSingleton<IClonerInstallExecutor, HttpDomainHostInstallRemoteExecutor>();
         services
             .AddHttpClient(HttpDomainHostInstallRemoteExecutor.HttpClientName)
             .ConfigurePrimaryHttpMessageHandler(sp =>

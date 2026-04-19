@@ -1,7 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    
+    <!-- Own folder so exe + runtimeconfig.json + deps.json stay together (shared panel/output/ overwrites other projects' files). -->
+    <BaseOutputPath>$(MSBuildThisFileDirectory)..\..\output\DomainHost\</BaseOutputPath>
+    <OutputPath>$(BaseOutputPath)</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
     <RuntimeIdentifiers>linux-x64</RuntimeIdentifiers>
   </PropertyGroup>
 

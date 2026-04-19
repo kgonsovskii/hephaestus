@@ -11,8 +11,4 @@
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\..\install\InstallRemote.Core\InstallRemote.Core.csproj" />
-  </ItemGroup>
-
 </Project>
