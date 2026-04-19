@@ -13,8 +13,8 @@
     
 
     <ItemGroup>
-      <ProjectReference Include="..\panel\Commons\Commons.csproj" />
-      <ProjectReference Include="..\panel\model\model.csproj" />
+      <ProjectReference Include="..\..\panel\Commons\Commons.csproj" />
+      <ProjectReference Include="..\..\panel\model\model.csproj" />
     </ItemGroup>
 
     <ItemGroup>
