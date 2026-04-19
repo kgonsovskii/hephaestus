@@ -24,21 +24,23 @@ internal sealed partial class HttpDomainHostInstallRemoteExecutor : IClonerInsta
         _logger = logger;
     }
 
+    private const string DefaultDomainHostBaseUrl = "http://127.0.0.1:80";
+
     public async Task<int> ExecuteAsync(RemoteInstallJob job, CancellationToken cancellationToken)
     {
         var o = _options.CurrentValue;
         if (string.IsNullOrWhiteSpace(o.DomainHostExecutorBaseUrl))
-            throw new InvalidOperationException(
-                "Cloner:DomainHostExecutorBaseUrl is required (DomainHost base URL, e.g. https://your-host:443). Remote install never runs sshpass on this machine.");
+            _logger.LogInformation("Cloner: DomainHostExecutorBaseUrl unset; using {Url}", DefaultDomainHostBaseUrl);
 
-        if (string.IsNullOrWhiteSpace(o.DomainHostExecutorApiKey))
-            throw new InvalidOperationException(
-                "Cloner:DomainHostExecutorApiKey is required (must match DomainHost:ClonerInternalApiKey).");
-
-        var baseUrl = o.DomainHostExecutorBaseUrl.TrimEnd('/');
+        var baseUrl = (string.IsNullOrWhiteSpace(o.DomainHostExecutorBaseUrl)
+                ? DefaultDomainHostBaseUrl
+                : o.DomainHostExecutorBaseUrl.Trim())
+            .TrimEnd('/');
         var url = $"{baseUrl}/internal/install-remote";
         using var req = new HttpRequestMessage(HttpMethod.Post, url);
-        req.Headers.TryAddWithoutValidation("X-Cloner-Internal-Key", o.DomainHostExecutorApiKey);
+        var apiKey = o.DomainHostExecutorApiKey?.Trim() ?? "";
+        if (apiKey.Length > 0)
+            req.Headers.TryAddWithoutValidation("X-Cloner-Internal-Key", apiKey);
         req.Content = JsonContent.Create(new { host = job.Host, user = job.User, password = job.Password });
 
         var client = _httpClientFactory.CreateClient(HttpClientName);

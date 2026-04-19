@@ -6,7 +6,7 @@ using Microsoft.Extensions.Options;
 
 namespace DomainHost;
 
-/// <summary>Runs <see cref="RemoteInstallRunner"/> on the DomainHost machine (Linux + sshpass). Secured by <see cref="DomainHostOptions.ClonerInternalApiKey"/>.</summary>
+/// <summary>Runs <see cref="RemoteInstallRunner"/> on the DomainHost machine (Linux + sshpass). Optional <see cref="DomainHostOptions.ClonerInternalApiKey"/> gate.</summary>
 public sealed class InstallRemoteInternalMiddleware
 {
     private readonly RequestDelegate _next;
@@ -35,15 +35,11 @@ public sealed class InstallRemoteInternalMiddleware
             return;
         }
 
-        if (string.IsNullOrWhiteSpace(_hostOpts.ClonerInternalApiKey))
-        {
-            context.Response.StatusCode = StatusCodes.Status404NotFound;
-            return;
-        }
-
-        if (!string.Equals(
+        var configuredKey = _hostOpts.ClonerInternalApiKey?.Trim() ?? "";
+        if (configuredKey.Length > 0
+            && !string.Equals(
                 context.Request.Headers["X-Cloner-Internal-Key"],
-                _hostOpts.ClonerInternalApiKey,
+                configuredKey,
                 StringComparison.Ordinal))
         {
             context.Response.StatusCode = StatusCodes.Status404NotFound;

@@ -38,6 +38,6 @@ public sealed class DomainHostOptions
 
     public int RepositoryRootSearchMaxAscents { get; set; }
 
-    /// <summary>When set, enables <c>POST /internal/install-remote</c> for the control panel (must match <c>Cloner:DomainHostExecutorApiKey</c>).</summary>
+    /// <summary>When non-empty, <c>POST /internal/install-remote</c> requires header <c>X-Cloner-Internal-Key</c> to match. When empty, the endpoint is open (same-machine happy path).</summary>
     public string? ClonerInternalApiKey { get; set; }
 }

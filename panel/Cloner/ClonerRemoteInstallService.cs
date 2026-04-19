@@ -65,9 +65,14 @@ public sealed class ClonerRemoteInstallService : IClonerRemoteInstall
         return true;
     }
 
+    /// <summary>
+    /// Log reader entries must outlive a fast-failing job: the browser connects the WebSocket after <c>POST /clone</c>
+    /// returns, so removing the channel immediately races the UI and yields a failed upgrade with no log.
+    /// </summary>
+    private static readonly TimeSpan LogReaderRetentionAfterComplete = TimeSpan.FromSeconds(120);
+
     internal void CompleteRun(Guid runId)
     {
-        _logReaders.TryRemove(runId, out _);
         if (_runCancellations.TryRemove(runId, out var cts))
         {
             try
@@ -79,5 +84,20 @@ public sealed class ClonerRemoteInstallService : IClonerRemoteInstall
                 _logger.LogDebug(ex, "Cloner: dispose run cts for {RunId}", runId);
             }
         }
+
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await Task.Delay(LogReaderRetentionAfterComplete).ConfigureAwait(false);
+            }
+            catch
+            {
+                return;
+            }
+
+            if (_logReaders.TryRemove(runId, out _))
+                _logger.LogDebug("Cloner: dropped log reader for completed {RunId}", runId);
+        });
     }
 }
