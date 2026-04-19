@@ -1,5 +1,6 @@
 using System.Text;
 using cp.Models;
+using Domain;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
@@ -12,16 +13,19 @@ public class CpController : BaseController
 {
     private readonly IServiceProvider _serviceProvider;
     private readonly BotController _botController;
+    private readonly IDomainHostsChangedSignal _hostsChanged;
 
     public CpController(
         ServerService serverService,
         BotController botController,
         IServiceProvider serviceProvider,
         IConfiguration configuration,
-        IMemoryCache memoryCache) : base(serverService, configuration, memoryCache)
+        IMemoryCache memoryCache,
+        IDomainHostsChangedSignal hostsChanged) : base(serverService, configuration, memoryCache)
     {
         _serviceProvider = serviceProvider;
         _botController = botController;
+        _hostsChanged = hostsChanged;
     }
 
     [Authorize(Policy = "AllowFromIpRange")]
@@ -265,6 +269,8 @@ public class CpController : BaseController
 
             
             var result = _serverService.PostServerRequest(server, existingModel, action);
+            if (result == "OK")
+                _hostsChanged.NotifyHostsChanged();
 
             existingModel.PostModel.LastResult = result;
             return View("Index", new CpIndexViewModel { Server = existingModel });
