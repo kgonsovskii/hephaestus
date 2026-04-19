@@ -1,5 +1,4 @@
-﻿using cp.Code;
-using Microsoft.AspNetCore.Authorization;
+using cp.Code;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 using model;
@@ -25,14 +24,12 @@ public class AdminController: BaseController
         return result;
     }
     
-    [Authorize(Policy = "AllowFromIpRange")]
     [HttpGet] [Route("/admin")]
     public IActionResult IndexAdmin()
     {
         return View("admin", new ServerModel(){AdminServers = AdminServers()});
     }
 
-    [Authorize(Policy = "AllowFromIpRange")]
     [HttpPost] [Route("/admin")]
     private IActionResult IndexAdmin(ServerModel updatedModel)
     {

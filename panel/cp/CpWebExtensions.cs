@@ -50,21 +50,7 @@ public static class CpWebExtensions
                     options.LoginPath = "/auth";
                     options.LogoutPath = "/auth/logout";
                 });
-            builder.Services.AddAuthorization(options =>
-            {
-                options.AddPolicy("AllowFromIpRange", policy =>
-                    policy.RequireAssertion(context =>
-                    {
-                        var httpContext = context.Resource as HttpContext;
-                        if (httpContext == null)
-                            return false;
-
-                        var remoteIp = httpContext.Connection.RemoteIpAddress?.ToString();
-                        var isAuthenticated = httpContext.User.Identity?.IsAuthenticated ?? false;
-                        var isIpAllowed = true;
-                        return isAuthenticated || isIpAllowed;
-                    }));
-            });
+            builder.Services.AddAuthorization();
         }
 
         return builder;

@@ -1,7 +1,5 @@
 using System.Net.WebSockets;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Cloner;
@@ -25,14 +23,6 @@ public sealed class CloneWebSocketMiddleware
             !context.WebSockets.IsWebSocketRequest)
         {
             await _next(context).ConfigureAwait(false);
-            return;
-        }
-
-        var authz = context.RequestServices.GetRequiredService<IAuthorizationService>();
-        var allowed = await authz.AuthorizeAsync(context.User, context, "AllowFromIpRange").ConfigureAwait(false);
-        if (!allowed.Succeeded)
-        {
-            context.Response.StatusCode = StatusCodes.Status403Forbidden;
             return;
         }
 

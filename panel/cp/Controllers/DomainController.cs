@@ -1,13 +1,11 @@
 using cp.Models;
 using Domain;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 using model;
 
 namespace cp.Controllers;
 
-[Authorize(Policy = "AllowFromIpRange")]
 public class DomainController : BaseController
 {
     public const string TempDataMessageKey = "DomainUiMessage";

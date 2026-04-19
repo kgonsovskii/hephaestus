@@ -1,7 +1,6 @@
 using System.Text;
 using cp.Models;
 using Domain;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 using model;
@@ -28,7 +27,6 @@ public class CpController : BaseController
         _hostsChanged = hostsChanged;
     }
 
-    [Authorize(Policy = "AllowFromIpRange")]
     [HttpGet]
     public IActionResult Index()
     {
@@ -127,7 +125,6 @@ public class CpController : BaseController
     }
     
     [HttpPost]
-    [Authorize(Policy = "AllowFromIpRange")]
     public IActionResult IndexWithServer(
         ServerModel updatedModel,
         string action,

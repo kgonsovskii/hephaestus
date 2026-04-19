@@ -1,12 +1,10 @@
 using Cloner;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 using model;
 
 namespace cp.Controllers;
 
-[Authorize(Policy = "AllowFromIpRange")]
 public class CloneController : BaseController
 {
     private readonly IClonerRemoteInstall _remoteInstall;
