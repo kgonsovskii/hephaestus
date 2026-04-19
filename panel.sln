@@ -8,7 +8,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Refiner", "panel\Refiner\Re
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{9C3B6E20-DEEA-4813-B690-EE5C793E56E3}"
 	ProjectSection(SolutionItems) = preProject
-		Directory.Build.props = Directory.Build.props
+		clean.bat = clean.bat
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "stuff", "stuff", "{3B6BF360-603F-4144-8B3C-023E34701D88}"
