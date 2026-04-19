@@ -1,6 +1,4 @@
 using Domain;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 
 namespace DomainHost;
 

@@ -1,8 +1,6 @@
+using Cloner;
 using cp.Controllers;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
 using model;
 
 namespace cp;
@@ -121,6 +119,7 @@ public static class CpWebExtensions
         cp.UseSession();
         cp.UseAuthentication();
         cp.UseAuthorization();
+        cp.UseClonerCloneSupport();
         cp.UseEndpoints(endpoints => endpoints.MapControllers());
     }
 }

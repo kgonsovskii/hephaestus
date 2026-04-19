@@ -1,5 +1,3 @@
-using System.Threading;
-
 namespace DomainHost;
 
 public sealed class WebStaticRevision

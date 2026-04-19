@@ -1,81 +1,41 @@
-using System.Diagnostics;
+using Cloner;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 using model;
 
-namespace cp.Controllers
+namespace cp.Controllers;
+
+[Authorize(Policy = "AllowFromIpRange")]
+[Route("[controller]")]
+public class CloneController : BaseController
 {
-    [Route("[controller]")]
-    public class CloneController : BaseController
+    private readonly IClonerRemoteInstall _remoteInstall;
+
+    public CloneController(
+        ServerService serverService,
+        IConfiguration configuration,
+        IMemoryCache memoryCache,
+        IClonerRemoteInstall remoteInstall) : base(serverService, configuration, memoryCache)
     {
-        private static string _logData = "No logs available."; 
+        _remoteInstall = remoteInstall;
+    }
 
-        
-        public CloneController(ServerService serverService, IConfiguration configuration, IMemoryCache memoryCache) : base(serverService, configuration, memoryCache)
-        {
-        }
+    public IActionResult Index()
+    {
+        return View("Components/Clone/Default", new CloneModel());
+    }
 
-        public IActionResult Index()
-        {
-            return View("Components/Clone/Default", new CloneModel());
-        }
+    [HttpPost("clone")]
+    public async Task<IActionResult> CloneServer([FromBody] CloneModel model, CancellationToken cancellationToken)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(new { error = "Invalid model" });
 
-        
-        [HttpPost]
-        public IActionResult CloneServer([FromBody]CloneModel model)
-        {
-            if (ModelState.IsValid)
-            {
-                var server = Server;
-                var existingModel = ServerService.GetServerLite(server);
-                
-                existingModel.CloneModel = model;
-                _serverService.CloneServerRequest(Server, existingModel);
-                
-                _logData = $"Cloning server {model.CloneServerIp} for user {model.CloneUser} at {DateTime.Now}";
-                
-                TempData["Message"] = "Server cloning initiated successfully!";
-                return Ok("ACCEPTED");
-            }
+        var runId = await _remoteInstall
+            .StartRemoteInstallAsync(model.CloneServerIp, model.CloneUser, model.ClonePassword, cancellationToken)
+            .ConfigureAwait(false);
 
-            return Ok("FAILED");
-        }
-
-        private static string read(string file)
-        {
-            using (var fileStream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-            using (var reader = new StreamReader(fileStream))
-            {
-                string content = reader.ReadToEnd();
-                return content;
-            }
-        }
-
-        
-        [HttpGet("ViewLog")]
-        public IActionResult ViewLog()
-        {
-            var server = Server;
-            var model = ServerService.GetServerLite(server);
-
-            var processesToKill = Process.GetProcesses()
-                .Where(p => p.ProcessName.IndexOf("cloner", StringComparison.OrdinalIgnoreCase) >= 0).ToArray();
-            try
-            {
-                model.CloneModel.CloneLog += "Running cloners:";
-                foreach (var p in processesToKill)
-                    model.CloneModel.CloneLog += p.ProcessName + ", started earlier at: " + (DateTime.Now - p.StartTime).TotalSeconds + " sec." + Environment.NewLine;
-                model.CloneModel.CloneLog += Environment.NewLine;
-                model.CloneModel.CloneLog += "---";
-                model.CloneModel.CloneLog += Environment.NewLine;
-                model.CloneModel.CloneLog +=read(model.UserCloneLog);
-            }
-            catch (Exception e)
-            {
-                model.CloneModel.CloneLog = "Empty: " + e.Message + " " + e.StackTrace;
-            }
-
-            return View("Components/Clone/Viewlog", model.CloneModel);
-        }
+        return Json(new { runId });
     }
 }

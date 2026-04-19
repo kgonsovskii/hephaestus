@@ -1,5 +1,4 @@
-﻿using System.Net;
-using model;
+﻿using model;
 
 namespace cp;
 

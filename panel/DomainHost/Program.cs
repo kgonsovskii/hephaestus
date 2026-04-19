@@ -1,5 +1,6 @@
 using System.Security.Cryptography.X509Certificates;
 using Commons;
+using Cloner;
 using cp;
 using Db;
 using Domain;
@@ -24,6 +25,7 @@ builder.Services.AddDomainServices(builder.Configuration);
 builder.Services.AddDbServices(builder.Configuration);
 builder.Services.AddRefiner(builder.Configuration);
 builder.Services.AddHostedService<RefinerBackgroundService>();
+builder.Services.AddClonerRemoteInstall(builder.Configuration);
 
 var hostOpts = builder.Configuration.GetRequiredSection(DomainHostOptions.SectionName).Get<DomainHostOptions>()
     ?? throw new InvalidOperationException(
