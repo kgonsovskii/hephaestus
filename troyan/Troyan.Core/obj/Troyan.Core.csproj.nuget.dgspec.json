@@ -27,8 +27,8 @@
           "net9.0": {
             "targetAlias": "net9.0",
             "projectReferences": {
-              "c:\\soft\\newway\\panel\\model\\model.csproj": {
-                "projectPath": "c:\\soft\\newway\\panel\\model\\model.csproj"
+              "C:\\soft\\newway\\panel\\model\\model.csproj": {
+                "projectPath": "C:\\soft\\newway\\panel\\model\\model.csproj"
               }
             }
           }
@@ -98,17 +98,17 @@
         }
       }
     },
-    "c:\\soft\\newway\\panel\\model\\model.csproj": {
+    "C:\\soft\\newway\\panel\\model\\model.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "c:\\soft\\newway\\panel\\model\\model.csproj",
+        "projectUniqueName": "C:\\soft\\newway\\panel\\model\\model.csproj",
         "projectName": "model",
-        "projectPath": "c:\\soft\\newway\\panel\\model\\model.csproj",
+        "projectPath": "C:\\soft\\newway\\panel\\model\\model.csproj",
         "packagesPath": "C:\\Users\\k\\.nuget\\packages",
-        "outputPath": "c:\\soft\\newway\\panel\\model\\obj\\",
+        "outputPath": "C:\\soft\\newway\\panel\\model\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "c:\\soft\\newway\\panel\\NuGet.Config",
+          "C:\\soft\\newway\\panel\\NuGet.Config",
           "C:\\Users\\k\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
@@ -183,8 +183,8 @@
               "c:\\soft\\newway\\panel\\Commons\\Commons.csproj": {
                 "projectPath": "c:\\soft\\newway\\panel\\Commons\\Commons.csproj"
               },
-              "c:\\soft\\newway\\panel\\model\\model.csproj": {
-                "projectPath": "c:\\soft\\newway\\panel\\model\\model.csproj"
+              "C:\\soft\\newway\\panel\\model\\model.csproj": {
+                "projectPath": "C:\\soft\\newway\\panel\\model\\model.csproj"
               }
             }
           }
