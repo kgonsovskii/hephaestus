@@ -29,11 +29,7 @@ public sealed class TechnitiumDnsClient
             ?? throw new InvalidOperationException("Technitium login: missing token.");
     }
 
-    /// <summary>
-    /// Sets global DNS forwarders for the Technitium server (<c>api/settings/set</c>).
-    /// A/AAAA record TTL is not set here; omit <c>ttl</c> on records so Technitium uses <c>defaultRecordTtl</c> from server settings.
-    /// </summary>
-    public async Task ApplyGlobalForwardersAsync(string token, TechnitiumOptions options, CancellationToken cancellationToken)
+        public async Task ApplyGlobalForwardersAsync(string token, TechnitiumOptions options, CancellationToken cancellationToken)
     {
         if (!options.ForwarderEnabled)
             return;
@@ -45,8 +41,7 @@ public sealed class TechnitiumDnsClient
         _logger.LogDebug("Technitium global forwarders set to {Forwarders}", list);
     }
 
-    /// <summary>Sets Technitium <c>recursion</c> (<c>api/settings/set</c>), e.g. <c>Allow</c> for all networks.</summary>
-    public async Task ApplyRecursionPolicyAsync(string token, TechnitiumOptions options, CancellationToken cancellationToken)
+        public async Task ApplyRecursionPolicyAsync(string token, TechnitiumOptions options, CancellationToken cancellationToken)
     {
         var policy = (options.Recursion ?? "").Trim();
         if (policy.Length == 0)
@@ -105,8 +100,7 @@ public sealed class TechnitiumDnsClient
         _logger.LogInformation("Technitium deleted zone {Zone}", zoneName);
     }
 
-    /// <summary>DNSSEC-sign a primary zone (Technitium <c>/api/zones/dnssec/sign</c>).</summary>
-    public async Task SignPrimaryZoneAsync(string token, string zoneName, TechnitiumOptions options, CancellationToken cancellationToken)
+        public async Task SignPrimaryZoneAsync(string token, string zoneName, TechnitiumOptions options, CancellationToken cancellationToken)
     {
         var o = options;
         var url =
@@ -137,8 +131,7 @@ public sealed class TechnitiumDnsClient
         return null;
     }
 
-    /// <summary>FQDN for a wildcard under <paramref name="zoneName"/> (e.g. <c>example.com</c> → <c>*.example.com</c>).</summary>
-    public static string WildcardFqdn(string zoneName)
+        public static string WildcardFqdn(string zoneName)
     {
         var z = zoneName.Trim().TrimEnd('.');
         return "*." + z;

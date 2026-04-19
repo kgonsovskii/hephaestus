@@ -43,7 +43,7 @@ internal static class Program
             }
             catch
             {
-                /* retry */
+                
             }
 
             await Task.Delay(2000);

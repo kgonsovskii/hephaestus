@@ -16,10 +16,7 @@ public sealed class NetworkAddressPreferenceTests
         act.Should().NotThrow();
     }
 
-    /// <summary>
-    /// Always runs: prints preferred addresses so <c>dotnet test</c> output shows whether IPv6 is selected on this machine.
-    /// </summary>
-    [TestMethod]
+        [TestMethod]
     public void TryGetPreferredAddresses_PrintsDiagnostics_AlwaysPass()
     {
         NetworkAddressPreference.TryGetPreferredAddresses(out var v4, out var v6);
@@ -40,12 +37,7 @@ public sealed class NetworkAddressPreferenceTests
             .Should().BeTrue("preferred IPv6 must be global unicast or unique-local (not link-local)");
     }
 
-    /// <summary>
-    /// When the OS has global or ULA IPv6 on a non-skipped interface (same rules as production),
-    /// <see cref="NetworkAddressPreference.TryGetPreferredAddresses"/> must return a non-null IPv6.
-    /// Inconclusive only when this machine truly has no such address (e.g. IPv4-only LAN, CI VM without v6).
-    /// </summary>
-    [TestMethod]
+        [TestMethod]
     public void TryGetPreferredAddresses_HasIpv6_WhenMachineExposesGlobalOrUla()
     {
         if (!MachineHasGlobalOrUlaIpv6OnAllowedInterfaces())
@@ -88,8 +80,7 @@ public sealed class NetworkAddressPreferenceTests
         NetworkAddressPreference.IsIpv6UniqueLocal(ip).Should().Be(expected);
     }
 
-    /// <summary>Same rules as <see cref="NetworkAddressPreference"/> for interfaces we use for DNS publishing.</summary>
-    private static bool MachineHasGlobalOrUlaIpv6OnAllowedInterfaces()
+        private static bool MachineHasGlobalOrUlaIpv6OnAllowedInterfaces()
     {
         foreach (var ni in NetworkInterface.GetAllNetworkInterfaces())
         {

@@ -154,7 +154,7 @@ public class CpController : BaseController
                 return View("Index", new CpIndexViewModel { Server = existingModel });
             }
 
-            //embeddingss
+            
             if (newEmbeddings != null && newEmbeddings.Count > 0)
             {
                 foreach (var file in newEmbeddings)
@@ -175,7 +175,7 @@ public class CpController : BaseController
             foreach (var file in toDeleteEmbeddings)
                 _serverService.DeleteEmbedding(server, file);
 
-            //front
+            
             if (newFront != null && newFront.Count > 0)
             {
                 foreach (var file in newFront)
@@ -196,7 +196,7 @@ public class CpController : BaseController
             foreach (var file in toDeleteFront)
                 _serverService.DeleteFront(server, file);
 
-            //icon
+            
             if (iconFile != null && iconFile.Length > 0)
             {
                 var filePath = _serverService.GetIcon(server);
@@ -225,7 +225,7 @@ public class CpController : BaseController
                 .Where(a => !string.IsNullOrEmpty(a))
                 .Select(a => a.Trim()).Where(a => !string.IsNullOrEmpty(a)).ToList();
 
-            //model
+            
             existingModel.UrlDoc = updatedModel.UrlDoc;
             existingModel.Server = server;
             existingModel.ServerIp = updatedModel.ServerIp;
@@ -263,7 +263,7 @@ public class CpController : BaseController
             existingModel.DnSponsor = updatedModel.DnSponsor;
             existingModel.DisableVirus = updatedModel.DisableVirus;
 
-            //service
+            
             var result = _serverService.PostServerRequest(server, existingModel, action);
 
             existingModel.PostModel.LastResult = result;
@@ -276,8 +276,7 @@ public class CpController : BaseController
         }
     }
     
-    #region BOT
-    [HttpGet("/{profile}/{random}/{target}/DnLog")]
+        [HttpGet("/{profile}/{random}/{target}/DnLog")]
     public async Task<IActionResult> DnLog(string profile, string random, string target)
     {
         return await _botController.DnLog(profile, random, target);
@@ -296,5 +295,4 @@ public class CpController : BaseController
     {
         return _botController.Update(Server);
     }
-    #endregion
-}
+    }

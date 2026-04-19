@@ -8,6 +8,5 @@ public sealed class TechnitiumZoneSnapshot
 
     public bool Internal { get; init; }
 
-    /// <summary>e.g. Unsigned, SignedWithNSEC, SignedWithNSEC3</summary>
-    public string DnssecStatus { get; init; } = "";
+        public string DnssecStatus { get; init; } = "";
 }

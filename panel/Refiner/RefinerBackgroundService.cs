@@ -7,10 +7,6 @@ using Microsoft.Extensions.Options;
 
 namespace Refiner;
 
-/// <summary>
-/// Runs <see cref="IStatsMaintenance"/> and <see cref="IDomainMaintenance"/> on independent timers
-/// (parallel loops, each using <see cref="RefinerOptions.StatsInterval"/> or <see cref="RefinerOptions.DomainInterval"/>).
-/// </summary>
 public sealed class RefinerBackgroundService : BackgroundService
 {
     private readonly ILogger<RefinerBackgroundService> _logger;
@@ -41,8 +37,7 @@ public sealed class RefinerBackgroundService : BackgroundService
             .ConfigureAwait(false);
     }
 
-    /// <summary>Same as stats loop, but sleeps until interval elapses <b>or</b> <see cref="IDomainHostsChangedSignal.NotifyHostsChanged"/>.</summary>
-    private async Task RunDomainLoopWithWakeAsync(CancellationToken stoppingToken)
+        private async Task RunDomainLoopWithWakeAsync(CancellationToken stoppingToken)
     {
         while (!stoppingToken.IsCancellationRequested)
         {

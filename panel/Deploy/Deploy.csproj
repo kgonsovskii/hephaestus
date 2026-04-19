@@ -1,17 +1,17 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <!-- Orchestrates `dotnet publish` for DomainHost into the repository `release/` folder (linux-x64, framework-dependent). -->
+  
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     <RootNamespace>Deploy</RootNamespace>
   </PropertyGroup>
 
-  <!-- So `dotnet restore` on this project pulls DomainHost packages (nested MSBuild alone does not). -->
+  
   <ItemGroup>
     <ProjectReference Include="..\DomainHost\DomainHost.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
-  <!-- Target name kept distinct from SDK built-in `Publish`. Example: dotnet build -t:DeployDomain -->
+  
   <Target Name="DeployDomain">
     <PropertyGroup>
       <_RepoRoot>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\..'))</_RepoRoot>

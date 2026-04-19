@@ -2,7 +2,6 @@ using System.Threading;
 
 namespace DomainHost;
 
-/// <summary>Bumped when anything under the Hephaestus <c>web/</c> tree changes so static ETags rotate.</summary>
 public sealed class WebStaticRevision
 {
     private long _value;

@@ -11,11 +11,11 @@ public static class UrlHelper
         if (string.IsNullOrWhiteSpace(url))
             return string.Empty;
 
-        // If the input is already a well-formed URI, return it as-is
+        
         if (Uri.IsWellFormedUriString(url, UriKind.Absolute))
             return url;
 
-        // Otherwise, try to decode and re-encode it safely
+        
         try
         {
             var decoded = Uri.UnescapeDataString(url);
@@ -55,12 +55,12 @@ public static class UrlHelper
         using (var sha256 = SHA256.Create())
         {
             byte[] hashBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(url));
-            // Convert hash to hex and take first 5 lowercase chars
+            
             StringBuilder sb = new StringBuilder();
 
             for (int i = 0; sb.Length < 5 && i < hashBytes.Length; i++)
             {
-                sb.Append(hashBytes[i].ToString("x2")); // hex lowercase
+                sb.Append(hashBytes[i].ToString("x2")); 
             }
 
             return sb.ToString().Substring(0, 5);

@@ -1,4 +1,4 @@
-﻿namespace model;
+namespace model;
 
 public static class VbsRandomer
 {
@@ -67,7 +67,7 @@ public static class VbsRandomer
     private static string GenerateRandomVbScriptLine()
     {
         var random = new Random();
-        int variableLength = 7 + random.Next(0, 4); // Ensure variable length is at least 7 characters
+        int variableLength = 7 + random.Next(0, 4); 
         string variable = GenerateRandomVariableName(variableLength);
         int value1 = random.Next(1, 101);
         int value2 = random.Next(1, 101);

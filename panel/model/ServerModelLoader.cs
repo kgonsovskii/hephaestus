@@ -58,11 +58,23 @@ public static class ServerModelLoader
         return Path.Combine(ServerDir(serverName), "server.json");
     }
 
-    public static string SourceCertDirStatic => HephaestusRepoPaths.CertDirectory(HephaestusDataRootStatic);
+    public static string SourceCertDirStatic => PathResolver.CertDirectory(HephaestusDataRootStatic);
+
+    private static IHephaestusPathResolver? _pathResolver;
+
+    private static IHephaestusPathResolver PathResolver =>
+        _pathResolver ??= CreatePathResolver();
+
+    private static IHephaestusPathResolver CreatePathResolver()
+    {
+        var dir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+        if (string.IsNullOrEmpty(dir))
+            throw new InvalidOperationException("Could not resolve assembly directory for Hephaestus path options.");
+        return HephaestusPathResolver.FromAppSettingsInDirectory(dir);
+    }
 
     private static string? _hephaestusDataRootStatic;
 
-    /// <summary>Resolved <c>hephaestus_data</c> directory (see <c>HephaestusRepoPaths.ResolveHephaestusDataRoot</c>).</summary>
     public static string HephaestusDataRootStatic
     {
         get
@@ -72,7 +84,7 @@ public static class ServerModelLoader
                 var dir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
                 if (string.IsNullOrEmpty(dir))
                     throw new InvalidOperationException("Could not resolve assembly directory for Hephaestus data root.");
-                _hephaestusDataRootStatic = HephaestusRepoPaths.ResolveHephaestusDataRoot(dir);
+                _hephaestusDataRootStatic = PathResolver.ResolveHephaestusDataRoot(dir);
             }
 
             return _hephaestusDataRootStatic;
@@ -90,7 +102,7 @@ public static class ServerModelLoader
                 var dir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
                 if (string.IsNullOrEmpty(dir))
                     throw new InvalidOperationException("Could not resolve assembly directory for repository root.");
-                _rootDirStatic = HephaestusRepoPaths.ResolveRepositoryRoot(dir);
+                _rootDirStatic = PathResolver.ResolveRepositoryRoot(dir);
             }
 
             return _rootDirStatic;

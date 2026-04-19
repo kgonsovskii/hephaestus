@@ -23,7 +23,7 @@ public sealed class WebContentClassCatalog : IWebContentClassCatalog
         }
         catch
         {
-            // Read-only or permission; still return defaults below.
+            
         }
 
         var set = new HashSet<string>(StringComparer.OrdinalIgnoreCase)

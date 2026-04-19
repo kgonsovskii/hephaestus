@@ -6,7 +6,6 @@ using model;
 
 namespace cp;
 
-/// <summary>Static files and forwarder branch for the cp site (invoked under <see cref="CpSettings.SitePathPrefix"/>).</summary>
 internal static class CpPipeline
 {
     public static void DataServe(IApplicationBuilder app)
@@ -24,7 +23,7 @@ internal static class CpPipeline
 
     public static void ForwarderMode(IApplicationBuilder app)
     {
-        // IApplicationBuilder.Map(path, RequestDelegate) is not always available; branch + Run is unambiguous.
+        
         void MapFwd(PathString p) => app.Map(p, b => b.Run(ForwardRequest));
 
         MapFwd("/admin");

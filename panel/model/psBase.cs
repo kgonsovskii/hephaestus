@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.Security;
 
 namespace model;
@@ -66,34 +66,34 @@ public abstract class PsBase
     {
         var outputLines = new List<string>();
 
-        // Build the arguments for the PowerShell script
+        
         string scriptArguments = $"-NoProfile -ExecutionPolicy Bypass -File \"{scriptFile}\"";
         
-        // Add parameters as arguments
+        
         foreach (var param in parameters)
         {
             scriptArguments += $" -{param.Name} {param.Value}";
         }
 
-        // Set up the process to run PowerShell
+        
         var psi = new ProcessStartInfo
         {
-            FileName = "powershell.exe", // Use "pwsh" for PowerShell Core
+            FileName = "powershell.exe", 
             Arguments = scriptArguments,
             RedirectStandardOutput = true,
             RedirectStandardError = true,
-            UseShellExecute = false,  // Don't use the shell to execute
-            CreateNoWindow = true     // Don't show the PowerShell window
+            UseShellExecute = false,  
+            CreateNoWindow = true     
         };
 
         try
         {
-            // Start the process and capture output
+            
             using (var process = Process.Start(psi))
             {
                 if (process != null)
                 {
-                    // Read the standard output
+                    
                     string output = process.StandardOutput.ReadToEnd();
                     string error = process.StandardError.ReadToEnd();
 
@@ -102,13 +102,13 @@ public abstract class PsBase
                         outputLines.AddRange(output.Split(new[] { Environment.NewLine }, StringSplitOptions.None));
                     }
 
-                    // Capture any errors
+                    
                     if (!string.IsNullOrEmpty(error))
                     {
                         outputLines.Add("ERROR: " + error);
                     }
 
-                    process.WaitForExit(); // Wait for the script to finish executing
+                    process.WaitForExit(); 
                 }
             }
         }

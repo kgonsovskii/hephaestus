@@ -106,12 +106,7 @@ public class DomainController : BaseController
         return RedirectToAction(nameof(Index));
     }
 
-    /// <summary>
-    /// Updates the in-process host→site map (same data as <see cref="DomainCatalog"/>) so the next vhost request
-    /// matches domains.json. Hosted <see cref="DomainCatalogRefreshService"/> may run slightly later; without this,
-    /// routing could stay stale until the next refresh interval after a control-panel save.
-    /// </summary>
-    private async Task ReplaceInMemoryCatalogAsync(CancellationToken cancellationToken)
+        private async Task ReplaceInMemoryCatalogAsync(CancellationToken cancellationToken)
     {
         var enabled = await _domains.LoadEnabledDomainsAsync(cancellationToken).ConfigureAwait(false);
         _catalog.Replace(enabled);

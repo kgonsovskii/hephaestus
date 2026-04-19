@@ -2,3 +2,6 @@
 /output/
 # DomainHost framework-dependent publish (install/install-soft.sh)
 /release/
+
+/StripComments/bin/
+/StripComments/obj/

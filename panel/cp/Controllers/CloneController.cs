@@ -8,9 +8,9 @@ namespace cp.Controllers
     [Route("[controller]")]
     public class CloneController : BaseController
     {
-        private static string _logData = "No logs available."; // Simulated log storage
+        private static string _logData = "No logs available."; 
 
-        // GET: Clone page
+        
         public CloneController(ServerService serverService, IConfiguration configuration, IMemoryCache memoryCache) : base(serverService, configuration, memoryCache)
         {
         }
@@ -20,7 +20,7 @@ namespace cp.Controllers
             return View("Components/Clone/Default", new CloneModel());
         }
 
-        // POST: Clone Server (Handles the cloning process)
+        
         [HttpPost]
         public IActionResult CloneServer([FromBody]CloneModel model)
         {
@@ -51,7 +51,7 @@ namespace cp.Controllers
             }
         }
 
-        // GET: View Log (Displays log details)
+        
         [HttpGet("ViewLog")]
         public IActionResult ViewLog()
         {

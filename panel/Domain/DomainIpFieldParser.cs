@@ -4,7 +4,6 @@ using Commons;
 
 namespace Domain;
 
-/// <summary>Parses <c>domains.json</c> <c>ip</c> the same way as <see cref="DomainMaintenance"/> (Technitium sync).</summary>
 public static class DomainIpFieldParser
 {
     public static void ParseTargetAddresses(string? ipField, out IPAddress? v4, out IPAddress? v6)

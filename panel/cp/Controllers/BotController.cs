@@ -88,7 +88,7 @@ public class BotController: BaseController
         }
         catch (Exception ex)
         {
-            // Log the exception (ex) here
+            
             return StatusCode(500, $"Internal server error: {ex.Message}");
         }
     }
@@ -98,7 +98,7 @@ public class BotController: BaseController
         using (var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(key)))
         {
             var computedHash = Convert.ToBase64String(hmac.ComputeHash(Encoding.UTF8.GetBytes(data)));
-            // Debugging: Print the computed hash
+            
             Console.WriteLine($"Computed hash on server: {computedHash}");
             return computedHash.Equals(hash);
         }

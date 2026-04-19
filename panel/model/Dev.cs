@@ -1,4 +1,4 @@
-﻿using System.Net;
+using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
 
@@ -85,7 +85,7 @@ public class Dev
             {
                 foreach (UnicastIPAddressInformation ip in ni.GetIPProperties().UnicastAddresses)
                 {
-                    if (ip.Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork) // IPv4
+                    if (ip.Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork) 
                     {
                         if (!IsPrivateIP(ip.Address))
                         {
@@ -125,9 +125,9 @@ public class Dev
         byte[] bytes = ipAddress.GetAddressBytes();
         return bytes[0] switch
         {
-            10 => true, // 10.0.0.0 - 10.255.255.255
-            172 => bytes[1] >= 16 && bytes[1] <= 31, // 172.16.0.0 - 172.31.255.255
-            192 => bytes[1] == 168, // 192.168.0.0 - 192.168.255.255
+            10 => true, 
+            172 => bytes[1] >= 16 && bytes[1] <= 31, 
+            192 => bytes[1] == 168, 
             _ => false,
         };
     }
@@ -135,17 +135,9 @@ public class Dev
 
 
 
-/// <summary>
-/// Helpers for local network configuration (primary IP, etc.).
-/// Filters out loopback, virtual, VPN, and tunnel interfaces.
-/// </summary>
 public static class LocalNetwork
 {
-    /// <summary>
-    /// Returns the primary non-loopback IPv4 address, skipping virtual/VPN/tunnel interfaces.
-    /// Returns null if none found.
-    /// </summary>
-    public static string? GetPrimaryIpAddress()
+        public static string? GetPrimaryIpAddress()
     {
         foreach (var ni in NetworkInterface.GetAllNetworkInterfaces())
         {

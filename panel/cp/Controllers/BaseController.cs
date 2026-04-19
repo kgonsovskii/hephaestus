@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
@@ -14,7 +14,7 @@ public abstract class BaseController: Controller
     
     protected static string RootDataDir => ServerModelLoader.RootDataStatic;
 
-    protected const string SecretKey = "YourSecretKeyHere"; // Secret key for hashing
+    protected const string SecretKey = "YourSecretKeyHere"; 
     
     protected readonly string _connectionString;
         
@@ -22,21 +22,14 @@ public abstract class BaseController: Controller
     {
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        WriteIndented = false // Ensure compact JSON
+        WriteIndented = false 
     };
     
     protected async Task<IActionResult> GetFileX(string file, string name, string type)
     {
         try
         {
-            /*string fileContent;
-            if (!_memoryCache.TryGetValue(file, out fileContent))
-            {
-                fileContent = await System.IO.File.ReadAllTextAsync(file);
-                var cacheEntryOptions = new MemoryCacheEntryOptions()
-                    .SetSlidingExpiration(TimeSpan.FromMinutes(1));
-                _memoryCache.Set(file, fileContent, cacheEntryOptions);
-            }*/
+            
 
             if (type == "vbs")
             {

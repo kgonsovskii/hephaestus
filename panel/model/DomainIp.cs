@@ -1,4 +1,4 @@
-﻿using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
 
 namespace model;
 
@@ -16,7 +16,7 @@ public class DomainIp: BaseModel
     [JsonPropertyName("domains")]
     public List<string> Domains { get; set; } = new List<string>();
     
-    //FTP
+    
     [JsonPropertyName("ftp")] public string Ftp => $@"ftp://ftp_{Name.Replace(' ','_')}:Abc12345!@{IP}";
     [JsonPropertyName("ftpAsHttp")] public string FtpAsHttp => $@"http://{IP}/ftp";
     

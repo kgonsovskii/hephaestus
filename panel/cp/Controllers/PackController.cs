@@ -68,7 +68,7 @@ namespace cp.Controllers
             }
         }
 
-        // GET: View Log (Displays log details)
+        
         [HttpGet("ViewLog")]
         public IActionResult ViewLog()
         {

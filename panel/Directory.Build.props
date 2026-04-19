@@ -4,9 +4,9 @@
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <!-- Use newest installed 9.x patch when exact 9.0.0 shared framework is absent -->
+    
     <RollForward>LatestPatch</RollForward>
-    <!-- Shared package versions (referenced as $(PkgName) in *.csproj) -->
+    
     <PkgNpgsqlVersion>9.0.3</PkgNpgsqlVersion>
     <PkgMicrosoftExtensionsVersion>9.0.0</PkgMicrosoftExtensionsVersion>
     <PkgMicrosoftNetTestSdkVersion>17.12.44</PkgMicrosoftNetTestSdkVersion>
@@ -18,13 +18,13 @@
     <PkgSMBLibraryVersion>1.5.3.5</PkgSMBLibraryVersion>
   </PropertyGroup>
 
-  <!-- Single flat folder: repo\output\ — no Configuration / TFM segments; last build wins on duplicates. Tests excluded (default bin\obj\ under Tests). -->
+  
   <PropertyGroup Condition="'$(UsingMicrosoftNETSdk)' == 'true' AND '$(MSBuildProjectName)' != 'Tests'">
     <BaseOutputPath>$(MSBuildThisFileDirectory)..\output\</BaseOutputPath>
     <OutputPath>$(MSBuildThisFileDirectory)..\output\</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
-    <!-- Ship x64-only apphosts; requires x64 .NET / ASP.NET Core runtime (not x86-only installs). -->
+    
     <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
 </Project>

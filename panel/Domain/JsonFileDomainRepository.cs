@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Commons;
 using Domain.Models;
 using Microsoft.Extensions.Options;
 
@@ -8,11 +9,9 @@ public interface IDomainRepository
 {
     Task<IReadOnlyList<DomainRecord>> LoadEnabledDomainsAsync(CancellationToken cancellationToken);
 
-    /// <summary>All rows in domains.json (including disabled), for management UIs.</summary>
-    Task<IReadOnlyList<DomainRecord>> LoadAllDomainsAsync(CancellationToken cancellationToken = default);
+        Task<IReadOnlyList<DomainRecord>> LoadAllDomainsAsync(CancellationToken cancellationToken = default);
 
-    /// <summary>Persists the full domains file (replaces contents).</summary>
-    Task SaveDomainsAsync(IReadOnlyList<DomainRecord> domains, CancellationToken cancellationToken = default);
+        Task SaveDomainsAsync(IReadOnlyList<DomainRecord> domains, CancellationToken cancellationToken = default);
 }
 
 public sealed class JsonFileDomainRepository : IDomainRepository
@@ -34,8 +33,7 @@ public sealed class JsonFileDomainRepository : IDomainRepository
     public JsonFileDomainRepository(IWebContentPathProvider webPaths, IOptions<DomainHostOptions> options)
     {
         _webPaths = webPaths;
-        var name = options.Value.DomainsFileName.Trim().Trim(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
-        _domainsFileName = name.Length == 0 ? "domains.json" : name;
+        _domainsFileName = options.Value.DomainsFileName.Trim().Trim(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
     }
 
     public async Task<IReadOnlyList<DomainRecord>> LoadEnabledDomainsAsync(CancellationToken cancellationToken)

@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -11,7 +11,7 @@ namespace cp.Controllers;
 [Route("[controller]")]
 public class AuthController : BaseController
 {
-    // GET: /auth
+    
     public AuthController(ServerService serverService, IConfiguration configuration, IMemoryCache memoryCache) : base(
         serverService, configuration, memoryCache)
     {
@@ -19,13 +19,13 @@ public class AuthController : BaseController
 
     [AllowAnonymous]
     [HttpGet]
-    // Exact route for login page
+    
     public IActionResult Index()
     {
         return View();
     }
 
-    // POST: /auth/login
+    
     [AllowAnonymous]
     [HttpPost]
     public async Task<IActionResult> Login(string username, string password)
@@ -40,20 +40,20 @@ public class AuthController : BaseController
             var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
             var claimsPrincipal = new ClaimsPrincipal(claimsIdentity);
 
-            // Ensure the SignInAsync is awaited
+            
             await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, claimsPrincipal);
 
-            // Extract the "Set-Cookie" header after signing in
+            
             var cookiesHeader = HttpContext.Response.Headers["Set-Cookie"];
 
-            // Get cookie string (for this example we assume a simple cookie)
+            
             var cookieString = string.Join("; ", cookiesHeader.Select(c => c.Split(';')[0]));
 
-            // Set a flag in ViewData for the redirect script
+            
             ViewData["RedirectFlag"] = true;
             ViewData["CookieString"] = cookieString;
             ViewData["LoginFailed"] = "Success. Redirect.";
-            // Return the Index view
+            
             return View("Index");
         }
         
@@ -61,14 +61,14 @@ public class AuthController : BaseController
         return View("Index");
     }
 
-    // POST: /auth/logout
+    
     [HttpPost]
-    [Route("logout")] // Exact route for logout action
+    [Route("logout")] 
     public async Task<IActionResult> Logout()
     {
-        // Sign out the user and clear the session
+        
         await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
 
-        return RedirectToAction("Index", "Auth"); // Redirect to login page
+        return RedirectToAction("Index", "Auth"); 
     }
 }

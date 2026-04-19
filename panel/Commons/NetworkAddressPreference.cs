@@ -4,14 +4,9 @@ using System.Net.Sockets;
 
 namespace Commons;
 
-/// <summary>
-/// Picks stable local IPv4/IPv6 for publishing DNS or services: prefers routable (public) addresses,
-/// then LAN; skips typical virtual/tunnel/loopback interfaces.
-/// </summary>
 public static class NetworkAddressPreference
 {
-    /// <summary>Returns best-effort IPv4 and IPv6 (either may be null if none suitable).</summary>
-    public static void TryGetPreferredAddresses(out IPAddress? ipv4, out IPAddress? ipv6)
+        public static void TryGetPreferredAddresses(out IPAddress? ipv4, out IPAddress? ipv6)
     {
         ipv4 = null;
         ipv6 = null;
@@ -96,7 +91,7 @@ public static class NetworkAddressPreference
 
     public static bool IsIpv6GlobalUnicast(IPAddress a)
     {
-        // 2000::/3 global unicast; exclude documentation etc.
+        
         var bytes = a.GetAddressBytes();
         if (bytes.Length != 16)
             return false;

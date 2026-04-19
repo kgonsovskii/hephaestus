@@ -1,3 +1,4 @@
+using Commons;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -10,8 +11,11 @@ public static class ServiceCollectionEx
     {
         services.AddSingleton<IDomainRepository, JsonFileDomainRepository>();
         services.AddSingleton<IDomainHostsChangedSignal, DomainHostsChangedSignal>();
-        services.Configure<DomainHostOptions>(
-            configuration.GetSection(DomainHostOptions.SectionName));
+        services.AddSingleton<IValidateOptions<DomainHostOptions>, DomainHostOptionsValidator>();
+        services.AddOptions<DomainHostOptions>()
+            .Bind(configuration.GetRequiredSection(DomainHostOptions.SectionName))
+            .ValidateOnStart();
+        services.AddSingleton<IHephaestusPathResolver, HephaestusPathResolver>();
         services.Configure<TechnitiumOptions>(
             configuration.GetSection(TechnitiumOptions.SectionName));
         services.AddHttpClient<TechnitiumDnsClient>((sp, client) =>

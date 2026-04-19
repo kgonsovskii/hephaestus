@@ -29,12 +29,13 @@ internal static class Program
     private static void Run()
     {
         var start = Path.GetFullPath(AppContext.BaseDirectory);
-        var dataRoot = HephaestusRepoPaths.ResolveHephaestusDataRoot(start);
-        var webRoot = HephaestusRepoPaths.WebDirectory(dataRoot, "web");
+        var paths = HephaestusPathResolver.FromAppSettingsInDirectory(start);
+        var dataRoot = paths.ResolveHephaestusDataRoot(start);
+        var webRoot = paths.WebDirectory(dataRoot);
         if (!Directory.Exists(webRoot))
             throw new InvalidOperationException($"Web directory not found: {webRoot}");
 
-        var domainsPath = HephaestusRepoPaths.FileUnderDataRoot(dataRoot, "domains.json");
+        var domainsPath = paths.FileUnderDataRoot(dataRoot);
         if (!File.Exists(domainsPath))
             throw new InvalidOperationException($"Missing domains file: {domainsPath}");
 
@@ -42,9 +43,9 @@ internal static class Program
         if (dnsNames.Count == 0)
             throw new InvalidOperationException("No enabled domains in domains.json.");
 
-        var certDir = HephaestusRepoPaths.CertDirectory(dataRoot, "cert");
-        var pfxPath = Path.Combine(certDir, "hephaestus.pfx");
-        var publicCerPath = Path.Combine(certDir, "hephaestus-trusted-root.cer");
+        var certDir = paths.CertDirectory(dataRoot);
+        var pfxPath = paths.FileUnderCert(dataRoot);
+        var publicCerPath = paths.PublicCertPath(dataRoot);
 
         var deleteExisting = LoadDeleteExistingCertFilesFlag();
         if (deleteExisting)
@@ -65,7 +66,7 @@ internal static class Program
         Directory.CreateDirectory(certDir);
 
         using var cert = CreateLanTlsCertificate(dnsNames);
-        // .NET 9: use Export(X509ContentType.Pfx); ExportPkcs12/Pkcs12ExportPbeParameters require a newer TFM.
+
         File.WriteAllBytes(pfxPath, cert.Export(X509ContentType.Pfx, "123"));
         File.WriteAllBytes(publicCerPath, cert.Export(X509ContentType.Cert));
     }

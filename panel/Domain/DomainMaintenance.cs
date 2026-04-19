@@ -10,15 +10,6 @@ public interface IDomainMaintenance : IMaintenance
 {
 }
 
-/// <summary>
-/// Aligns Technitium with <c>domains.json</c>: creates/deletes <b>Primary</b> zones to match enabled rows (minus ignore list),
-/// optionally applies global DNS forwarders and recursion policy, then sets A/AAAA at each name (TTL from Technitium default record TTL in Settings).
-/// For each zone, also ensures the zone apex and a <c>*.zone</c> wildcard get A/AAAA (same targets as the canonical row for that zone; apex row preferred when present),
-/// then applies per-row records so explicit hostnames can override. Wildcard sync does not request PTR (not meaningful for <c>*</c>).
-/// Skips names in <c>domains-ignore.json</c> (next to <c>domains.json</c> under the Hephaestus data root). Does not delete Technitium <c>internal</c> zones.
-/// When a domain has no <c>ip</c>, uses <see cref="NetworkAddressPreference"/> for both v4 and v6.
-/// When <c>ip</c> lists only IPv4, still fills IPv6 from <see cref="NetworkAddressPreference"/> so AAAA can be published.
-/// </summary>
 public sealed class DomainMaintenance : IDomainMaintenance
 {
     private readonly IDomainRepository _domains;
@@ -159,7 +150,7 @@ public sealed class DomainMaintenance : IDomainMaintenance
             }
         }
 
-        // Apex + wildcard per zone so every subdomain resolves without listing each host (explicit rows below may override).
+        
         var canonicalByZone = new Dictionary<string, Domain.Models.DomainRecord>(StringComparer.OrdinalIgnoreCase);
         foreach (var row in records)
         {

@@ -1,4 +1,4 @@
-﻿using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
 
 namespace model;
 
@@ -60,7 +60,7 @@ public class ServerModel: BaseModel
     [JsonPropertyName("userTroyanVbs")] public string UserTroyanVbs => Path.Join(UserDataDir, "troyan.vbs");
 
 
-    // server-depended
+    
     [JsonPropertyName("serverIp")] public string ServerIp{ get; set; } = "";
     [JsonPropertyName("server")] public string Server { get; set; } = "";
     [JsonPropertyName("alias")] public string Alias { get; set; }
@@ -111,7 +111,7 @@ public class ServerModel: BaseModel
     [JsonPropertyName("landingSponsorHtmlExeFile")] public string LandingSponsorHtmlExeFile => Path.Join(LandingDir, $"{LandingName}-sponsor-exe.html");
 
 
-    // properties
+    
     [JsonPropertyName("login")] public string Login { get; set; }
 
     [JsonPropertyName("password")] public string Password { get; set; }
@@ -188,7 +188,7 @@ public class ServerModel: BaseModel
     [JsonPropertyName("embeddings")] public List<string> Embeddings { get; set; }
 
 
-    //resulting
+    
     [JsonPropertyName("adminServers")]
     [JsonIgnore]
     public Dictionary<string, string>? AdminServers { get; set; }
@@ -209,7 +209,7 @@ public class ServerModel: BaseModel
     [JsonIgnore] public bool IsLocal => ServerIp == "127.0.0.1";
 
 
-    //constructor
+    
     public ServerModel()
     {
         Login = "Administrator";

@@ -4,7 +4,6 @@ using Microsoft.Extensions.Logging;
 
 namespace DomainHost;
 
-/// <summary>Watches <see cref="IWebContentPathProvider.WebRootFullPath"/> and bumps <see cref="WebStaticRevision"/> on changes (debounced).</summary>
 public sealed class WebRootFileWatcherHostedService : BackgroundService
 {
     private readonly IWebContentPathProvider _paths;

@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 
 namespace model;
 
@@ -107,7 +107,7 @@ public static class GitHelper
             RunGitCommand(context, $"-C \"{localPath}\" commit -m \"{version}\"");
         }
         catch {
-            //nothing
+            
         }
         RunGitCommand(context, $"-C \"{localPath}\" push --force");
     }

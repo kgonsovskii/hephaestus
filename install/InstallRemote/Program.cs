@@ -74,11 +74,7 @@ internal static class Program
         }
     }
 
-    /// <summary>
-    /// Removes all keys for <paramref name="host"/> from the user <c>known_hosts</c> via <c>ssh-keygen -R</c>,
-    /// so a reinstall (new host key) does not trigger REMOTE HOST IDENTIFICATION HAS CHANGED under strict checking.
-    /// </summary>
-    private static void TryRemoveKnownHostsEntryForHost(string host)
+        private static void TryRemoveKnownHostsEntryForHost(string host)
     {
         host = host.Trim();
         if (host.Length == 0)
@@ -149,10 +145,7 @@ internal static class Program
         return null;
     }
 
-    /// <summary>
-    /// Resolves <c>install-remote-creds.txt</c>: next to the executable, else <c>install/install-remote-creds.txt</c> from current directory (e.g. repo root when using <c>dotnet run</c>).
-    /// </summary>
-    private static (string Server, string Login, string Password) LoadCredsFromFileOrThrow()
+        private static (string Server, string Login, string Password) LoadCredsFromFileOrThrow()
     {
         var path = ResolveCredsPath();
         if (!File.Exists(path))
@@ -200,8 +193,7 @@ internal static class Program
         return besideExe;
     }
 
-    /// <summary>Loads <c>install/install-remote.txt</c> (copied next to the exe). Single source with PS1 and install-remote.sh.</summary>
-    private static string LoadRemoteScriptText()
+        private static string LoadRemoteScriptText()
     {
         var path = Path.Combine(AppContext.BaseDirectory, "install-remote.txt");
         if (!File.Exists(path))
@@ -213,11 +205,7 @@ internal static class Program
         return text.Replace("\r\n", "\n", StringComparison.Ordinal).Replace("\r", "\n", StringComparison.Ordinal).TrimEnd() + "\n";
     }
 
-    /// <summary>
-    /// OpenSSH on Windows often block-buffers when attached to an inherited console (especially from IDE hosts).
-    /// Redirect pipes and stream-copy to our console while the process runs so output appears incrementally.
-    /// </summary>
-    private static async Task<int> RunSshPassStreamingAsync(string fileName, List<string> args)
+        private static async Task<int> RunSshPassStreamingAsync(string fileName, List<string> args)
     {
         var psi = new ProcessStartInfo
         {
@@ -398,7 +386,7 @@ internal static class Program
         }
         finally
         {
-            try { File.Delete(tmpZip); } catch { /* ignore */ }
+            try { File.Delete(tmpZip); } catch {  }
         }
 
         var exe = Directory.EnumerateFiles(destRoot, "sshpass.exe", SearchOption.AllDirectories).FirstOrDefault()

@@ -2,10 +2,6 @@ using System.Threading.Channels;
 
 namespace Domain;
 
-/// <summary>
-/// Wake signal with one queue per waiter so <see cref="NotifyHostsChanged"/> reliably reaches both
-/// Refiner (Technitium) and <see cref="DomainCatalogRefreshService"/>.
-/// </summary>
 public sealed class DomainHostsChangedSignal : IDomainHostsChangedSignal
 {
     private static Channel<bool> CreateChannel() =>

@@ -7,11 +7,9 @@ using model;
 
 namespace cp;
 
-/// <summary>Registers cp services and maps the site under <see cref="CpSettings.SitePathPrefix"/> on the host <see cref="WebApplication"/>.</summary>
 public static class CpWebExtensions
 {
-    /// <summary>Registers control-panel services (MVC, session, auth, BackSvc). Call before <c>Build()</c>.</summary>
-    public static WebApplicationBuilder AddCp(this WebApplicationBuilder builder)
+        public static WebApplicationBuilder AddCp(this WebApplicationBuilder builder)
     {
         builder.Services.AddSingleton<ServerService>();
         builder.Services.AddSingleton<BackSvc>();
@@ -74,12 +72,7 @@ public static class CpWebExtensions
         return builder;
     }
 
-    /// <summary>
-    /// Host-agnostic control panel: any Host header (localhost, 127.0.0.1, LAN IP, or a vhost) + path under
-    /// <see cref="CpSettings.SitePathPrefix"/> is handled here. Uses <c>UseWhen</c> + path rewrite (not <c>Map</c> alone)
-    /// so stripped paths like <c>/</c> match MVC after <c>/cp</c>.
-    /// </summary>
-    public static WebApplication UseCpSite(this WebApplication app)
+        public static WebApplication UseCpSite(this WebApplication app)
     {
         var prefix = new PathString(CpSettings.SitePathPrefix);
         app.UseWhen(
@@ -92,8 +85,7 @@ public static class CpWebExtensions
         return app;
     }
 
-    /// <summary>Move <c>/cp</c> to <see cref="HttpRequest.PathBase"/> and leave the remainder for MVC (exact <c>/cp</c> → path <c>/</c>).</summary>
-    private static async Task RewriteCpPrefix(HttpContext context, RequestDelegate next)
+        private static async Task RewriteCpPrefix(HttpContext context, RequestDelegate next)
     {
         var prefix = new PathString(CpSettings.SitePathPrefix);
         if (!context.Request.Path.StartsWithSegments(prefix, StringComparison.OrdinalIgnoreCase, out var matched, out var remaining))

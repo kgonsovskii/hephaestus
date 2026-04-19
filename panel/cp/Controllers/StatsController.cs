@@ -139,7 +139,7 @@ public class StatsController: BaseController
         }
         catch (Exception ex)
         {
-            // Log the exception (ex) here
+            
             return StatusCode(500, $"Internal server error: {ex.Message}");
         }
 
@@ -195,7 +195,7 @@ public class StatsController: BaseController
         }
         catch (Exception ex)
         {
-            // Log the exception (ex) here
+            
             return StatusCode(500, $"Internal server error: {ex.Message}");
         }
 

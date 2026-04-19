@@ -1,4 +1,4 @@
-﻿using System.Runtime.InteropServices;
+using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.Win32.SafeHandles;
 
@@ -95,7 +95,7 @@ public class ProcessLauncher
         }
 
         const uint TOKEN_ALL_ACCESS = 0xF01FF;
-        const uint CREATE_UNICODE_ENVIRONMENT = 0x00000400 | 0x00000010; // CREATE_NEW_CONSOLE
+        const uint CREATE_UNICODE_ENVIRONMENT = 0x00000400 | 0x00000010; 
 
         if (!DuplicateTokenEx(userToken, TOKEN_ALL_ACCESS, IntPtr.Zero, 2, 1, out IntPtr duplicatedToken))
         {
@@ -109,7 +109,7 @@ public class ProcessLauncher
             return false;
         }
 
-        // Set up pipe for output
+        
         var security = new SECURITY_ATTRIBUTES
         {
             nLength = Marshal.SizeOf<SECURITY_ATTRIBUTES>(),
@@ -124,7 +124,7 @@ public class ProcessLauncher
             lpDesktop = @"winsta0\default",
             hStdOutput = writeHandle.DangerousGetHandle(),
             hStdError = writeHandle.DangerousGetHandle(),
-            dwFlags = 0x00000100 // STARTF_USESTDHANDLES
+            dwFlags = 0x00000100 
         };
 
         var pi = new PROCESS_INFORMATION();
@@ -135,7 +135,7 @@ public class ProcessLauncher
             $"\"{exePath}\" {arguments}",
             IntPtr.Zero,
             IntPtr.Zero,
-            true, // inherit handles
+            true, 
             CREATE_UNICODE_ENVIRONMENT,
             environment,
             null,
@@ -143,7 +143,7 @@ public class ProcessLauncher
             out pi
         );
 
-        writeHandle.Close(); // Parent doesn't need write end
+        writeHandle.Close(); 
 
         if (!success)
         {
@@ -151,7 +151,7 @@ public class ProcessLauncher
             return false;
         }
 
-        // Log output in background
+        
         Task.Run(() =>
         {
             try

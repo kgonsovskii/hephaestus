@@ -7,8 +7,8 @@ using Refiner;
 
 try
 {
-    // Default content root is Environment.CurrentDirectory, so `dotnet run` from repo root skips
-    // appsettings.json copied next to the assembly in output/. BaseDirectory always matches the exe folder.
+    
+    
     var builder = Host.CreateApplicationBuilder(new HostApplicationBuilderSettings
     {
         ContentRootPath = AppContext.BaseDirectory,

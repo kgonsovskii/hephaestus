@@ -2,7 +2,6 @@ using Domain.Models;
 
 namespace cp.Models;
 
-/// <summary>Mutable row for domains.json editing in the control panel (maps to <see cref="DomainRecord"/>).</summary>
 public sealed class DomainEditRow
 {
     public bool Enabled { get; set; }
@@ -13,8 +12,7 @@ public sealed class DomainEditRow
 
     public string DomainClass { get; set; } = "";
 
-    /// <summary>javascript, html, or redirect (matches domains.json contentType).</summary>
-    public string ContentKind { get; set; } = "javascript";
+        public string ContentKind { get; set; } = "javascript";
 
     public string? RedirectUrl { get; set; }
 

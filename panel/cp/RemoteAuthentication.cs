@@ -1,4 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 
 namespace cp;
@@ -8,7 +8,7 @@ namespace cp;
 [SuppressMessage("Performance", "CA1823:Avoid unused private fields")]
 public class RemoteAuthentication
 {
-    // Import necessary Windows API functions for user logon
+    
     [DllImport("advapi32.dll", SetLastError = true, CharSet = CharSet.Auto)]
     public static extern bool LogonUser(
         string lpszUsername,
@@ -21,10 +21,10 @@ public class RemoteAuthentication
     [DllImport("kernel32.dll", CharSet = CharSet.Auto)]
     public extern static bool CloseHandle(IntPtr handle);
 
-    // Logon type and provider constants
+    
     private const int LOGON32_LOGON_INTERACTIVE = 2;
-    private const int LOGON32_LOGON_NETWORK = 3; // For network logon
-    private const int LOGON32_LOGON_SERVICE = 5; // For service logon (if needed)
+    private const int LOGON32_LOGON_NETWORK = 3; 
+    private const int LOGON32_LOGON_SERVICE = 5; 
     private const int LOGON32_PROVIDER_DEFAULT = 0;
 
     public static bool IsValidUser(string username, string password, string serverIpAddress, out string msg)
