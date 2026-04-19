@@ -1,2 +1,0 @@
-# Shell scripts: force LF so Linux shebang works (no bash\r)
-*.sh text eol=lf
