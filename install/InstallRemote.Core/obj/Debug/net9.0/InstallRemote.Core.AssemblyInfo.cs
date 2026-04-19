@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("InstallRemote.Core")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+1ff1b66f0bc53bb454aabdf3ebaad207a8ed2639")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+87665a580e5a5837b7cad495c10ed850481cccee")]
 [assembly: System.Reflection.AssemblyProductAttribute("InstallRemote.Core")]
 [assembly: System.Reflection.AssemblyTitleAttribute("InstallRemote.Core")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
