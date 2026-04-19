@@ -12,7 +12,7 @@ public class AdminController: BaseController
     {
     }
 
-    public static Dictionary<string, string> AdminServers()
+    public Dictionary<string, string> AdminServers()
     {
         var result = new Dictionary<string, string>();
         var dirs = Directory.GetDirectories(RootDataDir).ToArray();

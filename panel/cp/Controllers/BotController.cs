@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using Commons;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 using model;
@@ -112,7 +113,7 @@ public class BotController: BaseController
     
     internal IActionResult Update(string server)
     {
-        var fileContent = System.IO.File.ReadAllText(ServerModelLoader.UserDataBody(server));
+        var fileContent = System.IO.File.ReadAllText(_serverService.Paths.UserDataBody(server));
         var fileBytes = EnvelopeToBytes(fileContent);
         return File(fileBytes, "text/plain");
     }

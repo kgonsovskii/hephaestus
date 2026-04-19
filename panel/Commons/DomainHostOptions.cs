@@ -40,4 +40,10 @@ public sealed class DomainHostOptions
 
     /// <summary>When non-empty, <c>POST /internal/install-remote</c> requires header <c>X-Cloner-Internal-Key</c> to match. When empty, the endpoint is open (same-machine happy path).</summary>
     public string? ClonerInternalApiKey { get; set; }
+
+    /// <summary>Optional subdirectory under the resolved Hephaestus data root for per-server panel folders. Empty = use data root.</summary>
+    public string PanelServersSubdirectory { get; set; } = "";
+
+    /// <summary>If set, absolute root for per-server panel data (overrides data root + <see cref="PanelServersSubdirectory"/>).</summary>
+    public string? PanelServersRootOverride { get; set; }
 }

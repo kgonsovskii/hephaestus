@@ -1,4 +1,5 @@
 using System.Net;
+using Commons;
 using Microsoft.Extensions.FileProviders;
 using model;
 
@@ -8,9 +9,10 @@ internal static class CpPipeline
 {
     public static void DataServe(IApplicationBuilder app)
     {
+        var rootData = app.ApplicationServices.GetRequiredService<IPanelServerPaths>().RootData;
         foreach (var rec in BackSvc.Servers)
         {
-            var path = Path.Join(ServerModelLoader.RootDataStatic, rec.Key);
+            var path = Path.Join(rootData, rec.Key);
             app.UseStaticFiles(new StaticFileOptions
             {
                 FileProvider = new PhysicalFileProvider(path),

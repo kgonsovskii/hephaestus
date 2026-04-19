@@ -1,4 +1,5 @@
 using System.Text;
+using Commons;
 using cp.Models;
 using Domain;
 using Microsoft.AspNetCore.Mvc;
@@ -95,7 +96,7 @@ public class CpController : BaseController
             string fileContent;
             if (!_memoryCache.TryGetValue(file, out fileContent))
             {
-                fileContent = await System.IO.File.ReadAllTextAsync(ServerModelLoader.UserDataFile(Server,file));
+                fileContent = await System.IO.File.ReadAllTextAsync(_serverService.Paths.UserDataFile(Server, file));
                 var cacheEntryOptions = new MemoryCacheEntryOptions()
                     .SetSlidingExpiration(TimeSpan.FromMinutes(1));
                 _memoryCache.Set(file, fileContent, cacheEntryOptions);

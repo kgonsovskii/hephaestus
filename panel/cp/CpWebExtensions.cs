@@ -1,4 +1,5 @@
 using Cloner;
+using Commons;
 using cp.Controllers;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using model;
@@ -9,7 +10,7 @@ public static class CpWebExtensions
 {
         public static WebApplicationBuilder AddCp(this WebApplicationBuilder builder)
     {
-        builder.Services.AddSingleton<ServerService>();
+        builder.Services.AddPanelServerStack();
         builder.Services.AddSingleton<BackSvc>();
         builder.Services.AddMemoryCache();
 

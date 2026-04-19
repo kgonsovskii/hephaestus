@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Commons;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 using model;
@@ -11,8 +12,8 @@ public abstract class BaseController: Controller
     protected readonly ServerService _serverService;
 
     protected readonly IMemoryCache _memoryCache;
-    
-    protected static string RootDataDir => ServerModelLoader.RootDataStatic;
+
+    protected string RootDataDir => _serverService.Paths.RootData;
 
     protected const string SecretKey = "YourSecretKeyHere"; 
     

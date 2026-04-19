@@ -1,3 +1,4 @@
+using Commons;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 using model;
@@ -15,7 +16,7 @@ namespace cp.Controllers
 
         public IActionResult Index()
         {
-            var existingModel = ServerService.GetServerLite(Server);
+            var existingModel = _serverService.GetServerLite(Server);
             return View("Components/Pack/Default", existingModel.Pack);
         }
         
@@ -23,7 +24,7 @@ namespace cp.Controllers
         public IActionResult Pack(PackModel model)
         {
             var server = Server;
-            var existingModel = ServerService.GetServerLite(server);
+            var existingModel = _serverService.GetServerLite(server);
 
             existingModel.Pack.Items = model.Items;
             existingModel.Pack.Refresh();
@@ -40,7 +41,7 @@ namespace cp.Controllers
         {
             url = UrlHelper.NormalizeUri(url);
             var server = Server;
-            var model = ServerService.GetServerLite(server);
+            var model = _serverService.GetServerLite(server);
             var pack = model.Pack.Items.FirstOrDefault(a => a.OriginalUrl == url);
             if (pack == null || (!System.IO.File.Exists(pack.PackFileExe) || !System.IO.File.Exists(pack.PackFileVbs)))
             {
@@ -53,11 +54,10 @@ namespace cp.Controllers
                     model.Pack.Items.Add(pack);
                 }
                 
-                var x = new ServerService();
-                x.UpdatePacks(model);
-                ServerService.SaveServerLite(server, model);
-                x.PackServer(server, pack.Id, null);
-                model = ServerService.GetServerLite(server);
+                _serverService.UpdatePacks(model);
+                _serverService.SaveServerLite(server, model);
+                _serverService.PackServer(server, pack.Id, null);
+                model = _serverService.GetServerLite(server);
                 pack = model.Pack.Items.FirstOrDefault(a => a.OriginalUrl == url);
             }
             if (type == "vbs")
@@ -73,7 +73,7 @@ namespace cp.Controllers
         public IActionResult ViewLog()
         {
             var server = Server;
-            var model = ServerService.GetServerLite(server);
+            var model = _serverService.GetServerLite(server);
             try
             {
                 model.Pack.PackLog = System.IO.File.ReadAllText(model.UserPackLog);

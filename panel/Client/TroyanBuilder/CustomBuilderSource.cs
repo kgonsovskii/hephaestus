@@ -14,20 +14,12 @@ public partial class CustomBuilder
         public string CryptedData(Dictionary<string, string> renamed)
         {
             var data = Data;
-            if (_builder.IsObfuscate)
-            {
-                data = new PowerShellObfuscator().Obfuscate(data, renamed);
-            }
 
-            if (!_builder.IsDebug)
-            {
-                data = _builder.GeneratePowerShellScript(data, true);
-                data = new PowerShellObfuscator().Obfuscate(data);
-            }
+            data = _builder.GeneratePowerShellScript(data, true);
 
             return CustomCryptor.Encode(data);
         }
-        
+
         private readonly CustomBuilder _builder;
 
         public SourceFile(string name, CustomBuilder builder)
@@ -36,7 +28,7 @@ public partial class CustomBuilder
             _builder = builder;
         }
     }
-    
+
     protected virtual List<SourceFile> GetSourceFiles()
     {
         var files =Directory.GetFiles(SourceDir)
@@ -46,21 +38,21 @@ public partial class CustomBuilder
             .ToList();
         return files.Select(a=> new SourceFile(a,this)).ToList();
     }
-    
+
     private Dictionary<string, SourceFile> CachedSourceFiles { get; set; } = new Dictionary<string, SourceFile>();
 
     private SourceFile ReadSource(string sourceFile)
     {
         if (sourceFile == "dynamic")
         {
-            
+
         }
         if (CachedSourceFiles.ContainsKey(sourceFile))
         {
             return CachedSourceFiles[sourceFile];
         }
         var result = ReadSourceInternal(sourceFile);
-    
+
         CachedSourceFiles.Add(sourceFile, result);
         return result;
     }
@@ -77,9 +69,9 @@ public partial class CustomBuilder
         }
 
         var lines = File.ReadAllLines(path).ToList();
-        
+
         var units = new List<SourceFile>();
-        
+
         var index = 0;
         while (index < lines.Count)
         {
@@ -106,11 +98,8 @@ public partial class CustomBuilder
 
         foreach (var unit in units)
         {
-            if (!IsDebug)
-            {
-                sb.AppendLine(unit.Data);
-                sb.AppendLine("");
-            }
+            sb.AppendLine(unit.Data);
+            sb.AppendLine("");
         }
 
         foreach (var line in lines)
@@ -119,10 +108,10 @@ public partial class CustomBuilder
         }
 
         sb.AppendLine("");
-        
+
         var data=sb.ToString();
         result.IsDo = data.Contains($"function do_{sourceFile}");
-        if (!IsDebug && result.IsDo)
+        if (result.IsDo)
         {
             result.Data = $"Write-Host '{sourceFile}'" + Environment.NewLine;
             result.Data += data;
@@ -138,20 +127,18 @@ public partial class CustomBuilder
         {
             result.Data = data;
         }
-        
+
         if (result.IsDo)
             result.Data += Environment.NewLine + ReadSource("footer").Data;
 
         if (sourceFile == "holder")
         {
             var ddata = ReadSource("dynamic").Data;
-            if (IsObfuscate)
-                ddata = new PowerShellObfuscator().Obfuscate(ddata);
             result.Data = result.Data.Replace("###dynamic", ddata);
             result.Data = result.Data.Replace("###random", new PowerShellObfuscator().RandomCode());
 
         }
-        
+
         result.Loaded = true;
 
         return result;

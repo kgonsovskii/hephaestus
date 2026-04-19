@@ -20,8 +20,8 @@ if (builder.Environment.IsDevelopment())
         optional: true, reloadOnChange: true);
 }
 
-builder.AddCp();
 builder.Services.AddDomainServices(builder.Configuration);
+builder.AddCp();
 builder.Services.AddDbServices(builder.Configuration);
 builder.Services.AddRefiner(builder.Configuration);
 builder.Services.AddHostedService<RefinerBackgroundService>();

@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
+using System.Text.Json;
 
 namespace model;
 
@@ -28,41 +29,35 @@ public class Dev
     private static string DevHost = "localhost.masterhost.online:5000";
     private static string DevPassword = "Putin123";
 
-    public static void DefaultServer(string serverName, string? serverIp = null)
+    public static void DefaultServer(string serverName, IPanelServerPaths paths, JsonSerializerOptions jso, string? serverIp = null)
     {
-        if (!Directory.Exists(ServerModelLoader.RootDataStatic))
-            Directory.CreateDirectory(ServerModelLoader.RootDataStatic);
-        if (!Directory.Exists(ServerService.ServerDir(serverName)))
-            Directory.CreateDirectory(ServerService.ServerDir(serverName));
-        if (File.Exists(ServerService.DataFile(serverName)))
+        if (!Directory.Exists(paths.RootData))
+            Directory.CreateDirectory(paths.RootData);
+        if (!Directory.Exists(paths.ServerDir(serverName)))
+            Directory.CreateDirectory(paths.ServerDir(serverName));
+        if (File.Exists(paths.DataFile(serverName)))
             return;
-        ServerModel server = null;
+        ServerModel server;
         try
         {
-            server = ServerModelLoader.LoadServerFileInternal(ServerService.DataFile(serverName));
+            server = JsonSerializer.Deserialize<ServerModel>(File.ReadAllText(paths.DataFile(serverName)), jso)!;
+            server.Paths = paths;
         }
-        catch (Exception e)
+        catch (Exception)
         {
-            server = new ServerModel() { Server = serverName };
+            server = new ServerModel { Server = serverName, Paths = paths };
         }
+
         if (!string.IsNullOrEmpty(serverIp))
-        {
             server.ServerIp = serverIp;
-        }
 
         if (string.IsNullOrEmpty(server.ServerIp))
         {
             var all = GetPublicIPv4Addresses();
-            if (all.Count >= 1)
-            {
-                server.ServerIp = all[0];
-            }
-            else
-            {
-                server.ServerIp = "127.0.0.1";
-            }
+            server.ServerIp = all.Count >= 1 ? all[0] : "127.0.0.1";
         }
-        ServerModelLoader.SaveServer(serverName, server);
+
+        File.WriteAllText(paths.DataFile(serverName), JsonSerializer.Serialize(server, jso));
     }
 
     static int CountDots(string input)
