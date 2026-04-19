@@ -15,10 +15,6 @@ public partial class ServerService
 {
     private void ServerCommons(string serverName, ServerModel serverModel)
     {
-        UpdateIpDomains(serverModel);
-
-        UpdateDNS(serverModel);
-
         UpdateTabs(serverModel);
 
         UpdatePacks(serverModel);
@@ -27,7 +23,7 @@ public partial class ServerService
 
         UpdateDnSponsor(serverModel);
     }
-    
+
     internal static string ServerDir(string serverName)
     {
         return ServerModelLoader.ServerDir(serverName);
