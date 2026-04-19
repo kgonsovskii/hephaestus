@@ -26,7 +26,7 @@ internal sealed partial class HttpDomainHostInstallRemoteExecutor : IClonerInsta
 
     private const string DefaultDomainHostBaseUrl = "http://127.0.0.1:80";
 
-    public async Task<int> ExecuteAsync(RemoteInstallJob job, CancellationToken cancellationToken)
+    public async Task<int> ExecuteAsync(RemoteInstallWork work, CancellationToken cancellationToken)
     {
         var o = _options.CurrentValue;
         if (string.IsNullOrWhiteSpace(o.DomainHostExecutorBaseUrl))
@@ -41,7 +41,7 @@ internal sealed partial class HttpDomainHostInstallRemoteExecutor : IClonerInsta
         var apiKey = o.DomainHostExecutorApiKey?.Trim() ?? "";
         if (apiKey.Length > 0)
             req.Headers.TryAddWithoutValidation("X-Cloner-Internal-Key", apiKey);
-        req.Content = JsonContent.Create(new { host = job.Host, user = job.User, password = job.Password });
+        req.Content = JsonContent.Create(new { host = work.Host, user = work.User, password = work.Password });
 
         var client = _httpClientFactory.CreateClient(HttpClientName);
         using var resp = await client.SendAsync(req, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
@@ -70,7 +70,7 @@ internal sealed partial class HttpDomainHostInstallRemoteExecutor : IClonerInsta
                 lastExit = code;
             }
             else
-                await job.LogWriter.WriteAsync(line, cancellationToken).ConfigureAwait(false);
+                await work.LogWriter.WriteAsync(line, cancellationToken).ConfigureAwait(false);
         }
 
         return sawExit ? lastExit : 1;

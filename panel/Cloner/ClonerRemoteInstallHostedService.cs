@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Cloner;
 
+/// <summary>Runs remote install work off the HTTP thread so the site stays responsive.</summary>
 public sealed class ClonerRemoteInstallHostedService : BackgroundService
 {
     private readonly ClonerRemoteInstallService _coordinator;
@@ -22,45 +23,45 @@ public sealed class ClonerRemoteInstallHostedService : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        await foreach (var job in _coordinator.JobReader.ReadAllAsync(stoppingToken).ConfigureAwait(false))
-            await RunJobAsync(job, stoppingToken).ConfigureAwait(false);
+        await foreach (var work in _coordinator.InstallHandoffReader.ReadAllAsync(stoppingToken).ConfigureAwait(false))
+            await RunInstallAsync(work, stoppingToken).ConfigureAwait(false);
     }
 
-    private async Task RunJobAsync(RemoteInstallJob job, CancellationToken stoppingToken)
+    private async Task RunInstallAsync(RemoteInstallWork work, CancellationToken stoppingToken)
     {
-        using var linked = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken, job.RunCancellationToken);
+        using var linked = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken, work.RunCancellationToken);
         var ct = linked.Token;
 
         try
         {
             ct.ThrowIfCancellationRequested();
-            _logger.LogInformation("Cloner: install {RunId} -> {Host}", job.RunId, job.Host);
+            _logger.LogInformation("Cloner: install {RunId} -> {Host}", work.RunId, work.Host);
 
-            var exit = await _executor.ExecuteAsync(job, ct).ConfigureAwait(false);
-            await WriteLogLineAsync(job, $"[exit] {exit}", ct).ConfigureAwait(false);
+            var exit = await _executor.ExecuteAsync(work, ct).ConfigureAwait(false);
+            await WriteLogLineAsync(work, $"[exit] {exit}", ct).ConfigureAwait(false);
         }
         catch (OperationCanceledException)
         {
             if (!stoppingToken.IsCancellationRequested)
-                await WriteLogLineAsync(job, "[stopped]", CancellationToken.None).ConfigureAwait(false);
+                await WriteLogLineAsync(work, "[stopped]", CancellationToken.None).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Cloner: install failed {RunId}", job.RunId);
-            await WriteLogLineAsync(job, $"[error] {ex.Message}", stoppingToken).ConfigureAwait(false);
+            _logger.LogError(ex, "Cloner: install failed {RunId}", work.RunId);
+            await WriteLogLineAsync(work, $"[error] {ex.Message}", stoppingToken).ConfigureAwait(false);
         }
         finally
         {
-            job.LogWriter.TryComplete();
-            _coordinator.CompleteRun(job.RunId);
+            work.LogWriter.TryComplete();
+            _coordinator.CompleteRun(work.RunId);
         }
     }
 
-    private static async Task WriteLogLineAsync(RemoteInstallJob job, string line, CancellationToken cancellationToken)
+    private static async Task WriteLogLineAsync(RemoteInstallWork work, string line, CancellationToken cancellationToken)
     {
         try
         {
-            await job.LogWriter.WriteAsync(line, cancellationToken).ConfigureAwait(false);
+            await work.LogWriter.WriteAsync(line, cancellationToken).ConfigureAwait(false);
         }
         catch (OperationCanceledException)
         {

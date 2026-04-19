@@ -2,7 +2,8 @@ using System.Threading.Channels;
 
 namespace Cloner;
 
-public sealed record RemoteInstallJob(
+/// <summary>One in-flight remote install: parameters, log sink, and cancellation for that run.</summary>
+public sealed record RemoteInstallWork(
     Guid RunId,
     string Host,
     string User,

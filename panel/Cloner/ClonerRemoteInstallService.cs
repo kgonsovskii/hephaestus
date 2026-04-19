@@ -5,11 +5,12 @@ using model;
 
 namespace Cloner;
 
+/// <summary>At most one remote install runs in the background; a new start cancels the previous run. No multi-job backlog.</summary>
 public sealed class ClonerRemoteInstallService : IClonerRemoteInstall
 {
-    /// <summary>At most one job queued; worker runs one at a time. New start preempts prior run and any queued job.</summary>
-    private readonly Channel<RemoteInstallJob> _queue = Channel.CreateBounded<RemoteInstallJob>(
-        new BoundedChannelOptions(1) { FullMode = BoundedChannelFullMode.Wait });
+    /// <summary>Single slot from HTTP to <see cref="ClonerRemoteInstallHostedService"/>: latest start wins if several happen before the worker picks up work.</summary>
+    private readonly Channel<RemoteInstallWork> _installHandoff = Channel.CreateBounded<RemoteInstallWork>(
+        new BoundedChannelOptions(1) { FullMode = BoundedChannelFullMode.DropOldest });
 
     private readonly ConcurrentDictionary<Guid, Channel<string>> _logReaders = new();
     private readonly ConcurrentDictionary<Guid, CancellationTokenSource> _runCancellations = new();
@@ -18,7 +19,7 @@ public sealed class ClonerRemoteInstallService : IClonerRemoteInstall
 
     public ClonerRemoteInstallService(ILogger<ClonerRemoteInstallService> logger) => _logger = logger;
 
-    internal ChannelReader<RemoteInstallJob> JobReader => _queue.Reader;
+    internal ChannelReader<RemoteInstallWork> InstallHandoffReader => _installHandoff.Reader;
 
     public async Task<Guid> StartRemoteInstallAsync(string host, string user, string password, CancellationToken cancellationToken = default)
     {
@@ -45,9 +46,9 @@ public sealed class ClonerRemoteInstallService : IClonerRemoteInstall
         var runCts = new CancellationTokenSource();
         _runCancellations[runIdNew] = runCts;
 
-        var job = new RemoteInstallJob(runIdNew, host.Trim(), user.Trim(), password ?? "", logCh.Writer, runCts.Token);
-        await _queue.Writer.WriteAsync(job, cancellationToken).ConfigureAwait(false);
-        _logger.LogInformation("Cloner: queued remote install {RunId} for {Host}", runIdNew, host);
+        var work = new RemoteInstallWork(runIdNew, host.Trim(), user.Trim(), password ?? "", logCh.Writer, runCts.Token);
+        await _installHandoff.Writer.WriteAsync(work, cancellationToken).ConfigureAwait(false);
+        _logger.LogInformation("Cloner: remote install {RunId} for {Host} (background worker)", runIdNew, host);
         return runIdNew;
     }
 
@@ -66,7 +67,7 @@ public sealed class ClonerRemoteInstallService : IClonerRemoteInstall
     }
 
     /// <summary>
-    /// Log reader entries must outlive a fast-failing job: the browser connects the WebSocket after <c>POST /clone</c>
+    /// Log reader entries must outlive a fast-failing install: the browser opens the WebSocket after <c>POST /clone</c>
     /// returns, so removing the channel immediately races the UI and yields a failed upgrade with no log.
     /// </summary>
     private static readonly TimeSpan LogReaderRetentionAfterComplete = TimeSpan.FromSeconds(120);
