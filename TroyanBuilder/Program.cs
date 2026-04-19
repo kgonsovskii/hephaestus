@@ -6,10 +6,8 @@ using model;
 
 namespace TroyanBuilder;
 
-public class Program
+public static class Program
 {
-
-
     static void Clean()
     {
         var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Hephaestus");
