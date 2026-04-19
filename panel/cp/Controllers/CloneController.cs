@@ -30,6 +30,9 @@ public class CloneController : BaseController
         if (!ModelState.IsValid)
             return BadRequest(new { error = "Invalid model" });
 
+        if (CloneRemoteInstallTarget.ValidateHost(model.CloneServerIp) is { } hostErr)
+            return BadRequest(new { error = hostErr });
+
         var runId = await _remoteInstall
             .StartRemoteInstallAsync(model.CloneServerIp, model.CloneUser, model.ClonePassword, cancellationToken)
             .ConfigureAwait(false);

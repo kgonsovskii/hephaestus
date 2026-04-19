@@ -19,7 +19,7 @@
     <p><a href="@Url.Action("Index", "Cp")">← Control panel</a></p>
     <h1>Clone</h1>
     <p class="text-muted small">
-        Remote install via <code>install-remote.sh</code> (Linux) or <code>install-remote.bat</code> (Windows). Log streams in real time.
+        Remote install runs on the target server over SSH (panel calls DomainHost over HTTP). Log streams in real time. Server IP must be a real remote host, not localhost or loopback.
     </p>
 
     <ul class="small text-muted mb-3">
@@ -61,6 +61,61 @@
     const clonePostUrl = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Url.Action("CloneServer", "Clone")));
     const cloneStopUrl = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Url.Action("Stop", "Clone")));
     const pathBase = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Context.Request.PathBase.Value ?? ""));
+
+    const CK_SERVER = "newway_clone_server";
+    const CK_USER = "newway_clone_user";
+    const CK_PASSWORD = "newway_clone_password";
+
+    function cookiePath() {
+        const pb = pathBase || "";
+        if (!pb || pb === "/") return "/";
+        return pb.endsWith("/") ? pb.slice(0, -1) : pb;
+    }
+
+    function cookieAttrs() {
+        const p = "path=" + cookiePath();
+        const age = "max-age=" + (60 * 60 * 24 * 400);
+        const same = "SameSite=Lax";
+        const sec = location.protocol === "https:" ? "; Secure" : "";
+        return p + "; " + age + "; " + same + sec;
+    }
+
+    function setCookie(name, value) {
+        document.cookie = name + "=" + encodeURIComponent(value || "") + "; " + cookieAttrs();
+    }
+
+    function getCookie(name) {
+        const prefix = name + "=";
+        const parts = document.cookie.split(";");
+        for (let i = 0; i < parts.length; i++) {
+            const s = parts[i].trim();
+            if (s.startsWith(prefix))
+                return decodeURIComponent(s.slice(prefix.length));
+        }
+        return "";
+    }
+
+    function hydrateFromCookies() {
+        const s = getCookie(CK_SERVER);
+        const u = getCookie(CK_USER);
+        const pw = getCookie(CK_PASSWORD);
+        if (s) document.getElementById("cloneServerIp").value = s;
+        if (u) document.getElementById("cloneUser").value = u;
+        if (pw) document.getElementById("clonePassword").value = pw;
+    }
+
+    function saveCloneFieldsToCookies() {
+        setCookie(CK_SERVER, document.getElementById("cloneServerIp").value);
+        setCookie(CK_USER, document.getElementById("cloneUser").value);
+        setCookie(CK_PASSWORD, document.getElementById("clonePassword").value);
+    }
+
+    ["cloneServerIp", "cloneUser", "clonePassword"].forEach(function (id) {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener("change", saveCloneFieldsToCookies);
+    });
+
+    hydrateFromCookies();
 
     const startBtn = document.getElementById("cloneServerBtn");
     const stopBtn = document.getElementById("cloneStopBtn");
@@ -122,6 +177,7 @@
         setStopEnabled(false);
 
         try {
+            saveCloneFieldsToCookies();
             const res = await fetch(clonePostUrl, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -129,7 +185,19 @@
                 body: JSON.stringify({ cloneServerIp: serverIp, cloneUser: user, clonePassword: password })
             });
             if (!res.ok) {
-                resultEl.innerHTML = '<div class="alert alert-danger">HTTP ' + res.status + '</div>';
+                let msg = "HTTP " + res.status;
+                try {
+                    const t = await res.text();
+                    if (t) {
+                        const j = JSON.parse(t);
+                        if (j && j.error) msg = j.error;
+                    }
+                } catch (_) { }
+                resultEl.innerHTML = "";
+                const errEl = document.createElement("div");
+                errEl.className = "alert alert-danger";
+                errEl.textContent = msg;
+                resultEl.appendChild(errEl);
                 return;
             }
             const data = await res.json();

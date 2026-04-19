@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.Threading.Channels;
 using Microsoft.Extensions.Logging;
+using model;
 
 namespace Cloner;
 
@@ -23,6 +24,8 @@ public sealed class ClonerRemoteInstallService : IClonerRemoteInstall
     {
         if (string.IsNullOrWhiteSpace(host))
             throw new ArgumentException("Host is required.", nameof(host));
+        if (CloneRemoteInstallTarget.ValidateHost(host) is { } hostErr)
+            throw new ArgumentException(hostErr, nameof(host));
         if (string.IsNullOrWhiteSpace(user))
             throw new ArgumentException("User is required.", nameof(user));
 
