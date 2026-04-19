@@ -9,10 +9,11 @@
 
       <RollForward>LatestPatch</RollForward>
     </PropertyGroup>
-    
-    
+
+
 
     <ItemGroup>
+      <ProjectReference Include="..\Troyan.Core\Troyan.Core.csproj" />
       <ProjectReference Include="..\..\panel\Commons\Commons.csproj" />
       <ProjectReference Include="..\..\panel\model\model.csproj" />
     </ItemGroup>

@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using model;
+using Troyan.Core;
 
 namespace TroyanBuilder;
 
@@ -44,29 +45,10 @@ public static class Program
             .ValidateOnStart();
         services.AddSingleton<IHephaestusPathResolver, HephaestusPathResolver>();
         services.AddPanelServerStack();
+        services.AddTroyanCore();
 
         using var provider = services.BuildServiceProvider();
         var panelService = provider.GetRequiredService<ServerService>();
-
-        CustomBuilder[] arr =
-        {
-            new BodyBuilder(TroyanBuildMode.Release),
-            new BodyBuilder(TroyanBuildMode.Debug),
-            new HolderBuilder(TroyanBuildMode.Release),
-            new HolderBuilder(TroyanBuildMode.Debug),
-        };
-        foreach (var cb in arr)
-        {
-            Console.WriteLine(cb);
-            var result = cb.Build(server, packId, panelService);
-            foreach (var line in result)
-            {
-                Console.WriteLine(line);
-            }
-        }
-
-        var layout = panelService.Layout();
-        TroyanPlainVbsEmitter.Write(layout);
-        Console.WriteLine("Plain VBS: " + layout.TroyanPlainVbs);
+        provider.GetRequiredService<ITroyanBuildRunner>().Run(server, packId, panelService);
     }
 }

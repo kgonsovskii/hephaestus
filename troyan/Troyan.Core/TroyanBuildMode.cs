@@ -1,4 +1,4 @@
-namespace TroyanBuilder;
+namespace Troyan.Core;
 
 public enum TroyanBuildMode
 {

