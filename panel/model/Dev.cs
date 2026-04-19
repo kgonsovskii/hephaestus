@@ -1,6 +1,4 @@
 using System.Net;
-using System.Net.NetworkInformation;
-using System.Net.Sockets;
 using System.Text.Json;
 
 namespace model;
@@ -43,64 +41,9 @@ public class Dev
         if (!string.IsNullOrEmpty(serverIp))
             server.ServerIp = serverIp;
 
-        if (string.IsNullOrEmpty(server.ServerIp))
-        {
-            var all = GetPublicIPv4Addresses();
-            server.ServerIp = all.Count >= 1 ? all[0] : "127.0.0.1";
-        }
+        ServerNetworkRefinement.FillIfUnset(server);
 
         File.WriteAllText(paths.DataFile, JsonSerializer.Serialize(server, jso));
-    }
-
-    static int CountDots(string input)
-    {
-        return input.Split('.').Length - 1;
-    }
-
-    private static List<string>? _privateIpAddresses = null;
-    public static List<string> GetPublicIPv4Addresses()
-    {
-        if (_privateIpAddresses != null)
-        {
-            return _privateIpAddresses;
-        }
-        List<string> ipv4Addresses = new List<string>();
-
-        foreach (NetworkInterface ni in NetworkInterface.GetAllNetworkInterfaces())
-        {
-            if (ni.OperationalStatus == OperationalStatus.Up)
-            {
-                foreach (UnicastIPAddressInformation ip in ni.GetIPProperties().UnicastAddresses)
-                {
-                    if (ip.Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork) 
-                    {
-                        if (!IsPrivateIP(ip.Address))
-                        {
-                            ipv4Addresses.Add(ip.Address.ToString());
-                        }
-                    }
-                }
-            }
-        }
-        _privateIpAddresses = ipv4Addresses;
-        if (_privateIpAddresses.Count == 0)
-            _privateIpAddresses.Add("127.0.0.1");
-        return _privateIpAddresses;
-    }
-
-
-
-    static string ResolveDomainToIP(string domain)
-    {
-        try
-        {
-            IPAddress[] addresses = Dns.GetHostAddresses(domain);
-            return addresses.Length > 0 ? addresses[0].ToString() : "No IP found";
-        }
-        catch (Exception e)
-        {
-            return "";
-        }
     }
 
     public static bool IsPrivateIP(IPAddress ipAddress)
@@ -112,9 +55,9 @@ public class Dev
         byte[] bytes = ipAddress.GetAddressBytes();
         return bytes[0] switch
         {
-            10 => true, 
-            172 => bytes[1] >= 16 && bytes[1] <= 31, 
-            192 => bytes[1] == 168, 
+            10 => true,
+            172 => bytes[1] >= 16 && bytes[1] <= 31,
+            192 => bytes[1] == 168,
             _ => false,
         };
     }

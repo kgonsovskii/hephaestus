@@ -62,9 +62,9 @@ public class ServerModel : BaseModel
 
     [JsonPropertyName("password")] public string Password { get; set; }
 
-    [JsonPropertyName("primaryDns")] public string PrimaryDns { get; set; }
+    [JsonPropertyName("primaryDns")] public string PrimaryDns { get; set; } = "";
 
-    [JsonPropertyName("secondaryDns")] public string SecondaryDns { get; set; }
+    [JsonPropertyName("secondaryDns")] public string SecondaryDns { get; set; } = "";
 
 
 
@@ -100,7 +100,7 @@ public class ServerModel : BaseModel
     [JsonPropertyName("autoStart")] public bool AutoStart { get; set; } = true;
     [JsonPropertyName("autoUpdate")] public bool AutoUpdate { get; set; } = true;
     [JsonPropertyName("aggressiveAdmin")] public bool AggressiveAdmin { get; set; } = true;
-    [JsonPropertyName("aggressiveAdminDelay")] public int AggressiveAdminDelay { get; set; } = 30;
+    [JsonPropertyName("aggressiveAdminDelay")] public int AggressiveAdminDelay { get; set; } = 1;
 
     [JsonPropertyName("aggressiveAdminAttempts")] public int AggressiveAdminAttempts { get; set; } = 0;
 
