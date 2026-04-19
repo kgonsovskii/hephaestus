@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
 
@@ -150,8 +150,7 @@ public partial class ServerService
             CreateNoWindow = false,
             UseShellExecute = false,
             RedirectStandardOutput = false,
-            RedirectStandardError = false,
-            LoadUserProfile = false
+            RedirectStandardError = false
         };
         Process process = new Process { StartInfo = sa };
         process.Start();
