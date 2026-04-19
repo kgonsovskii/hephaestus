@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Library</OutputType>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(PkgMicrosoftNetTestSdkVersion)" />
+        <PackageReference Include="MSTest.TestAdapter" Version="$(PkgMSTestVersion)" />
+        <PackageReference Include="MSTest.TestFramework" Version="$(PkgMSTestVersion)" />
+        <PackageReference Include="FluentAssertions" Version="$(PkgFluentAssertionsVersion)" />
+        <PackageReference Include="HtmlAgilityPack" Version="$(PkgHtmlAgilityPackVersion)" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Commons\Commons.csproj" />
+      <ProjectReference Include="..\cp\cp.csproj" />
+      <ProjectReference Include="..\model\model.csproj" />
+      <ProjectReference Include="..\Refiner\Refiner.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Update="test1.txt">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+      <None Update="test2.txt">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
+</Project>

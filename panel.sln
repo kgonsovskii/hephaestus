@@ -1,0 +1,124 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "model", "panel\model\model.csproj", "{A7BC8490-5D7C-42A3-A5C1-81B55E73AF55}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cp", "panel\cp\cp.csproj", "{F9C741CF-8B52-41A8-A1DF-C2843B6CA2CF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Refiner", "panel\Refiner\Refiner.csproj", "{7524DAF6-7B3C-45DA-8404-745F2DE85E8A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{9C3B6E20-DEEA-4813-B690-EE5C793E56E3}"
+	ProjectSection(SolutionItems) = preProject
+		Directory.Build.props = Directory.Build.props
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "stuff", "stuff", "{3B6BF360-603F-4144-8B3C-023E34701D88}"
+	ProjectSection(SolutionItems) = preProject
+		php\dn.php = php\dn.php
+		php\download.html = php\download.html
+		php\download.php = php\download.php
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "panel\Tests\Tests.csproj", "{0F5E06DE-DE2F-4497-B093-C248AD257E86}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Packer", "panel\Packer\Packer.csproj", "{434EFAE8-FFD7-4458-861E-1EB2CEA0B5C1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CertTool", "panel\CertTool\CertTool.csproj", "{3473E90B-8F02-4E43-8CCD-021CF03F221C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DomainHost", "panel\DomainHost\DomainHost.csproj", "{C4D8E1F2-3A5B-4D6C-9E0F-112233445566}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Domain", "panel\Domain\Domain.csproj", "{E5F9A0B1-2C3D-4E5F-9A0B-1C2D3E4F5A6B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RefinerTool", "panel\RefinerTool\RefinerTool.csproj", "{A0B1C2D3-E4F5-4678-9ABC-DEF012345678}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Commons", "panel\Commons\Commons.csproj", "{3E5555C0-1D50-41E2-9E5D-4F9D0C2C28E8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Deploy", "panel\Deploy\Deploy.csproj", "{A1B2C3D4-E5F6-4789-A012-3456789ABCDE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Db", "panel\Db\Db.csproj", "{1C1F1A4D-D2A2-4D8C-825A-82BC570AD0CA}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Install", "Install", "{8C5EAC49-BD7A-45F7-8150-0474238537A8}"
+	ProjectSection(SolutionItems) = preProject
+		..\install\install-remote.bat = .\install\install-remote.bat
+		..\install\install-remote.sh = .\install\install-remote.sh
+		..\install\install-remote.txt = .\install\install-remote.txt
+		..\install\install-remote-creds.txt = .\install\install-remote-creds.txt
+		..\install\install-soft.sh = .\install\install-soft.sh
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Install", ".\install\Install\Install.csproj", "{5D616E6D-7931-4CE0-AEED-638388B000EF}"EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InstallRemote", ".\install\InstallRemote\InstallRemote.csproj", "{82E736EC-41BD-47C8-B255-D2367BEDCF52}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Git", "panel\Git\Git.csproj", "{92DF478F-BE08-4E8C-A536-2CAA4F8CC26F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A7BC8490-5D7C-42A3-A5C1-81B55E73AF55}.Debug|x64.ActiveCfg = Debug|x64
+		{A7BC8490-5D7C-42A3-A5C1-81B55E73AF55}.Debug|x64.Build.0 = Debug|x64
+		{A7BC8490-5D7C-42A3-A5C1-81B55E73AF55}.Release|x64.ActiveCfg = Release|x64
+		{A7BC8490-5D7C-42A3-A5C1-81B55E73AF55}.Release|x64.Build.0 = Release|x64
+		{F9C741CF-8B52-41A8-A1DF-C2843B6CA2CF}.Debug|x64.ActiveCfg = Debug|x64
+		{F9C741CF-8B52-41A8-A1DF-C2843B6CA2CF}.Debug|x64.Build.0 = Debug|x64
+		{F9C741CF-8B52-41A8-A1DF-C2843B6CA2CF}.Release|x64.ActiveCfg = Release|x64
+		{F9C741CF-8B52-41A8-A1DF-C2843B6CA2CF}.Release|x64.Build.0 = Release|x64
+		{7524DAF6-7B3C-45DA-8404-745F2DE85E8A}.Debug|x64.ActiveCfg = Debug|x64
+		{7524DAF6-7B3C-45DA-8404-745F2DE85E8A}.Debug|x64.Build.0 = Debug|x64
+		{7524DAF6-7B3C-45DA-8404-745F2DE85E8A}.Release|x64.ActiveCfg = Release|x64
+		{7524DAF6-7B3C-45DA-8404-745F2DE85E8A}.Release|x64.Build.0 = Release|x64
+		{0F5E06DE-DE2F-4497-B093-C248AD257E86}.Debug|x64.ActiveCfg = Debug|x64
+		{0F5E06DE-DE2F-4497-B093-C248AD257E86}.Debug|x64.Build.0 = Debug|x64
+		{0F5E06DE-DE2F-4497-B093-C248AD257E86}.Release|x64.ActiveCfg = Release|x64
+		{0F5E06DE-DE2F-4497-B093-C248AD257E86}.Release|x64.Build.0 = Release|x64
+		{434EFAE8-FFD7-4458-861E-1EB2CEA0B5C1}.Debug|x64.ActiveCfg = Debug|x64
+		{434EFAE8-FFD7-4458-861E-1EB2CEA0B5C1}.Debug|x64.Build.0 = Debug|x64
+		{434EFAE8-FFD7-4458-861E-1EB2CEA0B5C1}.Release|x64.ActiveCfg = Release|x64
+		{434EFAE8-FFD7-4458-861E-1EB2CEA0B5C1}.Release|x64.Build.0 = Release|x64
+		{3473E90B-8F02-4E43-8CCD-021CF03F221C}.Debug|x64.ActiveCfg = Debug|x64
+		{3473E90B-8F02-4E43-8CCD-021CF03F221C}.Debug|x64.Build.0 = Debug|x64
+		{3473E90B-8F02-4E43-8CCD-021CF03F221C}.Release|x64.ActiveCfg = Release|x64
+		{3473E90B-8F02-4E43-8CCD-021CF03F221C}.Release|x64.Build.0 = Release|x64
+		{C4D8E1F2-3A5B-4D6C-9E0F-112233445566}.Debug|x64.ActiveCfg = Debug|x64
+		{C4D8E1F2-3A5B-4D6C-9E0F-112233445566}.Debug|x64.Build.0 = Debug|x64
+		{C4D8E1F2-3A5B-4D6C-9E0F-112233445566}.Release|x64.ActiveCfg = Release|x64
+		{C4D8E1F2-3A5B-4D6C-9E0F-112233445566}.Release|x64.Build.0 = Release|x64
+		{E5F9A0B1-2C3D-4E5F-9A0B-1C2D3E4F5A6B}.Debug|x64.ActiveCfg = Debug|x64
+		{E5F9A0B1-2C3D-4E5F-9A0B-1C2D3E4F5A6B}.Debug|x64.Build.0 = Debug|x64
+		{E5F9A0B1-2C3D-4E5F-9A0B-1C2D3E4F5A6B}.Release|x64.ActiveCfg = Release|x64
+		{E5F9A0B1-2C3D-4E5F-9A0B-1C2D3E4F5A6B}.Release|x64.Build.0 = Release|x64
+		{A0B1C2D3-E4F5-4678-9ABC-DEF012345678}.Debug|x64.ActiveCfg = Debug|x64
+		{A0B1C2D3-E4F5-4678-9ABC-DEF012345678}.Debug|x64.Build.0 = Debug|x64
+		{A0B1C2D3-E4F5-4678-9ABC-DEF012345678}.Release|x64.ActiveCfg = Release|x64
+		{A0B1C2D3-E4F5-4678-9ABC-DEF012345678}.Release|x64.Build.0 = Release|x64
+		{3E5555C0-1D50-41E2-9E5D-4F9D0C2C28E8}.Debug|x64.ActiveCfg = Debug|x64
+		{3E5555C0-1D50-41E2-9E5D-4F9D0C2C28E8}.Debug|x64.Build.0 = Debug|x64
+		{3E5555C0-1D50-41E2-9E5D-4F9D0C2C28E8}.Release|x64.ActiveCfg = Release|x64
+		{3E5555C0-1D50-41E2-9E5D-4F9D0C2C28E8}.Release|x64.Build.0 = Release|x64
+		{A1B2C3D4-E5F6-4789-A012-3456789ABCDE}.Debug|x64.ActiveCfg = Debug|x64
+		{A1B2C3D4-E5F6-4789-A012-3456789ABCDE}.Debug|x64.Build.0 = Debug|x64
+		{A1B2C3D4-E5F6-4789-A012-3456789ABCDE}.Release|x64.ActiveCfg = Release|x64
+		{A1B2C3D4-E5F6-4789-A012-3456789ABCDE}.Release|x64.Build.0 = Release|x64
+		{1C1F1A4D-D2A2-4D8C-825A-82BC570AD0CA}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{1C1F1A4D-D2A2-4D8C-825A-82BC570AD0CA}.Debug|x64.Build.0 = Debug|Any CPU
+		{1C1F1A4D-D2A2-4D8C-825A-82BC570AD0CA}.Release|x64.ActiveCfg = Release|Any CPU
+		{1C1F1A4D-D2A2-4D8C-825A-82BC570AD0CA}.Release|x64.Build.0 = Release|Any CPU
+		{5D616E6D-7931-4CE0-AEED-638388B000EF}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{5D616E6D-7931-4CE0-AEED-638388B000EF}.Debug|x64.Build.0 = Debug|Any CPU
+		{5D616E6D-7931-4CE0-AEED-638388B000EF}.Release|x64.ActiveCfg = Release|Any CPU
+		{5D616E6D-7931-4CE0-AEED-638388B000EF}.Release|x64.Build.0 = Release|Any CPU
+		{82E736EC-41BD-47C8-B255-D2367BEDCF52}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{82E736EC-41BD-47C8-B255-D2367BEDCF52}.Debug|x64.Build.0 = Debug|Any CPU
+		{82E736EC-41BD-47C8-B255-D2367BEDCF52}.Release|x64.ActiveCfg = Release|Any CPU
+		{82E736EC-41BD-47C8-B255-D2367BEDCF52}.Release|x64.Build.0 = Release|Any CPU
+		{92DF478F-BE08-4E8C-A536-2CAA4F8CC26F}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{92DF478F-BE08-4E8C-A536-2CAA4F8CC26F}.Debug|x64.Build.0 = Debug|Any CPU
+		{92DF478F-BE08-4E8C-A536-2CAA4F8CC26F}.Release|x64.ActiveCfg = Release|Any CPU
+		{92DF478F-BE08-4E8C-A536-2CAA4F8CC26F}.Release|x64.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{5D616E6D-7931-4CE0-AEED-638388B000EF} = {8C5EAC49-BD7A-45F7-8150-0474238537A8}
+		{82E736EC-41BD-47C8-B255-D2367BEDCF52} = {8C5EAC49-BD7A-45F7-8150-0474238537A8}
+	EndGlobalSection
+EndGlobal

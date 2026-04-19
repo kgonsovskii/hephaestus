@@ -1,0 +1,5 @@
+<wpf:ResourceDictionary xml:space="preserve" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:s="clr-namespace:System;assembly=mscorlib" xmlns:ss="urn:shemas-jetbrains-com:settings-storage-xaml" xmlns:wpf="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+	<!-- Team-shared: force x64 .NET CLI + DOTNET_ROOT (avoids x86 dotnet from PATH / Rider picking wrong host). Re-save from Rider if key name changes. -->
+	<s:String x:Key="/Default/Environment/Hierarchy/Build/BuildEngine/DotNetCliPath/@EntryValue">C:\Program Files\dotnet\dotnet.exe</s:String>
+	<s:String x:Key="/Default/Environment/Hierarchy/Build/BuildEngine/EnvironmentVariables/=DOTNET_ROOT/@EntryIndexedValue">C:\Program Files\dotnet</s:String>
+</wpf:ResourceDictionary>

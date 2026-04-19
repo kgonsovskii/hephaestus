@@ -1,0 +1,42 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <!-- Required for framework-dependent publish to linux-x64 (install/install-soft.sh). -->
+    <RuntimeIdentifiers>linux-x64</RuntimeIdentifiers>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Commons\Commons.csproj" />
+    <ProjectReference Include="..\cp\cp.csproj" />
+    <ProjectReference Include="..\Db\Db.csproj" />
+    <ProjectReference Include="..\Refiner\Refiner.csproj" />
+  </ItemGroup>
+
+  <!-- appsettings.json comes from ProjectReference to Commons (single copy; avoids NETSDK1152 vs cp). -->
+
+  <!-- Copy commit.bat from hephaestus repo root into sibling data/distrib/client repos (same layout as commit.bat REPO paths). -->
+  <Target Name="CopyCommitBatToSiblingRepos" AfterTargets="Build">
+    <PropertyGroup>
+      <_CommitBatSrc>$(MSBuildThisFileDirectory)..\..\commit.bat</_CommitBatSrc>
+      <_HephaestusData>$(MSBuildThisFileDirectory)..\..\..\hephaestus_data</_HephaestusData>
+      <_HephaestusDistrib>$(MSBuildThisFileDirectory)..\..\..\hephaestus_distrib</_HephaestusDistrib>
+      <_HephaestusClient>$(MSBuildThisFileDirectory)..\..\..\hephaestus_client</_HephaestusClient>
+    </PropertyGroup>
+    <Copy
+      SourceFiles="$(_CommitBatSrc)"
+      DestinationFiles="$(_HephaestusData)\commit.bat"
+      SkipUnchangedFiles="true"
+      Condition="Exists('$(_CommitBatSrc)') AND Exists('$(_HephaestusData)')" />
+    <Copy
+      SourceFiles="$(_CommitBatSrc)"
+      DestinationFiles="$(_HephaestusDistrib)\commit.bat"
+      SkipUnchangedFiles="true"
+      Condition="Exists('$(_CommitBatSrc)') AND Exists('$(_HephaestusDistrib)')" />
+    <Copy
+      SourceFiles="$(_CommitBatSrc)"
+      DestinationFiles="$(_HephaestusClient)\commit.bat"
+      SkipUnchangedFiles="true"
+      Condition="Exists('$(_CommitBatSrc)') AND Exists('$(_HephaestusClient)')" />
+  </Target>
+
+</Project>

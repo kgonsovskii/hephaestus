@@ -1,0 +1,58 @@
+@model IEnumerable<model.BotLog>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Bot Log</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+<h1>Bot Log</h1>
+<table>
+    <thead>
+    <tr>
+        <th>Id</th>
+        <th>Server</th>
+        <th>LastSeen</th>
+        <th>LastSeenIp</th>
+        <th>FirstSeen</th>
+        <th>FirstSeenIp</th>
+        <th>Serie</th>
+        <th>NumberOfRequests</th>
+        <th>NumberOfElevatedRequests</th>
+        <th>NumberOfDownloads</th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var stat in Model)
+    {
+        <tr>
+            <td>@stat.Id</td>
+            <td>@stat.Server</td>
+            <td>@stat.LastSeen.ToString("yy-MM-dd hh:mm:ss")</td>
+            <td>@stat.LastSeenIp</td>
+            <td>@stat.FirstSeen.ToString("yy-MM-dd hh:mm:ss")</td>
+            <td>@stat.FirstSeenIp</td>
+            <td>@stat.Serie</td>
+            <td>@stat.NumberOfRequests</td>
+            <td>@stat.NumberOfElevatedRequests</td>
+            <td>@stat.NumberOfDownloads</td>
+        </tr>
+    }
+    </tbody>
+</table>
+</body>
+</html>

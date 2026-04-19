@@ -1,0 +1,97 @@
+Deploy Hephaestus HTTPS trust on a protected Windows AD domain (no per-employee pop-ups)
+========================================================================================
+
+About "Security Warning" / consent when installing a root locally
+-----------------------------------------------------------------
+Windows may show a dialog when software adds a certificate to Trusted Root (whether you use
+PowerShell X509Store.Add, Import-PfxCertificate, or sometimes certutil in an interactive session).
+
+Microsoft does not document a supported registry key to disable that consent for arbitrary CAs.
+The supported ways to avoid asking each employee are: deploy the public .cer via GPO (below) or MDM,
+or accept the prompt once on non-domain machines.
+
+On a single PC you can try scripts/install-hephaestus-trust-cer.ps1 (uses certutil first, then
+.NET as fallback). It is still not guaranteed silent on every Windows 11 build.
+
+Fully automated, silent local Group Policy trusted root (one machine)
+---------------------------------------------------------------------
+To install the public .cer into the same policy-backed store as gpedit
+(Computer Configuration -> Windows Settings -> Security Settings -> Public Key Policies ->
+Trusted Root Certification Authorities), run elevated:
+
+  powershell -NoProfile -ExecutionPolicy Bypass -File scripts\install-hephaestus-trust-local-gpo.ps1
+
+The script uses certutil -GroupPolicy -addstore Root, then gpupdate /force. It does not open
+gpedit. Contrast: install-hephaestus-trust-cer.ps1 writes to the normal certificate stores;
+install-hephaestus-trust-local-gpo.ps1 writes to the Group Policy certificate store under
+HKLM\SOFTWARE\Policies\Microsoft\SystemCertificates\...
+
+Reference: https://learn.microsoft.com/en-us/windows-server/identity/ad-cs/configure-trusted-roots-disallowed-certificates
+certutil: https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/certutil
+
+PFX / private key prompts (strong key protection, UserProtected)
+-----------------------------------------------------------------
+Some PFX files embed flags that require user interaction when the private key is loaded
+(Import-PfxCertificate and .NET X509Certificate2 honor them). CertTool writes the repo PFX
+with ExportPkcs12 (modern PKCS#12) to reduce that; install-hephaestus-cert.ps1 uses Exportable
+and never UserProtected.
+
+If prompts still appear, check group policy: Computer Configuration → Administrative Templates
+→ System → Cryptography → "Force strong key protection for user keys stored on the computer"
+(HKLM\SOFTWARE\Policies\Microsoft\Cryptography ForceKeyProtection). Your security team decides
+whether that can be relaxed for automation.
+
+
+What is GPO?
+  Group Policy Object. On Active Directory, your IT admin publishes settings once on the
+  domain controller; all domain-joined PCs apply them automatically (after reboot or
+  policy refresh). This is the normal way to push trusted root certificates company-wide.
+
+What is MDM?
+  Mobile Device Management (e.g. Microsoft Intune). Same idea for cloud-managed PCs and
+  phones: IT deploys a "trusted certificate" profile instead of each user clicking prompts.
+  Use MDM if you do not use classic AD domain join.
+
+----------------------------------------------------------------------
+For Active Directory (GPO) — recommended for your case
+----------------------------------------------------------------------
+
+1. Run CertTool on a build machine. It creates:
+     cert/hephaestus.pfx          — private key; only on DomainHost servers
+     cert/hephaestus-trusted-root.cer — PUBLIC certificate only; safe to copy anywhere
+
+2. Copy hephaestus-trusted-root.cer to a place DCs and clients can read (e.g. SYSVOL share:
+     \\YOURDOMAIN\SYSVOL\YOURDOMAIN\Policies\... or any internal file share).
+
+3. On a machine with Group Policy Management (often the DC or admin workstation):
+     - Open Group Policy Management (gpmc.msc).
+     - Create or edit a GPO linked to the OU that contains employee computers (or the whole domain).
+     - Edit the GPO:
+         Computer Configuration
+           → Policies
+           → Windows Settings
+           → Security Settings
+           → Public Key Policies
+           → Trusted Root Certification Authorities
+         Right-click → Import → select hephaestus-trusted-root.cer.
+
+4. Link the GPO to the correct OU. Scope: Authenticated Computers (default computer policy).
+
+5. On clients: run gpupdate /force (or wait for automatic refresh) and reboot if required.
+
+Employees do not run install-hephaestus-cert.ps1 and do not get the manual root-install
+dialog, because Windows applies the trust as policy.
+
+----------------------------------------------------------------------
+Script install-hephaestus-cert.ps1
+----------------------------------------------------------------------
+
+Use only for machines that are NOT domain-joined or for quick tests. Domain PCs should
+use GPO (above).
+
+----------------------------------------------------------------------
+MDM (Intune) short pointer
+----------------------------------------------------------------------
+
+Intune: Devices → Configuration profiles → Create profile → Windows 10 and later →
+Templates → Trusted certificate → Root store → upload the same .cer file → assign to groups.
