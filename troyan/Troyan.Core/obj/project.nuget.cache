@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "R8Mwx7ziRY0=",
+  "dgSpecHash": "xzwRF0jRHcA=",
   "success": true,
-  "projectFilePath": "c:\\soft\\newway\\troyan\\Troyan.Core\\Troyan.Core.csproj",
+  "projectFilePath": "C:\\soft\\newway\\troyan\\Troyan.Core\\Troyan.Core.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\k\\.nuget\\packages\\microsoft.extensions.configuration\\9.0.0\\microsoft.extensions.configuration.9.0.0.nupkg.sha512",
     "C:\\Users\\k\\.nuget\\packages\\microsoft.extensions.configuration.abstractions\\9.0.0\\microsoft.extensions.configuration.abstractions.9.0.0.nupkg.sha512",
