@@ -19,7 +19,7 @@ public class PackModel: BaseModel
         {
             var home = ServerModel?.PanelHomeDirectory;
             if (string.IsNullOrEmpty(home))
-                throw new InvalidOperationException("PanelHomeDirectory must be set by ServerService after load.");
+                return string.Empty;
             return Path.Combine(home, "packs");
         }
     }
@@ -54,7 +54,16 @@ public class PackItem: BaseModel
     {
     }
     [JsonPropertyName("packFolder")]
-    public string PackFolder => Path.Combine(PackModel.PackFolder, Id);
+    public string PackFolder
+    {
+        get
+        {
+            var root = PackModel.PackFolder;
+            if (string.IsNullOrEmpty(root))
+                return string.Empty;
+            return Path.Combine(root, Id);
+        }
+    }
 
     [JsonPropertyName("packFileVbs")]
     public string PackFileVbs => Path.Combine(PackFolder, Name + ".vbs");
@@ -93,6 +102,8 @@ public class PackItem: BaseModel
     public void Validate()
     {
         Refresh();
+        if (string.IsNullOrEmpty(PackFolder))
+            return;
         if (!File.Exists(PackFileExe) || !File.Exists(PackFileVbs))
         {
             if (!Directory.Exists(PackFolder))

@@ -24,7 +24,9 @@ public class AdminController: BaseController
     [HttpGet] [Route("/admin")]
     public IActionResult IndexAdmin()
     {
-        return View("admin", new ServerModel(){AdminServers = AdminServers()});
+        var m = new ServerModel { AdminServers = AdminServers() };
+        m.PanelHomeDirectory = _serverService.Paths.UserDataDir;
+        return View("admin", m);
     }
 
     [HttpPost] [Route("/admin")]

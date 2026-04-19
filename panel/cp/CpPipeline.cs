@@ -10,6 +10,7 @@ internal static class CpPipeline
     public static void DataServe(IApplicationBuilder app)
     {
         var paths = app.ApplicationServices.GetRequiredService<IPanelServerPaths>();
+        Directory.CreateDirectory(paths.UserDataDir);
         app.UseStaticFiles(new StaticFileOptions
         {
             FileProvider = new PhysicalFileProvider(paths.UserDataDir),

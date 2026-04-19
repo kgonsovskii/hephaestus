@@ -15,8 +15,9 @@ public partial class ServerService
     public void UpdatePacks(ServerModel server)
     {
         server.Pack.Refresh();
-        if (!Directory.Exists(server.Pack.PackFolder))
-            Directory.CreateDirectory(server.Pack.PackFolder);
+        var packRoot = server.Pack.PackFolder;
+        if (!string.IsNullOrEmpty(packRoot) && !Directory.Exists(packRoot))
+            Directory.CreateDirectory(packRoot);
         foreach (var pack in server.Pack.Items)
             UpdatePack(pack);
     }

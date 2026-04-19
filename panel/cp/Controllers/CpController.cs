@@ -45,6 +45,7 @@ public class CpController : BaseController
         catch (Exception e)
         {
             var err = new ServerModel { Server = server, PostModel = new PostModel { LastResult = e.Message + "\r\n" + e.StackTrace } };
+            err.PanelHomeDirectory = _serverService.Paths.UserDataDir;
             return View("Index", new CpIndexViewModel { Server = err });
         }
     }
@@ -147,6 +148,7 @@ public class CpController : BaseController
             {
                 var res = _serverService.Reboot();
                 var vm = new ServerModel { Server = server, PostModel = new PostModel { LastResult = res } };
+                vm.PanelHomeDirectory = _serverService.Paths.UserDataDir;
                 return View("Index", new CpIndexViewModel { Server = vm });
             }
 
@@ -274,6 +276,7 @@ public class CpController : BaseController
         catch (Exception e)
         {
             var err = new ServerModel { Server = server, PostModel = new PostModel { LastResult = e.Message + "\r\n" + e.StackTrace } };
+            err.PanelHomeDirectory = _serverService.Paths.UserDataDir;
             return View("Index", new CpIndexViewModel { Server = err });
         }
     }

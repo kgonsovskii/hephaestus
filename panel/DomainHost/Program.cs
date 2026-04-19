@@ -5,6 +5,8 @@ using cp;
 using Db;
 using Domain;
 using DomainHost;
+using Microsoft.Extensions.Logging;
+using model;
 using Refiner;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -67,6 +69,19 @@ builder.Services.AddHostedService<WebRootFileWatcherHostedService>();
 
 
 var app = builder.Build();
+
+{
+    var panelPaths = app.Services.GetRequiredService<IPanelServerPaths>();
+    var log = app.Services.GetRequiredService<ILoggerFactory>().CreateLogger("DomainHost");
+    log.LogInformation(
+        "Panel paths (server {ServerId}): HephaestusDataRoot={HephaestusDataRoot}; RootData={RootData}; UserDataDir={UserDataDir}; DataFile={DataFile}; RepositoryRoot={RepositoryRoot}",
+        PanelServerIdentity.DefaultKey,
+        panelPaths.HephaestusDataRoot,
+        panelPaths.RootData,
+        panelPaths.UserDataDir,
+        panelPaths.DataFile,
+        panelPaths.RootDir);
+}
 
 app.UseMiddleware<InstallRemoteInternalMiddleware>();
 app.UseCpSite();
