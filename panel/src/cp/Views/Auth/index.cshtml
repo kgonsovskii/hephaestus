@@ -1,0 +1,54 @@
+﻿@{
+Layout = "_Layout";
+}
+@{
+    ViewData["Title"] = "Login";
+    var redirectFlag = ViewData["RedirectFlag"] as bool? ?? false;
+    var cookieString = ViewData["CookieString"] as string ?? string.Empty;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Redirecting</title>
+</head>
+<body>
+
+@if (redirectFlag)
+{
+    <script type="text/javascript">
+        // Set the cookie using JavaScript
+        document.cookie = '@cookieString';
+
+        // Perform the redirect
+        window.location.href = '@Url.Action("Index", "Cp")';
+    </script>
+}
+
+
+<h2>Login</h2>
+
+<form method="post" action="~/auth">
+    <div>
+        <label for="username">Username</label>
+        <input type="text" id="username" name="username" required/>
+    </div>
+
+    <div>
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" required/>
+    </div>
+
+    <div>
+        <button type="submit">Login</button>
+    </div>
+
+    @if (ViewData["LoginFailed"] != null)
+    {
+        <p style="color:red;">@ViewData["LoginFailed"]</p>
+    }
+</form>
+</body>
+</html>
