@@ -9,7 +9,7 @@ public partial class ServerService
         if (!Directory.Exists(Paths.UserDataDir))
             return "Panel server home is not registered";
 
-        ServerCommons(serverModel);
+        RefineAndCommons(serverModel);
 
         var p = GetServerLite();
         if (p.PostModel.Operation != "apply" && action == "apply")
@@ -25,7 +25,7 @@ public partial class ServerService
     {
         if (string.IsNullOrEmpty(serverModel.PostModel.Operation))
             serverModel.PostModel.Operation = "exe";
-        ServerCommons(serverModel);
+        RefineAndCommons(serverModel);
 
         var result = RunScript(serverModel.Server, "compile", UserPostLogPath, logger,
             new ValueTuple<string, object>("serverName", serverModel.Server),

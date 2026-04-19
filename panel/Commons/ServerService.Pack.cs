@@ -24,7 +24,7 @@ public partial class ServerService
 
     public string PackServerRequest(ServerModel serverModel)
     {
-        UpdatePacks(serverModel);
+        RefineAndCommons(serverModel);
         SaveServerLite(serverModel);
         return RunExe(_loader.Paths.Packer);
     }
@@ -42,6 +42,7 @@ public partial class ServerService
                 pack.Date = DateTime.Now.ToString(CultureInfo.InvariantCulture);
         }
 
+        RefineUnsetNetworkFields(p);
         SaveServerLite(p);
         return result;
     }

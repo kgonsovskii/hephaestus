@@ -55,7 +55,7 @@ namespace cp.Controllers
                 }
                 
                 _serverService.UpdatePacks(model);
-                _serverService.SaveServerLite(model);
+                _serverService.RefineCommonsAndSave(model);
                 _serverService.PackServer(pack.Id, null);
                 model = _serverService.GetServerLite();
                 pack = model.Pack.Items.FirstOrDefault(a => a.OriginalUrl == url);

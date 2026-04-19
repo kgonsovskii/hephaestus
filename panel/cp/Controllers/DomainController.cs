@@ -57,7 +57,7 @@ public class DomainController : BaseController
             .ToList();
         await _domains.SaveDomainsAsync(records, cancellationToken).ConfigureAwait(false);
         await ReplaceInMemoryCatalogAsync(cancellationToken).ConfigureAwait(false);
-        _hostsChanged.NotifyHostsChanged();
+        RefineServerAndNotifyRefiner();
         TempData[TempDataMessageKey] = "Domains saved; hosted sync will run shortly.";
         return RedirectToAction(nameof(Index));
     }
@@ -96,7 +96,7 @@ public class DomainController : BaseController
 
         await _domains.SaveDomainsAsync(list.Select(r => r.ToDomainRecord()).ToList(), cancellationToken).ConfigureAwait(false);
         await ReplaceInMemoryCatalogAsync(cancellationToken).ConfigureAwait(false);
-        _hostsChanged.NotifyHostsChanged();
+        RefineServerAndNotifyRefiner();
 
         TempData[TempDataMessageKey] = added == 0
             ? "No new domains added (duplicates or empty lines skipped); hosted sync will run shortly."
@@ -108,5 +108,12 @@ public class DomainController : BaseController
     {
         var enabled = await _domains.LoadEnabledDomainsAsync(cancellationToken).ConfigureAwait(false);
         _catalog.Replace(enabled);
+    }
+
+    void RefineServerAndNotifyRefiner()
+    {
+        var server = _serverService.GetServerLite();
+        _serverService.RefineCommonsAndSave(server);
+        _hostsChanged.NotifyHostsChanged();
     }
 }
