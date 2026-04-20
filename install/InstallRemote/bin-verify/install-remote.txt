@@ -1,44 +1,7 @@
-# Remote bootstrap for install-remote.ps1, InstallRemote (C#), and install-remote.sh — edit only this file.
-# SSH target: install/install-remote-creds.txt (three lines: host, login, password).
-# Must be valid bash when executed on the Linux host (after base64 decode or via ssh bash -s).
-#
-# Bootstrap has no repo tree yet: keep wait logic in sync with install/wait-for-apt-dpkg-lock.sh.
-
 export DEBIAN_FRONTEND=noninteractive
-
-wait_for_apt_dpkg_lock() {
-  local max_wait="${WAIT_FOR_APT_LOCK_MAX:-900}"
-  local interval=5
-  local elapsed=0
-  local busy
-
-  while [ "$elapsed" -lt "$max_wait" ]; do
-    busy=0
-    if command -v fuser >/dev/null 2>&1; then
-      fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1 && busy=1
-      fuser /var/lib/dpkg/lock >/dev/null 2>&1 && busy=1
-      fuser /var/lib/apt/lists/lock >/dev/null 2>&1 && busy=1
-    fi
-    if pgrep -x apt-get >/dev/null 2>&1 || pgrep -x apt >/dev/null 2>&1 \
-        || pgrep -f '/usr/bin/unattended-upgrade' >/dev/null 2>&1 \
-        || pgrep -f '/usr/sbin/unattended-upgrade' >/dev/null 2>&1 \
-        || pgrep -f 'apt.systemd.daily' >/dev/null 2>&1; then
-      busy=1
-    fi
-    if [ "$busy" -eq 0 ]; then
-      return 0
-    fi
-    echo "[install-remote] waiting for apt/dpkg lock (${elapsed}s / ${max_wait}s)..."
-    sleep "$interval"
-    elapsed=$((elapsed + interval))
-  done
-  echo "[install-remote] timed out after ${max_wait}s waiting for apt/dpkg." >&2
-  return 1
-}
-
 wait_for_apt_dpkg_lock
-apt-get -o DPkg::Lock::Timeout=600 update
-apt-get -o DPkg::Lock::Timeout=600 install -y git ca-certificates
+apt_get update
+apt_get install -y git ca-certificates
 CLONE_DIR="${HOME}/hephaestus"
 rm -rf "$CLONE_DIR"
 git clone --depth 1 https://github.com/kgonsovskii/hephaestus.git "$CLONE_DIR"

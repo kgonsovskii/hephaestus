@@ -1,8 +1,4 @@
 #!/usr/bin/env bash
-# Unregister DomainHost systemd service, stop processes, remove repo /release (published output).
-# Does not delete the Hephaestus repository clone.
-#
-# Run: sudo bash install/uninstall.sh
 set -euo pipefail
 export DEBIAN_FRONTEND=noninteractive
 

@@ -13,7 +13,7 @@ internal static class Program
         try
         {
             var scriptPath = Path.Combine(AppContext.BaseDirectory, RemoteInstallRunner.DefaultRemoteScriptFileName);
-            var remoteCmd = RemoteInstallRunner.LoadRemoteScriptFromFile(scriptPath);
+            var remoteCmd = RemoteInstallRunner.LoadRemoteInstallBootstrapScript(scriptPath);
 
             Console.WriteLine($"Remote install -> {login}@{server}");
             Console.WriteLine("[1/1] SSH: install git, clone repo to $HOME/hephaestus (remote user), run install.sh");

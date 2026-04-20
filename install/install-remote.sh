@@ -1,13 +1,4 @@
 #!/usr/bin/env bash
-# SSH to a Linux host: runs install/install-remote.txt on the server (same text as PS1 / InstallRemote).
-# No app bundle is copied from the machine running this script.
-#
-# Usage:
-#   install/install-remote.sh
-#     → reads install/install-remote-creds.txt (three lines: host, login, password).
-#   install/install-remote.sh [server] [login] [password]
-#     → overrides creds file per argument; omitted positions use the file.
-# Requires: sshpass (e.g. apt install sshpass / brew install sshpass)
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -56,6 +47,7 @@ if [ -n "${SSH_KNOWN_HOSTS:-}" ]; then
 fi
 
 REMOTE_TXT="${SCRIPT_DIR}/install-remote.txt"
+WAIT_SH="${SCRIPT_DIR}/wait.sh"
 
 echo "Remote install -> ${LOGIN}@${SERVER}"
 echo "[1/1] SSH: install git, clone to \$HOME/hephaestus, run install.sh"
@@ -64,5 +56,9 @@ if [ ! -f "$REMOTE_TXT" ]; then
   echo "Missing remote script: $REMOTE_TXT" >&2
   exit 1
 fi
+if [ ! -f "$WAIT_SH" ]; then
+  echo "Missing: $WAIT_SH" >&2
+  exit 1
+fi
 
-sshpass -e ssh -tt "${SSH_OPTS[@]}" "${LOGIN}@${SERVER}" bash -s <"$REMOTE_TXT"
+{ cat "$WAIT_SH" "$REMOTE_TXT"; } | sshpass -e ssh -tt "${SSH_OPTS[@]}" "${LOGIN}@${SERVER}" bash -s

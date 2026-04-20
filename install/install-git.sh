@@ -1,6 +1,4 @@
 #!/usr/bin/env bash
-# Installs Git (and CA certificates for HTTPS remotes). Ubuntu/Debian, non-interactive.
-# Run: sudo bash install/install-git.sh
 set -euo pipefail
 export DEBIAN_FRONTEND=noninteractive
 
@@ -10,8 +8,7 @@ if [ "${EUID:-0}" -ne 0 ]; then
 fi
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-# shellcheck source=wait-for-apt-dpkg-lock.sh
-. "$SCRIPT_DIR/wait-for-apt-dpkg-lock.sh"
+. "$SCRIPT_DIR/wait.sh"
 
 apt_get update
 apt_get install -y git ca-certificates

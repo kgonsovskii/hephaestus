@@ -75,7 +75,7 @@ public sealed class InstallRemoteInternalMiddleware
         {
             var repoRoot = RepoRootResolver.Resolve(_clonerOpts.CurrentValue.RepoRoot, _logger);
             var scriptPath = Path.Combine(repoRoot, "install", RemoteInstallRunner.DefaultRemoteScriptFileName);
-            var script = RemoteInstallRunner.LoadRemoteScriptFromFile(scriptPath);
+            var script = RemoteInstallRunner.LoadRemoteInstallBootstrapScript(scriptPath);
 
             var sshpass = await SshPassBootstrap
                 .EnsureAsync(msg => _logger.LogInformation("[sshpass] {Message}", msg), context.RequestAborted)

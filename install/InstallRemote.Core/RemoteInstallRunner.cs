@@ -8,6 +8,9 @@ public static class RemoteInstallRunner
 {
     public const string DefaultRemoteScriptFileName = "install-remote.txt";
 
+    /// <summary>Prepended to <see cref="DefaultRemoteScriptFileName"/> for SSH bootstrap (apt locks before clone).</summary>
+    public const string DefaultWaitScriptFileName = "wait.sh";
+
     private static readonly string[] SshCommonOpts =
     [
         "-o", "StrictHostKeyChecking=accept-new",
@@ -16,13 +19,36 @@ public static class RemoteInstallRunner
         "-o", "ServerAliveCountMax=4"
     ];
 
+    private static string NormalizeRemoteShellText(string text) =>
+        text.Replace("\r\n", "\n", StringComparison.Ordinal).Replace("\r", "\n", StringComparison.Ordinal).TrimEnd() + "\n";
+
     public static string LoadRemoteScriptFromFile(string path)
     {
         if (!File.Exists(path))
             throw new FileNotFoundException("Remote install script not found.", path);
 
-        var text = File.ReadAllText(path, Encoding.UTF8);
-        return text.Replace("\r\n", "\n", StringComparison.Ordinal).Replace("\r", "\n", StringComparison.Ordinal).TrimEnd() + "\n";
+        return NormalizeRemoteShellText(File.ReadAllText(path, Encoding.UTF8));
+    }
+
+    /// <summary>Loads <c>wait.sh</c> + <c>install-remote.txt</c> from the same directory (bootstrap has no repo yet).</summary>
+    public static string LoadRemoteInstallBootstrapScript(string installRemoteTxtPath)
+    {
+        if (!File.Exists(installRemoteTxtPath))
+            throw new FileNotFoundException("Remote install script not found.", installRemoteTxtPath);
+
+        var directory = Path.GetDirectoryName(Path.GetFullPath(installRemoteTxtPath));
+        if (string.IsNullOrEmpty(directory))
+            directory = Directory.GetCurrentDirectory();
+
+        var waitPath = Path.Combine(directory, DefaultWaitScriptFileName);
+        if (!File.Exists(waitPath))
+            throw new FileNotFoundException(
+                $"{DefaultWaitScriptFileName} must exist next to {DefaultRemoteScriptFileName} (apt lock helpers for remote bootstrap).",
+                waitPath);
+
+        var wait = NormalizeRemoteShellText(File.ReadAllText(waitPath, Encoding.UTF8));
+        var body = NormalizeRemoteShellText(File.ReadAllText(installRemoteTxtPath, Encoding.UTF8));
+        return wait + body;
     }
 
     public static string? FindSshPassOnPath()

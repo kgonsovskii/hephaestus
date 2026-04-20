@@ -1,6 +1,4 @@
 #!/usr/bin/env bash
-# Installs PostgreSQL and initializes the hephaestus database (setup-postgres.sql).
-# Run: sudo bash install/install-postgres.sh
 set -euo pipefail
 export DEBIAN_FRONTEND=noninteractive
 
@@ -16,8 +14,7 @@ if [ ! -f "$SQL" ]; then
   exit 1
 fi
 
-# shellcheck source=wait-for-apt-dpkg-lock.sh
-. "$SCRIPT_DIR/wait-for-apt-dpkg-lock.sh"
+. "$SCRIPT_DIR/wait.sh"
 
 apt_get update
 apt_get install -y postgresql postgresql-client
@@ -34,6 +31,4 @@ run_as_postgres() {
   fi
 }
 
-# psql must not use -f with a path under /root/... when run as user postgres (permission denied).
-# Root opens the file for stdin; postgres inherits the fd.
 run_as_postgres psql -d postgres -v ON_ERROR_STOP=1 < "$SQL"

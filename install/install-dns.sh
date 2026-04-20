@@ -1,12 +1,4 @@
 #!/usr/bin/env bash
-# Installs Technitium DNS Server from source on Ubuntu (non-interactive).
-# Based on: https://github.com/TechnitiumSoftware/DnsServer/blob/master/build.md
-#
-# First builds install/Install (links panel/Commons/appsettings.json for Technitium:Password), then after dns.service
-# is up runs `dotnet run` on that project to set the admin password via HTTP API (no web UI prompt).
-#
-# Prerequisites: install-git.sh (git) and install-net.sh (dotnet SDK), or run install.sh.
-# Run from repo root: sudo bash install/install-dns.sh
 set -euo pipefail
 export DEBIAN_FRONTEND=noninteractive
 

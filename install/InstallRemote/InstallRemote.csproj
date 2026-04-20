@@ -13,6 +13,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="..\install-remote.txt" CopyToOutputDirectory="PreserveNewest" Link="install-remote.txt" />
+    <Content Include="..\wait.sh" CopyToOutputDirectory="PreserveNewest" Link="wait.sh" />
     <Content Include="..\install-remote-creds.txt" CopyToOutputDirectory="PreserveNewest" Link="install-remote-creds.txt" />
   </ItemGroup>
 </Project>

@@ -1,7 +1,4 @@
 #!/usr/bin/env bash
-# Single-repo Hephaestus: restore solution, build Deploy (DeployDomain) -> repo /release,
-# register systemd domainhost, verify it runs.
-# Last step of install/install.sh; also: sudo bash install/install-soft.sh
 set -euo pipefail
 export DEBIAN_FRONTEND=noninteractive
 
