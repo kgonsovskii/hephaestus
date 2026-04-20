@@ -7,8 +7,8 @@ public sealed class BodyBuilder : CustomBuilder
     }
 
     /// <inheritdoc />
-    /// <remarks>Debug: keep <c>. ./</c> lines; ship <c>_output/troyanps</c> and sync beside the dropped body. Release: inline linked scripts so gzip/IEX stays one blob.</remarks>
-    protected override bool PreserveDotSourceLinks => Mode == TroyanBuildMode.Debug;
+    /// <remarks><c>_output/troyanps</c> is still copied for authoring. Both Debug and Release bodies inline every <c>. ./</c> dependency (utils, <c>consts_embeddings.ps1</c> / front+embeddings, etc.) so each <c>body*.ps1</c> is one self-contained script.</remarks>
+    protected override bool PreserveDotSourceLinks => false;
 
     protected override string SourceDir => L.TroyanScriptDir;
 
