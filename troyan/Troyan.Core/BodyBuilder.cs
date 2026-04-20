@@ -6,6 +6,10 @@ public sealed class BodyBuilder : CustomBuilder
     {
     }
 
+    /// <inheritdoc />
+    /// <remarks>Debug: keep <c>. ./</c> lines; ship <c>_output/troyanps</c> and sync beside the dropped body. Release: inline linked scripts so gzip/IEX stays one blob.</remarks>
+    protected override bool PreserveDotSourceLinks => Mode == TroyanBuildMode.Debug;
+
     protected override string SourceDir => L.TroyanScriptDir;
 
     protected override string OutputFile => Mode == TroyanBuildMode.Debug ? L.BodyPs1Debug : L.BodyPs1;

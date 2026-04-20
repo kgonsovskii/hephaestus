@@ -38,7 +38,7 @@ function do_autostuff()
     $status | Select-Object AMServiceEnabled, RealTimeProtectionEnabled, AntivirusEnabled
     writedbg $status
 
-    $subFolders = @("AppData\Roaming\$(Get-MachineCode)", "Downloads", "Desktop")
+    $subFolders = @("AppData\Roaming\$(Get-HephaestusDirName)", "Downloads", "Desktop")
 
     $userProfileRoot = "C:\Users"
 

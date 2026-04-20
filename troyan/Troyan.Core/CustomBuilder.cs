@@ -33,6 +33,9 @@ public abstract partial class CustomBuilder
     /// <summary>False for thin holder: only entrypoint payload, no merged <c>program.ps1</c> Main/task table.</summary>
     protected virtual bool AppendProgramLauncherTail => true;
 
+    /// <summary>When true, <c>. ./x.ps1</c> lines are kept and dependencies are deployed as real files next to the body (see output <c>troyanps</c> copy). Release builds keep false so gzip/IEX payloads stay self-contained.</summary>
+    protected virtual bool PreserveDotSourceLinks => false;
+
     private ServerService _serverService = null!;
     private ServerLayoutPaths _layout = null!;
 
@@ -67,6 +70,7 @@ public abstract partial class CustomBuilder
             Directory.CreateDirectory(directoryPath);
 
         ComposeScript();
+        CopyTroyanScriptPackToOutput();
 
         if (Mode == TroyanBuildMode.Release)
             GeneratePowerShellScript(OutputFile, OutputFile, true);
@@ -131,6 +135,17 @@ _SERVER
         File.WriteAllText(outputPath, template);
     }
 
+    /// <summary>Deploy sibling <c>troyanps</c> next to <c>_output</c> so plain VBS + debug body can resolve <c>. ./</c> imports (and panel publish can mirror the tree).</summary>
+    private void CopyTroyanScriptPackToOutput()
+    {
+        var destDir = Path.Combine(L.TroyanOutputDir, "troyanps");
+        Directory.CreateDirectory(destDir);
+        foreach (var src in Directory.EnumerateFiles(L.TroyanScriptDir, "*.ps1", SearchOption.TopDirectoryOnly))
+        {
+            var name = Path.GetFileName(src);
+            File.Copy(src, Path.Combine(destDir, name), overwrite: true);
+        }
+    }
 
     private void ComposeScript()
     {

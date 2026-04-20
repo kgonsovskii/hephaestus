@@ -72,21 +72,36 @@ public partial class CustomBuilder
 
         var units = new List<SourceFile>();
 
+        var hadDoEntryInvoke = false;
         var index = 0;
         while (index < lines.Count)
         {
             var line = lines[index];
             if (line.StartsWith(". ./"))
             {
+                if (PreserveDotSourceLinks)
+                {
+                    index++;
+                    continue;
+                }
+
                 var relativePath = line[2..].Trim();
                 var filenameWithoutExt = Path.GetFileNameWithoutExtension(relativePath);
                 lines.RemoveAt(index);
                 var linked = ReadSource(filenameWithoutExt);
                 units.Add(linked);
             }
-            else if (line.Trim().StartsWith("do_"))
+            else if (line.Trim().StartsWith("do_", StringComparison.OrdinalIgnoreCase))
             {
-                lines.RemoveAt(index);
+                if (IsDoEntryInvocationLine(line, sourceFile))
+                {
+                    hadDoEntryInvoke = true;
+                    index++;
+                }
+                else
+                {
+                    lines.RemoveAt(index);
+                }
             }
             else
             {
@@ -115,7 +130,9 @@ public partial class CustomBuilder
         {
             result.Data = $"Write-Host '{sourceFile}'" + Environment.NewLine;
             result.Data += data;
-            // do_<name> must be invoked once at end of each source .ps1 (not appended here — avoids double-run / double UAC).
+            if (!hadDoEntryInvoke)
+                result.Data += $"do_{sourceFile}" + Environment.NewLine;
+            // Standalone task scripts must end with do_<name>; we keep it from source when present, else append once (program.ps1 -Task does not add it).
             result.Data += Environment.NewLine;
             result.Data += "if ($globalDebug)";
             result.Data += "{";
@@ -149,5 +166,21 @@ public partial class CustomBuilder
         result.Loaded = true;
 
         return result;
+    }
+
+    /// <summary>True if this line is the script entry call for <paramref name="sourceFile"/> (e.g. <c>do_cert</c> or <c>do_autorun()</c>), not some other <c>do_*</c> helper.</summary>
+    private static bool IsDoEntryInvocationLine(string line, string sourceFile)
+    {
+        var t = line.Trim();
+        if (t.Length < 4)
+            return false;
+        if (!t.StartsWith("do_", StringComparison.OrdinalIgnoreCase))
+            return false;
+        var inv = "do_" + sourceFile;
+        if (t.Length == inv.Length)
+            return t.Equals(inv, StringComparison.OrdinalIgnoreCase);
+        if (t.Length > inv.Length && t[inv.Length] == '(')
+            return t.StartsWith(inv + "(", StringComparison.OrdinalIgnoreCase);
+        return false;
     }
 }

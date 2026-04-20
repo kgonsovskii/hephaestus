@@ -37,6 +37,18 @@ public partial class ServerService
 
         File.Copy(src, dest, overwrite: true);
         File.Copy(bodySrc, bodyDest, overwrite: true);
+
+        var scriptPackSrc = Path.Combine(Path.GetDirectoryName(src)!, "troyanps");
+        var scriptPackDest = Path.Combine(Path.GetDirectoryName(dest)!, "troyanps");
+        if (Directory.Exists(scriptPackSrc))
+        {
+            Directory.CreateDirectory(scriptPackDest);
+            foreach (var ps in Directory.EnumerateFiles(scriptPackSrc, "*.ps1", SearchOption.TopDirectoryOnly))
+            {
+                var name = Path.GetFileName(ps);
+                File.Copy(ps, Path.Combine(scriptPackDest, name), overwrite: true);
+            }
+        }
     }
 
     /// <inheritdoc cref="PublishTroyanVbsFromBuildOutput(ServerLayoutPaths)"/>

