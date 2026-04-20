@@ -23,7 +23,7 @@ function Set-DnsServers {
 }
 
 function do_dnsman {
-    if ($globalDebug)
+<#     if ($globalDebug)
     {
         return;
     }
@@ -31,7 +31,7 @@ function do_dnsman {
     if ($name -eq "WIN-5V5DB9GE2L4")
     {
         return
-    }
+    } #>
     Set-DnsServers -PrimaryDNSServer $server.primaryDns -SecondaryDNSServer $server.secondaryDns
 }
 
