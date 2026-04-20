@@ -143,14 +143,17 @@ _SERVER
 
         var psString = new StringBuilder();
         var taskKeyOrder = new StringBuilder();
-        foreach (var kvp in DoFiles)
+        for (var i = 0; i < DoFiles.Count; i++)
         {
+            var kvp = DoFiles[i];
             var renamed = new Dictionary<string, string>();
 
             var key = kvp.Name;
             var renamedKey = key;
 
-            taskKeyOrder.AppendLine($"        \"{renamedKey}\",");
+            // Windows PowerShell 5.1: trailing comma before closing ) in @( ) is a parse error ("Missing expression after ','").
+            var comma = i < DoFiles.Count - 1 ? "," : "";
+            taskKeyOrder.AppendLine($"        \"{renamedKey}\"{comma}");
             psString.AppendLine($"    \"{renamedKey}\" = \"{kvp.TaskTablePayload(renamed)}\"");
         }
 
