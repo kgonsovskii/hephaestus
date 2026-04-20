@@ -6,6 +6,8 @@ if [ "${EUID:-0}" -ne 0 ]; then
   exec sudo /bin/bash "$0" "$@"
 fi
 
+UNIT_NAME=hephaestus-update-once.service
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
@@ -35,4 +37,9 @@ else
 fi
 
 bash "$SCRIPT_DIR/install.sh"
+echo "$(date -Is) [update] install finished"
+
+systemctl disable "$UNIT_NAME" 2>/dev/null || true
+rm -f "/etc/systemd/system/$UNIT_NAME"
+systemctl daemon-reload
 echo "$(date -Is) [update] done"

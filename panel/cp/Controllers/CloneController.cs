@@ -82,7 +82,7 @@ public class CloneController : BaseController
         return Json(new
         {
             ok = true,
-            message = "OK: update started in background. Allow up to about 5 minutes for git pull and reinstall.",
+            message = "OK: DomainHost disabled, one-shot update registered, reboot initiated.",
         });
     }
 

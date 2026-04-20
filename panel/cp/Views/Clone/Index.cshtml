@@ -121,7 +121,7 @@
     }
 
     scheduleUpdateBtn.addEventListener("click", async function () {
-        const msg = "This will run git pull (discarding local changes to tracked files in the repo on this server) and full reinstall. The panel may be unavailable for up to about 5 minutes. Continue?";
+        const msg = "This will disable DomainHost (not stop it), register a one-time update after reboot, then reboot immediately. After boot: git pull, reinstall, then the one-shot is removed. SSH will drop at reboot. Continue?";
         if (!confirm(msg))
             return;
         const resultEl = document.getElementById("cloneResult");
@@ -148,7 +148,7 @@
                 const j = JSON.parse(raw);
                 if (j && j.message) serverMsg = j.message;
             } catch (_) { }
-            appendResult('<div class="alert alert-success mt-2"><strong>Update started.</strong> Wait up to about 5 minutes while the server reinstalls. You can monitor <code>/var/log/hephaestus-update.log</code> on the host. ' + (serverMsg ? "<br><span class=\"text-muted small\">" + serverMsg + "</span>" : "") + "</div>");
+            appendResult('<div class="alert alert-success mt-2"><strong>Reboot scheduled.</strong> The host should reboot now; update runs on next boot. Log: <code>/var/log/hephaestus-update.log</code>. ' + (serverMsg ? "<br><span class=\"text-muted small\">" + serverMsg + "</span>" : "") + "</div>");
         } catch (e) {
             console.error(e);
             appendResult('<div class="alert alert-danger mt-2">' + e + "</div>");
