@@ -3,9 +3,7 @@ using cp.Models;
 using Domain;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Logging;
 using model;
-using Troyan.Core;
 
 namespace cp.Controllers;
 
@@ -15,11 +13,6 @@ public class CpController : BaseController
     private readonly IServiceProvider _serviceProvider;
     private readonly BotController _botController;
     private readonly IDomainHostsChangedSignal _hostsChanged;
-    private readonly ITroyanBuildCoordinator _troyanBuildCoordinator;
-    private readonly IDomainMaintenance _domainMaintenance;
-    private readonly IDomainRepository _domainRepository;
-    private readonly DomainCatalog _domainCatalog;
-    private readonly ILogger<CpController> _logger;
 
     public CpController(
         ServerService serverService,
@@ -27,21 +20,11 @@ public class CpController : BaseController
         IServiceProvider serviceProvider,
         IConfiguration configuration,
         IMemoryCache memoryCache,
-        IDomainHostsChangedSignal hostsChanged,
-        ITroyanBuildCoordinator troyanBuildCoordinator,
-        IDomainMaintenance domainMaintenance,
-        IDomainRepository domainRepository,
-        DomainCatalog domainCatalog,
-        ILogger<CpController> logger) : base(serverService, configuration, memoryCache)
+        IDomainHostsChangedSignal hostsChanged) : base(serverService, configuration, memoryCache)
     {
         _serviceProvider = serviceProvider;
         _botController = botController;
         _hostsChanged = hostsChanged;
-        _troyanBuildCoordinator = troyanBuildCoordinator;
-        _domainMaintenance = domainMaintenance;
-        _domainRepository = domainRepository;
-        _domainCatalog = domainCatalog;
-        _logger = logger;
     }
 
     [HttpGet]
@@ -122,7 +105,7 @@ public class CpController : BaseController
     }
 
     [HttpPost]
-    public async Task<IActionResult> IndexWithServer(
+    public IActionResult IndexWithServer(
         ServerModel updatedModel,
         string action,
         IFormFile iconFile,
@@ -153,7 +136,7 @@ public class CpController : BaseController
                 return View("Index", new CpIndexViewModel { Server = existingModel });
             }
 
-            // Single CP apply path: legacy "exe" / empty maps to full apply (server save + domains + DNS + Troyan).
+            // CP apply: legacy "exe" / empty maps to apply; work runs in hosted services (not awaited on this thread).
             if (!string.Equals(action, "reboot", StringComparison.OrdinalIgnoreCase)
                 && !string.Equals(action, "clearstats", StringComparison.OrdinalIgnoreCase))
             {
@@ -270,24 +253,9 @@ public class CpController : BaseController
 
 
             var result = _serverService.PostServerRequest(existingModel, action);
+            // Persist only here; DNS / catalog / Troyan builds run in Refiner + DomainCatalogRefresh hosted loops (wake below).
             if (result == "OK")
-            {
                 _hostsChanged.NotifyHostsChanged();
-                try
-                {
-                    var ct = HttpContext?.RequestAborted ?? CancellationToken.None;
-                    var rows = await _domainRepository.LoadEnabledDomainsAsync(ct).ConfigureAwait(false);
-                    _domainCatalog.Replace(rows);
-                    await _domainMaintenance.RunAsync(ct).ConfigureAwait(false);
-                    _troyanBuildCoordinator.RunDefaultServerBuild();
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Apply pipeline (domains/DNS/Troyan) after CP save failed.");
-                    existingModel.PostModel.LastResult = $"{result} (Apply: {ex.Message})";
-                    return View("Index", new CpIndexViewModel { Server = existingModel });
-                }
-            }
 
             existingModel.PostModel.LastResult = result;
             return View("Index", new CpIndexViewModel { Server = existingModel });

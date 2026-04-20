@@ -8,7 +8,11 @@ public interface IDomainHostsChangedSignal
 
         Task WhenCatalogWakeAsync(CancellationToken cancellationToken = default);
 
+        Task WhenTroyanWakeAsync(CancellationToken cancellationToken = default);
+
         void DrainExtraRefinerSignals();
 
         void DrainExtraCatalogSignals();
+
+        void DrainExtraTroyanSignals();
 }

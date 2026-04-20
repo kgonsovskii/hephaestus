@@ -37,7 +37,7 @@ public sealed class RefinerBackgroundService : BackgroundService
         await Task.WhenAll(
                 RunLoopAsync(_statsMaintenance, () => _options.CurrentValue.StatsInterval, "stats", stoppingToken),
                 RunDomainLoopWithWakeAsync(stoppingToken),
-                RunLoopAsync(_troyanMaintenance, () => _options.CurrentValue.TroyanInterval, "troyan", stoppingToken))
+                RunTroyanLoopWithWakeAsync(stoppingToken))
             .ConfigureAwait(false);
     }
 
@@ -68,6 +68,42 @@ public sealed class RefinerBackgroundService : BackgroundService
                 {
                     linked.Cancel();
                     _hostsChanged.DrainExtraRefinerSignals();
+                }
+            }
+            catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+            {
+                break;
+            }
+        }
+    }
+
+    private async Task RunTroyanLoopWithWakeAsync(CancellationToken stoppingToken)
+    {
+        while (!stoppingToken.IsCancellationRequested)
+        {
+            try
+            {
+                await _troyanMaintenance.RunAsync(stoppingToken).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Refiner {Label} maintenance failed", "troyan");
+            }
+
+            var interval = _options.CurrentValue.TroyanInterval;
+            if (interval <= TimeSpan.Zero)
+                interval = TimeSpan.FromMinutes(1);
+
+            try
+            {
+                using var linked = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken);
+                var delayTask = Task.Delay(interval, linked.Token);
+                var wakeTask = _hostsChanged.WhenTroyanWakeAsync(stoppingToken);
+                var winner = await Task.WhenAny(delayTask, wakeTask).ConfigureAwait(false);
+                if (winner == wakeTask)
+                {
+                    linked.Cancel();
+                    _hostsChanged.DrainExtraTroyanSignals();
                 }
             }
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)

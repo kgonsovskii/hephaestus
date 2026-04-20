@@ -27,7 +27,7 @@ $server = @'
   "startUrls": [],
   "frontForce": true,
   "front": [
-    "vs_SSMS.exe"
+    "192.168.0.105_01_20260409231508557.jpeg"
   ],
   "embeddingsForce": true,
   "embeddings": []

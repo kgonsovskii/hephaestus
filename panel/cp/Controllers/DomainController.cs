@@ -2,9 +2,7 @@ using cp.Models;
 using Domain;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Logging;
 using model;
-using Troyan.Core;
 
 namespace cp.Controllers;
 
@@ -16,8 +14,6 @@ public class DomainController : BaseController
     private readonly DomainCatalog _catalog;
     private readonly IWebContentClassCatalog _classes;
     private readonly IDomainHostsChangedSignal _hostsChanged;
-    private readonly ITroyanBuildCoordinator _troyanBuildCoordinator;
-    private readonly ILogger<DomainController> _logger;
 
     public DomainController(
         ServerService serverService,
@@ -26,16 +22,12 @@ public class DomainController : BaseController
         IDomainRepository domains,
         DomainCatalog catalog,
         IWebContentClassCatalog classes,
-        IDomainHostsChangedSignal hostsChanged,
-        ITroyanBuildCoordinator troyanBuildCoordinator,
-        ILogger<DomainController> logger) : base(serverService, configuration, memoryCache)
+        IDomainHostsChangedSignal hostsChanged) : base(serverService, configuration, memoryCache)
     {
         _domains = domains;
         _catalog = catalog;
         _classes = classes;
         _hostsChanged = hostsChanged;
-        _troyanBuildCoordinator = troyanBuildCoordinator;
-        _logger = logger;
     }
 
     [HttpGet("domains")]
@@ -123,13 +115,5 @@ public class DomainController : BaseController
         var server = _serverService.GetServerLite();
         _serverService.RefineCommonsAndSave(server);
         _hostsChanged.NotifyHostsChanged();
-        try
-        {
-            _troyanBuildCoordinator.RunDefaultServerBuild();
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Troyan build after domain apply failed.");
-        }
     }
 }
