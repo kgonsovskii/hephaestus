@@ -11,8 +11,7 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 LOG="${HEPHAESTUS_UPDATE_LOG:-/var/log/hephaestus-update.log}"
 
 mkdir -p "$(dirname "$LOG")" 2>/dev/null || true
-touch "$LOG" 2>/dev/null || true
-exec >>"$LOG" 2>&1
+exec >"$LOG" 2>&1
 
 if [ -z "${HOME:-}" ]; then
   HOME="$(getent passwd "$(id -u)" 2>/dev/null | cut -d: -f6 || true)"

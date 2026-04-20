@@ -65,15 +65,44 @@ public class CloneController : BaseController
         if (!System.IO.File.Exists(updateScript))
             return StatusCode(500, new { error = $"Missing script: {updateScript}" });
 
-        var psi = new ProcessStartInfo
+        string? systemdRun = null;
+        foreach (var candidate in new[] { "/usr/bin/systemd-run", "/bin/systemd-run" })
         {
-            FileName = "/bin/bash",
-            WorkingDirectory = workDir,
-            UseShellExecute = false,
-            CreateNoWindow = true,
-        };
-        psi.ArgumentList.Add("-c");
-        psi.ArgumentList.Add("nohup /bin/bash ./update.sh </dev/null >/dev/null 2>&1 &");
+            if (System.IO.File.Exists(candidate))
+            {
+                systemdRun = candidate;
+                break;
+            }
+        }
+
+        ProcessStartInfo psi;
+        if (systemdRun is not null)
+        {
+            psi = new ProcessStartInfo
+            {
+                FileName = systemdRun,
+                UseShellExecute = false,
+                CreateNoWindow = true,
+            };
+            psi.ArgumentList.Add("--no-block");
+            psi.ArgumentList.Add("--collect");
+            psi.ArgumentList.Add($"--working-directory={workDir}");
+            psi.ArgumentList.Add("--");
+            psi.ArgumentList.Add("/bin/bash");
+            psi.ArgumentList.Add("./update.sh");
+        }
+        else
+        {
+            psi = new ProcessStartInfo
+            {
+                FileName = "/bin/bash",
+                WorkingDirectory = workDir,
+                UseShellExecute = false,
+                CreateNoWindow = true,
+            };
+            psi.ArgumentList.Add("-c");
+            psi.ArgumentList.Add("nohup /bin/bash ./update.sh </dev/null >/dev/null 2>&1 &");
+        }
 
         using var proc = Process.Start(psi);
         if (proc is null)
@@ -83,11 +112,13 @@ public class CloneController : BaseController
         if (proc.ExitCode != 0)
             return StatusCode(500, new { error = $"Failed to queue update.sh (exit {proc.ExitCode})" });
 
-        _logger.LogInformation("update: nohup update.sh queued from {WorkDir}", workDir);
+        _logger.LogInformation("update: queued update.sh from {WorkDir} via {Runner}", workDir, systemdRun ?? "nohup");
         return Json(new
         {
             ok = true,
-            message = "OK: update.sh started in background (no reboot). Service will restart when install finishes.",
+            message = systemdRun is not null
+                ? "OK: update.sh queued in its own systemd unit (survives DomainHost stop). No reboot."
+                : "OK: update.sh queued with nohup (may die when DomainHost stops if systemd-run is missing).",
         });
     }
 
