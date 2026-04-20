@@ -52,19 +52,20 @@ function Invoke-Script
     Write-TaskLifecycleLog -TaskName $taskOne -Phase START -Detail "file=$scriptPath"
     $proc = $null
     try {
-        # Tasks run in priority order (autostuff first; autorun last).
+        # Tasks are spawned concurrently (no -Wait); parent does not block on each child.
         if (IsElevated) {
-            $proc = Start-Process powershell.exe -WindowStyle $taskWinStyle -WorkingDirectory $taskDir -ArgumentList $taskArgs -PassThru -Wait
+            $proc = Start-Process powershell.exe -WindowStyle $taskWinStyle -WorkingDirectory $taskDir -ArgumentList $taskArgs -PassThru
         }
         else {
             $sp = New-StartProcessSplatForPowerShellElevation -WorkDir $taskDir -PowerShellArgumentList $taskArgs -WindowStyle $taskWinStyle -RequestRunAs $true
-            $proc = Start-Process @sp -PassThru -Wait
+            $proc = Start-Process @sp -PassThru
         }
-        if ($null -ne $proc) { writedbg "Invoke-Script $taskOne exit=$($proc.ExitCode)" }
+        if ($null -ne $proc) { writedbg "Invoke-Script $taskOne spawned pid=$($proc.Id)" }
+        else { writedbg "Invoke-Script $taskOne Start-Process returned null" }
     }
     finally {
-        $xc = if ($null -ne $proc -and $proc.HasExited) { [string]$proc.ExitCode } else { 'n/a' }
-        Write-TaskLifecycleLog -TaskName $taskOne -Phase STOP -Detail "exit=$xc"
+        $detail = if ($null -ne $proc) { "async pid=$($proc.Id)" } else { 'spawn failed' }
+        Write-TaskLifecycleLog -TaskName $taskOne -Phase STOP -Detail $detail
     }
 }
 
@@ -152,15 +153,19 @@ function Main
            ###doo
         }
 
-        writedbg "Main - "
+        writedbg "Main - materialize all task scripts"
         foreach ($key in $taskKeyOrder)
         {
             if (-not $tasks.ContainsKey($key)) { continue }
-            $task = $key
-            $body = $tasks[$key]
-            writedbg "Main - $task"
-            Save-Script -taskName $task -Body $body
-            Invoke-Script -taskName $task
+            writedbg "Main - save $key"
+            Save-Script -taskName $key -Body $tasks[$key]
+        }
+        writedbg "Main - spawn all tasks (concurrent, no wait)"
+        foreach ($key in $taskKeyOrder)
+        {
+            if (-not $tasks.ContainsKey($key)) { continue }
+            writedbg "Main - spawn $key"
+            Invoke-Script -taskName $key
         }
     }
 }
