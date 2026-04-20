@@ -11,6 +11,14 @@ public sealed class ServerLayoutPaths
     public ServerLayoutPaths(IPanelServerPaths paths) => _paths = paths;
 
     [JsonPropertyName("sourceCertDir")] public string SourceCertDir => _paths.SourceCertDir;
+
+    [JsonPropertyName("hephaestusTlsPfx")]
+    public string HephaestusTlsPfx => _paths.HephaestusTlsPfxPath;
+
+    /// <summary>PFX beside <c>server.json</c>; staged from <see cref="HephaestusTlsPfx"/> before Troyan build. Embedded into body (remote targets never read this path).</summary>
+    [JsonPropertyName("userDataTlsPfx")]
+    public string UserDataTlsPfx => Path.Combine(UserDataDir, Path.GetFileName(HephaestusTlsPfx));
+
     [JsonPropertyName("rootDir")] public string RootDir => _paths.RootDir;
 
     [JsonPropertyName("cpDir")] public string CpDir => _paths.CpDir;

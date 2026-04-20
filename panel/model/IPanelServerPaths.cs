@@ -10,6 +10,10 @@ public interface IPanelServerPaths
 
     string RootDir { get; }
     string SourceCertDir { get; }
+
+    /// <summary>Canonical Hephaestus LAN TLS PFX (CertTool / DomainHost); copied into <see cref="UserDataDir"/> before Troyan embed.</summary>
+    string HephaestusTlsPfxPath { get; }
+
     string CpDir { get; }
     string AdsDir { get; }
     string PhpDir { get; }

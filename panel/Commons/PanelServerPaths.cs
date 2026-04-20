@@ -20,6 +20,8 @@ public sealed class PanelServerPaths : IPanelServerPaths
 
     public string SourceCertDir => _resolver.CertDirectory(HephaestusDataRoot);
 
+    public string HephaestusTlsPfxPath => _resolver.FileUnderCert(HephaestusDataRoot);
+
     public string CpDir => Path.Combine(RootDir, "cp");
 
     public string AdsDir => Path.Combine(RootDir, "ads");

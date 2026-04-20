@@ -1,3 +1,5 @@
+# consts_cert.ps1 is generated at Troyan build time: $xdata holds chunked base64 of the Hephaestus LAN TLS PFX
+# (already copied into panel user data before embed). Remote machines only decode/install; they never touch panel paths.
 . ./consts_body.ps1
 . ./consts_cert.ps1
 . ./utils.ps1

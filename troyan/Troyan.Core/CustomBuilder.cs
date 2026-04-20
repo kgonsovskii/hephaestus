@@ -172,11 +172,6 @@ _SERVER
         }
     }
 
-    protected string PfxFile(string domain)
-    {
-        return Path.Combine(L.CertDir, domain + ".pfx");
-    }
-
     static (string Head, string Body) ExtractHeadAndBody(string input)
     {
         var lines = input.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);

