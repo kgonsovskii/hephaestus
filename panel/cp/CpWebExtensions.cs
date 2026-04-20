@@ -61,15 +61,44 @@ public static class CpWebExtensions
 
         public static WebApplication UseCpSite(this WebApplication app)
     {
-        var prefix = new PathString(CpSettings.SitePathPrefix);
+        var botPrefix = new PathString(CpSettings.BotSitePathPrefix);
         app.UseWhen(
-            ctx => ctx.Request.Path.StartsWithSegments(prefix, StringComparison.OrdinalIgnoreCase, out _, out _),
+            ctx => ctx.Request.Path.StartsWithSegments(botPrefix, StringComparison.OrdinalIgnoreCase, out _, out _),
+            branch =>
+            {
+                branch.Use(RewriteBotPrefix);
+                ConfigureCpBranch(branch);
+            });
+
+        var cpPrefix = new PathString(CpSettings.SitePathPrefix);
+        app.UseWhen(
+            ctx => ctx.Request.Path.StartsWithSegments(cpPrefix, StringComparison.OrdinalIgnoreCase, out _, out _),
             branch =>
             {
                 branch.Use(RewriteCpPrefix);
                 ConfigureCpBranch(branch);
             });
         return app;
+    }
+
+        private static async Task RewriteBotPrefix(HttpContext context, RequestDelegate next)
+    {
+        var prefix = new PathString(CpSettings.BotSitePathPrefix);
+        if (!context.Request.Path.StartsWithSegments(prefix, StringComparison.OrdinalIgnoreCase, out var matched, out var remaining))
+        {
+            await next(context).ConfigureAwait(false);
+            return;
+        }
+
+        PathString rest = remaining;
+        if (!rest.HasValue || string.IsNullOrEmpty(rest.Value))
+            rest = new PathString("/");
+        else if (rest.Value![0] != '/')
+            rest = new PathString("/" + rest.Value);
+
+        context.Request.Path = new PathString("/Bot").Add(rest);
+        context.Request.PathBase = context.Request.PathBase.Add(matched);
+        await next(context).ConfigureAwait(false);
     }
 
         private static async Task RewriteCpPrefix(HttpContext context, RequestDelegate next)

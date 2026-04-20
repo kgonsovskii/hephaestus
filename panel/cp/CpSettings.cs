@@ -2,7 +2,9 @@ namespace cp;
 
 public static class CpSettings
 {
-        public const string SitePathPrefix = "/cp";
+    public const string SitePathPrefix = "/cp";
+
+    public const string BotSitePathPrefix = "/bot";
 
     public static string SuperHost => Environment.GetEnvironmentVariable("SuperHost", EnvironmentVariableTarget.Machine)!;
 

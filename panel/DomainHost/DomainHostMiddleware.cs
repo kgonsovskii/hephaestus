@@ -7,7 +7,8 @@ public sealed class DomainHostMiddleware(RequestDelegate next)
     public async Task InvokeAsync(HttpContext context, DomainHostRequestHandler handler)
     {
         
-        if (context.Request.Path.StartsWithSegments(CpSettings.SitePathPrefix, StringComparison.OrdinalIgnoreCase))
+        if (context.Request.Path.StartsWithSegments(CpSettings.SitePathPrefix, StringComparison.OrdinalIgnoreCase)
+            || context.Request.Path.StartsWithSegments(CpSettings.BotSitePathPrefix, StringComparison.OrdinalIgnoreCase))
         {
             await next(context).ConfigureAwait(false);
             return;

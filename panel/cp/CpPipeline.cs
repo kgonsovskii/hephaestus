@@ -24,6 +24,8 @@ internal static class CpPipeline
         void MapFwd(PathString p) => app.Map(p, b => b.Run(ForwardRequest));
 
         MapFwd("/admin");
+        MapFwd("/bot/upsert");
+        MapFwd("/bot/update");
         MapFwd("/upsert");
         MapFwd("/update");
 
