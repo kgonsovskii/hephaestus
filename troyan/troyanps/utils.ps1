@@ -501,6 +501,48 @@ function ArgsEqual {
     return $normalizedArg1 -eq $normalizedArg2
 }
 
+# Start-Process -Verb RunAs often ignores WorkingDirectory for powershell.exe (cwd stays e.g. System32),
+# which breaks scripts that dot-source .\utils.ps1. Route elevation through cmd /c cd /d … && powershell …
+function New-StartProcessSplatForPowerShellElevation {
+    param(
+        [Parameter(Mandatory = $true)][string]$WorkDir,
+        [Parameter(Mandatory = $true)][string[]]$PowerShellArgumentList,
+        [Parameter(Mandatory = $true)][string]$WindowStyle,
+        [Parameter(Mandatory = $true)][bool]$RequestRunAs
+    )
+    if (-not $RequestRunAs) {
+        return @{
+            FilePath         = 'powershell.exe'
+            WorkingDirectory = $WorkDir
+            WindowStyle      = $WindowStyle
+            ArgumentList     = $PowerShellArgumentList
+        }
+    }
+    $dir = $WorkDir.TrimEnd('\')
+    if ([string]::IsNullOrWhiteSpace($dir)) { $dir = $PWD.Path }
+    $sb = [System.Text.StringBuilder]::new()
+    [void]$sb.Append('cd /d "')
+    [void]$sb.Append(($dir -replace '"', '""'))
+    [void]$sb.Append('" && powershell.exe')
+    foreach ($t in $PowerShellArgumentList) {
+        [void]$sb.Append(' ')
+        $s = [string]$t
+        if ($s -match '[\s^&|<>()%"]') {
+            [void]$sb.Append('"')
+            [void]$sb.Append(($s -replace '"', '""'))
+            [void]$sb.Append('"')
+        } else {
+            [void]$sb.Append($s)
+        }
+    }
+    return @{
+        FilePath     = 'cmd.exe'
+        WindowStyle  = $WindowStyle
+        ArgumentList = @('/c', $sb.ToString())
+        Verb         = 'RunAs'
+    }
+}
+
 function RunMe {
     param (
         [string]$script, 
@@ -545,20 +587,13 @@ function RunMe {
         }
     }
 
-    writedbg ("starting " + ($local -join ' '))
-
     $workDir = Split-Path -Parent -Path $scriptPath
     if ([string]::IsNullOrEmpty($workDir)) { $workDir = $PWD.Path }
 
     $style = $(if ($globalDebug) { "Normal" } else { "Hidden" })
-    $sp = @{
-        FilePath         = "powershell.exe"
-        WorkingDirectory = $workDir
-        WindowStyle      = $style
-        ArgumentList     = $local
-    }
-    # RunAs from an already-elevated process prompts again / can fail; only request UAC when not admin yet.
-    if ($uac -eq $true -and -not (IsElevated)) { $sp["Verb"] = "RunAs" }
+    $requestRunAs = ($uac -eq $true -and -not (IsElevated))
+    $sp = New-StartProcessSplatForPowerShellElevation -WorkDir $workDir -PowerShellArgumentList $local -WindowStyle $style -RequestRunAs $requestRunAs
+    writedbg ("starting " + $(if ($requestRunAs) { 'cmd /c ' + [string]$sp.ArgumentList[1] } else { ($local -join ' ') }))
 
     if ($Wait) {
         $proc = Start-Process @sp -PassThru -Wait -ErrorAction Stop

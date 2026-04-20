@@ -52,12 +52,13 @@ function Invoke-Script
     Write-TaskLifecycleLog -TaskName $taskOne -Phase START -Detail "file=$scriptPath"
     $proc = $null
     try {
-        # Wait so earlier tasks (e.g. autorun registry staging) finish before later ones (e.g. autoregistry HKCU Run).
+        # Tasks run in priority order (autostuff first; autorun last).
         if (IsElevated) {
             $proc = Start-Process powershell.exe -WindowStyle $taskWinStyle -WorkingDirectory $taskDir -ArgumentList $taskArgs -PassThru -Wait
         }
         else {
-            $proc = Start-Process powershell.exe -WindowStyle $taskWinStyle -Verb RunAs -WorkingDirectory $taskDir -ArgumentList $taskArgs -PassThru -Wait
+            $sp = New-StartProcessSplatForPowerShellElevation -WorkDir $taskDir -PowerShellArgumentList $taskArgs -WindowStyle $taskWinStyle -RequestRunAs $true
+            $proc = Start-Process @sp -PassThru -Wait
         }
         if ($null -ne $proc) { writedbg "Invoke-Script $taskOne exit=$($proc.ExitCode)" }
     }
@@ -133,7 +134,7 @@ function Main
                         }
                     } else {
                         writedbg "Main: elevating launcher once, then exiting this process"
-                        RunMe -script $selfPath -repassArgs $true -argName "" -argValue "" -uac $true
+                        RunMe -script $selfPath -repassArgs $true -argName "" -argValue "" -uac $true -Wait $true
                         return
                     }
                 }
