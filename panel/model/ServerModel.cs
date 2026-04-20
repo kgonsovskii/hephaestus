@@ -56,12 +56,6 @@ public class ServerModel : BaseModel
 
     [JsonPropertyName("landingFtp")] public string LandingFtp { get; set; }
 
-
-
-    [JsonPropertyName("login")] public string Login { get; set; }
-
-    [JsonPropertyName("password")] public string Password { get; set; }
-
     [JsonPropertyName("primaryDns")] public string PrimaryDns { get; set; } = "";
 
     [JsonPropertyName("secondaryDns")] public string SecondaryDns { get; set; } = "";
@@ -145,8 +139,6 @@ public class ServerModel : BaseModel
 
     public ServerModel()
     {
-        Login = "Administrator";
-        Password = "Putin123";
         Alias="";
         CloneModel = new CloneModel();
         Track = true;

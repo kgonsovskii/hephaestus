@@ -33,17 +33,6 @@
             <label asp-for="CloneServerIp" class="form-label">Server IP</label>
             <input asp-for="CloneServerIp" name="CloneServerIp" value="@Model.CloneServerIp" id="cloneServerIp" class="form-control" />
         </div>
-        <div class="col-md-6">
-            <label asp-for="CloneUser" class="form-label">User</label>
-            <input asp-for="CloneUser" name="CloneUser" value="@Model.CloneUser" id="cloneUser" class="form-control" />
-        </div>
-    </div>
-
-    <div class="row mt-3">
-        <div class="col-md-6">
-            <label asp-for="ClonePassword" class="form-label">Password</label>
-            <input asp-for="ClonePassword" name="ClonePassword" value="@Model.ClonePassword" id="clonePassword" type="password" class="form-control" />
-        </div>
     </div>
 
     <div class="row mt-3">
@@ -66,8 +55,6 @@
     const pathBase = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Context.Request.PathBase.Value ?? ""));
 
     const CK_SERVER = "newway_clone_server";
-    const CK_USER = "newway_clone_user";
-    const CK_PASSWORD = "newway_clone_password";
 
     function cookiePath() {
         const pb = pathBase || "";
@@ -100,23 +87,15 @@
 
     function hydrateFromCookies() {
         const s = getCookie(CK_SERVER);
-        const u = getCookie(CK_USER);
-        const pw = getCookie(CK_PASSWORD);
         if (s) document.getElementById("cloneServerIp").value = s;
-        if (u) document.getElementById("cloneUser").value = u;
-        if (pw) document.getElementById("clonePassword").value = pw;
     }
 
     function saveCloneFieldsToCookies() {
         setCookie(CK_SERVER, document.getElementById("cloneServerIp").value);
-        setCookie(CK_USER, document.getElementById("cloneUser").value);
-        setCookie(CK_PASSWORD, document.getElementById("clonePassword").value);
     }
 
-    ["cloneServerIp", "cloneUser", "clonePassword"].forEach(function (id) {
-        const el = document.getElementById(id);
-        if (el) el.addEventListener("change", saveCloneFieldsToCookies);
-    });
+    const serverIpEl = document.getElementById("cloneServerIp");
+    if (serverIpEl) serverIpEl.addEventListener("change", saveCloneFieldsToCookies);
 
     hydrateFromCookies();
 
@@ -207,8 +186,6 @@
 
     startBtn.addEventListener("click", async function () {
         const serverIp = document.getElementById("cloneServerIp").value;
-        const user = document.getElementById("cloneUser").value;
-        const password = document.getElementById("clonePassword").value;
         const logEl = document.getElementById("cloneLog");
         const resultEl = document.getElementById("cloneResult");
         logEl.textContent = "";
@@ -223,7 +200,7 @@
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 credentials: "same-origin",
-                body: JSON.stringify({ cloneServerIp: serverIp, cloneUser: user, clonePassword: password })
+                body: JSON.stringify({ cloneServerIp: serverIp })
             });
             if (!res.ok) {
                 let msg = "HTTP " + res.status;

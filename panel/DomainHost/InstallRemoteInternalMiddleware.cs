@@ -47,10 +47,10 @@ public sealed class InstallRemoteInternalMiddleware
             return;
         }
 
-        if (body is null || string.IsNullOrWhiteSpace(body.Host) || string.IsNullOrWhiteSpace(body.User))
+        if (body is null || string.IsNullOrWhiteSpace(body.Host))
         {
             context.Response.StatusCode = StatusCodes.Status400BadRequest;
-            await context.Response.WriteAsync("host and user are required.", context.RequestAborted).ConfigureAwait(false);
+            await context.Response.WriteAsync("host is required.", context.RequestAborted).ConfigureAwait(false);
             return;
         }
 
@@ -69,7 +69,7 @@ public sealed class InstallRemoteInternalMiddleware
             var code = await RemoteInstallRunner.RunRemoteInstallAsync(
                     sshpass,
                     body.Host.Trim(),
-                    body.User.Trim(),
+                    body.User?.Trim() ?? "",
                     body.Password ?? "",
                     script,
                     async (line, ct) =>

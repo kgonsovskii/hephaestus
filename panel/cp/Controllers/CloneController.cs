@@ -44,7 +44,7 @@ public class CloneController : BaseController
             return BadRequest(new { error = hostErr });
 
         var runId = await _remoteInstall
-            .StartRemoteInstallAsync(model.CloneServerIp, model.CloneUser, model.ClonePassword, cancellationToken)
+            .StartRemoteInstallAsync(model.CloneServerIp, cancellationToken)
             .ConfigureAwait(false);
 
         return Json(new { runId });

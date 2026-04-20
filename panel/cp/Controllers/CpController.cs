@@ -222,8 +222,6 @@ public class CpController : BaseController
             existingModel.SecondaryDns = updatedModel.SecondaryDns;
             existingModel.Alias = updatedModel.Alias;
             existingModel.StrahServer = updatedModel.StrahServer;
-            existingModel.Login = updatedModel.Login;
-            existingModel.Password = updatedModel.Password;
             existingModel.Track = updatedModel.Track;
             existingModel.TrackSerie = updatedModel.TrackSerie;
             existingModel.TrackDesktop = updatedModel.TrackDesktop;
