@@ -16,6 +16,9 @@ public class CpController : BaseController
     private readonly BotController _botController;
     private readonly IDomainHostsChangedSignal _hostsChanged;
     private readonly ITroyanBuildCoordinator _troyanBuildCoordinator;
+    private readonly IDomainMaintenance _domainMaintenance;
+    private readonly IDomainRepository _domainRepository;
+    private readonly DomainCatalog _domainCatalog;
     private readonly ILogger<CpController> _logger;
 
     public CpController(
@@ -26,12 +29,18 @@ public class CpController : BaseController
         IMemoryCache memoryCache,
         IDomainHostsChangedSignal hostsChanged,
         ITroyanBuildCoordinator troyanBuildCoordinator,
+        IDomainMaintenance domainMaintenance,
+        IDomainRepository domainRepository,
+        DomainCatalog domainCatalog,
         ILogger<CpController> logger) : base(serverService, configuration, memoryCache)
     {
         _serviceProvider = serviceProvider;
         _botController = botController;
         _hostsChanged = hostsChanged;
         _troyanBuildCoordinator = troyanBuildCoordinator;
+        _domainMaintenance = domainMaintenance;
+        _domainRepository = domainRepository;
+        _domainCatalog = domainCatalog;
         _logger = logger;
     }
 
@@ -113,7 +122,7 @@ public class CpController : BaseController
     }
 
     [HttpPost]
-    public IActionResult IndexWithServer(
+    public async Task<IActionResult> IndexWithServer(
         ServerModel updatedModel,
         string action,
         IFormFile iconFile,
@@ -144,6 +153,14 @@ public class CpController : BaseController
                 return View("Index", new CpIndexViewModel { Server = existingModel });
             }
 
+            // Single CP apply path: legacy "exe" / empty maps to full apply (server save + domains + DNS + Troyan).
+            if (!string.Equals(action, "reboot", StringComparison.OrdinalIgnoreCase)
+                && !string.Equals(action, "clearstats", StringComparison.OrdinalIgnoreCase))
+            {
+                if (string.IsNullOrWhiteSpace(action)
+                    || string.Equals(action, "exe", StringComparison.OrdinalIgnoreCase))
+                    action = "apply";
+            }
 
             if (newEmbeddings != null && newEmbeddings.Count > 0)
             {
@@ -258,12 +275,16 @@ public class CpController : BaseController
                 _hostsChanged.NotifyHostsChanged();
                 try
                 {
+                    var ct = HttpContext?.RequestAborted ?? CancellationToken.None;
+                    var rows = await _domainRepository.LoadEnabledDomainsAsync(ct).ConfigureAwait(false);
+                    _domainCatalog.Replace(rows);
+                    await _domainMaintenance.RunAsync(ct).ConfigureAwait(false);
                     _troyanBuildCoordinator.RunDefaultServerBuild();
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Troyan build after CP apply failed.");
-                    existingModel.PostModel.LastResult = $"{result} (Troyan build: {ex.Message})";
+                    _logger.LogError(ex, "Apply pipeline (domains/DNS/Troyan) after CP save failed.");
+                    existingModel.PostModel.LastResult = $"{result} (Apply: {ex.Message})";
                     return View("Index", new CpIndexViewModel { Server = existingModel });
                 }
             }
