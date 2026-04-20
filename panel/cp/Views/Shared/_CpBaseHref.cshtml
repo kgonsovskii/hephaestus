@@ -1,0 +1,5 @@
+@{
+    var pb = Context.Request.PathBase;
+    var baseHref = pb.HasValue ? pb.ToUriComponent().TrimEnd('/') + "/" : "/";
+}
+<base href="@baseHref" />
