@@ -10,9 +10,6 @@ public sealed class ClonerOptions
     /// <summary>Base URL of DomainHost (no trailing path). Empty = <c>http://127.0.0.1:80</c> (same host).</summary>
     public string DomainHostExecutorBaseUrl { get; set; } = "";
 
-    /// <summary>When non-empty, sent as <c>X-Cloner-Internal-Key</c> and must match <c>DomainHost:ClonerInternalApiKey</c>.</summary>
-    public string DomainHostExecutorApiKey { get; set; } = "";
-
     /// <summary>Skip TLS certificate validation when calling DomainHost over HTTPS.</summary>
     public bool DomainHostExecutorSkipTlsValidation { get; set; }
 }

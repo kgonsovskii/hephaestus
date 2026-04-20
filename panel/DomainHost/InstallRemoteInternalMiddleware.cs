@@ -1,27 +1,23 @@
 using System.Text.Json;
 using Cloner;
-using Commons;
 using InstallRemote;
 using Microsoft.Extensions.Options;
 
 namespace DomainHost;
 
-/// <summary>Runs <see cref="RemoteInstallRunner"/> on DomainHost (Linux: PATH sshpass; Windows: <see cref="SshPassBootstrap"/>). Optional <see cref="DomainHostOptions.ClonerInternalApiKey"/> gate.</summary>
+/// <summary>Runs <see cref="RemoteInstallRunner"/> on DomainHost (Linux: PATH sshpass; Windows: <see cref="SshPassBootstrap"/>).</summary>
 public sealed class InstallRemoteInternalMiddleware
 {
     private readonly RequestDelegate _next;
-    private readonly DomainHostOptions _hostOpts;
     private readonly IOptionsMonitor<ClonerOptions> _clonerOpts;
     private readonly ILogger<InstallRemoteInternalMiddleware> _logger;
 
     public InstallRemoteInternalMiddleware(
         RequestDelegate next,
-        IOptions<DomainHostOptions> hostOpts,
         IOptionsMonitor<ClonerOptions> clonerOpts,
         ILogger<InstallRemoteInternalMiddleware> logger)
     {
         _next = next;
-        _hostOpts = hostOpts.Value;
         _clonerOpts = clonerOpts;
         _logger = logger;
     }
@@ -32,17 +28,6 @@ public sealed class InstallRemoteInternalMiddleware
             || !context.Request.Path.Equals("/internal/install-remote", StringComparison.OrdinalIgnoreCase))
         {
             await _next(context).ConfigureAwait(false);
-            return;
-        }
-
-        var configuredKey = _hostOpts.ClonerInternalApiKey?.Trim() ?? "";
-        if (configuredKey.Length > 0
-            && !string.Equals(
-                context.Request.Headers["X-Cloner-Internal-Key"],
-                configuredKey,
-                StringComparison.Ordinal))
-        {
-            context.Response.StatusCode = StatusCodes.Status404NotFound;
             return;
         }
 

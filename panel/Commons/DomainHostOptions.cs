@@ -37,7 +37,4 @@ public sealed class DomainHostOptions
     public string RepositoryMarkerFileName { get; set; } = null!;
 
     public int RepositoryRootSearchMaxAscents { get; set; }
-
-    /// <summary>When non-empty, <c>POST /internal/install-remote</c> requires header <c>X-Cloner-Internal-Key</c> to match. When empty, the endpoint is open (same-machine happy path).</summary>
-    public string? ClonerInternalApiKey { get; set; }
 }

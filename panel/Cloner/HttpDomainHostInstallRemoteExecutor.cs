@@ -38,9 +38,6 @@ internal sealed partial class HttpDomainHostInstallRemoteExecutor : IClonerInsta
             .TrimEnd('/');
         var url = $"{baseUrl}/internal/install-remote";
         using var req = new HttpRequestMessage(HttpMethod.Post, url);
-        var apiKey = o.DomainHostExecutorApiKey?.Trim() ?? "";
-        if (apiKey.Length > 0)
-            req.Headers.TryAddWithoutValidation("X-Cloner-Internal-Key", apiKey);
         req.Content = JsonContent.Create(new { host = work.Host, user = work.User, password = work.Password });
 
         var client = _httpClientFactory.CreateClient(HttpClientName);

@@ -50,6 +50,7 @@
         <div class="col-md-6 d-flex gap-2 flex-wrap align-items-end">
             <button type="button" class="btn btn-primary" id="cloneServerBtn">Start remote install</button>
             <button type="button" class="btn btn-outline-danger" id="cloneStopBtn" disabled>Stop</button>
+            <button type="button" class="btn btn-outline-secondary" id="scheduleUpdateBtn">Update DomainHost</button>
         </div>
     </div>
 
@@ -61,6 +62,7 @@
 (function () {
     const clonePostUrl = @Html.Raw(System.Text.Json.JsonSerializer.Serialize("clone"));
     const cloneStopUrl = @Html.Raw(System.Text.Json.JsonSerializer.Serialize("clone/stop"));
+    const scheduleUpdateUrl = @Html.Raw(System.Text.Json.JsonSerializer.Serialize("clone/schedule-update"));
     const pathBase = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Context.Request.PathBase.Value ?? ""));
 
     const CK_SERVER = "newway_clone_server";
@@ -120,6 +122,7 @@
 
     const startBtn = document.getElementById("cloneServerBtn");
     const stopBtn = document.getElementById("cloneStopBtn");
+    const scheduleUpdateBtn = document.getElementById("scheduleUpdateBtn");
     let activeWs = null;
     let currentRunId = null;
 
@@ -137,6 +140,43 @@
             activeWs.close();
         activeWs = null;
     }
+
+    scheduleUpdateBtn.addEventListener("click", async function () {
+        const msg = "This will run git pull (discarding local changes to tracked files in the repo on this server) and full reinstall. The panel may be unavailable for up to about 5 minutes. Continue?";
+        if (!confirm(msg))
+            return;
+        const resultEl = document.getElementById("cloneResult");
+        try {
+            scheduleUpdateBtn.disabled = true;
+            const res = await fetch(scheduleUpdateUrl, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                credentials: "same-origin",
+                body: "{}"
+            });
+            const raw = await res.text();
+            if (!res.ok) {
+                let detail = raw;
+                try {
+                    const j = JSON.parse(raw);
+                    if (j && j.error) detail = j.error;
+                } catch (_) { }
+                appendResult('<div class="alert alert-danger mt-2">' + detail + "</div>");
+                return;
+            }
+            let serverMsg = "";
+            try {
+                const j = JSON.parse(raw);
+                if (j && j.message) serverMsg = j.message;
+            } catch (_) { }
+            appendResult('<div class="alert alert-success mt-2"><strong>Update started.</strong> Wait up to about 5 minutes while the server reinstalls. You can monitor <code>/var/log/hephaestus-update.log</code> on the host. ' + (serverMsg ? "<br><span class=\"text-muted small\">" + serverMsg + "</span>" : "") + "</div>");
+        } catch (e) {
+            console.error(e);
+            appendResult('<div class="alert alert-danger mt-2">' + e + "</div>");
+        } finally {
+            scheduleUpdateBtn.disabled = false;
+        }
+    });
 
     stopBtn.addEventListener("click", async function () {
         if (!currentRunId)
