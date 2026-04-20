@@ -21,12 +21,14 @@ public sealed class ClonerRemoteInstallService : IClonerRemoteInstall
 
     internal ChannelReader<RemoteInstallWork> InstallHandoffReader => _installHandoff.Reader;
 
-    public async Task<Guid> StartRemoteInstallAsync(string host, CancellationToken cancellationToken = default)
+    public async Task<Guid> StartRemoteInstallAsync(string host, string user, string password, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(host))
             throw new ArgumentException("Host is required.", nameof(host));
         if (CloneRemoteInstallTarget.ValidateHost(host) is { } hostErr)
             throw new ArgumentException(hostErr, nameof(host));
+        if (string.IsNullOrWhiteSpace(user))
+            throw new ArgumentException("User is required.", nameof(user));
 
         lock (_startLock)
         {
@@ -44,7 +46,7 @@ public sealed class ClonerRemoteInstallService : IClonerRemoteInstall
         var runCts = new CancellationTokenSource();
         _runCancellations[runIdNew] = runCts;
 
-        var work = new RemoteInstallWork(runIdNew, host.Trim(), logCh.Writer, runCts.Token);
+        var work = new RemoteInstallWork(runIdNew, host.Trim(), user.Trim(), password ?? "", logCh.Writer, runCts.Token);
         await _installHandoff.Writer.WriteAsync(work, cancellationToken).ConfigureAwait(false);
         _logger.LogInformation("Cloner: remote install {RunId} for {Host} (background worker)", runIdNew, host);
         return runIdNew;

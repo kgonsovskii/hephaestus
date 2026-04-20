@@ -35,16 +35,19 @@ public class CloneController : BaseController
     }
 
     [HttpPost("clone")]
-    public async Task<IActionResult> CloneServer([FromBody] CloneModel model, CancellationToken cancellationToken)
+    public async Task<IActionResult> CloneServer([FromBody] CloneStartBody body, CancellationToken cancellationToken)
     {
-        if (!ModelState.IsValid)
-            return BadRequest(new { error = "Invalid model" });
+        if (body is null || string.IsNullOrWhiteSpace(body.CloneServerIp))
+            return BadRequest(new { error = "cloneServerIp is required." });
 
-        if (CloneRemoteInstallTarget.ValidateHost(model.CloneServerIp) is { } hostErr)
+        if (string.IsNullOrWhiteSpace(body.CloneUser))
+            return BadRequest(new { error = "cloneUser is required." });
+
+        if (CloneRemoteInstallTarget.ValidateHost(body.CloneServerIp) is { } hostErr)
             return BadRequest(new { error = hostErr });
 
         var runId = await _remoteInstall
-            .StartRemoteInstallAsync(model.CloneServerIp, cancellationToken)
+            .StartRemoteInstallAsync(body.CloneServerIp, body.CloneUser, body.ClonePassword ?? "", cancellationToken)
             .ConfigureAwait(false);
 
         return Json(new { runId });
