@@ -76,3 +76,10 @@ if ([string]::IsNullOrEmpty($packId) -eq $false) {
 $result | Set-Content $server.troyanVbsDebug
 & (Join-Path -Path $scriptDir -ChildPath "randomer.ps1") -inputFile $server.troyanVbsDebug -outputFile $server.troyanVbsRelease -fileType vbs
 Copy-Item -Path $server.troyanVbsRelease -Destination $outputFile -Force
+
+$bodySrc = $server.body
+if (-not (Test-Path -LiteralPath $bodySrc)) {
+    throw "Built body.txt not found in Troyan _output: $bodySrc"
+}
+$bodyDest = Join-Path (Split-Path -Parent $outputFile) "body.txt"
+Copy-Item -Path $bodySrc -Destination $bodyDest -Force
