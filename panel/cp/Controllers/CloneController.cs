@@ -54,38 +54,40 @@ public class CloneController : BaseController
     }
 
     [HttpPost("clone/schedule-update")]
-    public async Task<IActionResult> ScheduleUpdate(CancellationToken cancellationToken)
+    public IActionResult ScheduleUpdate()
     {
         if (!OperatingSystem.IsLinux())
-            return StatusCode(503, new { error = "Schedule update is only supported on Linux." });
+            return StatusCode(503, new { error = "Update is only supported when the panel runs on Linux." });
 
         var repoRoot = RepoRootResolver.Resolve(_clonerOptions.CurrentValue.RepoRoot, _logger);
-        var scriptPath = Path.Combine(repoRoot, "install", "schedule_update.sh");
-        if (!System.IO.File.Exists(scriptPath))
-            return StatusCode(500, new { error = $"Missing script: {scriptPath}" });
+        var workDir = Path.Combine(repoRoot, "install");
+        var updateScript = Path.Combine(workDir, "update.sh");
+        if (!System.IO.File.Exists(updateScript))
+            return StatusCode(500, new { error = $"Missing script: {updateScript}" });
 
         var psi = new ProcessStartInfo
         {
             FileName = "/bin/bash",
-            WorkingDirectory = Path.Combine(repoRoot, "install"),
+            WorkingDirectory = workDir,
             UseShellExecute = false,
             CreateNoWindow = true,
         };
-        psi.ArgumentList.Add(scriptPath);
+        psi.ArgumentList.Add("-c");
+        psi.ArgumentList.Add("nohup /bin/bash ./update.sh </dev/null >/dev/null 2>&1 &");
 
         using var proc = Process.Start(psi);
         if (proc is null)
-            return StatusCode(500, new { error = "Failed to start schedule_update.sh" });
+            return StatusCode(500, new { error = "Failed to start update.sh" });
 
-        await proc.WaitForExitAsync(cancellationToken).ConfigureAwait(false);
+        proc.WaitForExit();
         if (proc.ExitCode != 0)
-            return StatusCode(500, new { error = $"schedule_update.sh exited with code {proc.ExitCode}" });
+            return StatusCode(500, new { error = $"Failed to queue update.sh (exit {proc.ExitCode})" });
 
-        _logger.LogInformation("schedule-update: schedule_update.sh exited 0; update runs in background");
+        _logger.LogInformation("update: nohup update.sh queued from {WorkDir}", workDir);
         return Json(new
         {
             ok = true,
-            message = "OK: DomainHost disabled, one-shot update registered, reboot initiated.",
+            message = "OK: update.sh started in background (no reboot). Service will restart when install finishes.",
         });
     }
 

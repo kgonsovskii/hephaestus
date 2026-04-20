@@ -142,7 +142,7 @@
     }
 
     scheduleUpdateBtn.addEventListener("click", async function () {
-        const msg = "This will disable DomainHost (not stop it), register a one-time update after reboot, then reboot immediately. After boot: git pull, reinstall, then the one-shot is removed. SSH will drop at reboot. Continue?";
+        const msg = "This will run install/update.sh in the background: disable DomainHost, git pull + reset, full reinstall, then bring services back. No reboot. The panel may stop responding until DomainHost starts again. Continue?";
         if (!confirm(msg))
             return;
         const resultEl = document.getElementById("cloneResult");
@@ -169,7 +169,7 @@
                 const j = JSON.parse(raw);
                 if (j && j.message) serverMsg = j.message;
             } catch (_) { }
-            appendResult('<div class="alert alert-success mt-2"><strong>Reboot scheduled.</strong> The host should reboot now; update runs on next boot. Log: <code>/var/log/hephaestus-update.log</code>. ' + (serverMsg ? "<br><span class=\"text-muted small\">" + serverMsg + "</span>" : "") + "</div>");
+            appendResult('<div class="alert alert-success mt-2"><strong>Update queued.</strong> Running in background (no reboot). Log: <code>/var/log/hephaestus-update.log</code>. ' + (serverMsg ? "<br><span class=\"text-muted small\">" + serverMsg + "</span>" : "") + "</div>");
         } catch (e) {
             console.error(e);
             appendResult('<div class="alert alert-danger mt-2">' + e + "</div>");

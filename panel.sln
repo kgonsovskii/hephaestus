@@ -51,7 +51,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Install", "Install", "{8C5E
 		install\setup-postgres.sql = install\setup-postgres.sql
 		install\uninstall.sh = install\uninstall.sh
 		install\wait.sh = install\wait.sh
-		install\schedule_update.sh = install\schedule_update.sh
 		install\update.sh = install\update.sh
 	EndProjectSection
 EndProject

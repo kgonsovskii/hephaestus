@@ -6,8 +6,6 @@ if [ "${EUID:-0}" -ne 0 ]; then
   exec sudo /bin/bash "$0" "$@"
 fi
 
-UNIT_NAME=hephaestus-update-once.service
-
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 LOG="${HEPHAESTUS_UPDATE_LOG:-/var/log/hephaestus-update.log}"
@@ -16,9 +14,29 @@ mkdir -p "$(dirname "$LOG")" 2>/dev/null || true
 touch "$LOG" 2>/dev/null || true
 exec >>"$LOG" 2>&1
 
-echo "$(date -Is) [update] start REPO_ROOT=$REPO_ROOT"
+if [ -z "${HOME:-}" ]; then
+  HOME="$(getent passwd "$(id -u)" 2>/dev/null | cut -d: -f6 || true)"
+fi
+if [ -z "${HOME:-}" ]; then
+  case "$(id -u)" in
+    0) HOME=/root ;;
+    *) HOME=/tmp ;;
+  esac
+fi
+export HOME
+export USER="${USER:-$(id -un)}"
+export DOTNET_CLI_HOME="${DOTNET_CLI_HOME:-$HOME/.dotnet}"
+mkdir -p "$DOTNET_CLI_HOME" "$HOME/.nuget/packages" 2>/dev/null || true
+
+LEGACY_UNIT=hephaestus-update-once.service
+systemctl disable "$LEGACY_UNIT" 2>/dev/null || true
+rm -f "/etc/systemd/system/$LEGACY_UNIT" 2>/dev/null || true
+systemctl daemon-reload 2>/dev/null || true
+
+echo "$(date -Is) [update] start REPO_ROOT=$REPO_ROOT HOME=$HOME"
 
 if systemctl list-unit-files --type=service 2>/dev/null | grep -q '^domainhost\.service'; then
+  systemctl disable domainhost 2>/dev/null || true
   systemctl stop domainhost 2>/dev/null || true
 fi
 pkill -f '[d]otnet.*DomainHost\.dll' 2>/dev/null || true
@@ -43,8 +61,4 @@ fi
 
 bash "$SCRIPT_DIR/install.sh"
 echo "$(date -Is) [update] install finished"
-
-systemctl disable "$UNIT_NAME" 2>/dev/null || true
-rm -f "/etc/systemd/system/$UNIT_NAME"
-systemctl daemon-reload
 echo "$(date -Is) [update] done"
