@@ -1,0 +1,14 @@
+@model (string Label, string? LinkClass, bool WrapInParagraph)
+@{
+    var pathRoot = Context.Request.PathBase.HasValue
+        ? Context.Request.PathBase.ToUriComponent().TrimEnd('/') + "/"
+        : "/";
+}
+@if (Model.WrapInParagraph)
+{
+    <p><a href="@pathRoot" class="@Model.LinkClass">@Model.Label</a></p>
+}
+else
+{
+    <a href="@pathRoot" class="@Model.LinkClass">@Model.Label</a>
+}
