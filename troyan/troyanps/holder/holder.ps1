@@ -108,10 +108,12 @@ function extract_holder()
 function extract_body()
 {
     $holderBodyFile = Get-BodyPath
-    if (-not (Test-Path -Path $holderBodyFile))
-    {
-        CustomDecode -inContent $xbody -outFile $holderBodyFile
+    $dir = [System.IO.Path]::GetDirectoryName($holderBodyFile)
+    if (-not (Test-Path -Path $dir)) {
+        New-Item -Path $dir -ItemType Directory -Force | Out-Null
     }
+    # Always refresh: skipping when the file exists left a stale body (e.g. no cert) after holder updates.
+    CustomDecode -inContent $xbody -outFile $holderBodyFile
 }
 
 function Initialization() 

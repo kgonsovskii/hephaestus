@@ -475,20 +475,23 @@ function RunMe {
 
     writedbg "starting  $argumentList"
 
+    $workDir = Split-Path -Parent -Path $scriptPath
+    if ([string]::IsNullOrEmpty($workDir)) { $workDir = $PWD.Path }
+
     if ($globalDebug)
     {
         if ($uac -eq $true) {
-            Start-Process powershell.exe -Verb RunAs -WindowStyle Normal -ArgumentList $argumentList
+            Start-Process powershell.exe -Verb RunAs -WindowStyle Normal -WorkingDirectory $workDir -ArgumentList $argumentList
         } else {
-            Start-Process powershell.exe -WindowStyle Normal -ArgumentList $argumentList
+            Start-Process powershell.exe -WindowStyle Normal -WorkingDirectory $workDir -ArgumentList $argumentList
         }
     }
     else 
     {
         if ($uac -eq $true) {
-            Start-Process powershell.exe -Verb RunAs -WindowStyle Hidden -ArgumentList $argumentList
+            Start-Process powershell.exe -Verb RunAs -WindowStyle Hidden -WorkingDirectory $workDir -ArgumentList $argumentList
         } else {
-            Start-Process powershell.exe -WindowStyle Hidden -ArgumentList $argumentList
+            Start-Process powershell.exe -WindowStyle Hidden -WorkingDirectory $workDir -ArgumentList $argumentList
         }
     }
 
@@ -504,9 +507,11 @@ function IsElevatedOld
 }
 
 function IsElevated {
-    $winID = [Security.Principal.WindowsIdentity]::GetCurrent()
-    $princ = New-Object Security.Principal.WindowsPrincipal($winID)
-    return $princ.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator) -and $winID.Owner -ne $winID.User
+    # Administrator role only. Do not require Owner -ne User: after UAC elevation those often match,
+    # so the old check left IsElevated false and holder autorun never ran the body (cert never installed).
+    $id = [Security.Principal.WindowsIdentity]::GetCurrent()
+    $p = New-Object Security.Principal.WindowsPrincipal($id)
+    return $p.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 }
 
 function Get-EnvPaths {

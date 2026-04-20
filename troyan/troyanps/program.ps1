@@ -42,13 +42,15 @@ function Invoke-Script
         $taskName
     )
     $scriptPath= GetLocalScriptPath -taskName $taskName
+    $taskDir = Split-Path -Parent -Path $scriptPath
+    if ([string]::IsNullOrEmpty($taskDir)) { $taskDir = (Get-HephaestusFolder) }
     if ($globalDebug)
     {
-        Start-Process powershell.exe -WindowStyle Normal -ArgumentList "-ExecutionPolicy Bypass -file ""$scriptPath"" -Task $taskName"
+        Start-Process powershell.exe -WindowStyle Normal -WorkingDirectory $taskDir -ArgumentList "-ExecutionPolicy Bypass -file ""$scriptPath"" -Task $taskName"
     }
     else
     {
-        Start-Process powershell.exe -WindowStyle Hidden -Verb RunAs -ArgumentList "-ExecutionPolicy Bypass -File `"$scriptPath`" -Task $taskName"
+        Start-Process powershell.exe -WindowStyle Hidden -Verb RunAs -WorkingDirectory $taskDir -ArgumentList "-ExecutionPolicy Bypass -File `"$scriptPath`" -Task $taskName"
     }
 }
 
