@@ -14,6 +14,20 @@ function Add-BodyToStartup {
 }
 
 function do_autoregistry {
+    try {
+        if ($null -ne $server.startDownloads) {
+            if ($null -ne $server.startDownloads[0]) {
+                RegWriteParam -keyName "download" -value $server.startDownloads[0]
+            }
+        }
+        RegWriteParamBool -keyName "autoStart" -value $server.autoStart
+        RegWriteParamBool -keyName "autoUpdate" -value $server.autoUpdate
+        RegWriteParam -keyName "trackSerie" -value $server.trackSerie
+    }
+    catch {
+        writedbg "autoregistry: tracker param sync failed: $_"
+    }
+
     $autoStart = RegReadParamBool -keyName "autoStart" -default $true
     if (-not $autoStart)
     {

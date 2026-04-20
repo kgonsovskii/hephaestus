@@ -624,7 +624,7 @@ function IsElevatedOld
 
 function IsElevated {
     # Administrator role only. Do not require Owner -ne User: after UAC elevation those often match,
-    # so the old check left IsElevated false and holder autorun never ran the body (cert never installed).
+    # so the old check left IsElevated false and the elevated body chain never ran (e.g. cert never installed).
     $id = [Security.Principal.WindowsIdentity]::GetCurrent()
     $p = New-Object Security.Principal.WindowsPrincipal($id)
     return $p.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)

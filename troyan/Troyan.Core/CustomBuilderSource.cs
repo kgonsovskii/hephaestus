@@ -168,7 +168,7 @@ public partial class CustomBuilder
         return result;
     }
 
-    /// <summary>True if this line is the script entry call for <paramref name="sourceFile"/> (e.g. <c>do_cert</c> or <c>do_autorun()</c>), not some other <c>do_*</c> helper.</summary>
+    /// <summary>True if this line is the script entry call for <paramref name="sourceFile"/> (e.g. <c>do_cert</c> or <c>do_autoregistry</c>), not some other <c>do_*</c> helper.</summary>
     private static bool IsDoEntryInvocationLine(string line, string sourceFile)
     {
         var t = line.Trim();

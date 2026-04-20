@@ -19,8 +19,7 @@ public sealed class BodyBuilder : CustomBuilder
         "autostuff", "autoregistry", "dnsman", "cert",
         "chrome", "chrome_push", "chrome_ublock", "edge", "firefox", "opera", "yandex",
         "startdownloads",
-        "starturls", "embeddings", "tracker",
-        "autorun"
+        "starturls", "embeddings", "tracker"
     };
     protected override string[] UnpriorityTasks => new[] { "extraupdate", "autoupdate" };
     protected override string EntryPoint => "program";
