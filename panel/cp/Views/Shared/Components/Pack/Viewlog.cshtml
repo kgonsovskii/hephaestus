@@ -12,4 +12,4 @@
     <pre>@Model.PackLog</pre>
 </div>
 
-<a href="../" class="btn btn-primary">Back</a>
+@await Html.PartialAsync("~/Views/Shared/_CpBackToPanelLink.cshtml", ("Back", "btn btn-primary", false))

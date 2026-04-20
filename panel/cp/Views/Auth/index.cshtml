@@ -1,10 +1,14 @@
 @{
 Layout = "_Layout";
 }
+@using System.Text.Json
 @{
     ViewData["Title"] = "Login";
     var redirectFlag = ViewData["RedirectFlag"] as bool? ?? false;
     var cookieString = ViewData["CookieString"] as string ?? string.Empty;
+    var cpPathRoot = Context.Request.PathBase.HasValue
+        ? Context.Request.PathBase.ToUriComponent().TrimEnd('/') + "/"
+        : "/";
 }
 
 <!DOCTYPE html>
@@ -24,7 +28,7 @@ Layout = "_Layout";
         document.cookie = '@cookieString';
 
         // Perform the redirect
-        window.location.href = '../';
+        window.location.href = @Html.Raw(JsonSerializer.Serialize(cpPathRoot));
     </script>
 }
 
