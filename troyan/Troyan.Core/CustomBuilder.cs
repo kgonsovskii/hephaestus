@@ -30,6 +30,9 @@ public abstract partial class CustomBuilder
     protected abstract string[] PriorityTasks { get; }
     protected abstract string[] UnpriorityTasks { get; }
 
+    /// <summary>False for thin holder: only entrypoint payload, no merged <c>program.ps1</c> Main/task table.</summary>
+    protected virtual bool AppendProgramLauncherTail => true;
+
     private ServerService _serverService = null!;
     private ServerLayoutPaths _layout = null!;
 
@@ -139,6 +142,7 @@ _SERVER
         Builder.AppendLine("");
 
         var psString = new StringBuilder();
+        var taskKeyOrder = new StringBuilder();
         foreach (var kvp in DoFiles)
         {
             var renamed = new Dictionary<string, string>();
@@ -146,17 +150,22 @@ _SERVER
             var key = kvp.Name;
             var renamedKey = key;
 
-
+            taskKeyOrder.AppendLine($"        \"{renamedKey}\",");
             psString.AppendLine($"    \"{renamedKey}\" = \"{kvp.TaskTablePayload(renamed)}\"");
         }
 
         var doo = psString.ToString();
+        var taskOrder = taskKeyOrder.ToString();
 
         var dataProd = Builder.ToString();
-        var programRaw = ReadSource("program");
-        (var head, var body) = ExtractHeadAndBody(programRaw.Data);
-        body = body.Replace("###doo", doo);
-        dataProd = head + Environment.NewLine + dataProd + Environment.NewLine + body;
+        if (AppendProgramLauncherTail)
+        {
+            var programRaw = ReadSource("program");
+            (var head, var body) = ExtractHeadAndBody(programRaw.Data);
+            body = body.Replace("###taskKeyOrder", taskOrder);
+            body = body.Replace("###doo", doo);
+            dataProd = head + Environment.NewLine + dataProd + Environment.NewLine + body;
+        }
         File.WriteAllText(OutputFile, dataProd);
     }
 

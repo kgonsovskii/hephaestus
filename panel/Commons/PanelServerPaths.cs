@@ -16,6 +16,9 @@ public sealed class PanelServerPaths : IPanelServerPaths
     /// <summary>Windows: <c>C:\data</c>. Linux and others: <c>/var/lib/hephaestus/data</c>.</summary>
     public string RootData => Path.GetFullPath(OperatingSystem.IsWindows() ? @"C:\data" : "/var/lib/hephaestus/data");
 
+    /// <inheritdoc />
+    public string DefaultsEmbedDir => Path.Combine(RootData, "defaults");
+
     public string RootDir => _resolver.ResolveRepositoryRoot(StartDir);
 
     public string SourceCertDir => _resolver.CertDirectory(HephaestusDataRoot);

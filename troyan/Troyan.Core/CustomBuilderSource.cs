@@ -33,7 +33,7 @@ public partial class CustomBuilder
     {
         var files = Directory.GetFiles(SourceDir)
             .Select(Path.GetFileNameWithoutExtension)
-            .ToArray().Except(new[] { "program", "header", "footer", "dynamic" })!
+            .ToArray().Except(new[] { "program", "header", "footer", "dynamic", "consts_autoextract" })!
             .SortWithPriority(PriorityTasks, UnpriorityTasks)
             .ToList();
         return files.Select(a => new SourceFile(a, this)).ToList();
@@ -115,7 +115,7 @@ public partial class CustomBuilder
         {
             result.Data = $"Write-Host '{sourceFile}'" + Environment.NewLine;
             result.Data += data;
-            result.Data += Environment.NewLine + $"do_{sourceFile}";
+            // do_<name> must be invoked once at end of each source .ps1 (not appended here — avoids double-run / double UAC).
             result.Data += Environment.NewLine;
             result.Data += "if ($globalDebug)";
             result.Data += "{";
