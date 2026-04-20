@@ -51,6 +51,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Install", "Install", "{8C5E
 		install\setup-postgres.sql = install\setup-postgres.sql
 		install\uninstall.sh = install\uninstall.sh
 		install\wait.sh = install\wait.sh
+		install\schedule_update.sh = install\schedule_update.sh
+		install\update.sh = install\update.sh
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Install", ".\install\Install\Install.csproj", "{5D616E6D-7931-4CE0-AEED-638388B000EF}"
