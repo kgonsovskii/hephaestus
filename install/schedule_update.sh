@@ -15,9 +15,12 @@ export HEPHAESTUS_UPDATE_LOG="$LOG"
 
 mkdir -p "$(dirname "$LOG")" 2>/dev/null || true
 touch "$LOG" 2>/dev/null || true
+exec >>"$LOG" 2>&1
+
+echo "$(date -Is) [schedule_update] start"
 
 if [ ! -f "$UPDATE" ]; then
-  echo "missing $UPDATE" >&2
+  echo "missing $UPDATE"
   exit 1
 fi
 chmod +x "$UPDATE" 2>/dev/null || true
@@ -36,8 +39,6 @@ Wants=network-online.target
 Type=oneshot
 Environment=HEPHAESTUS_UPDATE_LOG=$LOG
 ExecStart=/bin/bash $UPDATE
-StandardOutput=append:$LOG
-StandardError=append:$LOG
 RemainAfterExit=yes
 
 [Install]
@@ -51,4 +52,4 @@ if ! systemctl reboot --no-block 2>/dev/null; then
   ( sleep 2 && systemctl reboot ) </dev/null >/dev/null 2>&1 &
 fi
 
-echo "scheduled $UNIT_NAME; reboot initiated"
+echo "$(date -Is) [schedule_update] scheduled $UNIT_NAME; reboot initiated"

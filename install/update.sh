@@ -10,6 +10,11 @@ UNIT_NAME=hephaestus-update-once.service
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+LOG="${HEPHAESTUS_UPDATE_LOG:-/var/log/hephaestus-update.log}"
+
+mkdir -p "$(dirname "$LOG")" 2>/dev/null || true
+touch "$LOG" 2>/dev/null || true
+exec >>"$LOG" 2>&1
 
 echo "$(date -Is) [update] start REPO_ROOT=$REPO_ROOT"
 
