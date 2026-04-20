@@ -5,6 +5,8 @@ export DEBIAN_FRONTEND=noninteractive
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 readonly INSTALL_PROJ="$REPO_ROOT/install/Install/Install.csproj"
+readonly TECHNI_ROOT=/opt/technitium
+readonly INSTALL_DIR="${TECHNI_ROOT}/dns"
 
 if [ "${EUID:-0}" -ne 0 ]; then
   echo "Run as root: sudo $0" >&2
@@ -32,12 +34,18 @@ if [ ! -f "$INSTALL_PROJ" ]; then
   exit 1
 fi
 
+if [ "${INSTALL_DNS_FORCE:-0}" != "1" ] \
+    && systemctl is-active --quiet dns.service 2>/dev/null \
+    && [ -d "$INSTALL_DIR" ] \
+    && compgen -G "$INSTALL_DIR"/*.dll >/dev/null 2>&1; then
+  echo "[dns] dns.service active and $INSTALL_DIR has binaries — skipping Technitium install."
+  exit 0
+fi
+
 echo "[dns 1] Build hephaestus-install (Technitium password from panel/Commons/appsettings.json)"
 dotnet build "$INSTALL_PROJ" -c Release -v minimal
 
-readonly TECHNI_ROOT=/opt/technitium
 readonly BUILD_DIR="${TECHNI_ROOT}/build"
-readonly INSTALL_DIR="${TECHNI_ROOT}/dns"
 
 mkdir -p "${BUILD_DIR}"
 cd "${BUILD_DIR}"

@@ -72,7 +72,7 @@ public static class ServerNetworkRefinement
         a.AddressFamily == AddressFamily.InterNetwork &&
         a.ToString().StartsWith("169.", StringComparison.Ordinal);
 
-    /// <summary>Fills <see cref="ServerModel.ServerIp"/> when blank (public then private, else loopback). Fills DNS only from public IPs when blank; otherwise leaves DNS empty.</summary>
+    /// <summary>Fills <see cref="ServerModel.ServerIp"/> when blank (public then private, else loopback). Fills DNS from public IPs when blank; secondary equals primary when only one public IP.</summary>
     public static void FillIfUnset(ServerModel server)
     {
         var ips = GetOrderedCandidateIpv4Strings();
@@ -84,7 +84,7 @@ public static class ServerNetworkRefinement
         if (string.IsNullOrWhiteSpace(server.PrimaryDns) && publicIps.Count > 0)
             server.PrimaryDns = publicIps[0];
 
-        if (string.IsNullOrWhiteSpace(server.SecondaryDns) && publicIps.Count >= 2)
-            server.SecondaryDns = publicIps[1];
+        if (string.IsNullOrWhiteSpace(server.SecondaryDns) && publicIps.Count > 0)
+            server.SecondaryDns = publicIps.Count >= 2 ? publicIps[1] : publicIps[0];
     }
 }
