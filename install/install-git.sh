@@ -9,5 +9,9 @@ if [ "${EUID:-0}" -ne 0 ]; then
   exit 1
 fi
 
-apt-get update
-apt-get install -y git ca-certificates
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=wait-for-apt-dpkg-lock.sh
+. "$SCRIPT_DIR/wait-for-apt-dpkg-lock.sh"
+
+apt_get update
+apt_get install -y git ca-certificates

@@ -16,8 +16,11 @@ if [ ! -f "$SQL" ]; then
   exit 1
 fi
 
-apt-get update
-apt-get install -y postgresql postgresql-client
+# shellcheck source=wait-for-apt-dpkg-lock.sh
+. "$SCRIPT_DIR/wait-for-apt-dpkg-lock.sh"
+
+apt_get update
+apt_get install -y postgresql postgresql-client
 
 run_as_postgres() {
   if [ "${EUID:-0}" -eq 0 ]; then

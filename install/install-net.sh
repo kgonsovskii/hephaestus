@@ -11,19 +11,23 @@ if [ "${EUID:-0}" -ne 0 ]; then
   exit 1
 fi
 
-apt-get update
-apt-get install -y software-properties-common
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=wait-for-apt-dpkg-lock.sh
+. "$SCRIPT_DIR/wait-for-apt-dpkg-lock.sh"
+
+apt_get update
+apt_get install -y software-properties-common
 
 if ! dpkg-query -W -f='${Status}' dotnet-sdk-9.0 2>/dev/null | grep -q 'install ok installed'; then
   add-apt-repository -y ppa:dotnet/backports
-  apt-get update
+  apt_get update
 fi
 
 # Install SDK and matching shared runtimes together. Ubuntu/PPA splits can leave
 # dotnet-sdk newer than Microsoft.NETCore.App (e.g. sdk wants 9.0.15, only 9.0.14 on disk).
-apt-get install -y dotnet-sdk-9.0 dotnet-runtime-9.0 aspnetcore-runtime-9.0
+apt_get install -y dotnet-sdk-9.0 dotnet-runtime-9.0 aspnetcore-runtime-9.0
 
-apt-get install -y --only-upgrade \
+apt_get install -y --only-upgrade \
   dotnet-host \
   dotnet-runtime-9.0 \
   aspnetcore-runtime-9.0 \
@@ -42,4 +46,4 @@ if ! dotnet --info >/dev/null 2>&1; then
 fi
 
 # Optional for DNS-over-QUIC / HTTP/3; safe to skip if unavailable
-apt-get install -y libmsquic || true
+apt_get install -y libmsquic || true
