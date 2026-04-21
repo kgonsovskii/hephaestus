@@ -1,6 +1,8 @@
 using Commons;
 using Db;
 using Domain;
+using LandingFtp;
+using TroyanMaintenance;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -14,6 +16,7 @@ public sealed class RefinerBackgroundService : BackgroundService
     private readonly IStatsMaintenance _statsMaintenance;
     private readonly IDomainMaintenance _domainMaintenance;
     private readonly ITroyanBuildMaintenance _troyanMaintenance;
+    private readonly ILandingFtpMaintenance _landingFtpMaintenance;
     private readonly IDomainHostsChangedSignal _hostsChanged;
 
     public RefinerBackgroundService(
@@ -22,6 +25,7 @@ public sealed class RefinerBackgroundService : BackgroundService
         IStatsMaintenance statsMaintenance,
         IDomainMaintenance domainMaintenance,
         ITroyanBuildMaintenance troyanMaintenance,
+        ILandingFtpMaintenance landingFtpMaintenance,
         IDomainHostsChangedSignal hostsChanged)
     {
         _logger = logger;
@@ -29,6 +33,7 @@ public sealed class RefinerBackgroundService : BackgroundService
         _statsMaintenance = statsMaintenance;
         _domainMaintenance = domainMaintenance;
         _troyanMaintenance = troyanMaintenance;
+        _landingFtpMaintenance = landingFtpMaintenance;
         _hostsChanged = hostsChanged;
     }
 
@@ -37,7 +42,8 @@ public sealed class RefinerBackgroundService : BackgroundService
         await Task.WhenAll(
                 RunLoopAsync(_statsMaintenance, () => _options.CurrentValue.StatsInterval, "stats", stoppingToken),
                 RunDomainLoopWithWakeAsync(stoppingToken),
-                RunTroyanLoopWithWakeAsync(stoppingToken))
+                RunTroyanLoopWithWakeAsync(stoppingToken),
+                RunLandingFtpLoopWithWakeAsync(stoppingToken))
             .ConfigureAwait(false);
     }
 
@@ -104,6 +110,42 @@ public sealed class RefinerBackgroundService : BackgroundService
                 {
                     linked.Cancel();
                     _hostsChanged.DrainExtraTroyanSignals();
+                }
+            }
+            catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+            {
+                break;
+            }
+        }
+    }
+
+    private async Task RunLandingFtpLoopWithWakeAsync(CancellationToken stoppingToken)
+    {
+        while (!stoppingToken.IsCancellationRequested)
+        {
+            try
+            {
+                await _landingFtpMaintenance.RunAsync(stoppingToken).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Refiner {Label} maintenance failed", "landing ftp");
+            }
+
+            var interval = _options.CurrentValue.LandingFtpInterval;
+            if (interval <= TimeSpan.Zero)
+                interval = TimeSpan.FromMinutes(10);
+
+            try
+            {
+                using var linked = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken);
+                var delayTask = Task.Delay(interval, linked.Token);
+                var wakeTask = _hostsChanged.WhenLandingWakeAsync(stoppingToken);
+                var winner = await Task.WhenAny(delayTask, wakeTask).ConfigureAwait(false);
+                if (winner == wakeTask)
+                {
+                    linked.Cancel();
+                    _hostsChanged.DrainExtraLandingSignals();
                 }
             }
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)

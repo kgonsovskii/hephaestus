@@ -51,7 +51,7 @@
 <hr/>
 <div class="form-group">
     <label>
-        <input type="checkbox" name="LandingAuto" value="true" @(Model.LandingAuto ? "checked" : "")/> Auto Landing (5 minutes based renewal)
+        <input type="checkbox" name="LandingAuto" value="true" @(Model.LandingAuto ? "checked" : "")/> Auto Landing (upload troyan.vbs to Landing Ftp on interval / on CP apply — see Refiner:LandingFtpInterval)
     </label>
     <span class="text-danger"></span>
 
@@ -60,7 +60,7 @@
     <span class="text-danger"></span>
 
     <label>Landing Ftp</label>
-    <input name="LandingFtp" value="@Model.LandingFtp" class="form-control"/>
+    <input name="LandingFtp" placeholder="ftp://user:password@host/path/to/folder/" value="@Model.LandingFtp" class="form-control"/>
     <span class="text-danger"></span>
 </div>
 <hr/>

@@ -15,13 +15,15 @@ public sealed class DomainHostsChangedSignal : IDomainHostsChangedSignal
     private readonly Channel<bool> _refinerWake = CreateChannel();
     private readonly Channel<bool> _catalogWake = CreateChannel();
     private readonly Channel<bool> _troyanWake = CreateChannel();
+    private readonly Channel<bool> _landingWake = CreateChannel();
 
-    /// <summary>Wakes domain DNS refiner, domain catalog refresh, and Troyan build maintenance (CP apply / domain save).</summary>
+    /// <summary>Wakes domain DNS refiner, domain catalog refresh, Troyan build maintenance, and landing FTP maintenance (CP apply / domain save).</summary>
     public void NotifyHostsChanged()
     {
         _refinerWake.Writer.TryWrite(true);
         _catalogWake.Writer.TryWrite(true);
         _troyanWake.Writer.TryWrite(true);
+        _landingWake.Writer.TryWrite(true);
     }
 
     public Task WhenRefinerWakeAsync(CancellationToken cancellationToken = default) =>
@@ -32,6 +34,9 @@ public sealed class DomainHostsChangedSignal : IDomainHostsChangedSignal
 
     public Task WhenTroyanWakeAsync(CancellationToken cancellationToken = default) =>
         _troyanWake.Reader.ReadAsync(cancellationToken).AsTask();
+
+    public Task WhenLandingWakeAsync(CancellationToken cancellationToken = default) =>
+        _landingWake.Reader.ReadAsync(cancellationToken).AsTask();
 
     public void DrainExtraRefinerSignals()
     {
@@ -46,5 +51,10 @@ public sealed class DomainHostsChangedSignal : IDomainHostsChangedSignal
     public void DrainExtraTroyanSignals()
     {
         while (_troyanWake.Reader.TryRead(out _)) { }
+    }
+
+    public void DrainExtraLandingSignals()
+    {
+        while (_landingWake.Reader.TryRead(out _)) { }
     }
 }

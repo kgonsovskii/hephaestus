@@ -1,23 +1,20 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Refiner;
+namespace Commons;
 
-public class BooleanStringConverter : JsonConverter<bool>
+/// <summary>JSON converter for boolean values serialized as the strings <c>true</c>/<c>false</c>.</summary>
+public sealed class BooleanStringConverter : JsonConverter<bool>
 {
     public override bool Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         if (reader.TokenType == JsonTokenType.String)
         {
-            string stringValue = reader.GetString();
+            var stringValue = reader.GetString();
             if (string.Equals(stringValue, "true", StringComparison.OrdinalIgnoreCase))
-            {
                 return true;
-            }
-            else if (string.Equals(stringValue, "false", StringComparison.OrdinalIgnoreCase))
-            {
+            if (string.Equals(stringValue, "false", StringComparison.OrdinalIgnoreCase))
                 return false;
-            }
         }
 
         throw new JsonException("Invalid boolean string value");

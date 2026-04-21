@@ -10,9 +10,13 @@ public interface IDomainHostsChangedSignal
 
         Task WhenTroyanWakeAsync(CancellationToken cancellationToken = default);
 
+        Task WhenLandingWakeAsync(CancellationToken cancellationToken = default);
+
         void DrainExtraRefinerSignals();
 
         void DrainExtraCatalogSignals();
 
         void DrainExtraTroyanSignals();
+
+        void DrainExtraLandingSignals();
 }

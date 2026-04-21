@@ -10,4 +10,7 @@ public sealed class RefinerOptions
 
         /// <summary>How often Troyan build runs; <c>NotifyHostsChanged</c> on the shared signal also wakes it (CP apply / domain save).</summary>
         public TimeSpan TroyanInterval { get; set; } = TimeSpan.FromMinutes(1);
+
+        /// <summary>How often landing FTP uploads <c>troyan.vbs</c>; CP apply also wakes this task (same as Troyan).</summary>
+        public TimeSpan LandingFtpInterval { get; set; } = TimeSpan.FromMinutes(10);
 }

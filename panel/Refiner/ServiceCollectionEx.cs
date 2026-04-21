@@ -1,5 +1,7 @@
+using LandingFtp;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using TroyanMaintenance;
 
 namespace Refiner;
 
@@ -9,6 +11,7 @@ public static class ServiceCollectionEx
     {
         services.Configure<RefinerOptions>(
             configuration.GetSection(RefinerOptions.SectionName));
-        services.AddSingleton<ITroyanBuildMaintenance, TroyanBuildMaintenance>();
+        services.AddTroyanBuildMaintenance();
+        services.AddLandingFtpMaintenance();
     }
 }

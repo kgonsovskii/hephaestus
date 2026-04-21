@@ -1,8 +1,7 @@
-using Commons;
 using Microsoft.Extensions.Logging;
 using Troyan.Core;
 
-namespace Refiner;
+namespace TroyanMaintenance;
 
 public sealed class TroyanBuildMaintenance : ITroyanBuildMaintenance
 {
