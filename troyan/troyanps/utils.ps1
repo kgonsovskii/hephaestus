@@ -280,25 +280,46 @@ function Reset-HephaestusDiagLog {
     catch { }
 }
 
-function Test-Arg{ param ([string]$arg)
-    $globalArgs = $global:args -join ' '
-    if ($globalArgs -like "*$arg*") {
-        return $true
+function Get-ScriptInvocationArgs {
+    # Arguments after -File "script.ps1" live in the entry script's scope as $args, not in $global:args.
+    # Inside functions, $args is the function's own argument list, so autostart detection must use Script scope.
+    try {
+        $v = Get-Variable -Name args -Scope Script -ErrorAction Stop
+        if ($null -eq $v.Value) { return @() }
+        return @($v.Value)
     }
-    return $false
-} 
-
-
-function Test-Autostart 
-{
-    return Test-Arg -arg "autostart"
+    catch {
+        if ($null -ne $global:args -and $global:args.Count -gt 0) {
+            return @($global:args)
+        }
+        return @()
+    }
 }
 
+function Test-Arg {
+    param ([string]$arg)
+    $argv = Get-ScriptInvocationArgs
+    if ($argv.Count -eq 0) { return $false }
+    $joined = ($argv | ForEach-Object { "$_" }) -join ' '
+    return $joined -like "*$arg*"
+}
+
+function Test-Autostart {
+    $argv = Get-ScriptInvocationArgs
+    for ($i = 0; $i -lt $argv.Count; $i++) {
+        $t = [string]$argv[$i]
+        if ([string]::IsNullOrWhiteSpace($t)) { continue }
+        if ($t.TrimStart("-").Equals("autostart", [System.StringComparison]::OrdinalIgnoreCase)) {
+            return $true
+        }
+    }
+    return $false
+}
 
 function GetArg {
     param ([string]$arg)
 
-    $globalArgs = $global:args
+    $globalArgs = Get-ScriptInvocationArgs
     $arg = $arg.ToLower()
 
     for ($i = 0; $i -lt $globalArgs.Count; $i++) {
@@ -561,7 +582,7 @@ function RunMe {
     $local = @('-ExecutionPolicy', 'Bypass', '-File', $scriptPath)
 
     if ($repassArgs -eq $true) {
-        $globalArgs = $global:args
+        $globalArgs = Get-ScriptInvocationArgs
         $filteredArgs = @()
         $skipNext = $false
 
