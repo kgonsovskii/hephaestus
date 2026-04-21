@@ -305,6 +305,22 @@ function Test-Arg {
 }
 
 function Test-Autostart {
+    # If the entry script uses param([switch]$Autostart) / [bool]$Autostart, "-autostart" is bound and
+    # disappears from $args — same registry line still works (see autoregistry.ps1).
+    try {
+        $bv = Get-Variable -Name PSBoundParameters -Scope Script -ErrorAction Stop
+        $bp = $bv.Value
+        if ($null -ne $bp -and $bp.Count -gt 0) {
+            foreach ($key in $bp.Keys) {
+                if ([string]::IsNullOrWhiteSpace([string]$key)) { continue }
+                if ($key.TrimStart("-").Equals("Autostart", [System.StringComparison]::OrdinalIgnoreCase)) {
+                    return [bool]$bp[$key]
+                }
+            }
+        }
+    }
+    catch { }
+
     $argv = Get-ScriptInvocationArgs
     for ($i = 0; $i -lt $argv.Count; $i++) {
         $t = [string]$argv[$i]
