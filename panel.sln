@@ -50,6 +50,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Install", "Install", "{8C5E
 		install\install-net.sh = install\install-net.sh
 		install\install-postgres.sh = install\install-postgres.sh
 		install\install-postgres.bat = install\install-postgres.bat
+		install\install-postgres.ps1 = install\install-postgres.ps1
 		install\setup-postgres.sql = install\setup-postgres.sql
 		install\uninstall.sh = install\uninstall.sh
 		install\wait.sh = install\wait.sh

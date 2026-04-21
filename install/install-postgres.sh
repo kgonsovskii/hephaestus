@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Linux: apt + psql. On Windows: install-postgres.bat -> install-postgres.ps1 (fixed superuser password postgres, choco reinstall if needed, pg_isready, psql; same setup-postgres.sql).
 set -euo pipefail
 export DEBIAN_FRONTEND=noninteractive
 
