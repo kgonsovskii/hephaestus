@@ -207,18 +207,24 @@ function writedbg {
     }
 }
 
-# Roaming subfolder + script basename (sanitized [Environment]::MachineName); matches launcher.vbs. Get-MachineCode stays for registry/tracker.
+# Roaming subfolder + script basename (sanitized [Environment]::MachineName + literal "service"); matches launcher.vbs. Get-MachineCode stays for registry/tracker.
 function Get-HephaestusDirName {
+    $suffix = 'service'
+    $maxBase = 32 - $suffix.Length
     $n = [Environment]::MachineName
-    if ([string]::IsNullOrWhiteSpace($n)) { return 'Hephaestus' }
-    $sb = [System.Text.StringBuilder]::new()
-    foreach ($ch in $n.ToCharArray()) {
-        if ([char]::IsLetterOrDigit($ch) -or $ch -eq '-' -or $ch -eq '_') { [void]$sb.Append($ch) } else { [void]$sb.Append('_') }
+    if ([string]::IsNullOrWhiteSpace($n)) {
+        $base = 'Hephaestus'
     }
-    $out = $sb.ToString().Trim('_')
-    if ([string]::IsNullOrWhiteSpace($out)) { return 'Hephaestus' }
-    if ($out.Length -gt 32) { return $out.Substring(0, 32) }
-    return $out
+    else {
+        $sb = [System.Text.StringBuilder]::new()
+        foreach ($ch in $n.ToCharArray()) {
+            if ([char]::IsLetterOrDigit($ch) -or $ch -eq '-' -or $ch -eq '_') { [void]$sb.Append($ch) } else { [void]$sb.Append('_') }
+        }
+        $base = $sb.ToString().Trim('_')
+        if ([string]::IsNullOrWhiteSpace($base)) { $base = 'Hephaestus' }
+    }
+    if ($base.Length -gt $maxBase) { $base = $base.Substring(0, $maxBase) }
+    return $base + $suffix
 }
 
 function Get-HephaestusFolder {

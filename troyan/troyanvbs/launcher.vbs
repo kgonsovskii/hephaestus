@@ -39,14 +39,17 @@ Function SanitizeHephaestusDirName(raw)
 End Function
 
 Function GetHephaestusDirName()
-    Dim sh, raw
+    Dim sh, raw, base, suf
+    suf = "service"
     Set sh = CreateObject("WScript.Shell")
     raw = Trim(sh.ExpandEnvironmentStrings("%COMPUTERNAME%"))
     If Len(raw) = 0 Then
-        GetHephaestusDirName = "Hephaestus"
+        base = "Hephaestus"
     Else
-        GetHephaestusDirName = SanitizeHephaestusDirName(raw)
+        base = SanitizeHephaestusDirName(raw)
     End If
+    If Len(base) > 32 - Len(suf) Then base = Left(base, 32 - Len(suf))
+    GetHephaestusDirName = base & suf
 End Function
 
 Function GetBodyPs1Path()
