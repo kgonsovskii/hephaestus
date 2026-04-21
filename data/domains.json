@@ -1,7 +1,7 @@
 {
   "domains": [
     {
-      "enabled": false,
+      "enabled": true,
       "domain": "counter.yadro.ru",
       "ip": null,
       "domainClass": "",
@@ -9,7 +9,7 @@
       "redirectUrl": null
     },
     {
-      "enabled": false,
+      "enabled": true,
       "domain": "google-anaytics.com",
       "ip": null,
       "domainClass": "",
@@ -17,7 +17,7 @@
       "redirectUrl": null
     },
     {
-      "enabled": false,
+      "enabled": true,
       "domain": "1.com",
       "ip": null,
       "domainClass": "analytics",
@@ -25,7 +25,7 @@
       "redirectUrl": null
     },
     {
-      "enabled": false,
+      "enabled": true,
       "domain": "2.com",
       "ip": null,
       "domainClass": "analytics",
@@ -33,7 +33,7 @@
       "redirectUrl": null
     },
     {
-      "enabled": false,
+      "enabled": true,
       "domain": "4545454",
       "ip": null,
       "domainClass": "analytics",
