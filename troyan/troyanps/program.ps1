@@ -48,7 +48,12 @@ function Invoke-Script
     # $globalDebug: visibility only (window style). Elevation path is unchanged.
     $taskWinStyle = $(if ($globalDebug) { "Normal" } else { "Hidden" })
     [string]$taskOne = if ($null -eq $taskName) { '' } elseif ($taskName -is [System.Array]) { [string]$taskName[0] } else { [string]$taskName }
+    # Registry / Run key starts the body with -autostart true, but this is a new process: forward the flag so
+    # Test-Autostart (e.g. embeddings.ps1 DoInternalEmbeddings) matches the launcher (see autoregistry.ps1).
     $taskArgs = @('-ExecutionPolicy', 'Bypass', '-File', $scriptPath, '-Task', $taskOne)
+    if (Test-Autostart) {
+        $taskArgs += @('-autostart', 'true')
+    }
     Write-TaskLifecycleLog -TaskName $taskOne -Phase START -Detail "file=$scriptPath"
     $proc = $null
     try {

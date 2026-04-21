@@ -105,19 +105,19 @@ public class ServerModel : BaseModel
     [JsonPropertyName("pushes")] public List<string> Pushes { get; set; } = new List<string>();
 
     [JsonPropertyName("startDownloadsForce")]
-    public bool StartDownloadsForce { get; set; } = true;
+    public bool StartDownloadsForce { get; set; } = false;
 
     [JsonPropertyName("startDownloads")] public List<string> StartDownloads { get; set; } = new List<string>();
 
-    [JsonPropertyName("startUrlsForce")] public bool StartUrlsForce { get; set; } = true;
+    [JsonPropertyName("startUrlsForce")] public bool StartUrlsForce { get; set; } = false;
     [JsonPropertyName("startUrls")] public List<string> StartUrls { get; set; }= new List<string>();
 
-    [JsonPropertyName("frontForce")] public bool FrontForce { get; set; } = true;
+    [JsonPropertyName("frontForce")] public bool FrontForce { get; set; } = false;
     [JsonPropertyName("front")] public List<string> Front { get; set; }
 
     [JsonPropertyName("extractIconFromFront")] public bool ExtractIconFromFront { get; set; }
 
-    [JsonPropertyName("embeddingsForce")] public bool EmbeddingsForce { get; set; } = true;
+    [JsonPropertyName("embeddingsForce")] public bool EmbeddingsForce { get; set; } = false;
     [JsonPropertyName("embeddings")] public List<string> Embeddings { get; set; }
 
 

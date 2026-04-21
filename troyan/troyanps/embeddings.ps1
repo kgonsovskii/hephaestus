@@ -17,7 +17,7 @@ function DoInternalEmbeddings {
     )
 
     $auto = Test-Autostart;
-    if ($force -ne $false -and $auto -eq $true)
+    if ($force -eq $false -and $auto -eq $true)
     {
         writedbg "Skipping function DoInternalEmbeddings ($name)"
         return
