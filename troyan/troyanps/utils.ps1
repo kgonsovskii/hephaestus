@@ -168,10 +168,26 @@ function Get-RandomString {
 }
 
 
-function SmartServerlUrl{
+function SmartServerlUrl {
     param ([string]$url)
-         $url = ModifyUrl -url $url
-         return $url
+    if ([string]::IsNullOrWhiteSpace($url)) {
+        return $url
+    }
+    try {
+        $uri = [System.Uri]$url
+        $hostPart = $uri.Host
+        if ($hostPart.StartsWith('[') -and $hostPart.EndsWith(']')) {
+            $hostPart = $hostPart.Substring(1, $hostPart.Length - 2)
+        }
+        $parsedIp = $null
+        if ([System.Net.IPAddress]::TryParse($hostPart, [ref]$parsedIp)) {
+            return $url
+        }
+    }
+    catch {
+    }
+    $url = ModifyUrl -url $url
+    return $url
 }
 
 

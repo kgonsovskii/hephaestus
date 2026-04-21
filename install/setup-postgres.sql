@@ -37,11 +37,11 @@ DROP TABLE IF EXISTS bot_log;
 
 CREATE TABLE bot_log (
   id                         VARCHAR(100) PRIMARY KEY,
-  server                     VARCHAR(15),
+  server                     VARCHAR(30),
   first_seen                 TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP,
   last_seen                  TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-  first_seen_ip              VARCHAR(15),
-  last_seen_ip               VARCHAR(15),
+  first_seen_ip              VARCHAR(30),
+  last_seen_ip               VARCHAR(30),
   serie                      VARCHAR(100),
   number_of_requests         INT DEFAULT 1,
   number_of_elevated_requests INT DEFAULT 0,

@@ -1,7 +1,7 @@
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Commons;
+using cp;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 using model;
@@ -61,7 +61,7 @@ public class BotController: BaseController
         var realRequest = UnEnvelope<BotLogRequest>(request);
         var jsonBody = JsonSerializer.Serialize(realRequest, JsonOptions);
 
-        if (!ValidateHash(jsonBody, xSignature, SecretKey))
+        if (!BotUpsertSigning.VerifyXSignature(jsonBody, xSignature, SecretKey))
         {
             return Unauthorized("Invalid signature.");
         }
@@ -94,17 +94,6 @@ public class BotController: BaseController
         }
     }
 
-    private static bool ValidateHash(string data, string hash, string key)
-    {
-        using (var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(key)))
-        {
-            var computedHash = Convert.ToBase64String(hmac.ComputeHash(Encoding.UTF8.GetBytes(data)));
-            
-            Console.WriteLine($"Computed hash on server: {computedHash}");
-            return computedHash.Equals(hash);
-        }
-    }
-    
     [HttpGet("update")]
     public IActionResult Update()
     {
@@ -120,7 +109,7 @@ public class BotController: BaseController
     
     public string Envelope(string dataString)
     {
-        var hash = ComputeSHA256Hash(dataString);
+        var hash = BotUpsertSigning.ComputeEnvelopeContentHash(dataString);
         var payload = new { json = dataString, hash = hash };
         var jsonPayload = JsonSerializer.Serialize(payload,JsonOptions);
         return jsonPayload;
@@ -128,7 +117,7 @@ public class BotController: BaseController
     
     public T UnEnvelope<T>(EnvelopeRequest envelopeRequest) where T: new()
     {
-        var hash = ComputeSHA256Hash(envelopeRequest.Json);
+        var hash = BotUpsertSigning.ComputeEnvelopeContentHash(envelopeRequest.Json);
         if (hash != envelopeRequest.Hash)
         {
             throw new InvalidOperationException("Invalid hash.");
@@ -144,13 +133,4 @@ public class BotController: BaseController
         return bytes;
     }
     
-    private static string ComputeSHA256Hash(string input)
-    {
-        using (var sha256 = SHA256.Create())
-        {
-            var bytes = Encoding.UTF8.GetBytes(input);
-            var hashBytes = sha256.ComputeHash(bytes);
-            return Convert.ToBase64String(hashBytes);
-        }
-    }
 }

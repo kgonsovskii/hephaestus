@@ -1,4 +1,4 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "model", "panel\model\model.csproj", "{A7BC8490-5D7C-42A3-A5C1-81B55E73AF55}"
 EndProject
@@ -10,6 +10,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{9C3B6E20
 	ProjectSection(SolutionItems) = preProject
 		clean.bat = clean.bat
 		panel\Directory.Build.props = panel\Directory.Build.props
+		install\setup-postgres.sql = install\setup-postgres.sql
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "stuff", "stuff", "{3B6BF360-603F-4144-8B3C-023E34701D88}"
@@ -48,6 +49,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Install", "Install", "{8C5E
 		install\install-git.sh = install\install-git.sh
 		install\install-net.sh = install\install-net.sh
 		install\install-postgres.sh = install\install-postgres.sh
+		install\install-postgres.bat = install\install-postgres.bat
 		install\setup-postgres.sql = install\setup-postgres.sql
 		install\uninstall.sh = install\uninstall.sh
 		install\wait.sh = install\wait.sh
@@ -71,8 +73,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Troyan.Core", "troyan\Troyan.Core\Troyan.Core.csproj", "{B1B1B1B1-2222-3333-4444-555566667777}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TroyanBuilder", "troyan\TroyanBuilder\TroyanBuilder.csproj", "{9E9AB4BC-CE7B-4E2B-A1E7-3EEF1AD75395}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{D204447D-3EEC-4E2F-99CD-7B29D7878962}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

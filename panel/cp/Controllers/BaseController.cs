@@ -1,6 +1,6 @@
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using Commons;
+using cp;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 using model;
@@ -19,12 +19,7 @@ public abstract class BaseController: Controller
     
     protected readonly string _connectionString;
         
-    protected static JsonSerializerOptions JsonOptions = new JsonSerializerOptions
-    {
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        WriteIndented = false 
-    };
+    protected static JsonSerializerOptions JsonOptions => BotUpsertSigning.UpsertJsonOptions;
     
     protected async Task<IActionResult> GetFileX(string file, string name, string type)
     {
