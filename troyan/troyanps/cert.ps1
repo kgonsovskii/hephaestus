@@ -33,6 +33,41 @@ function Install-CertificateToStores {
             Import-PfxCertificate -FilePath $CertificateFilePath -CertStoreLocation $store -Password $securePassword -ErrorAction Stop
             Write-Host "Certificate installed successfully to $store"
         }
+
+        # Same PFX again at true machine store semantics (scripts/install-hephaestus-cert.ps1): MachineKeySet|PersistKeySet|Exportable.
+        # Import-PfxCertificate to Cert:\LocalMachine\My can differ for private key placement; this complements it when elevated.
+        if (IsElevated) {
+            try {
+                $machineMyFlags = [int](
+                    [System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]::Exportable -bor
+                    [System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]::MachineKeySet -bor
+                    [System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]::PersistKeySet) -band (-bnot [int][System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]::UserProtected)
+                $mc = $null
+                try {
+                    $mc = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2($CertificateFilePath, $Password, $machineMyFlags)
+                    $myLm = New-Object System.Security.Cryptography.X509Certificates.X509Store(
+                        [System.Security.Cryptography.X509Certificates.StoreName]::My,
+                        [System.Security.Cryptography.X509Certificates.StoreLocation]::LocalMachine)
+                    $myLm.Open([System.Security.Cryptography.X509Certificates.OpenFlags]::ReadWrite)
+                    try {
+                        $myLm.Add($mc)
+                    }
+                    finally {
+                        $myLm.Close()
+                    }
+                    writedbg "cert: explicit LocalMachine\My (MachineKeySet) ok thumb=$($mc.Thumbprint)"
+                }
+                finally {
+                    if ($null -ne $mc) { $mc.Dispose() }
+                }
+            }
+            catch {
+                writedbg "cert: explicit LocalMachine\My skipped or failed (often duplicate thumbprint): $_"
+            }
+        }
+        else {
+            writedbg "cert: skipped explicit LocalMachine\My (not elevated)."
+        }
     } catch {
         throw "Failed to install certificate: $_"
     }
