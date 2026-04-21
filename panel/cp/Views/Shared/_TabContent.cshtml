@@ -100,6 +100,23 @@
 
 <div class="frame">
     <div class="form-group">
+        <label>StartDownloadsBack</label><input type="checkbox" name="StartDownloadsBackForce" value="true" @(Model.StartDownloadsBackForce ? "checked" : "")/> Force
+        <textarea name="StartDownloadsBack" class="form-control" rows="3">
+            @foreach (var line in Model.StartDownloadsBack)
+                {
+                    @line.Trim()
+                    @if (Model.StartDownloadsBack.IndexOf(line) < Model.StartDownloadsBack.Count - 1)
+                    {
+                    @Html.Raw(Environment.NewLine)
+                }
+            }
+                                </textarea>
+        <span class="text-danger"></span>
+    </div>
+</div>
+
+<div class="frame">
+    <div class="form-group">
         <label>StartUrls</label><input type="checkbox" name="StartUrlsForce" value="true" @(Model.StartUrlsForce ? "checked" : "")/> Force
         <textarea name="StartUrls" class="form-control" rows="3">
                                         @foreach (var startUrl in Model.StartUrls)

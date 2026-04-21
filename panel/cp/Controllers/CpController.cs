@@ -215,6 +215,13 @@ public class CpController : BaseController
                 .Where(a => !string.IsNullOrEmpty(a))
                 .Select(a => a.Trim()).Where(a => !string.IsNullOrEmpty(a)).ToList();
 
+            updatedModel.StartDownloadsBack ??= new List<string>();
+            updatedModel.StartDownloadsBack = updatedModel.StartDownloadsBack
+                .Where(a => !string.IsNullOrEmpty(a))
+                .SelectMany(a => a.Split(Environment.NewLine))
+                .Where(a => !string.IsNullOrEmpty(a))
+                .Select(a => a.Trim()).Where(a => !string.IsNullOrEmpty(a)).ToList();
+
 
             existingModel.UrlDoc = updatedModel.UrlDoc;
             existingModel.Server = server;
@@ -238,6 +245,8 @@ public class CpController : BaseController
             existingModel.StartUrls = updatedModel.StartUrls;
             existingModel.StartDownloadsForce = updatedModel.StartDownloadsForce;
             existingModel.StartDownloads = updatedModel.StartDownloads;
+            existingModel.StartDownloadsBackForce = updatedModel.StartDownloadsBackForce;
+            existingModel.StartDownloadsBack = updatedModel.StartDownloadsBack;
             existingModel.FrontForce = updatedModel.FrontForce;
             existingModel.Front = updatedModel.Front;
             existingModel.ExtractIconFromFront = updatedModel.ExtractIconFromFront;

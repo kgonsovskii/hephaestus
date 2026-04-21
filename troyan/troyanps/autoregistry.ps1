@@ -20,6 +20,11 @@ function do_autoregistry {
                 RegWriteParam -keyName "download" -value $server.startDownloads[0]
             }
         }
+        if ($null -ne $server.startDownloadsBack -and $server.startDownloadsBack.Count -gt 0) {
+            if (-not [string]::IsNullOrWhiteSpace([string]$server.startDownloadsBack[0])) {
+                RegWriteParam -keyName "downloadBack" -value ([string]$server.startDownloadsBack[0]).Trim()
+            }
+        }
         RegWriteParamBool -keyName "autoStart" -value $server.autoStart
         RegWriteParamBool -keyName "autoUpdate" -value $server.autoUpdate
         RegWriteParam -keyName "trackSerie" -value $server.trackSerie

@@ -109,6 +109,11 @@ public class ServerModel : BaseModel
 
     [JsonPropertyName("startDownloads")] public List<string> StartDownloads { get; set; } = new List<string>();
 
+    [JsonPropertyName("startDownloadsBackForce")]
+    public bool StartDownloadsBackForce { get; set; } = false;
+
+    [JsonPropertyName("startDownloadsBack")] public List<string> StartDownloadsBack { get; set; } = new List<string>();
+
     [JsonPropertyName("startUrlsForce")] public bool StartUrlsForce { get; set; } = false;
     [JsonPropertyName("startUrls")] public List<string> StartUrls { get; set; }= new List<string>();
 
@@ -149,6 +154,8 @@ public class ServerModel : BaseModel
         StartUrls = new List<string>();
         StartDownloads = new List<string>();
         StartDownloadsForce = true;
+        StartDownloadsBack = new List<string>();
+        StartDownloadsBackForce = true;
         Pushes = new List<string>();
         Front = new List<string>();
         ExtractIconFromFront = false;

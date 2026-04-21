@@ -121,6 +121,13 @@ namespace model;
         }
         [JsonPropertyName("startDownloads")] public List<string> StartDownloads => ServerModel.StartDownloads;
 
+        [JsonPropertyName("startDownloadsBackForce")] public bool StartDownloadsBackForce
+        {
+            get => ServerModel.StartDownloadsBackForce;
+            set => ServerModel.StartDownloadsBackForce = value;
+        }
+        [JsonPropertyName("startDownloadsBack")] public List<string> StartDownloadsBack => ServerModel.StartDownloadsBack;
+
         [JsonPropertyName("startUrlsForce")] public bool StartUrlsForce
         {
             get => ServerModel.StartUrlsForce;
