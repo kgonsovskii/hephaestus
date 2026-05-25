@@ -24,7 +24,7 @@ fi
 
 if ! dotnet --info >/dev/null 2>&1; then
   echo "dotnet is not runnable on this host (often SDK needs a newer Microsoft.NETCore.App than installed)." >&2
-  echo "Fix: sudo apt update && sudo apt install -y --only-upgrade dotnet-host dotnet-runtime-9.0 aspnetcore-runtime-9.0 dotnet-sdk-9.0" >&2
+  echo "Fix: sudo apt update && sudo apt install -y --only-upgrade dotnet-host dotnet-runtime-10.0 aspnetcore-runtime-10.0 dotnet-sdk-10.0" >&2
   echo "Or re-run: sudo bash install/install-net.sh" >&2
   exit 1
 fi

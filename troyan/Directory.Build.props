@@ -1,20 +1,20 @@
 <Project>
   <PropertyGroup Condition="'$(UsingMicrosoftNETSdk)' == 'true'">
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     
     <RollForward>LatestPatch</RollForward>
     
-    <PkgNpgsqlVersion>9.0.3</PkgNpgsqlVersion>
-    <PkgMicrosoftExtensionsVersion>9.0.0</PkgMicrosoftExtensionsVersion>
+    <PkgNpgsqlVersion>10.0.0</PkgNpgsqlVersion>
+    <PkgMicrosoftExtensionsVersion>10.0.0</PkgMicrosoftExtensionsVersion>
     <PkgMicrosoftNetTestSdkVersion>17.12.44</PkgMicrosoftNetTestSdkVersion>
     <PkgMSTestVersion>4.0.2</PkgMSTestVersion>
     <PkgFluentAssertionsVersion>7.2.0</PkgFluentAssertionsVersion>
     <PkgHtmlAgilityPackVersion>1.12.4</PkgHtmlAgilityPackVersion>
     <PkgMicrosoftPowerShellSdkVersion>7.5.4</PkgMicrosoftPowerShellSdkVersion>
-    <PkgSystemDirectoryServicesAccountManagementVersion>9.0.0</PkgSystemDirectoryServicesAccountManagementVersion>
+    <PkgSystemDirectoryServicesAccountManagementVersion>10.0.0</PkgSystemDirectoryServicesAccountManagementVersion>
     <PkgSMBLibraryVersion>1.5.3.5</PkgSMBLibraryVersion>
   </PropertyGroup>
 

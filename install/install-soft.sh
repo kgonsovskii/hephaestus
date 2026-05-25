@@ -13,7 +13,7 @@ if [ "${EUID:-0}" -ne 0 ]; then
 fi
 
 if ! command -v dotnet >/dev/null 2>&1; then
-  echo "dotnet not found. Install the .NET 9 SDK first (install/install-net.sh)." >&2
+  echo "dotnet not found. Install the .NET 10 SDK first (install/install-net.sh)." >&2
   exit 1
 fi
 
