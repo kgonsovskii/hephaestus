@@ -1,5 +1,6 @@
-using System.Text.Json;
+using Domain;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging.Abstractions;
 
 internal static class Program
 {
@@ -10,10 +11,11 @@ internal static class Program
             .AddJsonFile("appsettings.json", optional: false, reloadOnChange: false)
             .Build();
 
-        var tech = config.GetSection("Technitium");
-        var baseUrl = (tech["BaseUrl"] ?? "http://127.0.0.1:5380").Trim().TrimEnd('/');
-        var newPassword = tech["Password"];
-        if (string.IsNullOrEmpty(newPassword))
+        var options = new TechnitiumOptions();
+        config.GetSection(TechnitiumOptions.SectionName).Bind(options);
+
+        var baseUrl = options.BaseUrl.Trim().TrimEnd('/');
+        if (string.IsNullOrEmpty(options.Password))
         {
             Console.Error.WriteLine("Commons appsettings: Technitium:Password is missing or empty.");
             return 1;
@@ -27,6 +29,7 @@ internal static class Program
             BaseAddress = new Uri(baseUrl + "/"),
             Timeout = TimeSpan.FromMinutes(2)
         };
+        var dns = new TechnitiumDnsClient(http, NullLogger<TechnitiumDnsClient>.Instance);
 
         Console.WriteLine($"[hephaestus-install] Waiting for Technitium at {baseUrl} …");
         var up = false;
@@ -43,7 +46,6 @@ internal static class Program
             }
             catch
             {
-                
             }
 
             await Task.Delay(2000);
@@ -56,31 +58,35 @@ internal static class Program
         }
 
         const string defaultPass = "admin";
-        const string user = "admin";
+        var user = string.IsNullOrWhiteSpace(options.User) ? "admin" : options.User.Trim();
 
-        var token = await LoginAsync(http, user, defaultPass);
+        string? token = await TryLoginAsync(dns, user, defaultPass);
         if (token != null)
         {
-            if (string.Equals(newPassword, defaultPass, StringComparison.Ordinal))
+            if (string.Equals(options.Password, defaultPass, StringComparison.Ordinal))
             {
                 Console.WriteLine("[hephaestus-install] Technitium admin password is default (admin); Commons appsettings matches.");
+                await ApplyTechnitiumPolicyAsync(dns, token, options);
                 return 0;
             }
 
-            var changed = await ChangePasswordAsync(http, token, defaultPass, newPassword);
+            var changed = await ChangePasswordAsync(http, token, defaultPass, options.Password);
             if (changed)
             {
                 Console.WriteLine("[hephaestus-install] Technitium admin password set from Commons appsettings (Technitium:Password).");
+                token = await TryLoginAsync(dns, user, options.Password) ?? token;
+                await ApplyTechnitiumPolicyAsync(dns, token, options);
                 return 0;
             }
 
             return 1;
         }
 
-        token = await LoginAsync(http, user, newPassword);
+        token = await TryLoginAsync(dns, user, options.Password);
         if (token != null)
         {
             Console.WriteLine("[hephaestus-install] Technitium admin password already matches Commons appsettings.");
+            await ApplyTechnitiumPolicyAsync(dns, token, options);
             return 0;
         }
 
@@ -88,27 +94,45 @@ internal static class Program
         return 1;
     }
 
-    private static async Task<string?> LoginAsync(HttpClient http, string user, string pass)
+    private static async Task<string?> TryLoginAsync(
+        TechnitiumDnsClient dns,
+        string user,
+        string pass)
     {
-        var q =
-            $"api/user/login?user={Uri.EscapeDataString(user)}&pass={Uri.EscapeDataString(pass)}&includeInfo=false";
-        string json;
         try
         {
-            json = await http.GetStringAsync(q);
+            return await dns.LoginAsync(user, pass, CancellationToken.None);
         }
         catch
         {
             return null;
         }
+    }
 
-        using var doc = JsonDocument.Parse(json);
-        if (!doc.RootElement.TryGetProperty("status", out var st) ||
-            !string.Equals(st.GetString(), "ok", StringComparison.OrdinalIgnoreCase))
-            return null;
-        if (doc.RootElement.TryGetProperty("token", out var tok))
-            return tok.GetString();
-        return null;
+    private static async Task ApplyTechnitiumPolicyAsync(
+        TechnitiumDnsClient dns,
+        string token,
+        TechnitiumOptions options)
+    {
+        try
+        {
+            await dns.ApplyGlobalForwardersAsync(token, options, CancellationToken.None);
+            Console.WriteLine("[hephaestus-install] Technitium global forwarders applied.");
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"[hephaestus-install] Could not set Technitium global DNS forwarders: {ex.Message}");
+        }
+
+        try
+        {
+            await dns.ApplyRecursionPolicyAsync(token, options, CancellationToken.None);
+            Console.WriteLine("[hephaestus-install] Technitium recursion policy applied.");
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"[hephaestus-install] Could not set Technitium recursion policy: {ex.Message}");
+        }
     }
 
     private static async Task<bool> ChangePasswordAsync(
@@ -130,7 +154,7 @@ internal static class Program
             return false;
         }
 
-        using var doc = JsonDocument.Parse(json);
+        using var doc = System.Text.Json.JsonDocument.Parse(json);
         return doc.RootElement.TryGetProperty("status", out var st) &&
                string.Equals(st.GetString(), "ok", StringComparison.OrdinalIgnoreCase);
     }
