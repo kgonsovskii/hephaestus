@@ -1,0 +1,164 @@
+# Shared helpers for install/win/*.ps1 (Chocolatey ≈ apt). Data files: install/shared/.
+Set-StrictMode -Version Latest
+
+function Get-HephaestusInstallPaths {
+    $winDir = if ($PSScriptRoot) { $PSScriptRoot } else { Split-Path -Parent $MyInvocation.MyCommand.Path }
+    $installRoot = (Resolve-Path (Join-Path $winDir '..')).Path
+    $repoRoot = (Resolve-Path (Join-Path $installRoot '..')).Path
+    $sharedDir = Join-Path $installRoot 'shared'
+    [pscustomobject]@{
+        WinDir      = $winDir
+        InstallRoot = $installRoot
+        SharedDir   = $sharedDir
+        RepoRoot    = $repoRoot
+        ReleaseDir  = Join-Path $repoRoot 'release'
+        TechniRoot  = Join-Path ${env:ProgramData} 'hephaestus\technitium'
+        TechniDnsDir = Join-Path ${env:ProgramData} 'hephaestus\technitium\dns'
+        TechniBuildDir = Join-Path ${env:ProgramData} 'hephaestus\technitium\build'
+        InstallProj = Join-Path $installRoot 'Install\Install.csproj'
+        Solution    = Join-Path $repoRoot 'panel.sln'
+        DeployProj  = Join-Path $repoRoot 'panel\Deploy\Deploy.csproj'
+        DomainHostDll = Join-Path $repoRoot 'release\DomainHost.dll'
+        SetupPostgresSql = Join-Path $sharedDir 'setup-postgres.sql'
+    }
+}
+
+function Test-CommandExists([string]$Name) {
+    return [bool](Get-Command $Name -ErrorAction SilentlyContinue)
+}
+
+function Refresh-InstallPath {
+    $env:Path = [Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' +
+        [Environment]::GetEnvironmentVariable('Path', 'User')
+}
+
+function Ensure-Chocolatey {
+    if (Test-CommandExists 'choco') {
+        return
+    }
+    Write-Host '[install] Installing Chocolatey...'
+    Set-ExecutionPolicy Bypass -Scope Process -Force
+    [System.Net.ServicePointManager]::SecurityProtocol =
+        [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
+    Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+    Refresh-InstallPath
+    if (-not (Test-CommandExists 'choco')) {
+        throw 'Chocolatey not on PATH after install. Open a new elevated prompt and re-run.'
+    }
+}
+
+function Invoke-ChocoInstall {
+    param(
+        [Parameter(Mandatory)][string[]]$Packages,
+        [switch]$Force
+    )
+    Ensure-Chocolatey
+    $args = @('install') + $Packages + @('-y', '--no-progress')
+    if ($Force) { $args += '--force' }
+    & choco @args
+    if ($LASTEXITCODE -ne 0) {
+        throw "choco install failed (exit $LASTEXITCODE): $($Packages -join ', ')"
+    }
+    Refresh-InstallPath
+}
+
+function Test-DotNet10Sdk {
+    if (-not (Test-CommandExists 'dotnet')) { return $false }
+    $lines = @(& dotnet --list-sdks 2>$null)
+    foreach ($line in $lines) {
+        if ($line -match '^\s*10\.0\.') { return $true }
+    }
+    return $false
+}
+
+function Stop-HephaestusWindowsService {
+    param([Parameter(Mandatory)][string]$Name)
+    $svc = Get-Service -Name $Name -ErrorAction SilentlyContinue
+    if (-not $svc) { return }
+    if ($svc.Status -ne 'Stopped') {
+        Write-Host "[install] Stopping service $Name..."
+        Stop-Service -Name $Name -Force -ErrorAction SilentlyContinue
+        $svc.WaitForStatus('Stopped', (New-TimeSpan -Seconds 30))
+    }
+}
+
+function Remove-HephaestusWindowsService {
+    param([Parameter(Mandatory)][string]$Name)
+    Stop-HephaestusWindowsService -Name $Name
+    $existing = Get-Service -Name $Name -ErrorAction SilentlyContinue
+    if ($existing) {
+        Write-Host "[install] Removing service $Name..."
+        sc.exe delete $Name | Out-Null
+        Start-Sleep -Seconds 2
+    }
+}
+
+function Install-HephaestusWindowsService {
+    param(
+        [Parameter(Mandatory)][string]$Name,
+        [Parameter(Mandatory)][string]$DisplayName,
+        [Parameter(Mandatory)][string]$BinPath,
+        [string]$Description = '',
+        [string]$AppDirectory = ''
+    )
+    Remove-HephaestusWindowsService -Name $Name
+    # sc.exe expects: binPath= "\"exe\" \"arg\"" or binPath= "\"exe.exe\""
+    sc.exe create $Name binPath= $BinPath start= auto DisplayName= $DisplayName | Out-Null
+    if ($LASTEXITCODE -ne 0) {
+        throw "sc.exe create $Name failed (exit $LASTEXITCODE). binPath=$BinPath"
+    }
+    if ($Description) {
+        sc.exe description $Name $Description | Out-Null
+    }
+    if ($AppDirectory) {
+        sc.exe config $Name AppDirectory= "`"$AppDirectory`"" | Out-Null
+    }
+    Start-Service -Name $Name
+    $svc = Get-Service -Name $Name
+    if ($svc.Status -ne 'Running') {
+        throw "Service $Name did not reach Running state (status: $($svc.Status))."
+    }
+    Write-Host "[install] Service $Name is running."
+}
+
+function Stop-HephaestusDotNetProcesses {
+    param([string]$Match = 'DomainHost')
+    Get-CimInstance Win32_Process -Filter "Name = 'dotnet.exe'" -ErrorAction SilentlyContinue |
+        Where-Object { $_.CommandLine -and $_.CommandLine -like "*$Match*" } |
+        ForEach-Object {
+            Write-Host "[install] Stopping dotnet PID $($_.ProcessId) ($Match)..."
+            Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue
+        }
+}
+
+function Find-TechnitiumPublishDir {
+    param([Parameter(Mandatory)][string]$BuildDir)
+    $candidates = @(
+        (Join-Path $BuildDir 'DnsServer\DnsServerApp\bin\Release\net10.0\win-x64\publish')
+        (Join-Path $BuildDir 'DnsServer\DnsServerApp\bin\Release\net10.0\publish')
+        (Join-Path $BuildDir 'DnsServer\DnsServerApp\bin\Release\publish')
+    )
+    foreach ($dir in (Get-ChildItem -Path (Join-Path $BuildDir 'DnsServer\DnsServerApp\bin\Release') -Directory -Recurse -Filter 'publish' -ErrorAction SilentlyContinue | Select-Object -ExpandProperty FullName)) {
+        $candidates += $dir
+    }
+    foreach ($path in $candidates) {
+        if ((Test-Path -LiteralPath $path) -and (Get-ChildItem -LiteralPath $path -Filter '*.dll' -ErrorAction SilentlyContinue)) {
+            return $path
+        }
+    }
+    return $null
+}
+
+function Set-LocalDnsToLoopback {
+    Write-Host '[install] Setting DNS on active adapters to 127.0.0.1 ...'
+    $adapters = Get-NetAdapter -Physical -ErrorAction SilentlyContinue |
+        Where-Object { $_.Status -eq 'Up' }
+    foreach ($a in $adapters) {
+        try {
+            Set-DnsClientServerAddress -InterfaceIndex $a.ifIndex -ServerAddresses @('127.0.0.1') -ErrorAction Stop
+        }
+        catch {
+            Write-Warning "Could not set DNS on $($a.Name): $($_.Exception.Message)"
+        }
+    }
+}

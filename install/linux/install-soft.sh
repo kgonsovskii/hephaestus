@@ -3,17 +3,19 @@ set -euo pipefail
 export DEBIAN_FRONTEND=noninteractive
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-RELEASE_DIR="$REPO_ROOT/release"
-SLN="$REPO_ROOT/panel.sln"
-DEPLOY_PROJ="$REPO_ROOT/panel/Deploy/Deploy.csproj"
+# shellcheck source=common.sh
+. "${SCRIPT_DIR}/common.sh"
+
+RELEASE_DIR="${REPO_ROOT}/release"
+SLN="${REPO_ROOT}/panel.sln"
+DEPLOY_PROJ="${REPO_ROOT}/panel/Deploy/Deploy.csproj"
 
 if [ "${EUID:-0}" -ne 0 ]; then
   exec sudo /usr/bin/env bash "$0" "$@"
 fi
 
 if ! command -v dotnet >/dev/null 2>&1; then
-  echo "dotnet not found. Install the .NET 10 SDK first (install/install-net.sh)." >&2
+  echo "dotnet not found. Install the .NET 10 SDK first (install/linux/install-net.sh)." >&2
   exit 1
 fi
 
@@ -45,7 +47,7 @@ echo "[4/6] dotnet build Deploy -t:DeployDomain -> $RELEASE_DIR"
 dotnet build "$DEPLOY_PROJ" -c Release -t:DeployDomain --no-restore -v minimal
 
 echo "[5/6] Install systemd unit domainhost.service (enabled on boot)"
-sed "s#@@REPO_ROOT@@#${REPO_ROOT}#g" "$SCRIPT_DIR/domainhost.service" > /etc/systemd/system/domainhost.service
+sed "s#@@REPO_ROOT@@#${REPO_ROOT}#g" "${SHARED_DIR}/domainhost.service" > /etc/systemd/system/domainhost.service
 systemctl daemon-reload
 systemctl enable domainhost.service
 

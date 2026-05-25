@@ -1,0 +1,2 @@
+# Shell scripts: LF in repo, executable in git index (see linux/ensure-sh-executable.sh).
+*.sh text eol=lf

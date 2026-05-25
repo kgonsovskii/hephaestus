@@ -3,8 +3,10 @@ set -euo pipefail
 export DEBIAN_FRONTEND=noninteractive
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-RELEASE_DIR="$REPO_ROOT/release"
+# shellcheck source=common.sh
+. "${SCRIPT_DIR}/common.sh"
+
+RELEASE_DIR="${REPO_ROOT}/release"
 
 if [ "${EUID:-0}" -ne 0 ]; then
   exec sudo /usr/bin/env bash "$0" "$@"

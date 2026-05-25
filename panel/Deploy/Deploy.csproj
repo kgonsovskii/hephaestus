@@ -16,10 +16,11 @@
     <PropertyGroup>
       <_RepoRoot>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\..'))</_RepoRoot>
       <_PublishDir>$([System.IO.Path]::Combine($(_RepoRoot), 'release'))</_PublishDir>
+      <DeployRuntimeIdentifier Condition="'$(DeployRuntimeIdentifier)' == ''">linux-x64</DeployRuntimeIdentifier>
     </PropertyGroup>
     <MSBuild
       Projects="$(MSBuildThisFileDirectory)..\DomainHost\DomainHost.csproj"
       Targets="Publish"
-      Properties="Configuration=Release;RuntimeIdentifier=linux-x64;SelfContained=false;PublishDir=$(_PublishDir)" />
+      Properties="Configuration=Release;RuntimeIdentifier=$(DeployRuntimeIdentifier);SelfContained=false;PublishDir=$(_PublishDir)" />
   </Target>
 </Project>

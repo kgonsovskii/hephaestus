@@ -1,4 +1,4 @@
-
+﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "model", "panel\model\model.csproj", "{A7BC8490-5D7C-42A3-A5C1-81B55E73AF55}"
 EndProject
@@ -14,7 +14,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{9C3B6E20
 	ProjectSection(SolutionItems) = preProject
 		clean.bat = clean.bat
 		panel\Directory.Build.props = panel\Directory.Build.props
-		install\setup-postgres.sql = install\setup-postgres.sql
+		install\shared\setup-postgres.sql = install\shared\setup-postgres.sql
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "stuff", "stuff", "{3B6BF360-603F-4144-8B3C-023E34701D88}"
@@ -42,23 +42,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Db", "panel\Db\Db.csproj", 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Install", "Install", "{8C5EAC49-BD7A-45F7-8150-0474238537A8}"
 	ProjectSection(SolutionItems) = preProject
-		..\install\install-remote.bat = .\install\install-remote.bat
-		..\install\install-remote.sh = .\install\install-remote.sh
-		..\install\install-remote.txt = .\install\install-remote.txt
-		..\install\install-remote-creds.txt = .\install\install-remote-creds.txt
-		..\install\install-soft.sh = .\install\install-soft.sh
-		install\domainhost.service = install\domainhost.service
+		install\README.md = install\README.md
 		install\install.sh = install\install.sh
-		install\install-dns.sh = install\install-dns.sh
-		install\install-git.sh = install\install-git.sh
-		install\install-net.sh = install\install-net.sh
-		install\install-postgres.sh = install\install-postgres.sh
+		install\install.bat = install\install.bat
+		install\install-remote.bat = install\install-remote.bat
+		install\install-remote.sh = install\install-remote.sh
 		install\install-postgres.bat = install\install-postgres.bat
-		install\install-postgres.ps1 = install\install-postgres.ps1
-		install\setup-postgres.sql = install\setup-postgres.sql
-		install\uninstall.sh = install\uninstall.sh
-		install\wait.sh = install\wait.sh
-		install\update.sh = install\update.sh
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Install", ".\install\Install\Install.csproj", "{5D616E6D-7931-4CE0-AEED-638388B000EF}"
@@ -78,6 +67,52 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Troyan.Core", "troyan\Troyan.Core\Troyan.Core.csproj", "{B1B1B1B1-2222-3333-4444-555566667777}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TroyanBuilder", "troyan\TroyanBuilder\TroyanBuilder.csproj", "{9E9AB4BC-CE7B-4E2B-A1E7-3EEF1AD75395}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "InstallScripts", "InstallScripts", "{5B808F53-5A9D-4E8A-9F0B-48D1CE2BBC29}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Win", "Win", "{41828415-9B0D-4AF0-9015-CD58B9E5F0B2}"
+	ProjectSection(SolutionItems) = preProject
+		install\win\install.ps1 = install\win\install.ps1
+		install\win\install-common.ps1 = install\win\install-common.ps1
+		install\win\install-admin.bat = install\win\install-admin.bat
+		install\win\install.bat = install\win\install.bat
+		install\win\uninstall.ps1 = install\win\uninstall.ps1
+		install\win\uninstall.bat = install\win\uninstall.bat
+		install\win\install-git.ps1 = install\win\install-git.ps1
+		install\win\install-git.bat = install\win\install-git.bat
+		install\win\install-net.ps1 = install\win\install-net.ps1
+		install\win\install-net.bat = install\win\install-net.bat
+		install\win\install-postgres.ps1 = install\win\install-postgres.ps1
+		install\win\install-postgres.bat = install\win\install-postgres.bat
+		install\win\install-soft.ps1 = install\win\install-soft.ps1
+		install\win\install-soft.bat = install\win\install-soft.bat
+		install\win\install-dns.ps1 = install\win\install-dns.ps1
+		install\win\install-dns.bat = install\win\install-dns.bat
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Linux", "Linux", "{51CE6F03-EB00-466E-9FB3-41147A2172DF}"
+	ProjectSection(SolutionItems) = preProject
+		install\linux\common.sh = install\linux\common.sh
+		install\linux\install.sh = install\linux\install.sh
+		install\linux\uninstall.sh = install\linux\uninstall.sh
+		install\linux\install-git.sh = install\linux\install-git.sh
+		install\linux\install-net.sh = install\linux\install-net.sh
+		install\linux\install-postgres.sh = install\linux\install-postgres.sh
+		install\linux\install-soft.sh = install\linux\install-soft.sh
+		install\linux\install-dns.sh = install\linux\install-dns.sh
+		install\linux\update.sh = install\linux\update.sh
+		install\linux\install-remote.sh = install\linux\install-remote.sh
+		install\linux\ensure-sh-executable.sh = install\linux\ensure-sh-executable.sh
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{EAAD78DB-8F12-44D6-8736-D68694B76B12}"
+	ProjectSection(SolutionItems) = preProject
+		install\shared\setup-postgres.sql = install\shared\setup-postgres.sql
+		install\shared\domainhost.service = install\shared\domainhost.service
+		install\shared\install-remote.txt = install\shared\install-remote.txt
+		install\shared\install-remote-creds.txt = install\shared\install-remote-creds.txt
+		install\shared\wait.sh = install\shared\wait.sh
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -187,5 +222,8 @@ Global
 		{50C03824-CFA2-4D6A-AF47-82C314A1F75E} = {2DB3FA9F-E412-4E92-ABF6-FA9CCABA6787}
 		{B1B1B1B1-2222-3333-4444-555566667777} = {7EBAB0FD-E076-4B8E-A65A-CA44D948EB97}
 		{9E9AB4BC-CE7B-4E2B-A1E7-3EEF1AD75395} = {7EBAB0FD-E076-4B8E-A65A-CA44D948EB97}
+		{41828415-9B0D-4AF0-9015-CD58B9E5F0B2} = {5B808F53-5A9D-4E8A-9F0B-48D1CE2BBC29}
+		{51CE6F03-EB00-466E-9FB3-41147A2172DF} = {5B808F53-5A9D-4E8A-9F0B-48D1CE2BBC29}
+		{EAAD78DB-8F12-44D6-8736-D68694B76B12} = {5B808F53-5A9D-4E8A-9F0B-48D1CE2BBC29}
 	EndGlobalSection
 EndGlobal

@@ -9,8 +9,8 @@ $ErrorActionPreference = 'Stop'
 # Single dev password — used for choco /Password and PGPASSWORD (not passed on the command line).
 $PostgresPassword = 'postgres'
 
-$ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-$SqlFile = Join-Path $ScriptDir 'setup-postgres.sql'
+. "$PSScriptRoot\install-common.ps1"
+$SqlFile = (Get-HephaestusInstallPaths).SetupPostgresSql
 
 if (-not (Test-Path -LiteralPath $SqlFile)) {
     Write-Error "Missing: $SqlFile"

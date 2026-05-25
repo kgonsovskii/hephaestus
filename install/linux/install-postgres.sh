@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Linux: apt + psql. On Windows: install-postgres.bat -> install-postgres.ps1 (fixed superuser password postgres, choco reinstall if needed, pg_isready, psql; same setup-postgres.sql).
+# Linux: apt + psql. Windows: install\install-postgres.bat -> win\install-postgres.ps1 (shared setup-postgres.sql).
 set -euo pipefail
 export DEBIAN_FRONTEND=noninteractive
 
@@ -9,13 +9,15 @@ if [ "${EUID:-0}" -ne 0 ]; then
 fi
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SQL="${SCRIPT_DIR}/setup-postgres.sql"
+# shellcheck source=common.sh
+. "${SCRIPT_DIR}/common.sh"
+SQL="${SHARED_DIR}/setup-postgres.sql"
 if [ ! -f "$SQL" ]; then
   echo "Missing: $SQL" >&2
   exit 1
 fi
 
-. "$SCRIPT_DIR/wait.sh"
+hephaestus_source_shared_wait
 
 apt_get update
 apt_get install -y postgresql postgresql-client

@@ -10,7 +10,7 @@ public static class RepoRootResolver
         if (t.Length > 0)
         {
             var install = Path.Combine(t, "install");
-            if (Directory.Exists(install) && File.Exists(Path.Combine(install, "install-remote.txt")))
+            if (Directory.Exists(install) && HasInstallRemoteMarker(install))
                 return Path.GetFullPath(t);
         }
 
@@ -19,7 +19,7 @@ public static class RepoRootResolver
         for (var i = 0; i < 12; i++)
         {
             var install = Path.Combine(current, "install");
-            if (Directory.Exists(install) && File.Exists(Path.Combine(install, "install-remote.txt")))
+            if (Directory.Exists(install) && HasInstallRemoteMarker(install))
                 return current;
 
             var parent = Directory.GetParent(current);
@@ -29,9 +29,13 @@ public static class RepoRootResolver
         }
 
         logger.LogWarning(
-            "Cloner: could not find repo root (folder with install/install-remote.txt). Set {Section}:{Prop} in appsettings.",
+            "Cloner: could not find repo root (folder with install/shared/install-remote.txt). Set {Section}:{Prop} in appsettings.",
             ClonerOptions.SectionName,
             nameof(ClonerOptions.RepoRoot));
         return start;
     }
+
+    private static bool HasInstallRemoteMarker(string installDir) =>
+        File.Exists(Path.Combine(installDir, "shared", "install-remote.txt"))
+        || File.Exists(Path.Combine(installDir, "install-remote.txt"));
 }

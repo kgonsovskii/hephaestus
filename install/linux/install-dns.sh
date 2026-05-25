@@ -3,8 +3,10 @@ set -euo pipefail
 export DEBIAN_FRONTEND=noninteractive
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-readonly INSTALL_PROJ="$REPO_ROOT/install/Install/Install.csproj"
+# shellcheck source=common.sh
+. "${SCRIPT_DIR}/common.sh"
+
+readonly INSTALL_PROJ="${INSTALL_ROOT}/Install/Install.csproj"
 readonly TECHNI_ROOT=/opt/technitium
 readonly INSTALL_DIR="${TECHNI_ROOT}/dns"
 
@@ -14,18 +16,18 @@ if [ "${EUID:-0}" -ne 0 ]; then
 fi
 
 if ! command -v git >/dev/null 2>&1; then
-  echo "git not found. Run install/install-git.sh first (or install/install.sh)." >&2
+  echo "git not found. Run install/linux/install-git.sh first (or install/install.sh)." >&2
   exit 1
 fi
 if ! command -v dotnet >/dev/null 2>&1; then
-  echo "dotnet not found. Run install/install-net.sh first (or install/install.sh)." >&2
+  echo "dotnet not found. Run install/linux/install-net.sh first (or install/install.sh)." >&2
   exit 1
 fi
 
 if ! dotnet --info >/dev/null 2>&1; then
   echo "dotnet is not runnable on this host (often SDK needs a newer Microsoft.NETCore.App than installed)." >&2
   echo "Fix: sudo apt update && sudo apt install -y --only-upgrade dotnet-host dotnet-runtime-10.0 aspnetcore-runtime-10.0 dotnet-sdk-10.0" >&2
-  echo "Or re-run: sudo bash install/install-net.sh" >&2
+  echo "Or re-run: sudo bash install/linux/install-net.sh" >&2
   exit 1
 fi
 

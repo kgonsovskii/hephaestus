@@ -8,7 +8,9 @@ if [ "${EUID:-0}" -ne 0 ]; then
 fi
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-. "$SCRIPT_DIR/wait.sh"
+# shellcheck source=common.sh
+. "${SCRIPT_DIR}/common.sh"
+hephaestus_source_shared_wait
 
 apt_get update
 apt_get install -y git ca-certificates

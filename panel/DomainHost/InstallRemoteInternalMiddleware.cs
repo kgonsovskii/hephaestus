@@ -59,7 +59,7 @@ public sealed class InstallRemoteInternalMiddleware
         try
         {
             var repoRoot = RepoRootResolver.Resolve(_clonerOpts.CurrentValue.RepoRoot, _logger);
-            var scriptPath = Path.Combine(repoRoot, "install", RemoteInstallRunner.DefaultRemoteScriptFileName);
+            var scriptPath = Path.Combine(repoRoot, "install", "shared", RemoteInstallRunner.DefaultRemoteScriptFileName);
             var script = RemoteInstallRunner.LoadRemoteInstallBootstrapScript(scriptPath);
 
             var sshpass = await SshPassBootstrap
