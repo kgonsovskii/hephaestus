@@ -49,13 +49,9 @@ function Ensure-Chocolatey {
 }
 
 function Invoke-ChocoInstall {
-    param(
-        [Parameter(Mandatory)][string[]]$Packages,
-        [switch]$Force
-    )
+    param([Parameter(Mandatory)][string[]]$Packages)
     Ensure-Chocolatey
-    $args = @('install') + $Packages + @('-y', '--no-progress')
-    if ($Force) { $args += '--force' }
+    $args = @('install') + $Packages + @('-y', '--no-progress', '--force')
     & choco @args
     if ($LASTEXITCODE -ne 0) {
         throw "choco install failed (exit $LASTEXITCODE): $($Packages -join ', ')"

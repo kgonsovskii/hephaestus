@@ -22,14 +22,6 @@ if (-not (Test-Path -LiteralPath $installProj)) {
     throw "Missing install project: $installProj"
 }
 
-$dnsSvc = Get-Service -Name 'hephaestus-dns' -ErrorAction SilentlyContinue
-$hasBinaries = (Test-Path -LiteralPath $installDir) -and
-    (Get-ChildItem -LiteralPath $installDir -Filter '*.dll' -ErrorAction SilentlyContinue | Select-Object -First 1)
-if ($env:INSTALL_DNS_FORCE -ne '1' -and $dnsSvc -and $dnsSvc.Status -eq 'Running' -and $hasBinaries) {
-    Write-Host "[dns] hephaestus-dns active and $installDir has binaries - skipping Technitium install."
-    exit 0
-}
-
 Write-Host '[dns 1] Build hephaestus-install (Technitium password from panel/Commons/appsettings.json)'
 & dotnet build $installProj -c Release -v minimal
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }

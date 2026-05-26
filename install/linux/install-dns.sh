@@ -41,14 +41,6 @@ if [ ! -f "$INSTALL_PROJ" ]; then
   exit 1
 fi
 
-if [ "${INSTALL_DNS_FORCE:-0}" != "1" ] \
-    && systemctl is-active --quiet dns.service 2>/dev/null \
-    && [ -d "$INSTALL_DIR" ] \
-    && compgen -G "$INSTALL_DIR"/*.dll >/dev/null 2>&1; then
-  echo "[dns] dns.service active and $INSTALL_DIR has binaries - skipping Technitium install."
-  exit 0
-fi
-
 echo "[dns 1] Build hephaestus-install (Technitium password from panel/Commons/appsettings.json)"
 dotnet build "$INSTALL_PROJ" -c Release -v minimal
 
@@ -107,7 +99,7 @@ setup_technitium_service_account() {
 }
 
 wait_for_technitium_dns() {
-  local deadline=$((SECONDS + "${TECHNI_HTTP_WAIT_SEC:-90}"))
+  local deadline=$((SECONDS + 90))
   while [ "$SECONDS" -lt "$deadline" ]; do
     if systemctl is-active --quiet dns.service \
         && curl -fsS --max-time 3 http://127.0.0.1:5380/ >/dev/null 2>&1; then
@@ -115,7 +107,7 @@ wait_for_technitium_dns() {
     fi
     sleep 2
   done
-  echo "[dns] Technitium did not become ready on http://127.0.0.1:5380 within ${TECHNI_HTTP_WAIT_SEC:-90}s" >&2
+  echo "[dns] Technitium did not become ready on http://127.0.0.1:5380 within 90s" >&2
   systemctl status dns.service --no-pager >&2 || true
   journalctl -u dns.service -n 25 --no-pager >&2 || true
   return 1
