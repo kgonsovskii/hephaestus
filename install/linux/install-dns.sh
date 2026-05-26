@@ -83,19 +83,81 @@ mkdir -p "${INSTALL_DIR}"
 shopt -s dotglob
 cp -a "${PUBLISH}"/* "${INSTALL_DIR}/"
 
+# https://blog.technitium.com/2017/11/running-dns-server-on-ubuntu-linux.html (manual systemd steps)
+setup_technitium_service_account() {
+  mkdir -p /etc/dns /var/log/technitium/dns
+  if ! id dns-server >/dev/null 2>&1; then
+    echo "[dns] useradd dns-server (Technitium manual install)"
+    useradd --system -M --shell /usr/sbin/nologin dns-server
+  fi
+  if [ -d "${INSTALL_DIR}/config" ]; then
+    shopt -s dotglob nullglob
+    local cfg=( "${INSTALL_DIR}/config"/* )
+    if [ "${#cfg[@]}" -gt 0 ]; then
+      echo "[dns] Copy packaged config -> /etc/dns"
+      cp -a "${INSTALL_DIR}/config"/* /etc/dns/
+    fi
+  fi
+  chown -R dns-server:dns-server "${INSTALL_DIR}" /etc/dns /var/log/technitium/dns
+}
+
+wait_for_technitium_dns() {
+  local deadline=$((SECONDS + "${TECHNI_HTTP_WAIT_SEC:-90}"))
+  while [ "$SECONDS" -lt "$deadline" ]; do
+    if systemctl is-active --quiet dns.service \
+        && curl -fsS --max-time 3 http://127.0.0.1:5380/ >/dev/null 2>&1; then
+      return 0
+    fi
+    sleep 2
+  done
+  echo "[dns] Technitium did not become ready on http://127.0.0.1:5380 within ${TECHNI_HTTP_WAIT_SEC:-90}s" >&2
+  systemctl status dns.service --no-pager >&2 || true
+  journalctl -u dns.service -n 25 --no-pager >&2 || true
+  return 1
+}
+
+set_local_resolver_loopback() {
+  local backup=/etc/resolv.conf.hephaestus.bak
+  if [ ! -f "$backup" ]; then
+    cp -a /etc/resolv.conf "$backup" 2>/dev/null || true
+  fi
+  printf 'nameserver 127.0.0.1\n' >/etc/resolv.conf
+  echo "[dns] /etc/resolv.conf -> 127.0.0.1 (backup: $backup)"
+}
+
+restore_resolver_fallback() {
+  local backup=/etc/resolv.conf.hephaestus.bak
+  if [ -f "$backup" ] && ! grep -q '^nameserver 127\.0\.0\.1$' "$backup" 2>/dev/null; then
+    cp -a "$backup" /etc/resolv.conf
+    echo "[dns] Restored /etc/resolv.conf from backup."
+  else
+    printf 'nameserver 8.8.8.8\nnameserver 1.1.1.1\n' >/etc/resolv.conf
+    echo "[dns] Restored /etc/resolv.conf to public DNS (8.8.8.8, 1.1.1.1)."
+  fi
+}
+
 if [ -f "${INSTALL_DIR}/systemd.service" ]; then
   cp "${INSTALL_DIR}/systemd.service" /etc/systemd/system/dns.service
   systemctl daemon-reload
 fi
 
+setup_technitium_service_account
+
 systemctl stop systemd-resolved 2>/dev/null || true
 systemctl disable systemd-resolved 2>/dev/null || true
 
 systemctl enable dns.service
-systemctl restart dns.service
+if ! systemctl restart dns.service; then
+  restore_resolver_fallback
+  exit 1
+fi
 
-rm -f /etc/resolv.conf
-echo "nameserver 127.0.0.1" > /etc/resolv.conf
+if ! wait_for_technitium_dns; then
+  restore_resolver_fallback
+  exit 1
+fi
+
+set_local_resolver_loopback
 
 echo "[dns] Apply Technitium admin password (Commons appsettings via install/Install)"
 set +e
