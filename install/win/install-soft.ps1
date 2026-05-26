@@ -35,18 +35,15 @@ Write-Host "[install-soft 4/6] dotnet build Deploy -t:DeployDomain (win-x64) -> 
 & dotnet build $paths.DeployProj -c Release -t:DeployDomain -p:DeployRuntimeIdentifier=win-x64 --no-restore -v minimal
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-if (-not (Test-Path -LiteralPath $paths.DomainHostDll)) {
-    throw "Deploy did not produce DomainHost.dll at $($paths.DomainHostDll)"
+if (-not (Test-Path -LiteralPath $paths.DomainHostExe)) {
+    throw "Deploy did not produce DomainHost.exe at $($paths.DomainHostExe)"
 }
-
-$dotnetExe = (Get-Command dotnet -ErrorAction Stop).Source
-$domainHostBin = "`"$dotnetExe`" `"$($paths.DomainHostDll)`""
 
 Write-Host '[install-soft 5/6] Register Windows service domainhost (auto-start)'
 Install-HephaestusWindowsService `
     -Name 'domainhost' `
     -DisplayName 'Hephaestus DomainHost' `
-    -BinPath $domainHostBin `
+    -BinPathCommand @($paths.DomainHostExe) `
     -AppDirectory $paths.ReleaseDir `
     -Description 'Hephaestus DomainHost (HTTP/HTTPS on 80/443)'
 

@@ -15,7 +15,7 @@ bash "${SCRIPT_DIR}/uninstall.sh"
 bash "${SCRIPT_DIR}/install-git.sh"
 bash "${SCRIPT_DIR}/install-net.sh"
 bash "${SCRIPT_DIR}/install-postgres.sh"
-bash "${SCRIPT_DIR}/install-soft.sh"
 bash "${SCRIPT_DIR}/install-dns.sh"
+bash "${SCRIPT_DIR}/install-soft.sh"
 sync
 echo "Install finished."

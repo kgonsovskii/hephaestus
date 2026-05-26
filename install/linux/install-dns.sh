@@ -40,7 +40,7 @@ if [ "${INSTALL_DNS_FORCE:-0}" != "1" ] \
     && systemctl is-active --quiet dns.service 2>/dev/null \
     && [ -d "$INSTALL_DIR" ] \
     && compgen -G "$INSTALL_DIR"/*.dll >/dev/null 2>&1; then
-  echo "[dns] dns.service active and $INSTALL_DIR has binaries — skipping Technitium install."
+  echo "[dns] dns.service active and $INSTALL_DIR has binaries - skipping Technitium install."
   exit 0
 fi
 

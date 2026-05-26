@@ -26,7 +26,7 @@ $dnsSvc = Get-Service -Name 'hephaestus-dns' -ErrorAction SilentlyContinue
 $hasBinaries = (Test-Path -LiteralPath $installDir) -and
     (Get-ChildItem -LiteralPath $installDir -Filter '*.dll' -ErrorAction SilentlyContinue | Select-Object -First 1)
 if ($env:INSTALL_DNS_FORCE -ne '1' -and $dnsSvc -and $dnsSvc.Status -eq 'Running' -and $hasBinaries) {
-    Write-Host "[dns] hephaestus-dns active and $installDir has binaries — skipping Technitium install."
+    Write-Host "[dns] hephaestus-dns active and $installDir has binaries - skipping Technitium install."
     exit 0
 }
 
@@ -80,7 +80,7 @@ try {
 
     $dnsExePath = Join-Path $installDir 'DnsServerApp.exe'
     if (Test-Path -LiteralPath $dnsExePath) {
-        $dnsBinPath = "`"$dnsExePath`""
+        $dnsBinPathCommand = @($dnsExePath)
     }
     else {
         $dll = Join-Path $installDir 'DnsServerApp.dll'
@@ -88,14 +88,14 @@ try {
             throw "No DnsServerApp.exe or DnsServerApp.dll in $installDir"
         }
         $dotnetExe = (Get-Command dotnet -ErrorAction Stop).Source
-        $dnsBinPath = "`"$dotnetExe`" `"$dll`""
+        $dnsBinPathCommand = @($dotnetExe, $dll)
     }
 
     Write-Host '[dns] Register Windows service hephaestus-dns'
     Install-HephaestusWindowsService `
         -Name 'hephaestus-dns' `
         -DisplayName 'Hephaestus Technitium DNS' `
-        -BinPath $dnsBinPath `
+        -BinPathCommand $dnsBinPathCommand `
         -AppDirectory $installDir `
         -Description 'Technitium DNS Server (local resolver)'
 

@@ -9,8 +9,8 @@
 
 ## Entry points
 
-- **Linux:** `sudo bash install/install.sh` (runs `install/linux/*`)
-- **Windows:** `install\install.bat` as Administrator (runs `install\win\*`)
+- **Linux:** `sudo bash install/install.sh` (runs `install/linux/*`; DNS before DomainHost)
+- **Windows:** `install\install.bat` as Administrator (runs `install\win\*`; DNS before DomainHost)
 - **Remote SSH:** `bash install/install-remote.sh`
 - **Linux update:** `sudo bash install/update.sh` (runs `install/linux/update.sh`)
 

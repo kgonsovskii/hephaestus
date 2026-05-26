@@ -11,8 +11,8 @@ using Refiner;
 
 var builder = WebApplication.CreateBuilder(args);
 
-
-
+if (OperatingSystem.IsWindows())
+    builder.Host.UseWindowsService();
 
 builder.Configuration.AddJsonFile(Path.Combine(AppContext.BaseDirectory, "appsettings.json"), optional: true,
     reloadOnChange: true);

@@ -19,6 +19,7 @@ function Get-HephaestusInstallPaths {
         Solution    = Join-Path $repoRoot 'panel.sln'
         DeployProj  = Join-Path $repoRoot 'panel\Deploy\Deploy.csproj'
         DomainHostDll = Join-Path $repoRoot 'release\DomainHost.dll'
+        DomainHostExe = Join-Path $repoRoot 'release\DomainHost.exe'
         SetupPostgresSql = Join-Path $sharedDir 'setup-postgres.sql'
     }
 }
@@ -89,31 +90,72 @@ function Remove-HephaestusWindowsService {
     if ($existing) {
         Write-Host "[install] Removing service $Name..."
         sc.exe delete $Name | Out-Null
-        Start-Sleep -Seconds 2
+        for ($i = 0; $i -lt 20; $i++) {
+            if (-not (Get-Service -Name $Name -ErrorAction SilentlyContinue)) {
+                break
+            }
+            Start-Sleep -Seconds 1
+        }
     }
+}
+
+function Format-ServiceBinaryPathName {
+    param([Parameter(Mandatory)][string[]]$Command)
+    # SCM binary path: quote each segment (required when paths contain spaces).
+    ($Command | ForEach-Object { "`"$_`"" }) -join ' '
 }
 
 function Install-HephaestusWindowsService {
     param(
         [Parameter(Mandatory)][string]$Name,
         [Parameter(Mandatory)][string]$DisplayName,
-        [Parameter(Mandatory)][string]$BinPath,
+        [Parameter(Mandatory)][string[]]$BinPathCommand,
         [string]$Description = '',
         [string]$AppDirectory = ''
     )
-    Remove-HephaestusWindowsService -Name $Name
-    # sc.exe expects: binPath= "\"exe\" \"arg\"" or binPath= "\"exe.exe\""
-    sc.exe create $Name binPath= $BinPath start= auto DisplayName= $DisplayName | Out-Null
-    if ($LASTEXITCODE -ne 0) {
-        throw "sc.exe create $Name failed (exit $LASTEXITCODE). binPath=$BinPath"
+    if ($BinPathCommand.Count -lt 1) {
+        throw 'BinPathCommand requires at least one executable path.'
     }
+
+    Remove-HephaestusWindowsService -Name $Name
+
+    $binaryPathName = Format-ServiceBinaryPathName -Command $BinPathCommand
+    Write-Host "[install] Creating service $Name : $binaryPathName"
+
+    try {
+        New-Service -Name $Name -BinaryPathName $binaryPathName -DisplayName $DisplayName -StartupType Automatic `
+            -ErrorAction Stop | Out-Null
+    }
+    catch {
+        throw "Failed to create service ${Name}: $($_.Exception.Message). BinaryPathName=$binaryPathName"
+    }
+
     if ($Description) {
         sc.exe description $Name $Description | Out-Null
     }
     if ($AppDirectory) {
         sc.exe config $Name AppDirectory= "`"$AppDirectory`"" | Out-Null
     }
-    Start-Service -Name $Name
+
+    try {
+        Start-Service -Name $Name -ErrorAction Stop
+    }
+    catch {
+        $query = (& sc.exe query $Name 2>&1 | Out-String).Trim()
+        $manual = if ($AppDirectory -and $BinPathCommand.Count -gt 0) {
+            $tryExe = $BinPathCommand[0]
+            "Manual test: cd `"$AppDirectory`"; & `"$tryExe`""
+        } else {
+            ''
+        }
+        throw @(
+            "Start-Service '$Name' failed: $($_.Exception.Message)",
+            $query,
+            $manual,
+            'Check Windows Event Viewer (Application) for .NET Runtime / DomainHost errors.'
+        ) -join [Environment]::NewLine
+    }
+
     $svc = Get-Service -Name $Name
     if ($svc.Status -ne 'Running') {
         throw "Service $Name did not reach Running state (status: $($svc.Status))."

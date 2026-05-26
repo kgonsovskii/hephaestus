@@ -66,11 +66,27 @@ public sealed class DomainMaintenance : IDomainMaintenance
             desired.Add(fqdn);
         }
 
-        var token = await _dns.LoginAsync(opts.User, opts.Password, cancellationToken).ConfigureAwait(false);
+        string token;
+        try
+        {
+            token = await _dns.LoginAsync(opts.User, opts.Password, cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception ex) when (TechnitiumReachability.IsUnreachable(ex))
+        {
+            _logger.LogWarning(
+                "Technitium DNS not reachable at {BaseUrl} ({Message}). DNS sync skipped.",
+                opts.BaseUrl.Trim(),
+                ex.Message);
+            return;
+        }
 
         try
         {
             await _dns.ApplyGlobalForwardersAsync(token, opts, cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception ex) when (TechnitiumReachability.IsUnreachable(ex))
+        {
+            _logger.LogWarning("Could not set Technitium global DNS forwarders: {Message}", ex.Message);
         }
         catch (Exception ex)
         {
@@ -80,6 +96,10 @@ public sealed class DomainMaintenance : IDomainMaintenance
         try
         {
             await _dns.ApplyRecursionPolicyAsync(token, opts, cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception ex) when (TechnitiumReachability.IsUnreachable(ex))
+        {
+            _logger.LogWarning("Could not set Technitium recursion policy: {Message}", ex.Message);
         }
         catch (Exception ex)
         {
