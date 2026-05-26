@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Entry point: delegates to install/linux/install.sh (same as full Linux install).
+# Full Linux install (DNS before DomainHost). Delegates to install/linux/install.sh.
 set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 exec bash "${ROOT}/linux/install.sh" "$@"

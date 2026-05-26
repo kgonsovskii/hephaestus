@@ -9,10 +9,11 @@
 
 ## Entry points
 
-- **Linux:** `sudo bash install/install.sh` (runs `install/linux/*`; DNS before DomainHost)
-- **Windows:** `install\install.bat` as Administrator (runs `install\win\*`; DNS before DomainHost)
+- **Linux full:** `sudo bash install/install.sh` (order: uninstall, git, net, postgres, **dns**, **soft**)
+- **Linux steps:** `sudo bash install/install-dns.sh` then `sudo bash install/install-soft.sh`
+- **Windows full:** `install\install.bat` as Administrator (same order: dns before soft)
 - **Remote SSH:** `bash install/install-remote.sh`
-- **Linux update:** `sudo bash install/update.sh` (runs `install/linux/update.sh`)
+- **Linux update:** `sudo bash install/update.sh`
 
 ## Layout
 

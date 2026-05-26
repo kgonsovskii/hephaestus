@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Linux full install. Windows: install\install.bat (Administrator, Chocolatey).
+# Linux full install: postgres, Technitium DNS, then DomainHost. Windows: install\install.bat.
 set -euo pipefail
 export DEBIAN_FRONTEND=noninteractive
 

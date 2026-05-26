@@ -77,25 +77,23 @@ try {
     }
     New-Item -ItemType Directory -Path $installDir -Force | Out-Null
     Copy-Item -Path (Join-Path $publish '*') -Destination $installDir -Recurse -Force
+    Grant-HephaestusDataDirectoryAccess -Directory $installDir
 
     $dnsExePath = Join-Path $installDir 'DnsServerApp.exe'
-    if (Test-Path -LiteralPath $dnsExePath) {
-        $dnsBinPathCommand = @($dnsExePath)
-    }
-    else {
+    if (-not (Test-Path -LiteralPath $dnsExePath)) {
         $dll = Join-Path $installDir 'DnsServerApp.dll'
         if (-not (Test-Path -LiteralPath $dll)) {
             throw "No DnsServerApp.exe or DnsServerApp.dll in $installDir"
         }
-        $dotnetExe = (Get-Command dotnet -ErrorAction Stop).Source
-        $dnsBinPathCommand = @($dotnetExe, $dll)
+        throw 'DnsServerApp.exe missing after publish; Technitium must run as a native exe (NSSM cannot host dotnet.dll alone). Re-run publish or install-net.'
     }
 
-    Write-Host '[dns] Register Windows service hephaestus-dns'
-    Install-HephaestusWindowsService `
+    # Technitium DnsServerApp is a console host (no SCM handshake). Raw New-Service -> error 1053.
+    Write-Host '[dns] Register Windows service hephaestus-dns (NSSM)'
+    Install-HephaestusNssmService `
         -Name 'hephaestus-dns' `
         -DisplayName 'Hephaestus Technitium DNS' `
-        -BinPathCommand $dnsBinPathCommand `
+        -Application $dnsExePath `
         -AppDirectory $installDir `
         -Description 'Technitium DNS Server (local resolver)'
 

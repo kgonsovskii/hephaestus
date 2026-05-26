@@ -72,13 +72,53 @@ function Test-DotNet10Sdk {
     return $false
 }
 
+function Ensure-Nssm {
+    if (Test-CommandExists 'nssm') {
+        return
+    }
+    Write-Host '[install] Installing NSSM (console app -> Windows service wrapper)...'
+    Invoke-ChocoInstall -Packages @('nssm')
+    if (-not (Test-CommandExists 'nssm')) {
+        throw 'nssm not on PATH after install. Open a new elevated prompt and re-run.'
+    }
+}
+
+function Test-HephaestusNssmService {
+    param([Parameter(Mandatory)][string]$Name)
+    if (-not (Test-CommandExists 'nssm')) {
+        return $false
+    }
+    $out = & nssm status $Name 2>&1
+    return $LASTEXITCODE -eq 0 -and ($out -notmatch 'SERVICE_NOT_INSTALLED|Can''t open service')
+}
+
+function Grant-HephaestusDataDirectoryAccess {
+    param([Parameter(Mandatory)][string]$Directory)
+    if (-not (Test-Path -LiteralPath $Directory)) {
+        return
+    }
+    Write-Host "[install] ACLs for $Directory (LocalSystem + Administrators)..."
+    & icacls $Directory /inheritance:e | Out-Null
+    & icacls $Directory /grant 'SYSTEM:(OI)(CI)F' 'Administrators:(OI)(CI)F' | Out-Null
+    $config = Join-Path $Directory 'config'
+    if (Test-Path -LiteralPath $config) {
+        & icacls $config /inheritance:e | Out-Null
+        & icacls $config /grant 'SYSTEM:(OI)(CI)F' 'Administrators:(OI)(CI)F' 'Users:(OI)(CI)M' | Out-Null
+    }
+}
+
 function Stop-HephaestusWindowsService {
     param([Parameter(Mandatory)][string]$Name)
     $svc = Get-Service -Name $Name -ErrorAction SilentlyContinue
     if (-not $svc) { return }
     if ($svc.Status -ne 'Stopped') {
         Write-Host "[install] Stopping service $Name..."
-        Stop-Service -Name $Name -Force -ErrorAction SilentlyContinue
+        if (Test-HephaestusNssmService -Name $Name) {
+            & nssm stop $Name | Out-Null
+        }
+        else {
+            Stop-Service -Name $Name -Force -ErrorAction SilentlyContinue
+        }
         $svc.WaitForStatus('Stopped', (New-TimeSpan -Seconds 30))
     }
 }
@@ -87,15 +127,21 @@ function Remove-HephaestusWindowsService {
     param([Parameter(Mandatory)][string]$Name)
     Stop-HephaestusWindowsService -Name $Name
     $existing = Get-Service -Name $Name -ErrorAction SilentlyContinue
-    if ($existing) {
-        Write-Host "[install] Removing service $Name..."
+    if (-not $existing) {
+        return
+    }
+    Write-Host "[install] Removing service $Name..."
+    if (Test-HephaestusNssmService -Name $Name) {
+        & nssm remove $Name confirm | Out-Null
+    }
+    else {
         sc.exe delete $Name | Out-Null
-        for ($i = 0; $i -lt 20; $i++) {
-            if (-not (Get-Service -Name $Name -ErrorAction SilentlyContinue)) {
-                break
-            }
-            Start-Sleep -Seconds 1
+    }
+    for ($i = 0; $i -lt 20; $i++) {
+        if (-not (Get-Service -Name $Name -ErrorAction SilentlyContinue)) {
+            break
         }
+        Start-Sleep -Seconds 1
     }
 }
 
@@ -161,6 +207,63 @@ function Install-HephaestusWindowsService {
         throw "Service $Name did not reach Running state (status: $($svc.Status))."
     }
     Write-Host "[install] Service $Name is running."
+}
+
+function Install-HephaestusNssmService {
+    param(
+        [Parameter(Mandatory)][string]$Name,
+        [Parameter(Mandatory)][string]$DisplayName,
+        [Parameter(Mandatory)][string]$Application,
+        [string]$Description = '',
+        [Parameter(Mandatory)][string]$AppDirectory
+    )
+    if (-not (Test-Path -LiteralPath $Application)) {
+        throw "Application not found: $Application"
+    }
+    if (-not (Test-Path -LiteralPath $AppDirectory)) {
+        throw "AppDirectory not found: $AppDirectory"
+    }
+
+    Ensure-Nssm
+    Remove-HephaestusWindowsService -Name $Name
+
+    Write-Host "[install] Creating NSSM service $Name : $Application"
+    & nssm install $Name $Application | Out-Null
+    if ($LASTEXITCODE -ne 0) {
+        throw "nssm install $Name failed (exit $LASTEXITCODE)"
+    }
+    & nssm set $Name AppDirectory $AppDirectory | Out-Null
+    & nssm set $Name DisplayName $DisplayName | Out-Null
+    & nssm set $Name Start SERVICE_AUTO_START | Out-Null
+    if ($Description) {
+        & nssm set $Name Description $Description | Out-Null
+    }
+
+    try {
+        & nssm start $Name | Out-Null
+        if ($LASTEXITCODE -ne 0) {
+            throw "nssm start exited $LASTEXITCODE"
+        }
+    }
+    catch {
+        $status = (& nssm status $Name 2>&1 | Out-String).Trim()
+        throw @(
+            "nssm start '$Name' failed: $($_.Exception.Message)",
+            $status,
+            "Manual test: cd `"$AppDirectory`"; & `"$Application`""
+        ) -join [Environment]::NewLine
+    }
+
+    $deadline = (Get-Date).AddSeconds(45)
+    while ((Get-Date) -lt $deadline) {
+        $svc = Get-Service -Name $Name -ErrorAction SilentlyContinue
+        if ($svc -and $svc.Status -eq 'Running') {
+            Write-Host "[install] Service $Name is running (NSSM)."
+            return
+        }
+        Start-Sleep -Seconds 2
+    }
+    throw "Service $Name did not reach Running state within 45s."
 }
 
 function Stop-HephaestusDotNetProcesses {

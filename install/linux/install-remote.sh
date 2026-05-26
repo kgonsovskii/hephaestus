@@ -10,7 +10,7 @@ CREDS_FILE="${SHARED_DIR}/install-remote-creds.txt"
 read_install_remote_creds_file() {
   local f="$1"
   if [[ ! -f "$f" ]]; then
-    echo "Missing $f — add install/shared/install-remote-creds.txt (three lines: host, login, password)." >&2
+    echo "Missing $f - add install/shared/install-remote-creds.txt (three lines: host, login, password)." >&2
     exit 1
   fi
   local -a lines=()
