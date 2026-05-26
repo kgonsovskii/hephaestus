@@ -15,6 +15,11 @@ if [ "${EUID:-0}" -ne 0 ]; then
   exit 1
 fi
 
+hephaestus_source_shared_wait
+if ! command -v curl >/dev/null 2>&1; then
+  apt_get install -y curl
+fi
+
 if ! command -v git >/dev/null 2>&1; then
   echo "git not found. Run install/linux/install-git.sh first (or install/install.sh)." >&2
   exit 1

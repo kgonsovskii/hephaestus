@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # One-shot repair: restore resolver, create dns-server + /etc/dns, start Technitium, then loopback DNS.
-set -euo pipefail
+set -eu
 
 if [ "${EUID:-0}" -ne 0 ]; then
   exec sudo /usr/bin/env bash "$0" "$@"
