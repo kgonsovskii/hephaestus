@@ -65,9 +65,6 @@ public sealed class DomainHostOptionsValidator : IValidateOptions<DomainHostOpti
         if (o.RepositoryRootSearchMaxAscents is < 1 or > 200)
             errors.Add($"{DomainHostOptions.SectionName}:{nameof(o.RepositoryRootSearchMaxAscents)} must be between 1 and 200 (got {o.RepositoryRootSearchMaxAscents}).");
 
-        if (o.RefreshSeconds is < 5 or > 3600)
-            errors.Add($"{DomainHostOptions.SectionName}:{nameof(o.RefreshSeconds)} must be between 5 and 3600 (got {o.RefreshSeconds}).");
-
         if (o.HttpPort is < 1 or > 65535)
             errors.Add($"{DomainHostOptions.SectionName}:{nameof(o.HttpPort)} must be between 1 and 65535 (got {o.HttpPort}).");
 
@@ -76,6 +73,9 @@ public sealed class DomainHostOptionsValidator : IValidateOptions<DomainHostOpti
 
         if (o.StaticFileCacheMaxAgeSeconds is < 0 or > 86400)
             errors.Add($"{DomainHostOptions.SectionName}:{nameof(o.StaticFileCacheMaxAgeSeconds)} must be between 0 and 86400 (got {o.StaticFileCacheMaxAgeSeconds}).");
+
+        if (o.RetryDelaySeconds is < 1 or > 3600)
+            errors.Add($"{DomainHostOptions.SectionName}:{nameof(o.RetryDelaySeconds)} must be between 1 and 3600 (got {o.RetryDelaySeconds}).");
 
         return errors;
     }

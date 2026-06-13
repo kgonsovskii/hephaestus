@@ -6,6 +6,7 @@ public sealed class RefinerOptions
 
         public TimeSpan StatsInterval { get; set; } = TimeSpan.FromMinutes(1);
 
+        /// <summary>How often domain catalog reload and Technitium DNS sync run; CP apply also wakes via <c>NotifyHostsChanged</c>.</summary>
         public TimeSpan DomainInterval { get; set; } = TimeSpan.FromMinutes(1);
 
         /// <summary>How often Troyan build runs; <c>NotifyHostsChanged</c> on the shared signal also wakes it (CP apply / domain save).</summary>

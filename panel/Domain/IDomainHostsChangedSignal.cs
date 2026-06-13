@@ -6,13 +6,9 @@ public interface IDomainHostsChangedSignal
 
         Task WhenRefinerWakeAsync(CancellationToken cancellationToken = default);
 
-        Task WhenCatalogWakeAsync(CancellationToken cancellationToken = default);
-
         Task WhenTroyanWakeAsync(CancellationToken cancellationToken = default);
 
         void DrainExtraRefinerSignals();
-
-        void DrainExtraCatalogSignals();
 
         void DrainExtraTroyanSignals();
 }

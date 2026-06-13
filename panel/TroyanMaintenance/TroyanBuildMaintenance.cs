@@ -1,3 +1,4 @@
+using Commons;
 using Microsoft.Extensions.Logging;
 using Troyan.Core;
 
@@ -29,7 +30,7 @@ public sealed class TroyanBuildMaintenance : ITroyanBuildMaintenance
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Troyan periodic build failed.");
+                    _logger.LogErrorMessage(ex, "Troyan periodic build failed.");
                 }
             },
             cancellationToken);

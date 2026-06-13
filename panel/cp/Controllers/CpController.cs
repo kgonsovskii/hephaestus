@@ -262,7 +262,7 @@ public class CpController : BaseController
 
 
             var result = _serverService.PostServerRequest(existingModel, action);
-            // Persist only here; DNS / catalog / Troyan builds run in Refiner + DomainCatalogRefresh hosted loops (wake below).
+            // Persist only here; DNS / catalog / Troyan builds run in Refiner hosted loops (wake below).
             if (result == "OK")
                 _hostsChanged.NotifyHostsChanged();
 

@@ -1,3 +1,4 @@
+using Commons;
 using Domain;
 
 namespace DomainHost;
@@ -38,7 +39,7 @@ public sealed class WebRootFileWatcherHostedService : BackgroundService
         watcher.Created += OnEvent;
         watcher.Deleted += OnEvent;
         watcher.Renamed += (_, _) => ScheduleBump();
-        watcher.Error += (_, e) => _logger.LogError(e.GetException(), "Web root FileSystemWatcher error.");
+        watcher.Error += (_, e) => _logger.LogErrorMessage(e.GetException(), "Web root FileSystemWatcher error.");
 
         watcher.EnableRaisingEvents = true;
         _logger.LogInformation("Watching web root for static cache invalidation: {Path}", root);

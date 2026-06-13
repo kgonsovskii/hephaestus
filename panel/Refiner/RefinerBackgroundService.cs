@@ -57,7 +57,7 @@ public sealed class RefinerBackgroundService : BackgroundService
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Refiner {Label} maintenance failed", "domain");
+                _logger.LogErrorMessage(ex, "Refiner {Label} maintenance failed", "domain");
             }
 
             var interval = _options.CurrentValue.DomainInterval;
@@ -95,7 +95,7 @@ public sealed class RefinerBackgroundService : BackgroundService
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Refiner {Label} maintenance failed", "troyan");
+                _logger.LogErrorMessage(ex, "Refiner {Label} maintenance failed", "troyan");
             }
 
             if (pendingLandingUpload)
@@ -107,7 +107,7 @@ public sealed class RefinerBackgroundService : BackgroundService
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Refiner {Label} maintenance failed", "landing ftp");
+                    _logger.LogErrorMessage(ex, "Refiner {Label} maintenance failed", "landing ftp");
                 }
             }
 
@@ -145,7 +145,7 @@ public sealed class RefinerBackgroundService : BackgroundService
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Refiner {Label} maintenance failed", "landing ftp");
+                _logger.LogErrorMessage(ex, "Refiner {Label} maintenance failed", "landing ftp");
             }
 
             var interval = _options.CurrentValue.LandingFtpInterval;
@@ -181,7 +181,7 @@ public sealed class RefinerBackgroundService : BackgroundService
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Refiner {Label} maintenance failed", label);
+                _logger.LogErrorMessage(ex, "Refiner {Label} maintenance failed", label);
             }
 
             try

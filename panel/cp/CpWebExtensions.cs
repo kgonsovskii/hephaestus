@@ -55,9 +55,9 @@ public static class CpWebExtensions
                     options.Cookie.SameSite = SameSiteMode.Lax;
                     options.SlidingExpiration = false;
                     options.ExpireTimeSpan = TimeSpan.FromDays(7);
-                    options.AccessDeniedPath = $"{cookiePath}/Auth";
-                    options.LoginPath = $"{cookiePath}/Auth";
-                    options.LogoutPath = $"{cookiePath}/Auth/logout";
+                    options.AccessDeniedPath = "/Auth";
+                    options.LoginPath = "/Auth";
+                    options.LogoutPath = "/Auth/logout";
                 });
             builder.Services.AddAuthorization();
         }

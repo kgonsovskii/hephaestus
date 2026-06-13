@@ -1,3 +1,4 @@
+using Commons;
 using System.Threading.Channels;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -47,7 +48,7 @@ public sealed class ClonerRemoteInstallHostedService : BackgroundService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Cloner: install failed {RunId}", work.RunId);
+            _logger.LogErrorMessage(ex, "Cloner: install failed {RunId}", work.RunId);
             await WriteLogLineAsync(work, $"[error] {ex.Message}", stoppingToken).ConfigureAwait(false);
         }
         finally

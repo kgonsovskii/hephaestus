@@ -31,6 +31,5 @@ public static class ServiceCollectionEx
         services.AddSingleton<IDomainCatalog>(sp => sp.GetRequiredService<DomainCatalog>());
         services.AddSingleton<IWebContentPathProvider, WebContentPathProvider>();
         services.AddSingleton<IWebContentClassCatalog, WebContentClassCatalog>();
-        services.AddHostedService<DomainCatalogRefreshService>();
     }
 }

@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Cloner;
+using Commons;
 using InstallRemote;
 using Microsoft.Extensions.Options;
 
@@ -85,7 +86,7 @@ public sealed class InstallRemoteInternalMiddleware
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "internal install-remote failed");
+            _logger.LogErrorMessage(ex, "internal install-remote failed");
             if (!context.Response.HasStarted)
                 context.Response.StatusCode = StatusCodes.Status500InternalServerError;
             await context.Response.WriteAsync("[error] " + ex.Message + "\n", context.RequestAborted).ConfigureAwait(false);

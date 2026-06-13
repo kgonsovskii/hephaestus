@@ -29,7 +29,7 @@ public sealed class LandingFtpMaintenance : ILandingFtpMaintenance
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "Landing FTP skipped: failed to load server.");
+                _logger.LogWarningMessage(ex, "Landing FTP skipped: failed to load server.");
                 return;
             }
 
@@ -55,7 +55,7 @@ public sealed class LandingFtpMaintenance : ILandingFtpMaintenance
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Landing FTP upload failed.");
+                _logger.LogErrorMessage(ex, "Landing FTP upload failed.");
             }
         }, cancellationToken);
     }

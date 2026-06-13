@@ -17,8 +17,6 @@ public sealed class DomainHostOptions
 
     public string DomainsIgnoreFileName { get; set; } = null!;
 
-    public int RefreshSeconds { get; set; }
-
     public string CertDirectoryName { get; set; } = null!;
 
     public string CertPfxFileName { get; set; } = null!;
@@ -37,4 +35,7 @@ public sealed class DomainHostOptions
     public string RepositoryMarkerFileName { get; set; } = null!;
 
     public int RepositoryRootSearchMaxAscents { get; set; }
+
+    /// <summary>Seconds to wait before retrying when the host fails to start (e.g. port busy).</summary>
+    public int RetryDelaySeconds { get; set; }
 }

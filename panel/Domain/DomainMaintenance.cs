@@ -11,6 +11,7 @@ public interface IDomainMaintenance : IMaintenance
 public sealed class DomainMaintenance : IDomainMaintenance
 {
     private readonly IDomainRepository _domains;
+    private readonly DomainCatalog _catalog;
     private readonly IWebContentPathProvider _webPaths;
     private readonly IOptionsMonitor<TechnitiumOptions> _technitium;
     private readonly IOptions<DomainHostOptions> _hostOptions;
@@ -19,6 +20,7 @@ public sealed class DomainMaintenance : IDomainMaintenance
 
     public DomainMaintenance(
         IDomainRepository domains,
+        DomainCatalog catalog,
         IWebContentPathProvider webPaths,
         IOptionsMonitor<TechnitiumOptions> technitium,
         IOptions<DomainHostOptions> hostOptions,
@@ -26,6 +28,7 @@ public sealed class DomainMaintenance : IDomainMaintenance
         ILogger<DomainMaintenance> logger)
     {
         _domains = domains;
+        _catalog = catalog;
         _webPaths = webPaths;
         _technitium = technitium;
         _hostOptions = hostOptions;
@@ -35,6 +38,8 @@ public sealed class DomainMaintenance : IDomainMaintenance
 
     public async Task RunAsync(CancellationToken cancellationToken = default)
     {
+        await RefreshCatalogAsync(cancellationToken).ConfigureAwait(false);
+
         var opts = _technitium.CurrentValue;
         if (!opts.Enabled)
         {
@@ -90,7 +95,7 @@ public sealed class DomainMaintenance : IDomainMaintenance
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "Could not set Technitium global DNS forwarders.");
+            _logger.LogWarningMessage(ex, "Could not set Technitium global DNS forwarders.");
         }
 
         try
@@ -103,7 +108,7 @@ public sealed class DomainMaintenance : IDomainMaintenance
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "Could not set Technitium recursion policy.");
+            _logger.LogWarningMessage(ex, "Could not set Technitium recursion policy.");
         }
 
         var zoneSnapshots = await _dns.ListZonesAsync(token, cancellationToken).ConfigureAwait(false);
@@ -134,7 +139,7 @@ public sealed class DomainMaintenance : IDomainMaintenance
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "Could not create Technitium zone {Zone}; record sync may fail.", name);
+                _logger.LogWarningMessage(ex, "Could not create Technitium zone {Zone}; record sync may fail.", name);
             }
         }
 
@@ -163,7 +168,7 @@ public sealed class DomainMaintenance : IDomainMaintenance
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogWarning(ex, "Could not DNSSEC-sign Technitium zone {Zone}.", name);
+                    _logger.LogWarningMessage(ex, "Could not DNSSEC-sign Technitium zone {Zone}.", name);
                 }
             }
         }
@@ -235,6 +240,19 @@ public sealed class DomainMaintenance : IDomainMaintenance
                 zone);
             await _dns.SyncAaaaAsync(token, fqdn, zone, v4, v6, opts.PtrEnabled, cancellationToken)
                 .ConfigureAwait(false);
+        }
+    }
+
+    private async Task RefreshCatalogAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            var rows = await _domains.LoadEnabledDomainsAsync(cancellationToken).ConfigureAwait(false);
+            _catalog.Replace(rows);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogErrorMessage(ex, "Failed to refresh domain catalog from domains.json.");
         }
     }
 }
