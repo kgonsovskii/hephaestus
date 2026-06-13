@@ -7,4 +7,8 @@ public sealed class DomainPageViewModel
     public required IReadOnlyList<string> ClassFolderNames { get; init; }
 
     public string? Message { get; init; }
+
+    public string? WebFtpUrl { get; init; }
+
+    public string? WebRootFullPath { get; init; }
 }

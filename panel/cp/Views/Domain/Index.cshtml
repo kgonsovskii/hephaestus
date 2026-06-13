@@ -26,6 +26,14 @@
         (empty class uses <code>analytics</code>). Folders under <code>web/classes</code> drive the class list below.
     </p>
 
+    @if (!string.IsNullOrWhiteSpace(Model.WebFtpUrl))
+    {
+        <p class="small mb-3">
+            <strong>Web FTP</strong> (root <code>@Model.WebRootFullPath</code>):
+            <a href="@Model.WebFtpUrl" class="font-monospace user-select-all">@Model.WebFtpUrl</a>
+        </p>
+    }
+
     @if (Model.Message != null)
     {
         <div class="alert alert-success" role="alert">@Model.Message</div>

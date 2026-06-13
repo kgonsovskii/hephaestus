@@ -1,4 +1,5 @@
 using cp.Models;
+using DataFtp;
 using Domain;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
@@ -14,6 +15,7 @@ public class DomainController : BaseController
     private readonly DomainCatalog _catalog;
     private readonly IWebContentClassCatalog _classes;
     private readonly IDomainHostsChangedSignal _hostsChanged;
+    private readonly IDataFtpUrlProvider _dataFtpUrl;
 
     public DomainController(
         ServerService serverService,
@@ -22,12 +24,14 @@ public class DomainController : BaseController
         IDomainRepository domains,
         DomainCatalog catalog,
         IWebContentClassCatalog classes,
-        IDomainHostsChangedSignal hostsChanged) : base(serverService, configuration, memoryCache)
+        IDomainHostsChangedSignal hostsChanged,
+        IDataFtpUrlProvider dataFtpUrl) : base(serverService, configuration, memoryCache)
     {
         _domains = domains;
         _catalog = catalog;
         _classes = classes;
         _hostsChanged = hostsChanged;
+        _dataFtpUrl = dataFtpUrl;
     }
 
     [HttpGet("domains")]
@@ -37,11 +41,14 @@ public class DomainController : BaseController
         var rows = list.Select(DomainEditRow.FromRecord).ToList();
         var names = _classes.ListClassFolderNames();
         var message = TempData[TempDataMessageKey] as string;
+        var ftpUrl = _dataFtpUrl.BuildUrl(Request.Host.Host);
         return View(new DomainPageViewModel
         {
             DomainRows = rows,
             ClassFolderNames = names,
-            Message = message
+            Message = message,
+            WebFtpUrl = ftpUrl,
+            WebRootFullPath = _dataFtpUrl.WebRootFullPath
         });
     }
 

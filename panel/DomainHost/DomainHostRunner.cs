@@ -2,6 +2,7 @@ using System.Security.Cryptography.X509Certificates;
 using Cloner;
 using Commons;
 using cp;
+using DataFtp;
 using Db;
 using Domain;
 using Git;
@@ -127,6 +128,7 @@ internal static class DomainHostRunner
         }
 
         builder.Services.AddDomainServices(builder.Configuration);
+        builder.Services.AddDataFtp(builder.Configuration);
         builder.AddCp();
         builder.Services.AddDbServices(builder.Configuration);
         builder.Services.AddRefiner(builder.Configuration);
