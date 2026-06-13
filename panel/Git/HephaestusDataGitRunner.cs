@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using System.Text;
 using Commons;
 using Microsoft.Extensions.Logging;
 
@@ -9,8 +8,26 @@ public static class HephaestusDataGitRunner
 {
     private const string SyncStashMessage = "hephaestus-pre-sync";
     private const string SyncCommitMessage = "Hephaestus server sync";
+    private const string NetworkGitConfig =
+        "-c credential.helper= -c credential.helperManager= -c core.askPass= ";
+
+    private static readonly SemaphoreSlim SyncGate = new(1, 1);
 
     public static void Run(IHephaestusPathResolver paths, ILogger logger, CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        SyncGate.Wait(cancellationToken);
+        try
+        {
+            RunCore(paths, logger, cancellationToken);
+        }
+        finally
+        {
+            SyncGate.Release();
+        }
+    }
+
+    private static void RunCore(IHephaestusPathResolver paths, ILogger logger, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
@@ -43,7 +60,7 @@ public static class HephaestusDataGitRunner
             HephaestusDataGitConstants.RepositoryUrl,
             dataDir);
 
-        RunGit($"clone \"{HephaestusDataGitConstants.CloneUrl}\" \"{dataDir}\"", workingDirectory: null, logger);
+        RunGit($"{NetworkGitConfig}clone \"{AuthenticatedCloneUrl()}\" \"{dataDir}\"", workingDirectory: null, logger);
         EnsureGitIdentity(dataDir, logger);
         logger.LogInformation("Hephaestus data git: clone finished.");
     }
@@ -53,18 +70,11 @@ public static class HephaestusDataGitRunner
         cancellationToken.ThrowIfCancellationRequested();
 
         EnsureGitIdentity(dataDir, logger);
-        EnsureAuthenticatedRemote(dataDir, logger);
+        RefreshAuthenticatedRemote(dataDir, logger);
 
-        var hadLocalChanges = HasWorkingTreeChanges(dataDir, logger);
-        var stashed = false;
-        if (hadLocalChanges)
-        {
-            logger.LogDebug("Hephaestus data git: stashing local changes before pull.");
-            RunGit($"stash push -u -m \"{SyncStashMessage}\"", dataDir, logger);
-            stashed = true;
-        }
+        var stashed = TryStashLocalChanges(dataDir, logger);
 
-        RunGit("fetch origin", dataDir, logger);
+        RunGit($"{NetworkGitConfig}fetch origin", dataDir, logger);
         var branch = ResolveTrackingBranch(dataDir, logger);
         logger.LogInformation("Hephaestus data git: pulling origin/{Branch} (remote wins on conflicts).", branch);
         PullPreferringRemote(dataDir, branch, logger);
@@ -76,9 +86,30 @@ public static class HephaestusDataGitRunner
         PushLocalChanges(dataDir, branch, logger);
     }
 
+    private static bool TryStashLocalChanges(string dataDir, ILogger logger)
+    {
+        if (!HasWorkingTreeChanges(dataDir, logger))
+            return false;
+
+        logger.LogDebug("Hephaestus data git: stashing local changes before pull.");
+        if (!TryRunGit($"stash push -u -m \"{SyncStashMessage}\"", dataDir, logger, out var stashError))
+        {
+            logger.LogDebug("Hephaestus data git: stash skipped ({Error}).", stashError);
+            return false;
+        }
+
+        if (!HasStashEntries(dataDir, logger))
+        {
+            logger.LogDebug("Hephaestus data git: stash push reported success but stash list is empty.");
+            return false;
+        }
+
+        return true;
+    }
+
     private static void PullPreferringRemote(string dataDir, string branch, ILogger logger)
     {
-        var pullArgs = $"pull origin {branch} --no-rebase --no-edit -X theirs";
+        var pullArgs = $"{NetworkGitConfig}pull origin {branch} --no-rebase --no-edit -X theirs";
         if (TryRunGit(pullArgs, dataDir, logger, out _))
         {
             logger.LogInformation("Hephaestus data git: pull finished (remote wins on conflicts).");
@@ -94,24 +125,40 @@ public static class HephaestusDataGitRunner
 
     private static void RestoreStash(string dataDir, ILogger logger)
     {
-        if (!TryRunGit("stash pop", dataDir, logger, out var popError))
+        if (!HasStashEntries(dataDir, logger))
         {
-            logger.LogWarning(
-                "Hephaestus data git: stash pop failed ({Error}); restoring stashed server files over remote.",
-                popError);
-            TryRunGit("checkout --theirs -- .", dataDir, logger, out _);
-            RunGit("add -A", dataDir, logger);
-            TryRunGit("reset --quiet", dataDir, logger, out _);
-            TryRunGit("stash drop", dataDir, logger, out _);
+            logger.LogTrace("Hephaestus data git: no stash to restore.");
+            return;
         }
+
+        if (TryRunGit("stash pop", dataDir, logger, out _))
+            return;
+
+        logger.LogWarning(
+            "Hephaestus data git: stash pop had conflicts; keeping stashed server versions.");
+        TryRunGit("checkout --theirs -- .", dataDir, logger, out _);
+        RunGit("add -A", dataDir, logger);
+        TryRunGit("reset --quiet", dataDir, logger, out _);
+        if (HasStashEntries(dataDir, logger))
+            TryRunGit("stash drop", dataDir, logger, out _);
     }
 
     private static void PushLocalChanges(string dataDir, string branch, ILogger logger)
     {
         RunGit("add -A", dataDir, logger);
 
-        if (HasWorkingTreeChanges(dataDir, logger))
-            RunGit($"commit -m \"{SyncCommitMessage}\"", dataDir, logger);
+        if (HasStagedChanges(dataDir, logger))
+        {
+            if (!TryRunGit($"commit -m \"{SyncCommitMessage}\"", dataDir, logger, out var commitError)
+                && !IsNothingToCommit(commitError))
+            {
+                throw new InvalidOperationException($"git commit failed: {commitError}");
+            }
+        }
+        else
+        {
+            logger.LogTrace("Hephaestus data git: nothing to commit.");
+        }
 
         if (!HasUnpushedCommits(dataDir, branch, logger))
         {
@@ -119,9 +166,35 @@ public static class HephaestusDataGitRunner
             return;
         }
 
-        RunGit($"push origin {branch}", dataDir, logger);
+        var pushUrl = AuthenticatedCloneUrl();
+        var pushArgs = $"{NetworkGitConfig}push \"{pushUrl}\" {branch}";
+        if (!TryRunGit(pushArgs, dataDir, logger, out var pushError))
+        {
+            if (IsAuthFailure(pushError))
+            {
+                logger.LogWarning(
+                    "Hephaestus data git: push skipped — GitHub rejected the token. Pull works but push needs a fine-grained PAT with Contents read+write on hephaestus_data (set Git:HephaestusDataAccessToken in appsettings.json). {Error}",
+                    pushError);
+                return;
+            }
+
+            throw new InvalidOperationException($"git push failed: {pushError}");
+        }
+
         logger.LogInformation("Hephaestus data git: push to origin/{Branch} finished.", branch);
     }
+
+    private static string AuthenticatedCloneUrl() =>
+        HephaestusDataGitCredentials.CloneUrl(AppContext.BaseDirectory);
+
+    private static bool IsAuthFailure(string detail) =>
+        detail.Contains("Invalid username or token", StringComparison.OrdinalIgnoreCase)
+        || detail.Contains("Authentication failed", StringComparison.OrdinalIgnoreCase)
+        || detail.Contains("403", StringComparison.OrdinalIgnoreCase);
+
+    private static bool IsNothingToCommit(string detail) =>
+        detail.Contains("nothing to commit", StringComparison.OrdinalIgnoreCase)
+        || detail.Contains("nothing added to commit", StringComparison.OrdinalIgnoreCase);
 
     private static void EnsureGitIdentity(string dataDir, ILogger logger)
     {
@@ -131,19 +204,13 @@ public static class HephaestusDataGitRunner
             RunGit("config user.name Hephaestus", dataDir, logger);
     }
 
-    private static void EnsureAuthenticatedRemote(string dataDir, ILogger logger)
+    private static void RefreshAuthenticatedRemote(string dataDir, ILogger logger)
     {
-        if (!TryRunGit("remote get-url origin", dataDir, logger, out var currentUrl))
-        {
-            RunGit($"remote add origin \"{HephaestusDataGitConstants.CloneUrl}\"", dataDir, logger);
-            return;
-        }
-
-        if (!currentUrl.Contains("x-access-token:", StringComparison.OrdinalIgnoreCase))
-        {
-            logger.LogDebug("Hephaestus data git: updating origin URL with access token.");
-            RunGit($"remote set-url origin \"{HephaestusDataGitConstants.CloneUrl}\"", dataDir, logger);
-        }
+        var url = AuthenticatedCloneUrl();
+        if (TryRunGit("remote get-url origin", dataDir, logger, out _))
+            RunGit($"{NetworkGitConfig}remote set-url origin \"{url}\"", dataDir, logger);
+        else
+            RunGit($"{NetworkGitConfig}remote add origin \"{url}\"", dataDir, logger);
     }
 
     private static string ResolveTrackingBranch(string dataDir, ILogger logger)
@@ -174,10 +241,21 @@ public static class HephaestusDataGitRunner
         return !string.IsNullOrWhiteSpace(status);
     }
 
+    private static bool HasStagedChanges(string dataDir, ILogger logger)
+    {
+        var result = ExecuteGit("diff --cached --quiet", dataDir, logger);
+        return result.ExitCode == 1;
+    }
+
+    private static bool HasStashEntries(string dataDir, ILogger logger)
+    {
+        return TryRunGit("stash list", dataDir, logger, out var list) && !string.IsNullOrWhiteSpace(list);
+    }
+
     private static bool HasUnpushedCommits(string dataDir, string branch, ILogger logger)
     {
         if (!TryRunGit($"rev-list --count origin/{branch}..HEAD", dataDir, logger, out var countText))
-            return true;
+            return false;
 
         return int.TryParse(countText.Trim(), out var count) && count > 0;
     }
@@ -218,6 +296,8 @@ public static class HephaestusDataGitRunner
             RedirectStandardError = true,
             CreateNoWindow = true
         };
+        psi.Environment["GIT_TERMINAL_PROMPT"] = "0";
+        psi.Environment["GCM_INTERACTIVE"] = "Never";
         if (!string.IsNullOrEmpty(workingDirectory))
             psi.WorkingDirectory = workingDirectory;
 

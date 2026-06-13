@@ -4,9 +4,7 @@ internal static class HephaestusDataGitConstants
 {
     internal const string RepositoryUrl = "https://github.com/kgonsovskii/hephaestus_data.git";
 
-    internal const string AccessToken =
-        "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";
-
-    internal static string CloneUrl =>
-        $"https://x-access-token:{AccessToken}@github.com/kgonsovskii/hephaestus_data.git";
+    /// <summary>Fallback when <c>Git:HephaestusDataAccessToken</c> is not set in appsettings. Must allow push (Contents read+write).</summary>
+    internal const string DefaultAccessToken =
+        "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";
 }

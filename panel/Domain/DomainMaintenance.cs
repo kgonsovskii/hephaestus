@@ -35,6 +35,14 @@ public sealed class DomainMaintenance : IDomainMaintenance
 
     public async Task RunAsync(CancellationToken cancellationToken = default)
     {
+        var domainsPath = DomainsFilePath();
+        if (!File.Exists(domainsPath))
+        {
+            _catalog.Replace([]);
+            _logger.LogWarning("domains.json not found at {Path}; no domains, DNS sync skipped.", domainsPath);
+            return;
+        }
+
         await RefreshCatalogAsync(cancellationToken).ConfigureAwait(false);
 
         var opts = _technitium.CurrentValue;
@@ -235,6 +243,9 @@ public sealed class DomainMaintenance : IDomainMaintenance
                 .ConfigureAwait(false);
         }
     }
+
+    private string DomainsFilePath() =>
+        _pathResolver.FileUnderDataRoot(_pathResolver.ResolveHephaestusDataRootFromAppBase());
 
     private async Task RefreshCatalogAsync(CancellationToken cancellationToken)
     {

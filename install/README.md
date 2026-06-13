@@ -18,12 +18,12 @@
 
 ### `install-data` (before soft)
 
-Stub step kept for install order compatibility. **`hephaestus_data` is cloned and synced by DomainHost** (`panel/Git`) on startup and every 24 hours (`Refiner:HephaestusDataInterval`). GitHub URL and PAT live in `panel/Git/HephaestusDataGitConstants.cs`.
+Clones [hephaestus_data](https://github.com/kgonsovskii/hephaestus_data) as a **sibling** of the hephaestus repo. DomainHost also syncs it on start and on `Refiner:HephaestusDataInterval` / CP apply (`panel/Git`). PAT is in `panel/Commons/appsettings.json` (`Git:HephaestusDataAccessToken`) and install-data scripts.
 
 ```
 parent/
   hephaestus/       ← this clone
-  hephaestus_data/  ← sibling; cloned by DomainHost if missing
+  hephaestus_data/  ← removed and re-cloned by install-data; synced by DomainHost thereafter
 ```
 
 ## Layout
