@@ -4,6 +4,7 @@ using Commons;
 using cp;
 using Db;
 using Domain;
+using Git;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -139,6 +140,15 @@ internal static class DomainHostRunner
 
         var paths = HephaestusPathResolver.FromSnapshot(hostOpts);
         paths.EnsureDirectoriesFromAppBase();
+        try
+        {
+            HephaestusDataGitRunner.Run(paths, BootLogger);
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidOperationException("DomainHost: hephaestus_data git bootstrap failed.", ex);
+        }
+
         var repoRoot = paths.ResolveRepositoryRootFromAppBase();
         var dataRoot = paths.ResolveHephaestusDataRootFromAppBase();
         var webFull = paths.WebDirectory(dataRoot);

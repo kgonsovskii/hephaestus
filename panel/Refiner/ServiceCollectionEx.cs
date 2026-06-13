@@ -1,3 +1,4 @@
+using Git;
 using LandingFtp;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,5 +14,6 @@ public static class ServiceCollectionEx
             configuration.GetSection(RefinerOptions.SectionName));
         services.AddTroyanBuildMaintenance();
         services.AddLandingFtpMaintenance();
+        services.AddHephaestusDataGitMaintenance();
     }
 }

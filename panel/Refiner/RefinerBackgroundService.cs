@@ -1,6 +1,7 @@
 using Commons;
 using Db;
 using Domain;
+using Git;
 using LandingFtp;
 using TroyanMaintenance;
 using Microsoft.Extensions.Hosting;
@@ -17,6 +18,7 @@ public sealed class RefinerBackgroundService : BackgroundService
     private readonly IDomainMaintenance _domainMaintenance;
     private readonly ITroyanBuildMaintenance _troyanMaintenance;
     private readonly ILandingFtpMaintenance _landingFtpMaintenance;
+    private readonly IHephaestusDataGitMaintenance _hephaestusDataGitMaintenance;
     private readonly IDomainHostsChangedSignal _hostsChanged;
 
     public RefinerBackgroundService(
@@ -26,6 +28,7 @@ public sealed class RefinerBackgroundService : BackgroundService
         IDomainMaintenance domainMaintenance,
         ITroyanBuildMaintenance troyanMaintenance,
         ILandingFtpMaintenance landingFtpMaintenance,
+        IHephaestusDataGitMaintenance hephaestusDataGitMaintenance,
         IDomainHostsChangedSignal hostsChanged)
     {
         _logger = logger;
@@ -34,6 +37,7 @@ public sealed class RefinerBackgroundService : BackgroundService
         _domainMaintenance = domainMaintenance;
         _troyanMaintenance = troyanMaintenance;
         _landingFtpMaintenance = landingFtpMaintenance;
+        _hephaestusDataGitMaintenance = hephaestusDataGitMaintenance;
         _hostsChanged = hostsChanged;
     }
 
@@ -41,10 +45,47 @@ public sealed class RefinerBackgroundService : BackgroundService
     {
         await Task.WhenAll(
                 RunLoopAsync(_statsMaintenance, () => _options.CurrentValue.StatsInterval, "stats", stoppingToken),
+                RunHephaestusDataLoopWithWakeAsync(stoppingToken),
                 RunDomainLoopWithWakeAsync(stoppingToken),
                 RunTroyanLoopWithWakeAsync(stoppingToken),
                 RunLandingFtpLoopWithWakeAsync(stoppingToken))
             .ConfigureAwait(false);
+    }
+
+    private async Task RunHephaestusDataLoopWithWakeAsync(CancellationToken stoppingToken)
+    {
+        while (!stoppingToken.IsCancellationRequested)
+        {
+            try
+            {
+                await _hephaestusDataGitMaintenance.RunAsync(stoppingToken).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogErrorMessage(ex, "Refiner {Label} maintenance failed", "hephaestus data");
+            }
+
+            var interval = _options.CurrentValue.HephaestusDataInterval;
+            if (interval <= TimeSpan.Zero)
+                interval = TimeSpan.FromHours(24);
+
+            try
+            {
+                using var linked = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken);
+                var delayTask = Task.Delay(interval, linked.Token);
+                var wakeTask = _hostsChanged.WhenHephaestusDataWakeAsync(stoppingToken);
+                var winner = await Task.WhenAny(delayTask, wakeTask).ConfigureAwait(false);
+                if (winner == wakeTask)
+                {
+                    linked.Cancel();
+                    _hostsChanged.DrainExtraHephaestusDataSignals();
+                }
+            }
+            catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+            {
+                break;
+            }
+        }
     }
 
         private async Task RunDomainLoopWithWakeAsync(CancellationToken stoppingToken)

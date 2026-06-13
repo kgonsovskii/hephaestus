@@ -10,21 +10,8 @@ if [ "${EUID:-0}" -ne 0 ]; then
   exec sudo /usr/bin/env bash "$0" "$@"
 fi
 
-if ! command -v git >/dev/null 2>&1; then
-  echo "git not found. Run install/linux/install-git.sh first." >&2
-  exit 1
-fi
-
 DATA_DIR="$(hephaestus_data_directory)"
-CLONE_URL='https://x-access-token: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@github.com/kgonsovskii/hephaestus_data.git'
 
 echo "[install-data] Repo root: ${REPO_ROOT}"
 echo "[install-data] Data dir (sibling): ${DATA_DIR}"
-echo "[install-data] Remove existing ${DATA_DIR}"
-rm -rf "${DATA_DIR}"
-
-echo "[install-data] Clone https://github.com/kgonsovskii/hephaestus_data.git"
-mkdir -p "$(dirname "${DATA_DIR}")"
-git clone "${CLONE_URL}" "${DATA_DIR}"
-
-echo "[install-data] Done."
+echo "[install-data] Skipped: hephaestus_data is cloned/synced by DomainHost Git maintenance on start."

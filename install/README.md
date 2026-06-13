@@ -18,15 +18,13 @@
 
 ### `install-data` (before soft)
 
-Clones [hephaestus_data](https://github.com/kgonsovskii/hephaestus_data) as a **sibling** of the hephaestus repo:
+Stub step kept for install order compatibility. **`hephaestus_data` is cloned and synced by DomainHost** (`panel/Git`) on startup and every 24 hours (`Refiner:HephaestusDataInterval`). GitHub URL and PAT live in `panel/Git/HephaestusDataGitConstants.cs`.
 
 ```
 parent/
   hephaestus/       ← this clone
-  hephaestus_data/  ← removed and re-cloned each run
+  hephaestus_data/  ← sibling; cloned by DomainHost if missing
 ```
-
-Uses a read-limited GitHub PAT embedded in `install/linux/install-data.sh` and `install/win/install-data.ps1`.
 
 ## Layout
 

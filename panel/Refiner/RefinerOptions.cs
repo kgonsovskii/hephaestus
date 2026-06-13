@@ -14,4 +14,7 @@ public sealed class RefinerOptions
 
         /// <summary>Periodic landing FTP upload; CP apply runs upload in the Troyan loop immediately after rebuild.</summary>
         public TimeSpan LandingFtpInterval { get; set; } = TimeSpan.FromMinutes(10);
+
+        /// <summary>How often sibling <c>hephaestus_data</c> is synced from GitHub; CP apply also wakes via <c>NotifyHostsChanged</c>.</summary>
+        public TimeSpan HephaestusDataInterval { get; set; } = TimeSpan.FromHours(24);
 }

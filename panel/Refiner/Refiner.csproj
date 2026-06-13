@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Commons\Commons.csproj" />
+    <ProjectReference Include="..\Git\Git.csproj" />
     <ProjectReference Include="..\LandingFtp\LandingFtp.csproj" />
     <ProjectReference Include="..\TroyanMaintenance\TroyanMaintenance.csproj" />
     <ProjectReference Include="..\Db\Db.csproj" />

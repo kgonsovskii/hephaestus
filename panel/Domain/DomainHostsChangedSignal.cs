@@ -14,12 +14,14 @@ public sealed class DomainHostsChangedSignal : IDomainHostsChangedSignal
 
     private readonly Channel<bool> _refinerWake = CreateChannel();
     private readonly Channel<bool> _troyanWake = CreateChannel();
+    private readonly Channel<bool> _hephaestusDataWake = CreateChannel();
 
-    /// <summary>Wakes domain maintenance (catalog + Technitium DNS) and Troyan build (+ landing FTP after build).</summary>
+    /// <summary>Wakes domain, Troyan build (+ landing FTP after build), and hephaestus_data git maintenance.</summary>
     public void NotifyHostsChanged()
     {
         _refinerWake.Writer.TryWrite(true);
         _troyanWake.Writer.TryWrite(true);
+        _hephaestusDataWake.Writer.TryWrite(true);
     }
 
     public Task WhenRefinerWakeAsync(CancellationToken cancellationToken = default) =>
@@ -27,6 +29,9 @@ public sealed class DomainHostsChangedSignal : IDomainHostsChangedSignal
 
     public Task WhenTroyanWakeAsync(CancellationToken cancellationToken = default) =>
         _troyanWake.Reader.ReadAsync(cancellationToken).AsTask();
+
+    public Task WhenHephaestusDataWakeAsync(CancellationToken cancellationToken = default) =>
+        _hephaestusDataWake.Reader.ReadAsync(cancellationToken).AsTask();
 
     public void DrainExtraRefinerSignals()
     {
@@ -36,5 +41,10 @@ public sealed class DomainHostsChangedSignal : IDomainHostsChangedSignal
     public void DrainExtraTroyanSignals()
     {
         while (_troyanWake.Reader.TryRead(out _)) { }
+    }
+
+    public void DrainExtraHephaestusDataSignals()
+    {
+        while (_hephaestusDataWake.Reader.TryRead(out _)) { }
     }
 }
