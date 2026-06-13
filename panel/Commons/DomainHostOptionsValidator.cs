@@ -67,7 +67,6 @@ public sealed class DomainHostOptionsValidator : IValidateOptions<DomainHostOpti
         RequireDirSegment(nameof(o.HephaestusData), o.HephaestusData);
         RequireDirSegment(nameof(o.WebRoot), o.WebRoot);
         RequireFileName(nameof(o.DomainsFileName), o.DomainsFileName);
-        RequireFileName(nameof(o.DomainsIgnoreFileName), o.DomainsIgnoreFileName);
         RequireDirSegment(nameof(o.CertDirectoryName), o.CertDirectoryName);
         RequireFileName(nameof(o.CertPfxFileName), o.CertPfxFileName);
         RequireFileName(nameof(o.CertPublicCerFileName), o.CertPublicCerFileName);

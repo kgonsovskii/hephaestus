@@ -12,7 +12,6 @@ public sealed class DomainMaintenance : IDomainMaintenance
 {
     private readonly IDomainRepository _domains;
     private readonly DomainCatalog _catalog;
-    private readonly IWebContentPathProvider _webPaths;
     private readonly IHephaestusPathResolver _pathResolver;
     private readonly IOptionsMonitor<TechnitiumOptions> _technitium;
     private readonly TechnitiumDnsClient _dns;
@@ -21,7 +20,6 @@ public sealed class DomainMaintenance : IDomainMaintenance
     public DomainMaintenance(
         IDomainRepository domains,
         DomainCatalog catalog,
-        IWebContentPathProvider webPaths,
         IHephaestusPathResolver pathResolver,
         IOptionsMonitor<TechnitiumOptions> technitium,
         TechnitiumDnsClient dns,
@@ -29,7 +27,6 @@ public sealed class DomainMaintenance : IDomainMaintenance
     {
         _domains = domains;
         _catalog = catalog;
-        _webPaths = webPaths;
         _pathResolver = pathResolver;
         _technitium = technitium;
         _dns = dns;
@@ -51,7 +48,7 @@ public sealed class DomainMaintenance : IDomainMaintenance
 
         _logger.LogInformation("Technitium DNS sync starting (BaseUrl={BaseUrl}).", opts.BaseUrl.Trim());
 
-        var ignorePath = _pathResolver.DomainsIgnorePath(_pathResolver.ResolveRepositoryRootFromAppBase());
+        var ignorePath = _pathResolver.DomainsIgnorePathFromAppBase();
         if (!File.Exists(ignorePath))
             throw new FileNotFoundException($"domains-ignore file not found: {ignorePath}");
 

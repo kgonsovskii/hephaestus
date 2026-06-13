@@ -147,6 +147,10 @@ internal static class DomainHostRunner
         if (!File.Exists(pfxPath))
             throw new InvalidOperationException($"DomainHost: certificate PFX not found: {pfxPath}. Run CertTool once.");
 
+        var domainsIgnorePath = paths.DomainsIgnorePathFromAppBase();
+        if (!File.Exists(domainsIgnorePath))
+            throw new InvalidOperationException($"DomainHost: domains-ignore file not found: {domainsIgnorePath}");
+
         var httpPort = Math.Clamp(hostOpts.HttpPort, 1, 65535);
         var httpsPort = Math.Clamp(hostOpts.HttpsPort, 1, 65535);
         var pfxPassword = hostOpts.CertPfxPassword ?? "";

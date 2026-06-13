@@ -9,6 +9,7 @@ public sealed class HephaestusPathResolver : IHephaestusPathResolver
 
     private const string ProfileSubdirectoryName = "profile";
     private const string DefaultsSubdirectoryName = "defaults";
+    private const string DomainsIgnoreFileName = "domains-ignore.json";
 
     private readonly IOptions<DomainHostOptions> _options;
 
@@ -139,10 +140,15 @@ public sealed class HephaestusPathResolver : IHephaestusPathResolver
         return Path.GetFullPath(Path.Combine(profileRoot, file));
     }
 
-    public string DomainsIgnorePath(string repositoryRoot)
+    public string DomainsIgnorePath(string startDirectory)
     {
-        var file = EffectiveDomainsIgnoreFileName();
-        return Path.GetFullPath(Path.Combine(repositoryRoot, file));
+        var repoRoot = ResolveRepositoryRoot(startDirectory);
+        return Path.GetFullPath(Path.Combine(repoRoot, DomainsIgnoreFileName));
+    }
+
+    public string DomainsIgnorePathFromAppBase()
+    {
+        return DomainsIgnorePath(Path.GetFullPath(AppContext.BaseDirectory));
     }
 
     public string FileUnderCert(string repositoryRoot)
@@ -174,9 +180,6 @@ public sealed class HephaestusPathResolver : IHephaestusPathResolver
 
     private string EffectiveDomainsFileName() =>
         NormalizeSingleSegmentNotEmpty(_options.Value.DomainsFileName, nameof(DomainHostOptions.DomainsFileName));
-
-    private string EffectiveDomainsIgnoreFileName() =>
-        NormalizeSingleSegmentNotEmpty(_options.Value.DomainsIgnoreFileName, nameof(DomainHostOptions.DomainsIgnoreFileName));
 
     private string EffectiveCertPfxFileName() =>
         NormalizeSingleSegmentNotEmpty(_options.Value.CertPfxFileName, nameof(DomainHostOptions.CertPfxFileName));

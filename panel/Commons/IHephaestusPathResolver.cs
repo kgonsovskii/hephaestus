@@ -28,7 +28,9 @@ public interface IHephaestusPathResolver
 
     string FileUnderDataRoot(string profileRoot);
 
-    string DomainsIgnorePath(string repositoryRoot);
+    string DomainsIgnorePath(string startDirectory);
+
+    string DomainsIgnorePathFromAppBase();
 
     string FileUnderCert(string repositoryRoot);
 
