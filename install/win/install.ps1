@@ -32,6 +32,7 @@ Invoke-InstallScript 'Git' 'install-git.ps1'
 Invoke-InstallScript '.NET 10 SDK' 'install-net.ps1'
 Invoke-InstallScript 'PostgreSQL' 'install-postgres.ps1'
 Invoke-InstallScript 'Technitium DNS' 'install-dns.ps1'
+Invoke-InstallScript 'Hephaestus data (git clone)' 'install-data.ps1'
 Invoke-InstallScript 'DomainHost (build + service)' 'install-soft.ps1'
 
 Write-Host ""

@@ -19,6 +19,7 @@ bash "${SCRIPT_DIR}/install-dns.sh"
 hephaestus_source_shared_wait
 echo "[install] libpam0g (CP /cp login via Linux PAM)"
 apt_get install -y libpam0g
+bash "${SCRIPT_DIR}/install-data.sh"
 bash "${SCRIPT_DIR}/install-soft.sh"
 sync
 echo "Install finished."
