@@ -13,15 +13,7 @@
     <InternalsVisibleTo Include="Tests" />
   </ItemGroup>
   <ItemGroup>
-    <Content Update="appsettings.json">
-      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </Content>
-    <None Remove="appsettings.json" />
-    <Content Include="appsettings.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
+    <None Include="appsettings.json" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\model\model.csproj" />

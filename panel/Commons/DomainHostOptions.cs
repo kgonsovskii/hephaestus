@@ -7,12 +7,13 @@ public sealed class DomainHostOptions
 {
     public const string SectionName = "DomainHost";
 
-    /// <summary>Relative path from repository root to the Hephaestus data directory (e.g. <c>../hephaestus_data</c>).</summary>
+    /// <summary>Relative path from the application base directory to the repository root (e.g. <c>..</c> when running from <c>output/</c>).</summary>
+    public string RepositoryRoot { get; set; } = null!;
+
+    /// <summary>Directory name beside the repository root (e.g. <c>hephaestus_data</c> → <c>../hephaestus_data</c> from the clone).</summary>
     public string HephaestusData { get; set; } = null!;
 
     public string WebRoot { get; set; } = null!;
-
-    public int WebRootSearchMaxAscents { get; set; }
 
     public string DomainsFileName { get; set; } = null!;
 
@@ -32,10 +33,6 @@ public sealed class DomainHostOptions
     public int HttpsPort { get; set; }
 
     public int StaticFileCacheMaxAgeSeconds { get; set; }
-
-    public string RepositoryMarkerFileName { get; set; } = null!;
-
-    public int RepositoryRootSearchMaxAscents { get; set; }
 
     /// <summary>Seconds to wait before retrying when the host fails to start (e.g. port busy).</summary>
     public int RetryDelaySeconds { get; set; }

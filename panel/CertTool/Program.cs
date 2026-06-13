@@ -30,11 +30,10 @@ internal static class Program
     {
         var start = Path.GetFullPath(AppContext.BaseDirectory);
         var paths = HephaestusPathResolver.FromAppSettingsInDirectory(start);
+        paths.EnsureDirectories(start);
         var repoRoot = paths.ResolveRepositoryRoot(start);
         var dataRoot = paths.ResolveHephaestusDataRoot(start);
         var webRoot = paths.WebDirectory(dataRoot);
-        if (!Directory.Exists(webRoot))
-            throw new InvalidOperationException($"Web directory not found: {webRoot}");
 
         var domainsPath = paths.FileUnderDataRoot(dataRoot);
         if (!File.Exists(domainsPath))
@@ -48,7 +47,7 @@ internal static class Program
         var pfxPath = paths.FileUnderCert(repoRoot);
         var publicCerPath = paths.PublicCertPath(repoRoot);
 
-        var deleteExisting = LoadDeleteExistingCertFilesFlag();
+        var deleteExisting = LoadDeleteExistingCertFilesFlag(start);
         if (deleteExisting)
         {
             if (File.Exists(pfxPath))
@@ -72,12 +71,9 @@ internal static class Program
         File.WriteAllBytes(publicCerPath, cert.Export(X509ContentType.Cert));
     }
 
-    private static bool LoadDeleteExistingCertFilesFlag()
+    private static bool LoadDeleteExistingCertFilesFlag(string baseDirectory)
     {
-        var settingsPath = Path.Combine(AppContext.BaseDirectory, "appsettings.json");
-        if (!File.Exists(settingsPath))
-            return false;
-
+        var settingsPath = Path.Combine(baseDirectory, "appsettings.json");
         var json = File.ReadAllText(settingsPath);
         var doc = JsonSerializer.Deserialize<CertToolAppSettings>(json, JsonOptions);
         return doc?.DeleteExistingCertFilesBeforeWrite ?? false;

@@ -15,7 +15,7 @@ public class AdminController: BaseController
     public Dictionary<string, string> AdminServers()
     {
         var result = new Dictionary<string, string>();
-        var dir = Path.Combine(RootDataDir, PanelServerIdentity.DefaultKey);
+        var dir = _serverService.Paths.HephaestusDataRoot;
         if (Directory.Exists(dir))
             result.Add(dir, PanelServerIdentity.DefaultKey);
         return result;

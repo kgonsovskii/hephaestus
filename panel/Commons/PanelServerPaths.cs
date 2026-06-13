@@ -2,7 +2,7 @@ using model;
 
 namespace Commons;
 
-/// <summary>Panel filesystem layout derived from <see cref="IHephaestusPathResolver"/>; panel server homes use a fixed OS path (<see cref="RootData"/>).</summary>
+/// <summary>Panel filesystem layout derived from <see cref="IHephaestusPathResolver"/>.</summary>
 public sealed class PanelServerPaths : IPanelServerPaths
 {
     private readonly IHephaestusPathResolver _resolver;
@@ -11,13 +11,13 @@ public sealed class PanelServerPaths : IPanelServerPaths
 
     private static string StartDir => Path.GetFullPath(AppContext.BaseDirectory);
 
+    public void EnsureLayout() => _resolver.EnsureDirectories(StartDir);
+
     public string HephaestusDataRoot => _resolver.ResolveHephaestusDataRoot(StartDir);
 
-    /// <summary>Windows: <c>C:\data</c>. Linux and others: <c>/var/lib/hephaestus/data</c>.</summary>
-    public string RootData => Path.GetFullPath(OperatingSystem.IsWindows() ? @"C:\data" : "/var/lib/hephaestus/data");
+    public string RootData => _resolver.ResolveHephaestusDataBase(StartDir);
 
-    /// <inheritdoc />
-    public string DefaultsEmbedDir => Path.Combine(RootData, "defaults");
+    public string DefaultsEmbedDir => _resolver.DefaultsEmbedDirectory(StartDir);
 
     public string RootDir => _resolver.ResolveRepositoryRoot(StartDir);
 
@@ -25,13 +25,13 @@ public sealed class PanelServerPaths : IPanelServerPaths
 
     public string HephaestusTlsPfxPath => _resolver.FileUnderCert(RootDir);
 
-    public string CpDir => Path.Combine(RootDir, "cp");
+    public string CpDir => Path.Combine(RootDir, "panel", "cp");
 
     public string AdsDir => Path.Combine(RootDir, "ads");
 
     public string PhpDir => Path.Combine(RootDir, "php");
 
-    public string CertDir => Path.Combine(RootDir, "cert");
+    public string CertDir => _resolver.CertDirectory(RootDir);
 
     public string SysDir => Path.Combine(RootDir, "sys");
 
@@ -41,40 +41,13 @@ public sealed class PanelServerPaths : IPanelServerPaths
 
     public string TroyanVbsDir => Path.Combine(TroyanDir, "troyanvbs");
 
-    public string TroyanBuilder
-    {
-        get
-        {
-            var result = Path.Combine(RootDir, "output", "TroyanBuilder.exe");
-            if (!File.Exists(result))
-                result = Path.Combine(CpDir, "TroyanBuilder.exe");
-            return result;
-        }
-    }
+    public string TroyanBuilder => Path.Combine(RootDir, "output", "TroyanBuilder.exe");
 
-    public string Packer
-    {
-        get
-        {
-            var result = Path.Combine(RootDir, "output", "packer.exe");
-            if (!File.Exists(result))
-                result = Path.Combine(CpDir, "packer.exe");
-            return result;
-        }
-    }
+    public string Packer => Path.Combine(RootDir, "output", "packer.exe");
 
-    public string CertTool
-    {
-        get
-        {
-            var result = Path.Combine(RootDir, "output", "certtool.exe");
-            if (!File.Exists(result))
-                result = Path.Combine(CpDir, "certtool.exe");
-            return result;
-        }
-    }
+    public string CertTool => Path.Combine(RootDir, "output", "CertTool.exe");
 
-    public string ServerDir => Path.Combine(RootData, PanelServerIdentity.DefaultKey);
+    public string ServerDir => _resolver.ProfileDirectory(StartDir);
 
     public string DataFile => Path.Combine(ServerDir, "server.json");
 

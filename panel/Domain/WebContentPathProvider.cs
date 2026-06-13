@@ -16,11 +16,9 @@ public sealed class WebContentPathProvider : IWebContentPathProvider
         IHephaestusPathResolver paths,
         ILogger<WebContentPathProvider> logger)
     {
+        paths.EnsureDirectoriesFromAppBase();
         var dataRoot = paths.ResolveHephaestusDataRootFromAppBase();
         var webFull = paths.WebDirectory(dataRoot);
-        if (!Directory.Exists(webFull))
-            throw new InvalidOperationException(
-                $"DomainHost: web directory not found at '{webFull}' (Hephaestus data root '{dataRoot}').");
 
         DataRootFullPath = dataRoot;
         WebRootFullPath = webFull;

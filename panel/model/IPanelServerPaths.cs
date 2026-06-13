@@ -8,7 +8,7 @@ public interface IPanelServerPaths
     /// <summary>Root directory containing server homes (each named <see cref="PanelServerIdentity.DefaultKey"/>).</summary>
     string RootData { get; }
 
-    /// <summary>Shared nested payloads for Troyan body (<c>xembeddings</c>), e.g. <c>C:\data\defaults</c> on Windows.</summary>
+    /// <summary>Shared nested payloads for Troyan body (<c>xembeddings</c>), under the active profile root.</summary>
     string DefaultsEmbedDir { get; }
 
     string RootDir { get; }
@@ -30,7 +30,7 @@ public interface IPanelServerPaths
     string Packer { get; }
     string CertTool { get; }
 
-    /// <summary>Home directory for the only server (<c>.../default</c>).</summary>
+    /// <summary>Home directory for the active profile (<c>.../default/profile</c>).</summary>
     string ServerDir { get; }
 
     string DataFile { get; }
@@ -41,4 +41,7 @@ public interface IPanelServerPaths
     string UserDataFile(string file);
 
     string UserDataBody { get; }
+
+    /// <summary>Creates Hephaestus data, profile, web, and cert directories when missing.</summary>
+    void EnsureLayout();
 }

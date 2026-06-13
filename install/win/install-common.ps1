@@ -11,7 +11,8 @@ function Get-HephaestusInstallPaths {
         InstallRoot = $installRoot
         SharedDir   = $sharedDir
         RepoRoot    = $repoRoot
-        ReleaseDir  = Join-Path $repoRoot 'release'
+        ReleaseDir    = Join-Path $repoRoot 'release'
+        DomainHostDir = Join-Path $repoRoot 'release'
         TechniRoot  = Join-Path ${env:ProgramData} 'hephaestus\technitium'
         TechniDnsDir = Join-Path ${env:ProgramData} 'hephaestus\technitium\dns'
         TechniBuildDir = Join-Path ${env:ProgramData} 'hephaestus\technitium\build'

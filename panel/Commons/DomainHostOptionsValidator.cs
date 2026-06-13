@@ -50,7 +50,7 @@ public sealed class DomainHostOptionsValidator : IValidateOptions<DomainHostOpti
                 errors.Add($"{DomainHostOptions.SectionName}:{property} must be a single directory name, not a path ('{value}').");
         }
 
-        void RequireRelativePath(string property, string? value)
+        void RequireRelativePath(string property, string? value, string anchor)
         {
             var t = value?.Trim() ?? "";
             if (t.Length == 0)
@@ -60,23 +60,17 @@ public sealed class DomainHostOptionsValidator : IValidateOptions<DomainHostOpti
             }
 
             if (Path.IsPathRooted(t))
-                errors.Add($"{DomainHostOptions.SectionName}:{property} must be relative to repository root, not an absolute path ('{value}').");
+                errors.Add($"{DomainHostOptions.SectionName}:{property} must be relative to {anchor}, not an absolute path ('{value}').");
         }
 
-        RequireRelativePath(nameof(o.HephaestusData), o.HephaestusData);
+        RequireRelativePath(nameof(o.RepositoryRoot), o.RepositoryRoot, "application base directory");
+        RequireDirSegment(nameof(o.HephaestusData), o.HephaestusData);
         RequireDirSegment(nameof(o.WebRoot), o.WebRoot);
         RequireFileName(nameof(o.DomainsFileName), o.DomainsFileName);
         RequireFileName(nameof(o.DomainsIgnoreFileName), o.DomainsIgnoreFileName);
         RequireDirSegment(nameof(o.CertDirectoryName), o.CertDirectoryName);
         RequireFileName(nameof(o.CertPfxFileName), o.CertPfxFileName);
         RequireFileName(nameof(o.CertPublicCerFileName), o.CertPublicCerFileName);
-        RequireFileName(nameof(o.RepositoryMarkerFileName), o.RepositoryMarkerFileName);
-
-        if (o.WebRootSearchMaxAscents is < 1 or > 200)
-            errors.Add($"{DomainHostOptions.SectionName}:{nameof(o.WebRootSearchMaxAscents)} must be between 1 and 200 (got {o.WebRootSearchMaxAscents}).");
-
-        if (o.RepositoryRootSearchMaxAscents is < 1 or > 200)
-            errors.Add($"{DomainHostOptions.SectionName}:{nameof(o.RepositoryRootSearchMaxAscents)} must be between 1 and 200 (got {o.RepositoryRootSearchMaxAscents}).");
 
         if (o.HttpPort is < 1 or > 65535)
             errors.Add($"{DomainHostOptions.SectionName}:{nameof(o.HttpPort)} must be between 1 and 65535 (got {o.HttpPort}).");

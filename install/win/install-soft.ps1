@@ -44,7 +44,7 @@ Install-HephaestusWindowsService `
     -Name 'domainhost' `
     -DisplayName 'Hephaestus DomainHost' `
     -BinPathCommand @($paths.DomainHostExe) `
-    -AppDirectory $paths.ReleaseDir `
+    -AppDirectory $paths.DomainHostDir `
     -Description 'Hephaestus DomainHost (HTTP/HTTPS on 80/443)'
 
 Write-Host '[install-soft 6/6] Verify domainhost service'

@@ -30,10 +30,7 @@ public class Dev
     /// <summary>Creates the default panel home and <c>server.json</c> when missing.</summary>
     public static void EnsureDefaultPanel(IPanelServerPaths paths, JsonSerializerOptions jso, string? serverIp = null)
     {
-        if (!Directory.Exists(paths.RootData))
-            Directory.CreateDirectory(paths.RootData);
-        if (!Directory.Exists(paths.ServerDir))
-            Directory.CreateDirectory(paths.ServerDir);
+        paths.EnsureLayout();
         if (File.Exists(paths.DataFile))
             return;
         var server = new ServerModel { Server = PanelServerIdentity.DefaultKey };

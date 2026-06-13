@@ -5,6 +5,11 @@ namespace Commons;
 
 public sealed class HephaestusPathResolver : IHephaestusPathResolver
 {
+    public static string Profile = "default";
+
+    private const string ProfileSubdirectoryName = "profile";
+    private const string DefaultsSubdirectoryName = "defaults";
+
     private readonly IOptions<DomainHostOptions> _options;
 
     public HephaestusPathResolver(IOptions<DomainHostOptions> options)
@@ -53,40 +58,73 @@ public sealed class HephaestusPathResolver : IHephaestusPathResolver
         return FromConfiguration(cfg);
     }
 
+    public void EnsureDirectories(string startDirectory)
+    {
+        var repoRoot = ResolveRepositoryRoot(startDirectory);
+        Directory.CreateDirectory(ResolveHephaestusDataBase(startDirectory));
+        Directory.CreateDirectory(ResolveHephaestusDataRoot(startDirectory));
+        Directory.CreateDirectory(ProfileDirectory(startDirectory));
+        Directory.CreateDirectory(WebDirectory(ResolveHephaestusDataRoot(startDirectory)));
+        Directory.CreateDirectory(CertDirectory(repoRoot));
+    }
+
+    public void EnsureDirectoriesFromAppBase()
+    {
+        EnsureDirectories(Path.GetFullPath(AppContext.BaseDirectory));
+    }
+
     public string ResolveRepositoryRoot(string startDirectory)
     {
-        var marker = EffectiveRepositoryMarkerFileName();
-        var max = Math.Clamp(_options.Value.RepositoryRootSearchMaxAscents, 1, 200);
-        return TryResolveRepositoryRoot(startDirectory, marker, max)
+        var relative = EffectiveRepositoryRootPath();
+        return Path.GetFullPath(Path.Combine(Path.GetFullPath(startDirectory), relative));
+    }
+
+    public string ResolveRepositoryRootFromAppBase()
+    {
+        return ResolveRepositoryRoot(Path.GetFullPath(AppContext.BaseDirectory));
+    }
+
+    public string ResolveHephaestusDataBase(string startDirectory)
+    {
+        var repoRoot = ResolveRepositoryRoot(startDirectory);
+        var parent = Directory.GetParent(repoRoot)?.FullName
             ?? throw new InvalidOperationException(
-                $"Could not find repository root: no directory within {max} ascents of '{Path.GetFullPath(startDirectory)}' contains marker file '{marker}'.");
+                $"Cannot resolve Hephaestus data directory beside repository root '{repoRoot}': no parent directory.");
+        var name = EffectiveHephaestusDataDirectoryName();
+        var dataBase = Path.GetFullPath(Path.Combine(parent, name));
+        EnsureOutsideRepository(repoRoot, dataBase);
+        return dataBase;
     }
 
     public string ResolveHephaestusDataRoot(string startDirectory)
     {
-        var repoRoot = ResolveRepositoryRoot(startDirectory);
-        var relative = EffectiveHephaestusDataPath();
-        var dataRoot = Path.GetFullPath(Path.Combine(repoRoot, relative));
-        if (!Directory.Exists(dataRoot))
-        {
-            throw new InvalidOperationException(
-                $"Could not find Hephaestus data directory at '{dataRoot}' (repository root '{repoRoot}', {nameof(DomainHostOptions.HephaestusData)} '{relative}'). " +
-                $"Create it beside the clone, e.g. ..\\hephaestus_data with web\\ and domains.json inside.");
-        }
-
-        return dataRoot;
+        return Path.GetFullPath(Path.Combine(ResolveHephaestusDataBase(startDirectory), Profile));
     }
 
     public string ResolveHephaestusDataRootFromAppBase()
     {
-        var start = Path.GetFullPath(AppContext.BaseDirectory);
-        return ResolveHephaestusDataRoot(start);
+        return ResolveHephaestusDataRoot(Path.GetFullPath(AppContext.BaseDirectory));
     }
 
-    public string WebDirectory(string hephaestusDataRoot)
+    public string ProfileDirectory(string startDirectory)
+    {
+        return Path.GetFullPath(Path.Combine(ResolveHephaestusDataRoot(startDirectory), ProfileSubdirectoryName));
+    }
+
+    public string ProfileDirectoryFromAppBase()
+    {
+        return ProfileDirectory(Path.GetFullPath(AppContext.BaseDirectory));
+    }
+
+    public string DefaultsEmbedDirectory(string startDirectory)
+    {
+        return Path.GetFullPath(Path.Combine(ResolveHephaestusDataRoot(startDirectory), DefaultsSubdirectoryName));
+    }
+
+    public string WebDirectory(string profileRoot)
     {
         var name = EffectiveWebRootSegment();
-        return Path.GetFullPath(Path.Combine(hephaestusDataRoot, name));
+        return Path.GetFullPath(Path.Combine(profileRoot, name));
     }
 
     public string CertDirectory(string repositoryRoot)
@@ -95,10 +133,10 @@ public sealed class HephaestusPathResolver : IHephaestusPathResolver
         return Path.GetFullPath(Path.Combine(repositoryRoot, name));
     }
 
-    public string FileUnderDataRoot(string hephaestusDataRoot)
+    public string FileUnderDataRoot(string profileRoot)
     {
         var file = EffectiveDomainsFileName();
-        return Path.GetFullPath(Path.Combine(hephaestusDataRoot, file));
+        return Path.GetFullPath(Path.Combine(profileRoot, file));
     }
 
     public string FileUnderCert(string repositoryRoot)
@@ -116,16 +154,11 @@ public sealed class HephaestusPathResolver : IHephaestusPathResolver
         return Path.GetFullPath(Path.Combine(CertDirectory(repositoryRoot), n));
     }
 
-    private string EffectiveRepositoryMarkerFileName()
-    {
-        var m = _options.Value.RepositoryMarkerFileName.Trim();
-        if (m.Length == 0)
-            throw new InvalidOperationException($"{nameof(DomainHostOptions.RepositoryMarkerFileName)} is empty.");
-        return m;
-    }
+    private string EffectiveRepositoryRootPath() =>
+        NormalizeRelativePath(_options.Value.RepositoryRoot, nameof(DomainHostOptions.RepositoryRoot));
 
-    private string EffectiveHephaestusDataPath() =>
-        NormalizeHephaestusDataPath(_options.Value.HephaestusData);
+    private string EffectiveHephaestusDataDirectoryName() =>
+        NormalizeSingleSegmentNotEmpty(_options.Value.HephaestusData, nameof(DomainHostOptions.HephaestusData));
 
     private string EffectiveWebRootSegment() =>
         NormalizeSingleSegmentNotEmpty(_options.Value.WebRoot, nameof(DomainHostOptions.WebRoot));
@@ -139,37 +172,28 @@ public sealed class HephaestusPathResolver : IHephaestusPathResolver
     private string EffectiveCertPfxFileName() =>
         NormalizeSingleSegmentNotEmpty(_options.Value.CertPfxFileName, nameof(DomainHostOptions.CertPfxFileName));
 
-    private static string? TryResolveRepositoryRoot(string startDirectory, string markerFileName, int maxParentAscents)
-    {
-        var marker = markerFileName.Trim();
-        if (marker.Length == 0)
-            return null;
-
-        var max = Math.Clamp(maxParentAscents, 1, 200);
-        var current = Path.GetFullPath(startDirectory);
-
-        for (var step = 0; step < max; step++)
-        {
-            if (File.Exists(Path.Combine(current, marker)))
-                return current;
-
-            var parent = Directory.GetParent(current);
-            if (parent == null)
-                break;
-            current = parent.FullName;
-        }
-
-        return null;
-    }
-
-    private static string NormalizeHephaestusDataPath(string value)
+    private static string NormalizeRelativePath(string value, string propertyName)
     {
         var t = value.Trim();
         if (t.Length == 0)
-            throw new InvalidOperationException($"{nameof(DomainHostOptions.HephaestusData)} is empty.");
+            throw new InvalidOperationException($"{propertyName} is empty.");
         if (Path.IsPathRooted(t))
-            throw new ArgumentException($"HephaestusData must be relative to repository root, not an absolute path: '{value}'", nameof(value));
+            throw new ArgumentException($"{propertyName} must be a relative path, not absolute: '{value}'", nameof(value));
         return t;
+    }
+
+    private static void EnsureOutsideRepository(string repositoryRoot, string dataBase)
+    {
+        var repo = Path.GetFullPath(repositoryRoot)
+            .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+        var data = Path.GetFullPath(dataBase);
+        var repoPrefix = repo + Path.DirectorySeparatorChar;
+        if (data.Equals(repo, StringComparison.OrdinalIgnoreCase)
+            || data.StartsWith(repoPrefix, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException(
+                $"Hephaestus data directory '{data}' must be outside the repository root '{repositoryRoot}', not inside it.");
+        }
     }
 
     private static string NormalizeSingleSegmentNotEmpty(string value, string propertyName)
