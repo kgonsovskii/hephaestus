@@ -2,6 +2,7 @@ using System.Text;
 using System.Text.Json;
 using Commons;
 using cp;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 using model;
@@ -9,6 +10,7 @@ using Npgsql;
 
 namespace cp.Controllers;
 
+[AllowAnonymous]
 [Route("[controller]")]
 public class BotController: BaseController
 {

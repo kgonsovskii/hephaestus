@@ -3,6 +3,8 @@ using Commons;
 using cp.Controllers;
 using Troyan.Core;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc.Authorization;
 using model;
 
 namespace cp;
@@ -32,7 +34,11 @@ public static class CpWebExtensions
             builder.Services.AddScoped<StatsController>();
             builder.Services.AddScoped<CloneController>();
             builder.Services.AddScoped<PackController>();
-            builder.Services.AddControllersWithViews()
+            builder.Services.AddControllersWithViews(options =>
+                {
+                    options.Filters.Add(new AuthorizeFilter(
+                        new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build()));
+                })
                 .AddApplicationPart(typeof(CpWebExtensions).Assembly)
                 .AddRazorPagesOptions(options => { options.Conventions.AllowAnonymousToPage("/"); });
             builder.Services.AddHttpContextAccessor();
@@ -49,9 +55,9 @@ public static class CpWebExtensions
                     options.Cookie.SameSite = SameSiteMode.Lax;
                     options.SlidingExpiration = false;
                     options.ExpireTimeSpan = TimeSpan.FromDays(7);
-                    options.AccessDeniedPath = "/auth";
-                    options.LoginPath = "/auth";
-                    options.LogoutPath = "/auth/logout";
+                    options.AccessDeniedPath = $"{cookiePath}/Auth";
+                    options.LoginPath = $"{cookiePath}/Auth";
+                    options.LogoutPath = $"{cookiePath}/Auth/logout";
                 });
             builder.Services.AddAuthorization();
         }
@@ -67,7 +73,7 @@ public static class CpWebExtensions
             branch =>
             {
                 branch.Use(RewriteBotPrefix);
-                ConfigureCpBranch(branch);
+                ConfigureBotBranch(branch);
             });
 
         var cpPrefix = new PathString(CpSettings.SitePathPrefix);
@@ -121,15 +127,23 @@ public static class CpWebExtensions
         await next(context).ConfigureAwait(false);
     }
 
+    private static void ConfigureBotBranch(IApplicationBuilder bot)
+    {
+        bot.UseDeveloperExceptionPage();
+        bot.UseWebSockets();
+        bot.UseRouting();
+        bot.UseSession();
+        bot.UseEndpoints(endpoints => endpoints.MapControllers());
+    }
+
     private static void ConfigureCpBranch(IApplicationBuilder cp)
     {
         cp.UseDeveloperExceptionPage();
         cp.UseWebSockets();
 
-        CpPipeline.DataServe(cp);
-
         if (CpSettings.IsSuperHost)
         {
+            CpPipeline.DataServe(cp);
             CpPipeline.ForwarderMode(cp);
             return;
         }
@@ -138,7 +152,21 @@ public static class CpWebExtensions
         cp.UseSession();
         cp.UseAuthentication();
         cp.UseAuthorization();
+        cp.Use(RequireAuthForDataFiles);
+        CpPipeline.DataServe(cp);
         cp.UseClonerCloneSupport();
         cp.UseEndpoints(endpoints => endpoints.MapControllers());
+    }
+
+    private static async Task RequireAuthForDataFiles(HttpContext context, RequestDelegate next)
+    {
+        if (context.Request.Path.StartsWithSegments("/data", StringComparison.OrdinalIgnoreCase)
+            && context.User.Identity?.IsAuthenticated != true)
+        {
+            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+            return;
+        }
+
+        await next(context).ConfigureAwait(false);
     }
 }
