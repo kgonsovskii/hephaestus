@@ -18,7 +18,7 @@
 
 ### `install-data` (before soft)
 
-Clones [hephaestus_data](https://github.com/kgonsovskii/hephaestus_data) as a **sibling** of the hephaestus repo. DomainHost also syncs it on start and on `Refiner:HephaestusDataInterval` / CP apply (`panel/Git`). PAT is in `panel/Commons/appsettings.json` (`Git:HephaestusDataAccessToken`) and install-data scripts.
+Clones [hephaestus_data](https://github.com/kgonsovskii/hephaestus_data) as a **sibling** of the hephaestus repo. DomainHost also syncs it on start and on `Refiner:HephaestusDataInterval` / CP apply (`panel/Git`). PAT is in `panel/Git/HephaestusDataGitConstants.cs` and install-data scripts.
 
 ```
 parent/

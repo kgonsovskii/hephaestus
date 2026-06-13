@@ -60,7 +60,7 @@ public static class HephaestusDataGitRunner
             HephaestusDataGitConstants.RepositoryUrl,
             dataDir);
 
-        RunGit($"{NetworkGitConfig}clone \"{AuthenticatedCloneUrl()}\" \"{dataDir}\"", workingDirectory: null, logger);
+        RunGit($"{NetworkGitConfig}clone \"{HephaestusDataGitConstants.CloneUrl}\" \"{dataDir}\"", workingDirectory: null, logger);
         EnsureGitIdentity(dataDir, logger);
         logger.LogInformation("Hephaestus data git: clone finished.");
     }
@@ -166,14 +166,14 @@ public static class HephaestusDataGitRunner
             return;
         }
 
-        var pushUrl = AuthenticatedCloneUrl();
+        var pushUrl = HephaestusDataGitConstants.CloneUrl;
         var pushArgs = $"{NetworkGitConfig}push \"{pushUrl}\" {branch}";
         if (!TryRunGit(pushArgs, dataDir, logger, out var pushError))
         {
             if (IsAuthFailure(pushError))
             {
                 logger.LogWarning(
-                    "Hephaestus data git: push skipped — GitHub rejected the token. Pull works but push needs a fine-grained PAT with Contents read+write on hephaestus_data (set Git:HephaestusDataAccessToken in appsettings.json). {Error}",
+                    "Hephaestus data git: push skipped — GitHub rejected the token (check HephaestusDataGitConstants.AccessToken has Contents read+write on hephaestus_data). {Error}",
                     pushError);
                 return;
             }
@@ -183,9 +183,6 @@ public static class HephaestusDataGitRunner
 
         logger.LogInformation("Hephaestus data git: push to origin/{Branch} finished.", branch);
     }
-
-    private static string AuthenticatedCloneUrl() =>
-        HephaestusDataGitCredentials.CloneUrl(AppContext.BaseDirectory);
 
     private static bool IsAuthFailure(string detail) =>
         detail.Contains("Invalid username or token", StringComparison.OrdinalIgnoreCase)
@@ -206,7 +203,7 @@ public static class HephaestusDataGitRunner
 
     private static void RefreshAuthenticatedRemote(string dataDir, ILogger logger)
     {
-        var url = AuthenticatedCloneUrl();
+        var url = HephaestusDataGitConstants.CloneUrl;
         if (TryRunGit("remote get-url origin", dataDir, logger, out _))
             RunGit($"{NetworkGitConfig}remote set-url origin \"{url}\"", dataDir, logger);
         else
