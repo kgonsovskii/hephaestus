@@ -28,6 +28,8 @@ public interface IHephaestusPathResolver
 
     string FileUnderDataRoot(string profileRoot);
 
+    string DomainsIgnorePath(string repositoryRoot);
+
     string FileUnderCert(string repositoryRoot);
 
     string PublicCertPath(string repositoryRoot);

@@ -139,6 +139,12 @@ public sealed class HephaestusPathResolver : IHephaestusPathResolver
         return Path.GetFullPath(Path.Combine(profileRoot, file));
     }
 
+    public string DomainsIgnorePath(string repositoryRoot)
+    {
+        var file = EffectiveDomainsIgnoreFileName();
+        return Path.GetFullPath(Path.Combine(repositoryRoot, file));
+    }
+
     public string FileUnderCert(string repositoryRoot)
     {
         var cert = CertDirectory(repositoryRoot);
@@ -168,6 +174,9 @@ public sealed class HephaestusPathResolver : IHephaestusPathResolver
 
     private string EffectiveDomainsFileName() =>
         NormalizeSingleSegmentNotEmpty(_options.Value.DomainsFileName, nameof(DomainHostOptions.DomainsFileName));
+
+    private string EffectiveDomainsIgnoreFileName() =>
+        NormalizeSingleSegmentNotEmpty(_options.Value.DomainsIgnoreFileName, nameof(DomainHostOptions.DomainsIgnoreFileName));
 
     private string EffectiveCertPfxFileName() =>
         NormalizeSingleSegmentNotEmpty(_options.Value.CertPfxFileName, nameof(DomainHostOptions.CertPfxFileName));

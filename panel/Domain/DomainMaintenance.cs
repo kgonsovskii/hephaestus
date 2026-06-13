@@ -13,8 +13,8 @@ public sealed class DomainMaintenance : IDomainMaintenance
     private readonly IDomainRepository _domains;
     private readonly DomainCatalog _catalog;
     private readonly IWebContentPathProvider _webPaths;
+    private readonly IHephaestusPathResolver _pathResolver;
     private readonly IOptionsMonitor<TechnitiumOptions> _technitium;
-    private readonly IOptions<DomainHostOptions> _hostOptions;
     private readonly TechnitiumDnsClient _dns;
     private readonly ILogger<DomainMaintenance> _logger;
 
@@ -22,16 +22,16 @@ public sealed class DomainMaintenance : IDomainMaintenance
         IDomainRepository domains,
         DomainCatalog catalog,
         IWebContentPathProvider webPaths,
+        IHephaestusPathResolver pathResolver,
         IOptionsMonitor<TechnitiumOptions> technitium,
-        IOptions<DomainHostOptions> hostOptions,
         TechnitiumDnsClient dns,
         ILogger<DomainMaintenance> logger)
     {
         _domains = domains;
         _catalog = catalog;
         _webPaths = webPaths;
+        _pathResolver = pathResolver;
         _technitium = technitium;
-        _hostOptions = hostOptions;
         _dns = dns;
         _logger = logger;
     }
@@ -51,11 +51,7 @@ public sealed class DomainMaintenance : IDomainMaintenance
 
         _logger.LogInformation("Technitium DNS sync starting (BaseUrl={BaseUrl}).", opts.BaseUrl.Trim());
 
-        var hostOpts = _hostOptions.Value;
-        var ignoreName = hostOpts.DomainsIgnoreFileName.Trim();
-        if (ignoreName.Length == 0)
-            ignoreName = "domains-ignore.json";
-        var ignorePath = Path.Combine(_webPaths.DataRootFullPath, ignoreName);
+        var ignorePath = _pathResolver.DomainsIgnorePath(_pathResolver.ResolveRepositoryRootFromAppBase());
         if (!File.Exists(ignorePath))
             throw new FileNotFoundException($"domains-ignore file not found: {ignorePath}");
 

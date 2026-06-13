@@ -17,6 +17,7 @@ public sealed class DomainHostOptions
 
     public string DomainsFileName { get; set; } = null!;
 
+    /// <summary>File name at repository root listing domains excluded from Technitium DNS sync (e.g. <c>domains-ignore.json</c>).</summary>
     public string DomainsIgnoreFileName { get; set; } = null!;
 
     public string CertDirectoryName { get; set; } = null!;
