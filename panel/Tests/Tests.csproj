@@ -19,6 +19,7 @@
       <ProjectReference Include="..\Commons\Commons.csproj" />
       <ProjectReference Include="..\cp\cp.csproj" />
       <ProjectReference Include="..\model\model.csproj" />
+      <ProjectReference Include="..\Git\Git.csproj" />
       <ProjectReference Include="..\Refiner\Refiner.csproj" />
     </ItemGroup>
 

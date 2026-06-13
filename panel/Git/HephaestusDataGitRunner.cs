@@ -8,8 +8,9 @@ public static class HephaestusDataGitRunner
 {
     private const string SyncStashMessage = "hephaestus-pre-sync";
     private const string SyncCommitMessage = "Hephaestus server sync";
-    private const string NetworkGitConfig =
-        "-c credential.helper= -c credential.helperManager= -c core.askPass= ";
+    private static string NetworkGitConfig =>
+        "-c credential.helper= -c core.askPass= -c credential.useHttpPath=true "
+        + (OperatingSystem.IsWindows() ? "-c credential.helperManager= " : "");
 
     private static readonly SemaphoreSlim SyncGate = new(1, 1);
 
@@ -166,14 +167,15 @@ public static class HephaestusDataGitRunner
             return;
         }
 
-        var pushUrl = HephaestusDataGitConstants.CloneUrl;
-        var pushArgs = $"{NetworkGitConfig}push \"{pushUrl}\" {branch}";
+        logger.LogInformation("Hephaestus data git: pushing from {DataDir} to origin/{Branch}.", dataDir, branch);
+        var pushArgs = $"{NetworkGitConfig}push origin {branch}";
         if (!TryRunGit(pushArgs, dataDir, logger, out var pushError))
         {
             if (IsAuthFailure(pushError))
             {
                 logger.LogWarning(
-                    "Hephaestus data git: push skipped — GitHub rejected the token (check HephaestusDataGitConstants.AccessToken has Contents read+write on hephaestus_data). {Error}",
+                    "Hephaestus data git: push skipped — GitHub rejected the token (PAT fingerprint {TokenFingerprint}; need Contents read+write on kgonsovskii/hephaestus_data and repo selected on the token). {Error}",
+                    HephaestusDataGitConstants.TokenFingerprint,
                     pushError);
                 return;
             }

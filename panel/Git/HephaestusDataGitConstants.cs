@@ -9,4 +9,8 @@ public static class HephaestusDataGitConstants
 
     public static string CloneUrl =>
         $"https://x-access-token:{AccessToken}@github.com/kgonsovskii/hephaestus_data.git";
+
+    /// <summary>First chars of PAT for logs (verify deployed build matches source).</summary>
+    public static string TokenFingerprint =>
+        AccessToken.Length >= 20 ? AccessToken[..20] + "..." : AccessToken;
 }
