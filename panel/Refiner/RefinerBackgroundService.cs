@@ -85,6 +85,8 @@ public sealed class RefinerBackgroundService : BackgroundService
 
     private async Task RunTroyanLoopWithWakeAsync(CancellationToken stoppingToken)
     {
+        var pendingLandingUpload = false;
+
         while (!stoppingToken.IsCancellationRequested)
         {
             try
@@ -94,6 +96,19 @@ public sealed class RefinerBackgroundService : BackgroundService
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Refiner {Label} maintenance failed", "troyan");
+            }
+
+            if (pendingLandingUpload)
+            {
+                pendingLandingUpload = false;
+                try
+                {
+                    await _landingFtpMaintenance.RunAsync(stoppingToken).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Refiner {Label} maintenance failed", "landing ftp");
+                }
             }
 
             var interval = _options.CurrentValue.TroyanInterval;
@@ -110,6 +125,7 @@ public sealed class RefinerBackgroundService : BackgroundService
                 {
                     linked.Cancel();
                     _hostsChanged.DrainExtraTroyanSignals();
+                    pendingLandingUpload = true;
                 }
             }
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
@@ -138,15 +154,7 @@ public sealed class RefinerBackgroundService : BackgroundService
 
             try
             {
-                using var linked = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken);
-                var delayTask = Task.Delay(interval, linked.Token);
-                var wakeTask = _hostsChanged.WhenLandingWakeAsync(stoppingToken);
-                var winner = await Task.WhenAny(delayTask, wakeTask).ConfigureAwait(false);
-                if (winner == wakeTask)
-                {
-                    linked.Cancel();
-                    _hostsChanged.DrainExtraLandingSignals();
-                }
+                await Task.Delay(interval, stoppingToken).ConfigureAwait(false);
             }
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
             {
