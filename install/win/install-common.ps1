@@ -31,23 +31,6 @@ function Get-HephaestusDataDirectory {
     Join-Path $parent 'hephaestus_data'
 }
 
-function Get-HephaestusDataGitHubToken {
-    $fromEnv = $env:HEPHAESTUS_DATA_GITHUB_TOKEN
-    if (-not [string]::IsNullOrWhiteSpace($fromEnv)) {
-        return $fromEnv.Trim()
-    }
-    $paths = Get-HephaestusInstallPaths
-    $file = Join-Path $paths.SharedDir 'install-data-creds.txt'
-    if (-not (Test-Path -LiteralPath $file)) {
-        throw "Missing GitHub PAT: set HEPHAESTUS_DATA_GITHUB_TOKEN or create $file (one line: PAT with repo read access)."
-    }
-    $token = (Get-Content -LiteralPath $file -TotalCount 1 -ErrorAction Stop).Trim()
-    if ([string]::IsNullOrWhiteSpace($token)) {
-        throw "Empty GitHub PAT in $file."
-    }
-    return $token
-}
-
 function Test-CommandExists([string]$Name) {
     return [bool](Get-Command $Name -ErrorAction SilentlyContinue)
 }

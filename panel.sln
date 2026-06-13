@@ -119,7 +119,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{EAAD78
 		install\shared\install-remote.txt = install\shared\install-remote.txt
 		install\shared\install-remote-creds.txt = install\shared\install-remote-creds.txt
 		install\shared\wait.sh = install\shared\wait.sh
-		install\shared\install-data-creds.txt = install\shared\install-data-creds.txt
 	EndProjectSection
 EndProject
 Global
