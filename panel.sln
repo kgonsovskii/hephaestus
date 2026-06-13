@@ -92,6 +92,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Win", "Win", "{41828415-9B0
 		install\win\install-soft.bat = install\win\install-soft.bat
 		install\win\install-dns.ps1 = install\win\install-dns.ps1
 		install\win\install-dns.bat = install\win\install-dns.bat
+		install\win\install-data.bat = install\win\install-data.bat
+		install\win\install-data.ps1 = install\win\install-data.ps1
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Linux", "Linux", "{51CE6F03-EB00-466E-9FB3-41147A2172DF}"
@@ -107,6 +109,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Linux", "Linux", "{51CE6F03
 		install\linux\update.sh = install\linux\update.sh
 		install\linux\install-remote.sh = install\linux\install-remote.sh
 		install\linux\ensure-sh-executable.sh = install\linux\ensure-sh-executable.sh
+		install\linux\install-data.sh = install\linux\install-data.sh
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{EAAD78DB-8F12-44D6-8736-D68694B76B12}"
@@ -116,6 +119,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{EAAD78
 		install\shared\install-remote.txt = install\shared\install-remote.txt
 		install\shared\install-remote-creds.txt = install\shared\install-remote-creds.txt
 		install\shared\wait.sh = install\shared\wait.sh
+		install\shared\install-data-creds.txt = install\shared\install-data-creds.txt
 	EndProjectSection
 EndProject
 Global

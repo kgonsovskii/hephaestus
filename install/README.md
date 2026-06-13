@@ -2,7 +2,7 @@
 
 | Path | Purpose |
 |------|---------|
-| `shared/` | Cross-platform data: `setup-postgres.sql`, `domainhost.service`, `install-remote.txt`, `install-remote-creds.txt`, `install-data-creds.txt.example`, `wait.sh` |
+| `shared/` | Cross-platform data: `setup-postgres.sql`, `domainhost.service`, `install-remote.txt`, `install-remote-creds.txt`, `install-data-creds.txt`, `wait.sh` |
 | `linux/` | Linux install steps (bash, apt) |
 | `win/` | Windows install steps (PowerShell, Chocolatey) |
 | `Install/`, `InstallRemote/` | .NET tools |
@@ -29,7 +29,7 @@ parent/
 Provide a GitHub PAT (read access to `hephaestus_data`) via either:
 
 - Environment variable `HEPHAESTUS_DATA_GITHUB_TOKEN`, or
-- File `install/shared/install-data-creds.txt` (one line; copy from `install-data-creds.txt.example`, gitignored)
+- File `install/shared/install-data-creds.txt` (one line: read-limited GitHub PAT)
 
 ## Layout
 

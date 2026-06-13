@@ -2,6 +2,7 @@
 $server = @'
 {
   "version": "2026.06.13 16:21:42",
+  "urlDoc": "",
   "disabled": false,
   "disableVirus": false,
   "serverIp": "26.188.115.1",
