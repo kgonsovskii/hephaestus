@@ -16,7 +16,7 @@ if ! command -v git >/dev/null 2>&1; then
 fi
 
 DATA_DIR="$(hephaestus_data_directory)"
-CLONE_URL='https://x-access-token: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@github.com/kgonsovskii/hephaestus_data.git'
+CLONE_URL='https://x-access-token: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@github.com/kgonsovskii/hephaestus_data.git'
 
 echo "[install-data] Repo root: ${REPO_ROOT}"
 echo "[install-data] Data dir (sibling): ${DATA_DIR}"
