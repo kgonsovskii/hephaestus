@@ -7,7 +7,8 @@ public sealed class DomainHostOptions
 {
     public const string SectionName = "DomainHost";
 
-    public string HephaestusDataDirectoryName { get; set; } = null!;
+    /// <summary>Relative path from repository root to the Hephaestus data directory (e.g. <c>../hephaestus_data</c>).</summary>
+    public string HephaestusData { get; set; } = null!;
 
     public string WebRoot { get; set; } = null!;
 

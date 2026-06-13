@@ -138,13 +138,14 @@ internal static class DomainHostRunner
         DomainHostOptionsValidator.ValidateOrThrow(hostOpts);
 
         var paths = HephaestusPathResolver.FromSnapshot(hostOpts);
+        var repoRoot = paths.ResolveRepositoryRoot(Path.GetFullPath(AppContext.BaseDirectory));
         var dataRoot = paths.ResolveHephaestusDataRootFromAppBase();
         var webFull = paths.WebDirectory(dataRoot);
         if (!Directory.Exists(webFull))
             throw new InvalidOperationException(
                 $"DomainHost: web directory not found at '{webFull}' (Hephaestus data root '{dataRoot}').");
 
-        var pfxPath = paths.FileUnderCert(dataRoot);
+        var pfxPath = paths.FileUnderCert(repoRoot);
         if (!File.Exists(pfxPath))
             throw new InvalidOperationException($"DomainHost: certificate PFX not found: {pfxPath}. Run CertTool once.");
 

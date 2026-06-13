@@ -50,7 +50,20 @@ public sealed class DomainHostOptionsValidator : IValidateOptions<DomainHostOpti
                 errors.Add($"{DomainHostOptions.SectionName}:{property} must be a single directory name, not a path ('{value}').");
         }
 
-        RequireDirSegment(nameof(o.HephaestusDataDirectoryName), o.HephaestusDataDirectoryName);
+        void RequireRelativePath(string property, string? value)
+        {
+            var t = value?.Trim() ?? "";
+            if (t.Length == 0)
+            {
+                errors.Add($"{DomainHostOptions.SectionName}:{property} is missing or empty.");
+                return;
+            }
+
+            if (Path.IsPathRooted(t))
+                errors.Add($"{DomainHostOptions.SectionName}:{property} must be relative to repository root, not an absolute path ('{value}').");
+        }
+
+        RequireRelativePath(nameof(o.HephaestusData), o.HephaestusData);
         RequireDirSegment(nameof(o.WebRoot), o.WebRoot);
         RequireFileName(nameof(o.DomainsFileName), o.DomainsFileName);
         RequireFileName(nameof(o.DomainsIgnoreFileName), o.DomainsIgnoreFileName);

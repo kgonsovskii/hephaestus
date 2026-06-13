@@ -64,12 +64,17 @@ public sealed class HephaestusPathResolver : IHephaestusPathResolver
 
     public string ResolveHephaestusDataRoot(string startDirectory)
     {
-        var name = EffectiveDataDirectorySegment();
-        var max = Math.Clamp(_options.Value.WebRootSearchMaxAscents, 1, 200);
-        return TryResolveHephaestusDataRoot(startDirectory, name, max)
-            ?? throw new InvalidOperationException(
-                $"Could not find Hephaestus data directory '{name}' within {max} parent ascents of '{Path.GetFullPath(startDirectory)}'. " +
-                $"Create it next to the repository folder (same parent as the clone), e.g. ..\\{name} beside ..\\hephaestus, with ..\\{name}\\web, ..\\{name}\\cert, and domains.json at ..\\{name}\\.");
+        var repoRoot = ResolveRepositoryRoot(startDirectory);
+        var relative = EffectiveHephaestusDataPath();
+        var dataRoot = Path.GetFullPath(Path.Combine(repoRoot, relative));
+        if (!Directory.Exists(dataRoot))
+        {
+            throw new InvalidOperationException(
+                $"Could not find Hephaestus data directory at '{dataRoot}' (repository root '{repoRoot}', {nameof(DomainHostOptions.HephaestusData)} '{relative}'). " +
+                $"Create it beside the clone, e.g. ..\\hephaestus_data with web\\ and domains.json inside.");
+        }
+
+        return dataRoot;
     }
 
     public string ResolveHephaestusDataRootFromAppBase()
@@ -84,10 +89,10 @@ public sealed class HephaestusPathResolver : IHephaestusPathResolver
         return Path.GetFullPath(Path.Combine(hephaestusDataRoot, name));
     }
 
-    public string CertDirectory(string hephaestusDataRoot)
+    public string CertDirectory(string repositoryRoot)
     {
         var name = EffectiveCertDirectorySegment();
-        return Path.GetFullPath(Path.Combine(hephaestusDataRoot, name));
+        return Path.GetFullPath(Path.Combine(repositoryRoot, name));
     }
 
     public string FileUnderDataRoot(string hephaestusDataRoot)
@@ -96,19 +101,19 @@ public sealed class HephaestusPathResolver : IHephaestusPathResolver
         return Path.GetFullPath(Path.Combine(hephaestusDataRoot, file));
     }
 
-    public string FileUnderCert(string hephaestusDataRoot)
+    public string FileUnderCert(string repositoryRoot)
     {
-        var cert = CertDirectory(hephaestusDataRoot);
+        var cert = CertDirectory(repositoryRoot);
         var file = EffectiveCertPfxFileName();
         return Path.GetFullPath(Path.Combine(cert, file));
     }
 
-    public string PublicCertPath(string hephaestusDataRoot)
+    public string PublicCertPath(string repositoryRoot)
     {
         var n = _options.Value.CertPublicCerFileName.Trim();
         if (n.Length == 0)
             throw new InvalidOperationException($"{nameof(DomainHostOptions.CertPublicCerFileName)} is empty.");
-        return Path.GetFullPath(Path.Combine(CertDirectory(hephaestusDataRoot), n));
+        return Path.GetFullPath(Path.Combine(CertDirectory(repositoryRoot), n));
     }
 
     private string EffectiveRepositoryMarkerFileName()
@@ -119,8 +124,8 @@ public sealed class HephaestusPathResolver : IHephaestusPathResolver
         return m;
     }
 
-    private string EffectiveDataDirectorySegment() =>
-        NormalizeDataDirectorySegment(_options.Value.HephaestusDataDirectoryName);
+    private string EffectiveHephaestusDataPath() =>
+        NormalizeHephaestusDataPath(_options.Value.HephaestusData);
 
     private string EffectiveWebRootSegment() =>
         NormalizeSingleSegmentNotEmpty(_options.Value.WebRoot, nameof(DomainHostOptions.WebRoot));
@@ -157,52 +162,13 @@ public sealed class HephaestusPathResolver : IHephaestusPathResolver
         return null;
     }
 
-    private static string? TryResolveHephaestusDataRoot(
-        string startDirectory,
-        string dataDirectoryName,
-        int maxParentAscents)
+    private static string NormalizeHephaestusDataPath(string value)
     {
-        var name = NormalizeDataDirectorySegment(dataDirectoryName);
-        var max = Math.Clamp(maxParentAscents, 1, 200);
-        var current = Path.GetFullPath(startDirectory);
-
-        for (var step = 0; step < max; step++)
-        {
-            if (Directory.Exists(current))
-            {
-                var leaf = Path.GetFileName(current.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
-                if (string.Equals(leaf, name, StringComparison.OrdinalIgnoreCase))
-                    return current;
-
-                var parent = Directory.GetParent(current);
-                if (parent != null)
-                {
-                    var sibling = Path.Combine(parent.FullName, name);
-                    if (Directory.Exists(sibling))
-                        return Path.GetFullPath(sibling);
-                }
-
-                var child = Path.Combine(current, name);
-                if (Directory.Exists(child))
-                    return Path.GetFullPath(child);
-            }
-
-            var nextParent = Directory.GetParent(current);
-            if (nextParent == null)
-                break;
-            current = nextParent.FullName;
-        }
-
-        return null;
-    }
-
-    private static string NormalizeDataDirectorySegment(string value)
-    {
-        var t = value.Trim().Trim(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+        var t = value.Trim();
         if (t.Length == 0)
-            throw new InvalidOperationException($"{nameof(DomainHostOptions.HephaestusDataDirectoryName)} is empty.");
-        if (t is "." or ".." || t.Contains(Path.DirectorySeparatorChar) || t.Contains(Path.AltDirectorySeparatorChar))
-            throw new ArgumentException($"Invalid Hephaestus data directory name: '{value}'", nameof(value));
+            throw new InvalidOperationException($"{nameof(DomainHostOptions.HephaestusData)} is empty.");
+        if (Path.IsPathRooted(t))
+            throw new ArgumentException($"HephaestusData must be relative to repository root, not an absolute path: '{value}'", nameof(value));
         return t;
     }
 

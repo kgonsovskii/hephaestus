@@ -16,7 +16,7 @@ internal static class Program
         try
         {
             Run();
-            Console.WriteLine($"Wrote hephaestus_data/cert/hephaestus.pfx (password: 123) and hephaestus-trusted-root.cer. Trust: scripts/install-hephaestus-trust-cer.ps1 (CER only) or deploy-trust-ad-gpo.txt (AD).");
+            Console.WriteLine($"Wrote cert/hephaestus.pfx (password: 123) and hephaestus-trusted-root.cer. Trust: scripts/install-hephaestus-trust-cer.ps1 (CER only) or deploy-trust-ad-gpo.txt (AD).");
             return 0;
         }
         catch (Exception ex)
@@ -30,6 +30,7 @@ internal static class Program
     {
         var start = Path.GetFullPath(AppContext.BaseDirectory);
         var paths = HephaestusPathResolver.FromAppSettingsInDirectory(start);
+        var repoRoot = paths.ResolveRepositoryRoot(start);
         var dataRoot = paths.ResolveHephaestusDataRoot(start);
         var webRoot = paths.WebDirectory(dataRoot);
         if (!Directory.Exists(webRoot))
@@ -43,9 +44,9 @@ internal static class Program
         if (dnsNames.Count == 0)
             throw new InvalidOperationException("No enabled domains in domains.json.");
 
-        var certDir = paths.CertDirectory(dataRoot);
-        var pfxPath = paths.FileUnderCert(dataRoot);
-        var publicCerPath = paths.PublicCertPath(dataRoot);
+        var certDir = paths.CertDirectory(repoRoot);
+        var pfxPath = paths.FileUnderCert(repoRoot);
+        var publicCerPath = paths.PublicCertPath(repoRoot);
 
         var deleteExisting = LoadDeleteExistingCertFilesFlag();
         if (deleteExisting)

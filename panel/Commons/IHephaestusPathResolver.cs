@@ -10,11 +10,11 @@ public interface IHephaestusPathResolver
 
     string WebDirectory(string hephaestusDataRoot);
 
-    string CertDirectory(string hephaestusDataRoot);
+    string CertDirectory(string repositoryRoot);
 
     string FileUnderDataRoot(string hephaestusDataRoot);
 
-    string FileUnderCert(string hephaestusDataRoot);
+    string FileUnderCert(string repositoryRoot);
 
-    string PublicCertPath(string hephaestusDataRoot);
+    string PublicCertPath(string repositoryRoot);
 }
