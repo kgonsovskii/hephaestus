@@ -148,22 +148,27 @@ public static class HephaestusDataGitRunner
     {
         RunGit("add -A", dataDir, logger);
 
+        var committed = false;
         if (HasStagedChanges(dataDir, logger))
         {
-            if (!TryRunGit($"commit -m \"{SyncCommitMessage}\"", dataDir, logger, out var commitError)
-                && !IsNothingToCommit(commitError))
+            if (TryRunGit($"commit -m \"{SyncCommitMessage}\"", dataDir, logger, out var commitError))
+            {
+                committed = true;
+                logger.LogInformation("Hephaestus data git: committed local changes.");
+            }
+            else if (!IsNothingToCommit(commitError))
             {
                 throw new InvalidOperationException($"git commit failed: {commitError}");
             }
         }
-        else
-        {
-            logger.LogTrace("Hephaestus data git: nothing to commit.");
-        }
 
         if (!HasUnpushedCommits(dataDir, branch, logger))
         {
-            logger.LogTrace("Hephaestus data git: nothing to push.");
+            logger.LogInformation(
+                committed
+                    ? "Hephaestus data git: no push needed (commits already on origin/{Branch})."
+                    : "Hephaestus data git: no push needed (already up to date with origin/{Branch}).",
+                branch);
             return;
         }
 

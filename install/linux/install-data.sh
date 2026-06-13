@@ -16,7 +16,10 @@ if ! command -v git >/dev/null 2>&1; then
 fi
 
 DATA_DIR="$(hephaestus_data_directory)"
-CLONE_URL='https://x-access-token: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@github.com/kgonsovskii/hephaestus_data.git'
+# shellcheck source=../shared/crypt-git-pat.sh
+. "${SCRIPT_DIR}/../shared/crypt-git-pat.sh"
+PAT="$(read_git_pat_from_encrypted_file)"
+CLONE_URL="https://x-access-token:${PAT}@github.com/kgonsovskii/hephaestus_data.git"
 
 echo "[install-data] Repo root: ${REPO_ROOT}"
 echo "[install-data] Data dir (sibling): ${DATA_DIR}"

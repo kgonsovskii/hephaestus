@@ -8,9 +8,12 @@ if (-not (Test-CommandExists 'git')) {
     throw 'git not on PATH. Run install\win\install-git.ps1 first.'
 }
 
+. "$PSScriptRoot\..\shared\crypt-git-pat.ps1"
+
 $paths = Get-HephaestusInstallPaths
 $dataDir = Get-HephaestusDataDirectory
-$cloneUrl = 'https://x-access-token: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@github.com/kgonsovskii/hephaestus_data.git'
+$pat = Read-GitPatFromEncryptedFile
+$cloneUrl = "https://x-access-token:${pat}@github.com/kgonsovskii/hephaestus_data.git"
 
 Write-Host "[install-data] Repo root: $($paths.RepoRoot)"
 Write-Host "[install-data] Data dir (sibling): $dataDir"
