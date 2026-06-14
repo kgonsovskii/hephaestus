@@ -16,9 +16,9 @@ public interface IHephaestusPathResolver
 
     string ResolveHephaestusDataRootFromAppBase();
 
-    string ProfileDirectory(string startDirectory);
+    string ServerDirectory(string startDirectory);
 
-    string ProfileDirectoryFromAppBase();
+    string ServerDirectoryFromAppBase();
 
     string DefaultsEmbedDirectory(string startDirectory);
 

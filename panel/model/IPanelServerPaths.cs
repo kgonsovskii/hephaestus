@@ -30,7 +30,7 @@ public interface IPanelServerPaths
     string Packer { get; }
     string CertTool { get; }
 
-    /// <summary>Home directory for the active profile (<c>.../default/profile</c>).</summary>
+    /// <summary>Panel server home (<c>hephaestus_data/{profile}/server</c>); holds <c>server.json</c> and user payload.</summary>
     string ServerDir { get; }
 
     string DataFile { get; }
@@ -42,6 +42,6 @@ public interface IPanelServerPaths
 
     string UserDataBody { get; }
 
-    /// <summary>Creates Hephaestus data, profile, web, and cert directories when missing.</summary>
+    /// <summary>Creates Hephaestus data, server, web, and cert directories when missing.</summary>
     void EnsureLayout();
 }

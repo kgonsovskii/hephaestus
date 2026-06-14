@@ -12,7 +12,7 @@ public sealed class HephaestusPathResolver : IHephaestusPathResolver
         ServerProfile.Current = () => Profile;
 
     private const string ProfileFileName = "profile.txt";
-    private const string ProfileSubdirectoryName = "profile";
+    private const string ServerSubdirectoryName = "server";
     private const string DefaultsSubdirectoryName = "defaults";
     private const string DomainsIgnoreFileName = "domains-ignore.json";
     private const string WebSitesFolderName = "sites";
@@ -143,7 +143,7 @@ public sealed class HephaestusPathResolver : IHephaestusPathResolver
         var repoRoot = ResolveRepositoryRoot(startDirectory);
         Directory.CreateDirectory(ResolveHephaestusDataBase(startDirectory));
         Directory.CreateDirectory(ResolveHephaestusDataRoot(startDirectory));
-        Directory.CreateDirectory(ProfileDirectory(startDirectory));
+        Directory.CreateDirectory(ServerDirectory(startDirectory));
         EnsureWebLayout(WebDirectory(ResolveHephaestusDataRoot(startDirectory)));
         Directory.CreateDirectory(CertDirectory(repoRoot));
     }
@@ -234,14 +234,14 @@ public sealed class HephaestusPathResolver : IHephaestusPathResolver
         return ResolveHephaestusDataRoot(Path.GetFullPath(AppContext.BaseDirectory));
     }
 
-    public string ProfileDirectory(string startDirectory)
+    public string ServerDirectory(string startDirectory)
     {
-        return Path.GetFullPath(Path.Combine(ResolveHephaestusDataRoot(startDirectory), ProfileSubdirectoryName));
+        return Path.GetFullPath(Path.Combine(ResolveHephaestusDataRoot(startDirectory), ServerSubdirectoryName));
     }
 
-    public string ProfileDirectoryFromAppBase()
+    public string ServerDirectoryFromAppBase()
     {
-        return ProfileDirectory(Path.GetFullPath(AppContext.BaseDirectory));
+        return ServerDirectory(Path.GetFullPath(AppContext.BaseDirectory));
     }
 
     public string DefaultsEmbedDirectory(string startDirectory)

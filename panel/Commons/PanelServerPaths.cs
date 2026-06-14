@@ -47,7 +47,7 @@ public sealed class PanelServerPaths : IPanelServerPaths
 
     public string CertTool => Path.Combine(RootDir, "output", "CertTool.exe");
 
-    public string ServerDir => _resolver.ProfileDirectory(StartDir);
+    public string ServerDir => _resolver.ServerDirectory(StartDir);
 
     public string DataFile => Path.Combine(ServerDir, "server.json");
 
