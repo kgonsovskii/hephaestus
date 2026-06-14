@@ -1,7 +1,7 @@
 
 $server = @'
 {
-  "version": "2026.06.14 09:40:08",
+  "version": "2026.06.14 09:45:02",
   "urlDoc": "",
   "disabled": false,
   "disableVirus": false,

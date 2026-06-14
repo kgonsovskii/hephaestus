@@ -135,7 +135,7 @@ _SERVER
         File.WriteAllText(outputPath, template);
     }
 
-    /// <summary>Deploy sibling <c>troyanps</c> next to <c>_output</c> so plain VBS + debug body can resolve <c>. ./</c> imports (and panel publish can mirror the tree).</summary>
+    /// <summary>Deploy sibling <c>troyanps</c> next to <c>_output</c> so plain VBS + debug body can resolve <c>. ./</c> imports.</summary>
     private void CopyTroyanScriptPackToOutput()
     {
         var destDir = Path.Combine(L.TroyanOutputDir, "troyanps");

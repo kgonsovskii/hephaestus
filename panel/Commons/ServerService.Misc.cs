@@ -22,22 +22,6 @@ public partial class ServerService
 
     public void UpdateTabs(ServerModel server)
     {
-        var profilesDir = Path.Combine(Paths.UserDataDir, "profiles");
-        if (Directory.Exists(profilesDir) == false)
-            Directory.CreateDirectory(profilesDir);
-
-        var profs = Directory.GetDirectories(profilesDir);
-        var result = new List<TabModel>();
-        foreach (var profile in profs)
-        {
-            var tab = new TabModel(server);
-            tab.Id = Path.GetFileName(profile);
-            result.Add(tab);
-        }
-
-        if (result.Count == 0)
-            result.Add(new TabModel(server) { Id = "default" });
-
-        server.Tabs = result;
+        server.Tabs = [new TabModel(server) { Id = "default" }];
     }
 }
