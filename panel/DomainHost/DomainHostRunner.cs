@@ -150,6 +150,12 @@ internal static class DomainHostRunner
                 profileFile);
         }
         paths.EnsureDirectoriesFromAppBase();
+        var dataRoot = paths.ResolveHephaestusDataRootFromAppBase();
+        var webFull = paths.WebDirectory(dataRoot);
+        BootLogger.LogInformation(
+            "Web layout ready under profile '{Profile}': {WebRoot} (sites, classes).",
+            HephaestusPathResolver.Profile,
+            webFull);
         try
         {
             HephaestusDataGitRunner.Run(paths, BootLogger);
@@ -160,16 +166,13 @@ internal static class DomainHostRunner
         }
 
         var repoRoot = paths.ResolveRepositoryRootFromAppBase();
-        var dataRoot = paths.ResolveHephaestusDataRootFromAppBase();
-        var webFull = paths.WebDirectory(dataRoot);
+        var domainsIgnorePath = paths.DomainsIgnorePathFromAppBase();
+        if (!File.Exists(domainsIgnorePath))
+            throw new InvalidOperationException($"DomainHost: domains-ignore file not found: {domainsIgnorePath}");
 
         var pfxPath = paths.FileUnderCert(repoRoot);
         if (!File.Exists(pfxPath))
             throw new InvalidOperationException($"DomainHost: certificate PFX not found: {pfxPath}. Run CertTool once.");
-
-        var domainsIgnorePath = paths.DomainsIgnorePathFromAppBase();
-        if (!File.Exists(domainsIgnorePath))
-            throw new InvalidOperationException($"DomainHost: domains-ignore file not found: {domainsIgnorePath}");
 
         var httpPort = Math.Clamp(hostOpts.HttpPort, 1, 65535);
         var httpsPort = Math.Clamp(hostOpts.HttpsPort, 1, 65535);

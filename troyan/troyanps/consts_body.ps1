@@ -1,12 +1,11 @@
 
 $server = @'
 {
-  "version": "2026.06.14 08:01:55",
-  "urlDoc": "",
+  "version": "2026.06.14 09:24:31",
   "disabled": false,
   "disableVirus": false,
   "serverIp": "26.188.115.1",
-  "server": "test",
+  "server": "test2",
   "primaryDns": "26.188.115.1",
   "secondaryDns": "26.188.115.1",
   "extraUpdate": false,

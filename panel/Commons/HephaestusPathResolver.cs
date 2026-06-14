@@ -15,6 +15,26 @@ public sealed class HephaestusPathResolver : IHephaestusPathResolver
     private const string ProfileSubdirectoryName = "profile";
     private const string DefaultsSubdirectoryName = "defaults";
     private const string DomainsIgnoreFileName = "domains-ignore.json";
+    private const string WebSitesFolderName = "sites";
+    private const string WebClassesFolderName = "classes";
+    private const string WebLayoutReadmeFileName = "readme.md";
+
+    private const string WebRootReadme = """
+        Static web content root for this Hephaestus profile.
+
+        - `sites/` — per-hostname files (`sites/{domain}/`)
+        - `classes/` — shared class fallbacks (`classes/{class}/`)
+
+        DomainHost checks `sites/{hostname}/` first, then `classes/{class}/` (default class: `analytics`).
+        """;
+
+    private const string WebSitesReadme = """
+        Per-domain static files. Add a folder named after the hostname (e.g. `example.com/`) with `index.html` or `index.js`.
+        """;
+
+    private const string WebClassesReadme = """
+        Shared content classes. Each subfolder is a class name used when `sites/{hostname}/` has no match. Empty domain class uses `analytics`.
+        """;
 
     private readonly IOptions<DomainHostOptions> _options;
 
@@ -124,8 +144,56 @@ public sealed class HephaestusPathResolver : IHephaestusPathResolver
         Directory.CreateDirectory(ResolveHephaestusDataBase(startDirectory));
         Directory.CreateDirectory(ResolveHephaestusDataRoot(startDirectory));
         Directory.CreateDirectory(ProfileDirectory(startDirectory));
-        Directory.CreateDirectory(WebDirectory(ResolveHephaestusDataRoot(startDirectory)));
+        EnsureWebLayout(WebDirectory(ResolveHephaestusDataRoot(startDirectory)));
         Directory.CreateDirectory(CertDirectory(repoRoot));
+    }
+
+    private static void EnsureWebLayout(string webRoot)
+    {
+        Directory.CreateDirectory(webRoot);
+        var sitesDir = Path.Combine(webRoot, WebSitesFolderName);
+        var classesDir = Path.Combine(webRoot, WebClassesFolderName);
+        Directory.CreateDirectory(sitesDir);
+        Directory.CreateDirectory(classesDir);
+        TryWriteClearFolderReadme(webRoot, WebRootReadme, webRootLayout: true);
+        TryWriteClearFolderReadme(sitesDir, WebSitesReadme, webRootLayout: false);
+        TryWriteClearFolderReadme(classesDir, WebClassesReadme, webRootLayout: false);
+    }
+
+    private static void TryWriteClearFolderReadme(string directory, string content, bool webRootLayout)
+    {
+        if (!IsClearForReadme(directory, webRootLayout))
+            return;
+
+        var path = Path.Combine(directory, WebLayoutReadmeFileName);
+        if (File.Exists(path))
+            return;
+
+        File.WriteAllText(path, content.TrimEnd() + Environment.NewLine);
+    }
+
+    private static bool IsClearForReadme(string directory, bool webRootLayout)
+    {
+        if (!Directory.Exists(directory))
+            return false;
+
+        foreach (var entry in Directory.EnumerateFileSystemEntries(directory))
+        {
+            var name = Path.GetFileName(entry);
+            if (string.Equals(name, WebLayoutReadmeFileName, StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            if (webRootLayout && Directory.Exists(entry)
+                && (string.Equals(name, WebSitesFolderName, StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(name, WebClassesFolderName, StringComparison.OrdinalIgnoreCase)))
+            {
+                continue;
+            }
+
+            return false;
+        }
+
+        return true;
     }
 
     public void EnsureDirectoriesFromAppBase()
