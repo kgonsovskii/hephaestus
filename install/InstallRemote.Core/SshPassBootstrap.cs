@@ -2,7 +2,7 @@ using System.Runtime.Versioning;
 
 namespace InstallRemote;
 
-/// <summary>Resolves <c>sshpass</c> on PATH, or on Windows runs the same discovery/download path as the install-remote tool.</summary>
+/// <summary>Resolves <c>sshpass</c> on PATH; Linux/Windows auto-install when missing.</summary>
 public static class SshPassBootstrap
 {
     /// <summary>Returns full path to sshpass executable.</summary>
@@ -17,6 +17,9 @@ public static class SshPassBootstrap
 
         if (!OperatingSystem.IsWindows())
         {
+            if (OperatingSystem.IsLinux())
+                return LinuxSshPassBootstrap.EnsureAsync(logInfo, cancellationToken);
+
             return Task.FromException<string>(
                 new InvalidOperationException("sshpass not found on PATH (e.g. apt install sshpass)."));
         }

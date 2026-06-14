@@ -6,7 +6,7 @@ using Microsoft.Extensions.Options;
 
 namespace DomainHost;
 
-/// <summary>Runs <see cref="RemoteInstallRunner"/> on DomainHost (Linux: PATH sshpass; Windows: <see cref="SshPassBootstrap"/>).</summary>
+/// <summary>Runs <see cref="RemoteInstallRunner"/> on DomainHost (Linux/Windows: <see cref="SshPassBootstrap"/> auto-installs sshpass when missing).</summary>
 public sealed class InstallRemoteInternalMiddleware
 {
     private readonly RequestDelegate _next;

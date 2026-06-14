@@ -45,8 +45,9 @@ if [[ "$#" -ge 2 ]]; then LOGIN="$2"; fi
 if [[ "$#" -ge 3 ]]; then PASSWORD="$3"; fi
 
 if ! command -v sshpass >/dev/null 2>&1; then
-  echo "sshpass is required (SSH password auth). Install: sudo apt install sshpass" >&2
-  exit 1
+  echo "[install-remote] sshpass not found; installing via apt…"
+  hephaestus_source_shared_wait
+  apt_get install -y sshpass
 fi
 
 export SSHPASS="$PASSWORD"
