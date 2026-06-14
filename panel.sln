@@ -72,6 +72,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "InstallScripts", "InstallSc
 		install\README.md = install\README.md
 		install\uninstall.sh = install\uninstall.sh
 		install\update.sh = install\update.sh
+		install\install-remote-profile.bat = install\install-remote-profile.bat
+		install\install-remote-profile.sh = install\install-remote-profile.sh
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Win", "Win", "{41828415-9B0D-4AF0-9015-CD58B9E5F0B2}"
