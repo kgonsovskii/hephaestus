@@ -141,6 +141,14 @@ internal static class DomainHostRunner
         DomainHostOptionsValidator.ValidateOrThrow(hostOpts);
 
         var paths = HephaestusPathResolver.FromSnapshot(hostOpts);
+        var profileFile = HephaestusPathResolver.ResolveProfileFilePath(AppContext.BaseDirectory, hostOpts);
+        if (File.Exists(profileFile))
+        {
+            BootLogger.LogInformation(
+                "Hephaestus profile '{Profile}' loaded from {ProfileFile}.",
+                HephaestusPathResolver.Profile,
+                profileFile);
+        }
         paths.EnsureDirectoriesFromAppBase();
         try
         {
@@ -179,9 +187,7 @@ internal static class DomainHostRunner
         });
 
         builder.Services.AddSingleton<IWebFileResolver, WebFileResolver>();
-        builder.Services.AddSingleton<WebStaticRevision>();
         builder.Services.AddSingleton<DomainHostRequestHandler>();
-        builder.Services.AddHostedService<WebRootFileWatcherHostedService>();
 
         var app = builder.Build();
 
@@ -203,8 +209,9 @@ internal static class DomainHostRunner
         var panelPaths = app.Services.GetRequiredService<IPanelServerPaths>();
         var log = app.Services.GetRequiredService<ILoggerFactory>().CreateLogger("DomainHost");
         log.LogInformation(
-            "Panel paths (server {ServerId}): HephaestusDataRoot={HephaestusDataRoot}; RootData={RootData}; UserDataDir={UserDataDir}; DataFile={DataFile}; RepositoryRoot={RepositoryRoot}",
+            "Panel paths (server {ServerId}, profile {Profile}): HephaestusDataRoot={HephaestusDataRoot}; RootData={RootData}; UserDataDir={UserDataDir}; DataFile={DataFile}; RepositoryRoot={RepositoryRoot}",
             PanelServerIdentity.DefaultKey,
+            HephaestusPathResolver.Profile,
             panelPaths.HephaestusDataRoot,
             panelPaths.RootData,
             panelPaths.UserDataDir,

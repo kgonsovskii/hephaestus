@@ -39,7 +39,7 @@ public class CpController : BaseController
             ViewData["UrlDoc"] = serverResult.ServerModel?.UrlDoc != null ? serverResult.ServerModel.UrlDoc : "";
             if (serverResult.ServerModel == null)
                 return NotFound();
-            return View("Index", new CpIndexViewModel { Server = serverResult.ServerModel });
+            return View("Index", new CpIndexViewModel { Server = serverResult.ServerModel! });
         }
         catch (Exception e)
         {

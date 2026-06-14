@@ -38,6 +38,11 @@ public static class Program
             .AddJsonFile("appsettings.json", optional: false)
             .Build();
 
+        var hostOpts = config.GetRequiredSection(DomainHostOptions.SectionName).Get<DomainHostOptions>()
+            ?? throw new InvalidOperationException($"Failed to bind '{DomainHostOptions.SectionName}'.");
+        DomainHostOptionsValidator.ValidateOrThrow(hostOpts);
+        HephaestusPathResolver.ApplyProfileFromFileIfPresent(Path.GetFullPath(AppContext.BaseDirectory), hostOpts);
+
         var services = new ServiceCollection();
         services.AddSingleton<IValidateOptions<DomainHostOptions>, DomainHostOptionsValidator>();
         services.AddOptions<DomainHostOptions>()

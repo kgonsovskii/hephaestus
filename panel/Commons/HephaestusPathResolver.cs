@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
+using model;
 
 namespace Commons;
 
@@ -7,6 +8,10 @@ public sealed class HephaestusPathResolver : IHephaestusPathResolver
 {
     public static string Profile = "default";
 
+    static HephaestusPathResolver() =>
+        ServerProfile.Current = () => Profile;
+
+    private const string ProfileFileName = "profile.txt";
     private const string ProfileSubdirectoryName = "profile";
     private const string DefaultsSubdirectoryName = "defaults";
     private const string DomainsIgnoreFileName = "domains-ignore.json";
@@ -21,10 +26,11 @@ public sealed class HephaestusPathResolver : IHephaestusPathResolver
     public static HephaestusPathResolver FromSnapshot(DomainHostOptions snapshot)
     {
         DomainHostOptionsValidator.ValidateOrThrow(snapshot);
+        ApplyProfileFromFileIfPresent(Path.GetFullPath(AppContext.BaseDirectory), snapshot);
         return new HephaestusPathResolver(Options.Create(snapshot));
     }
 
-    public static HephaestusPathResolver FromConfiguration(IConfiguration configuration)
+    public static HephaestusPathResolver FromConfiguration(IConfiguration configuration, string? startDirectory = null)
     {
         var section = configuration.GetSection(DomainHostOptions.SectionName);
         if (!section.Exists() || !section.GetChildren().Any())
@@ -37,8 +43,42 @@ public sealed class HephaestusPathResolver : IHephaestusPathResolver
             ?? throw new InvalidOperationException(
                 $"Failed to bind configuration section '{DomainHostOptions.SectionName}'. Check property names for typos.");
         DomainHostOptionsValidator.ValidateOrThrow(o);
+        ApplyProfileFromFileIfPresent(
+            Path.GetFullPath(startDirectory ?? AppContext.BaseDirectory),
+            o);
         return new HephaestusPathResolver(Options.Create(o));
     }
+
+    /// <summary>
+    /// If <c>{repositoryRoot}/../profile.txt</c> exists, sets <see cref="Profile"/> from its first line.
+    /// </summary>
+    public static bool ApplyProfileFromFileIfPresent(string startDirectory, DomainHostOptions options)
+    {
+        var profilePath = ResolveProfileFilePath(startDirectory, options);
+        if (!File.Exists(profilePath))
+            return false;
+
+        var line = File.ReadLines(profilePath).FirstOrDefault()?.Trim();
+        if (string.IsNullOrWhiteSpace(line))
+            throw new InvalidOperationException($"Profile file '{profilePath}' is empty.");
+
+        Profile = NormalizeProfileName(line);
+        return true;
+    }
+
+    public static string ResolveProfileFilePath(string startDirectory, DomainHostOptions options)
+    {
+        var repoRoot = Path.GetFullPath(Path.Combine(
+            Path.GetFullPath(startDirectory),
+            NormalizeRelativePath(options.RepositoryRoot, nameof(DomainHostOptions.RepositoryRoot))));
+        var parent = Directory.GetParent(repoRoot)?.FullName
+            ?? throw new InvalidOperationException(
+                $"Cannot resolve profile file beside repository root '{repoRoot}': no parent directory.");
+        return Path.GetFullPath(Path.Combine(parent, ProfileFileName));
+    }
+
+    private static string NormalizeProfileName(string value) =>
+        NormalizeSingleSegmentNotEmpty(value, "profile.txt");
 
     /// <summary>
     /// Loads <c>DomainHost</c> from <c>appsettings.json</c> in <paramref name="baseDirectory"/> (required file and section).
@@ -56,7 +96,7 @@ public sealed class HephaestusPathResolver : IHephaestusPathResolver
             .SetBasePath(baseDirectory)
             .AddJsonFile("appsettings.json", optional: false)
             .Build();
-        return FromConfiguration(cfg);
+        return FromConfiguration(cfg, Path.GetFullPath(baseDirectory));
     }
 
     public void EnsureDirectories(string startDirectory)

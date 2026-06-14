@@ -25,7 +25,14 @@ public class ServerModel : BaseModel
     [JsonIgnore] public string PanelHomeDirectory { get; set; } = "";
 
     [JsonPropertyName("serverIp")] public string ServerIp{ get; set; } = "";
-    [JsonPropertyName("server")] public string Server { get; set; } = "";
+
+    [JsonPropertyName("server")]
+    public string Server
+    {
+        get => ServerProfile.Current();
+        set { }
+    }
+
     [JsonPropertyName("alias")] public string Alias { get; set; }
     [JsonPropertyName("strahServer")] public string StrahServer { get; set; }
 

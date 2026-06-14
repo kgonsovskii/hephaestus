@@ -9,20 +9,17 @@ public sealed class DomainHostRequestHandler
 {
     private readonly IDomainCatalog _catalog;
     private readonly IWebFileResolver _fileResolver;
-    private readonly WebStaticRevision _staticRevision;
     private readonly IOptionsMonitor<DomainHostOptions> _hostOptions;
     private readonly ILogger<DomainHostRequestHandler> _logger;
 
     public DomainHostRequestHandler(
         IDomainCatalog catalog,
         IWebFileResolver fileResolver,
-        WebStaticRevision staticRevision,
         IOptionsMonitor<DomainHostOptions> hostOptions,
         ILogger<DomainHostRequestHandler> logger)
     {
         _catalog = catalog;
         _fileResolver = fileResolver;
-        _staticRevision = staticRevision;
         _hostOptions = hostOptions;
         _logger = logger;
     }
@@ -64,8 +61,7 @@ public sealed class DomainHostRequestHandler
             return false;
 
         var maxAge = GetClampedMaxAgeSeconds();
-        var revision = _staticRevision.Current;
-        var etag = MakeWeakEtag(revision, fileInfo);
+        var etag = MakeWeakEtag(fileInfo);
         var lastModified = new DateTimeOffset(fileInfo.LastWriteTimeUtc, TimeSpan.Zero);
 
         context.Response.ContentType = contentType;
@@ -99,8 +95,8 @@ public sealed class DomainHostRequestHandler
         return Math.Clamp(s, 0, 86400);
     }
 
-    private static string MakeWeakEtag(long revision, FileInfo fileInfo) =>
-        $"W/\"{revision}-{fileInfo.LastWriteTimeUtc.Ticks}-{fileInfo.Length}\"";
+    private static string MakeWeakEtag(FileInfo fileInfo) =>
+        $"W/\"{fileInfo.LastWriteTimeUtc.Ticks}-{fileInfo.Length}\"";
 
     private static bool IsNotModified(HttpRequest request, string etag, DateTimeOffset lastModified)
     {
