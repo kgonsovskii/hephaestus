@@ -10,6 +10,8 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=common.sh
 . "${SCRIPT_DIR}/common.sh"
 
+hephaestus_bootstrap_profile "${1:-}"
+
 LOG="${HEPHAESTUS_UPDATE_LOG:-/var/log/hephaestus-update.log}"
 
 mkdir -p "$(dirname "$LOG")" 2>/dev/null || true

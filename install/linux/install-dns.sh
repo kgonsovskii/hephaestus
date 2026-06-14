@@ -6,6 +6,8 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=common.sh
 . "${SCRIPT_DIR}/common.sh"
 
+hephaestus_load_profile_env
+
 readonly INSTALL_PROJ="${INSTALL_ROOT}/Install/Install.csproj"
 readonly TECHNI_ROOT=/opt/technitium
 readonly INSTALL_DIR="${TECHNI_ROOT}/dns"

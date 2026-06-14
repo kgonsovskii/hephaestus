@@ -3,6 +3,7 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
 . "$PSScriptRoot\install-common.ps1"
+Ensure-HephaestusProfileEnv
 
 Write-Host '[install-git] git via Chocolatey'
 Invoke-ChocoInstall -Packages @('git')

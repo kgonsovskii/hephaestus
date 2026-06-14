@@ -11,6 +11,8 @@ if [ "${EUID:-0}" -ne 0 ]; then
   exec sudo /usr/bin/env bash "${SCRIPT_DIR}/install.sh" "$@"
 fi
 
+hephaestus_bootstrap_profile "${1:-}"
+
 bash "${SCRIPT_DIR}/uninstall.sh"
 bash "${SCRIPT_DIR}/install-git.sh"
 bash "${SCRIPT_DIR}/install-net.sh"

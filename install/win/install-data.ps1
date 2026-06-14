@@ -3,6 +3,7 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
 . "$PSScriptRoot\install-common.ps1"
+Ensure-HephaestusProfileEnv
 
 if (-not (Test-CommandExists 'git')) {
     throw 'git not on PATH. Run install\win\install-git.ps1 first.'

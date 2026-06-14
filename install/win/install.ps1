@@ -1,7 +1,15 @@
 #Requires -RunAsAdministrator
 # Full local Hephaestus install on Windows (Chocolatey ≈ apt). Mirrors install/linux/install.sh.
+param(
+    [Parameter(Position = 0)]
+    [string]$Profile
+)
+
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
+
+. (Join-Path $PSScriptRoot 'install-common.ps1')
+Initialize-HephaestusInstallProfile -ProfileArg $Profile
 
 $scriptDir = $PSScriptRoot
 if (-not $scriptDir) {

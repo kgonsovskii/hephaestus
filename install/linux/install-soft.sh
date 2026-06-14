@@ -6,6 +6,8 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=common.sh
 . "${SCRIPT_DIR}/common.sh"
 
+hephaestus_load_profile_env
+
 RELEASE_DIR="${REPO_ROOT}/release"
 SLN="${REPO_ROOT}/panel.sln"
 DEPLOY_PROJ="${REPO_ROOT}/panel/Deploy/Deploy.csproj"

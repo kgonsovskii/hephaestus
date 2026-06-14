@@ -48,10 +48,23 @@ public sealed class InstallRemoteInternalMiddleware
             return;
         }
 
-        if (body is null || string.IsNullOrWhiteSpace(body.Host) || string.IsNullOrWhiteSpace(body.User))
+        if (body is null || string.IsNullOrWhiteSpace(body.Host) || string.IsNullOrWhiteSpace(body.User)
+            || string.IsNullOrWhiteSpace(body.Profile))
         {
             context.Response.StatusCode = StatusCodes.Status400BadRequest;
-            await context.Response.WriteAsync("host and user are required.", context.RequestAborted).ConfigureAwait(false);
+            await context.Response.WriteAsync("profile, host and user are required.", context.RequestAborted).ConfigureAwait(false);
+            return;
+        }
+
+        string profile;
+        try
+        {
+            profile = HephaestusPathResolver.ValidateProfileName(body.Profile);
+        }
+        catch (Exception ex)
+        {
+            context.Response.StatusCode = StatusCodes.Status400BadRequest;
+            await context.Response.WriteAsync(ex.Message, context.RequestAborted).ConfigureAwait(false);
             return;
         }
 
@@ -60,8 +73,11 @@ public sealed class InstallRemoteInternalMiddleware
         try
         {
             var repoRoot = RepoRootResolver.Resolve(_clonerOpts.CurrentValue.RepoRoot, _logger);
+            HephaestusPathResolver.WriteProfileFile(repoRoot, profile);
             var scriptPath = Path.Combine(repoRoot, "install", "shared", RemoteInstallRunner.DefaultRemoteScriptFileName);
-            var script = RemoteInstallRunner.LoadRemoteInstallBootstrapScript(scriptPath);
+            var script = RemoteInstallRunner.PrependProfileExport(
+                profile,
+                RemoteInstallRunner.LoadRemoteInstallBootstrapScript(scriptPath));
 
             var sshpass = await SshPassBootstrap
                 .EnsureAsync(msg => _logger.LogInformation("[sshpass] {Message}", msg), context.RequestAborted)
@@ -96,6 +112,8 @@ public sealed class InstallRemoteInternalMiddleware
 
 public sealed class InstallRemotePostBody
 {
+    public string Profile { get; set; } = "";
+
     public string Host { get; set; } = "";
 
     public string User { get; set; } = "";

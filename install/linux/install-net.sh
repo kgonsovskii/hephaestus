@@ -10,6 +10,7 @@ fi
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=common.sh
 . "${SCRIPT_DIR}/common.sh"
+hephaestus_load_profile_env
 hephaestus_source_shared_wait
 
 apt_get update

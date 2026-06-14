@@ -3,6 +3,7 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
 . "$PSScriptRoot\install-common.ps1"
+Ensure-HephaestusProfileEnv
 
 Write-Host '[install-net] .NET 10 SDK via Chocolatey (dotnet-10.0-sdk)'
 Invoke-ChocoInstall -Packages @('dotnet-10.0-sdk')

@@ -297,6 +297,72 @@ function Find-TechnitiumPublishDir {
     return $null
 }
 
+function Get-HephaestusProfileFilePath {
+    $parent = Split-Path -Parent (Get-HephaestusInstallPaths).RepoRoot
+    Join-Path $parent 'profile.txt'
+}
+
+function Test-HephaestusProfileName {
+    param([Parameter(Mandatory)][string]$Name)
+    $t = $Name.Trim().Trim('\', '/')
+    if ([string]::IsNullOrWhiteSpace($t) -or $t -eq '.' -or $t -eq '..') {
+        throw "Invalid profile name: '$Name'"
+    }
+    if ($t -match '[\\/]') {
+        throw "Invalid profile name (path segments not allowed): '$Name'"
+    }
+    return $t
+}
+
+function Write-HephaestusProfileFile {
+    param([Parameter(Mandatory)][string]$ProfileName)
+    $profile = Test-HephaestusProfileName $ProfileName
+    $path = Get-HephaestusProfileFilePath
+    Set-Content -LiteralPath $path -Value $profile -Encoding utf8 -NoNewline
+    Add-Content -LiteralPath $path -Value '' -Encoding utf8
+    $env:HEPHAESTUS_PROFILE = $profile
+    Write-Host "[install] Wrote profile '$profile' to $path"
+}
+
+function Apply-HephaestusProfileArg {
+    param([string]$ProfileArg)
+    if (-not [string]::IsNullOrWhiteSpace($ProfileArg)) {
+        Write-HephaestusProfileFile $ProfileArg
+    }
+}
+
+function Resolve-HephaestusInstallProfile {
+    if (-not [string]::IsNullOrWhiteSpace($env:HEPHAESTUS_PROFILE)) {
+        $env:HEPHAESTUS_PROFILE = Test-HephaestusProfileName $env:HEPHAESTUS_PROFILE
+        return $env:HEPHAESTUS_PROFILE
+    }
+    $path = Get-HephaestusProfileFilePath
+    if (Test-Path -LiteralPath $path) {
+        $line = (Get-Content -LiteralPath $path -TotalCount 1 -ErrorAction SilentlyContinue)
+        if (-not [string]::IsNullOrWhiteSpace($line)) {
+            $env:HEPHAESTUS_PROFILE = Test-HephaestusProfileName $line
+            return $env:HEPHAESTUS_PROFILE
+        }
+    }
+    $env:HEPHAESTUS_PROFILE = 'default'
+    return $env:HEPHAESTUS_PROFILE
+}
+
+function Initialize-HephaestusInstallProfile {
+    param([string]$ProfileArg)
+    Apply-HephaestusProfileArg -ProfileArg $ProfileArg
+    $profile = Resolve-HephaestusInstallProfile
+    Write-Host "[install] Using profile '$profile'"
+}
+
+function Ensure-HephaestusProfileEnv {
+    if (-not [string]::IsNullOrWhiteSpace($env:HEPHAESTUS_PROFILE)) {
+        $env:HEPHAESTUS_PROFILE = Test-HephaestusProfileName $env:HEPHAESTUS_PROFILE
+        return
+    }
+    $null = Resolve-HephaestusInstallProfile
+}
+
 function Set-LocalDnsToLoopback {
     Write-Host '[install] Setting DNS on active adapters to 127.0.0.1 ...'
     $adapters = Get-NetAdapter -Physical -ErrorAction SilentlyContinue |

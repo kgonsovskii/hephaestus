@@ -11,6 +11,7 @@ fi
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=common.sh
 . "${SCRIPT_DIR}/common.sh"
+hephaestus_load_profile_env
 SQL="${SHARED_DIR}/setup-postgres.sql"
 if [ ! -f "$SQL" ]; then
   echo "Missing: $SQL" >&2

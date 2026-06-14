@@ -30,16 +30,21 @@
 
     <div class="row">
         <div class="col-md-6">
-            <label asp-for="CloneServerIp" class="form-label">Server IP</label>
-            <input asp-for="CloneServerIp" name="CloneServerIp" value="@Model.CloneServerIp" id="cloneServerIp" class="form-control" />
+            <label class="form-label" for="cloneProfile">Profile</label>
+            <input type="text" id="cloneProfile" class="form-control" value="@Model.Profile" autocomplete="off" required />
+            <div class="form-text">Written to profile.txt beside the repo; used for hephaestus_data paths on the remote host.</div>
         </div>
         <div class="col-md-6">
-            <label class="form-label" for="cloneUser">SSH user</label>
-            <input type="text" id="cloneUser" class="form-control" autocomplete="username" />
+            <label asp-for="CloneServerIp" class="form-label">Server IP</label>
+            <input asp-for="CloneServerIp" name="CloneServerIp" value="@Model.CloneServerIp" id="cloneServerIp" class="form-control" />
         </div>
     </div>
 
     <div class="row mt-3">
+        <div class="col-md-6">
+            <label class="form-label" for="cloneUser">SSH user</label>
+            <input type="text" id="cloneUser" class="form-control" autocomplete="username" />
+        </div>
         <div class="col-md-6">
             <label class="form-label" for="clonePassword">SSH password</label>
             <input type="password" id="clonePassword" class="form-control" autocomplete="current-password" />
@@ -65,6 +70,7 @@
     const scheduleUpdateUrl = @Html.Raw(System.Text.Json.JsonSerializer.Serialize("clone/schedule-update"));
     const pathBase = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Context.Request.PathBase.Value ?? ""));
 
+    const CK_PROFILE = "newway_clone_profile";
     const CK_SERVER = "newway_clone_server";
     const CK_USER = "newway_clone_user";
     const CK_PASSWORD = "newway_clone_password";
@@ -99,21 +105,24 @@
     }
 
     function hydrateFromCookies() {
+        const p = getCookie(CK_PROFILE);
         const s = getCookie(CK_SERVER);
         const u = getCookie(CK_USER);
         const pw = getCookie(CK_PASSWORD);
+        if (p) document.getElementById("cloneProfile").value = p;
         if (s) document.getElementById("cloneServerIp").value = s;
         if (u) document.getElementById("cloneUser").value = u;
         if (pw) document.getElementById("clonePassword").value = pw;
     }
 
     function saveCloneFieldsToCookies() {
+        setCookie(CK_PROFILE, document.getElementById("cloneProfile").value);
         setCookie(CK_SERVER, document.getElementById("cloneServerIp").value);
         setCookie(CK_USER, document.getElementById("cloneUser").value);
         setCookie(CK_PASSWORD, document.getElementById("clonePassword").value);
     }
 
-    ["cloneServerIp", "cloneUser", "clonePassword"].forEach(function (id) {
+    ["cloneProfile", "cloneServerIp", "cloneUser", "clonePassword"].forEach(function (id) {
         const el = document.getElementById(id);
         if (el) el.addEventListener("change", saveCloneFieldsToCookies);
     });
@@ -206,6 +215,7 @@
     });
 
     startBtn.addEventListener("click", async function () {
+        const profile = document.getElementById("cloneProfile").value.trim();
         const serverIp = document.getElementById("cloneServerIp").value;
         const user = document.getElementById("cloneUser").value;
         const password = document.getElementById("clonePassword").value;
@@ -217,13 +227,18 @@
         currentRunId = null;
         setStopEnabled(false);
 
+        if (!profile) {
+            resultEl.innerHTML = '<div class="alert alert-danger">Profile is required.</div>';
+            return;
+        }
+
         try {
             saveCloneFieldsToCookies();
             const res = await fetch(clonePostUrl, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 credentials: "same-origin",
-                body: JSON.stringify({ cloneServerIp: serverIp, cloneUser: user, clonePassword: password })
+                body: JSON.stringify({ profile: profile, cloneServerIp: serverIp, cloneUser: user, clonePassword: password })
             });
             if (!res.ok) {
                 let msg = "HTTP " + res.status;

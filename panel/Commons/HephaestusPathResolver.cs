@@ -80,6 +80,25 @@ public sealed class HephaestusPathResolver : IHephaestusPathResolver
     private static string NormalizeProfileName(string value) =>
         NormalizeSingleSegmentNotEmpty(value, "profile.txt");
 
+    public static string ValidateProfileName(string value) => NormalizeProfileName(value);
+
+    public static void WriteProfileFile(string repositoryRoot, string profileName)
+    {
+        var profile = ValidateProfileName(profileName);
+        var path = ResolveProfileFilePathFromRepoRoot(repositoryRoot);
+        File.WriteAllText(path, profile + Environment.NewLine);
+        Profile = profile;
+    }
+
+    public static string ResolveProfileFilePathFromRepoRoot(string repositoryRoot)
+    {
+        var repoRoot = Path.GetFullPath(repositoryRoot);
+        var parent = Directory.GetParent(repoRoot)?.FullName
+            ?? throw new InvalidOperationException(
+                $"Cannot resolve profile file beside repository root '{repoRoot}': no parent directory.");
+        return Path.GetFullPath(Path.Combine(parent, ProfileFileName));
+    }
+
     /// <summary>
     /// Loads <c>DomainHost</c> from <c>appsettings.json</c> in <paramref name="baseDirectory"/> (required file and section).
     /// </summary>

@@ -31,7 +31,7 @@ public class CloneController : BaseController
     [HttpGet("clone")]
     public IActionResult Index()
     {
-        return View("~/Views/Clone/Index.cshtml", new CloneModel());
+        return View("~/Views/Clone/Index.cshtml", new CloneModel { Profile = ServerProfile.Current() });
     }
 
     [HttpPost("clone")]
@@ -43,11 +43,23 @@ public class CloneController : BaseController
         if (string.IsNullOrWhiteSpace(body.CloneUser))
             return BadRequest(new { error = "cloneUser is required." });
 
+        if (string.IsNullOrWhiteSpace(body.Profile))
+            return BadRequest(new { error = "profile is required." });
+
+        try
+        {
+            HephaestusPathResolver.ValidateProfileName(body.Profile);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+
         if (CloneRemoteInstallTarget.ValidateHost(body.CloneServerIp) is { } hostErr)
             return BadRequest(new { error = hostErr });
 
         var runId = await _remoteInstall
-            .StartRemoteInstallAsync(body.CloneServerIp, body.CloneUser, body.ClonePassword ?? "", cancellationToken)
+            .StartRemoteInstallAsync(body.Profile, body.CloneServerIp, body.CloneUser, body.ClonePassword ?? "", cancellationToken)
             .ConfigureAwait(false);
 
         return Json(new { runId });
@@ -60,6 +72,7 @@ public class CloneController : BaseController
             return StatusCode(503, new { error = "Update is only supported when the panel runs on Linux." });
 
         var repoRoot = RepoRootResolver.Resolve(_clonerOptions.CurrentValue.RepoRoot, _logger);
+        var profile = ServerProfile.Current();
         var workDir = Path.Combine(repoRoot, "install");
         var updateScript = Path.Combine(workDir, "update.sh");
         if (!System.IO.File.Exists(updateScript))
@@ -90,6 +103,7 @@ public class CloneController : BaseController
             psi.ArgumentList.Add("--");
             psi.ArgumentList.Add("/bin/bash");
             psi.ArgumentList.Add("./update.sh");
+            psi.ArgumentList.Add(profile);
         }
         else
         {
@@ -101,7 +115,7 @@ public class CloneController : BaseController
                 CreateNoWindow = true,
             };
             psi.ArgumentList.Add("-c");
-            psi.ArgumentList.Add("nohup /bin/bash ./update.sh </dev/null >/dev/null 2>&1 &");
+            psi.ArgumentList.Add($"nohup /bin/bash ./update.sh {profile} </dev/null >/dev/null 2>&1 &");
         }
 
         using var proc = Process.Start(psi);

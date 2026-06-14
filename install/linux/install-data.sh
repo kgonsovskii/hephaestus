@@ -6,6 +6,8 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=common.sh
 . "${SCRIPT_DIR}/common.sh"
 
+hephaestus_load_profile_env
+
 if [ "${EUID:-0}" -ne 0 ]; then
   exec sudo /usr/bin/env bash "$0" "$@"
 fi

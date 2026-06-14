@@ -3,6 +3,7 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
 . "$PSScriptRoot\install-common.ps1"
+Ensure-HephaestusProfileEnv
 
 $paths = Get-HephaestusInstallPaths
 $installDir = $paths.TechniDnsDir

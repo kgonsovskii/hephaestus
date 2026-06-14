@@ -12,4 +12,7 @@ public sealed class CloneStartBody
 
     [JsonPropertyName("clonePassword")]
     public string ClonePassword { get; set; } = "";
+
+    [JsonPropertyName("profile")]
+    public string Profile { get; set; } = "";
 }

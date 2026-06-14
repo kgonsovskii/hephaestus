@@ -33,6 +33,12 @@ read_install_remote_creds_file() {
   PASSWORD="${lines[2]}"
 }
 
+if [[ $# -ge 1 ]]; then
+  hephaestus_write_profile_file "$1"
+  shift
+fi
+hephaestus_load_profile_env
+
 read_install_remote_creds_file "$CREDS_FILE"
 if [[ "$#" -ge 1 ]]; then SERVER="$1"; fi
 if [[ "$#" -ge 2 ]]; then LOGIN="$2"; fi
@@ -52,8 +58,8 @@ fi
 REMOTE_TXT="${SHARED_DIR}/install-remote.txt"
 WAIT_SH="${SHARED_DIR}/wait.sh"
 
-echo "Remote install -> ${LOGIN}@${SERVER}"
-echo "[1/1] SSH: install git, clone to \$HOME/hephaestus, run install.sh"
+echo "Remote install -> ${LOGIN}@${SERVER} (profile ${HEPHAESTUS_PROFILE})"
+echo "[1/1] SSH: write profile.txt, clone to \$HOME/hephaestus, run install.sh ${HEPHAESTUS_PROFILE}"
 
 if [ ! -f "$REMOTE_TXT" ]; then
   echo "Missing remote script: $REMOTE_TXT" >&2
@@ -64,4 +70,5 @@ if [ ! -f "$WAIT_SH" ]; then
   exit 1
 fi
 
-{ cat "$WAIT_SH" "$REMOTE_TXT"; } | sshpass -e ssh -tt "${SSH_OPTS[@]}" "${LOGIN}@${SERVER}" bash -s
+PROFILE_EXPORT="export HEPHAESTUS_PROFILE='${HEPHAESTUS_PROFILE//\'/\'\\\'\'}'"
+{ printf '%s\n' "$PROFILE_EXPORT"; cat "$WAIT_SH" "$REMOTE_TXT"; } | sshpass -e ssh -tt "${SSH_OPTS[@]}" "${LOGIN}@${SERVER}" bash -s

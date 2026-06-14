@@ -140,6 +140,17 @@ public static class RemoteInstallRunner
         return null;
     }
 
+    /// <summary>Prepends <c>export HEPHAESTUS_PROFILE=…</c> for remote bootstrap scripts that require it.</summary>
+    public static string PrependProfileExport(string profile, string remoteScriptText)
+    {
+        profile = profile.Trim();
+        if (profile.Length == 0 || profile is "." or ".." || profile.Contains('/') || profile.Contains('\\'))
+            throw new ArgumentException($"Invalid profile name: '{profile}'", nameof(profile));
+
+        var escaped = profile.Replace("'", "'\\''", StringComparison.Ordinal);
+        return $"export HEPHAESTUS_PROFILE='{escaped}'\n" + remoteScriptText;
+    }
+
     /// <param name="emitLineAsync">Each stdout/stderr line (stderr prefixed with <c>[stderr] </c>).</param>
     /// <param name="onProcessStarted">Invoked after <see cref="Process.Start"/> so callers can track PID / kill.</param>
     public static async Task<int> RunRemoteInstallAsync(

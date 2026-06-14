@@ -10,6 +10,7 @@ $ErrorActionPreference = 'Stop'
 $PostgresPassword = 'postgres'
 
 . "$PSScriptRoot\install-common.ps1"
+Ensure-HephaestusProfileEnv
 $SqlFile = (Get-HephaestusInstallPaths).SetupPostgresSql
 
 if (-not (Test-Path -LiteralPath $SqlFile)) {

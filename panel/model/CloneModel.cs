@@ -10,6 +10,9 @@ public class CloneModel: BaseModel
     [JsonPropertyName("cloneServerIp")]
     public string CloneServerIp { get; set; } = "";
 
+    [JsonPropertyName("profile")]
+    public string Profile { get; set; } = "";
+
     protected override void InternalRefresh()
     {
     }

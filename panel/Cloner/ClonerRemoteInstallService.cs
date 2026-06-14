@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Threading.Channels;
+using Commons;
 using Microsoft.Extensions.Logging;
 using model;
 
@@ -21,8 +22,19 @@ public sealed class ClonerRemoteInstallService : IClonerRemoteInstall
 
     internal ChannelReader<RemoteInstallWork> InstallHandoffReader => _installHandoff.Reader;
 
-    public async Task<Guid> StartRemoteInstallAsync(string host, string user, string password, CancellationToken cancellationToken = default)
+    public async Task<Guid> StartRemoteInstallAsync(string profile, string host, string user, string password, CancellationToken cancellationToken = default)
     {
+        if (string.IsNullOrWhiteSpace(profile))
+            throw new ArgumentException("Profile is required.", nameof(profile));
+        try
+        {
+            HephaestusPathResolver.ValidateProfileName(profile);
+        }
+        catch (Exception ex)
+        {
+            throw new ArgumentException(ex.Message, nameof(profile));
+        }
+
         if (string.IsNullOrWhiteSpace(host))
             throw new ArgumentException("Host is required.", nameof(host));
         if (CloneRemoteInstallTarget.ValidateHost(host) is { } hostErr)
@@ -46,7 +58,7 @@ public sealed class ClonerRemoteInstallService : IClonerRemoteInstall
         var runCts = new CancellationTokenSource();
         _runCancellations[runIdNew] = runCts;
 
-        var work = new RemoteInstallWork(runIdNew, host.Trim(), user.Trim(), password ?? "", logCh.Writer, runCts.Token);
+        var work = new RemoteInstallWork(runIdNew, profile.Trim(), host.Trim(), user.Trim(), password ?? "", logCh.Writer, runCts.Token);
         await _installHandoff.Writer.WriteAsync(work, cancellationToken).ConfigureAwait(false);
         _logger.LogInformation("Cloner: remote install {RunId} for {Host} (background worker)", runIdNew, host);
         return runIdNew;

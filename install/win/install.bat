@@ -1,5 +1,5 @@
-@echo off
-setlocal EnableExtensions
-cd /d "%~dp0"
-call "%~dp0install-admin.bat" "install.ps1"
-exit /b %ERRORLEVEL%
+@echo off
+setlocal EnableExtensions
+cd /d "%~dp0"
+call "%~dp0win\install.bat" %*
+exit /b %ERRORLEVEL%
