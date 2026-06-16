@@ -42,7 +42,6 @@ public partial class ServerService
                 pack.Date = DateTime.Now.ToString(CultureInfo.InvariantCulture);
         }
 
-        RefineUnsetNetworkFields(p);
         SaveServerLite(p);
         return result;
     }

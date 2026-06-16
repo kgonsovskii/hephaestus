@@ -4,13 +4,9 @@ namespace Commons;
 
 public partial class ServerService
 {
-    public void RefineUnsetNetworkFields(ServerModel server) =>
-        ServerNetworkRefinement.FillIfUnset(server);
-
-    /// <summary>Auto-fills unset network fields and refreshes derived server data (tabs, packs, …).</summary>
+    /// <summary>Refreshes derived server data (tabs, packs, …).</summary>
     public void RefineAndCommons(ServerModel server)
     {
-        RefineUnsetNetworkFields(server);
         ServerCommons(server);
     }
 

@@ -4,7 +4,7 @@ using System.Net.Sockets;
 
 namespace model;
 
-/// <summary>Derives <see cref="ServerModel"/> network fields from machine interfaces when unset.</summary>
+/// <summary>Network fields for <see cref="ServerModel"/> from live machine interfaces.</summary>
 public static class ServerNetworkRefinement
 {
     /// <summary>Up interfaces, unicast IPv4, link-local excluded, de-duplicated in discovery order.</summary>
@@ -78,18 +78,19 @@ public static class ServerNetworkRefinement
         a.AddressFamily == AddressFamily.InterNetwork &&
         a.ToString().StartsWith("169.", StringComparison.Ordinal);
 
-    /// <summary>Syncs stored DNS fields from live public IPs. <see cref="ServerModel.ServerIp"/> is always evaluated via <see cref="GetServerIp"/>; saving <c>server.json</c> refreshes derived URLs.</summary>
-    public static void RefreshNetworkFields(ServerModel server)
+    /// <summary>Primary DNS for Troyan <c>dnsman.ps1</c>: first public IPv4; empty when none. Serialized on save; not user-settable.</summary>
+    public static string GetPrimaryDns()
     {
         var publicIps = GetPublicOrderedIpv4Strings();
-
-        if (publicIps.Count > 0)
-        {
-            server.PrimaryDns = publicIps[0];
-            server.SecondaryDns = publicIps.Count >= 2 ? publicIps[1] : publicIps[0];
-        }
+        return publicIps.Count > 0 ? publicIps[0] : "";
     }
 
-    /// <inheritdoc cref="RefreshNetworkFields"/>
-    public static void FillIfUnset(ServerModel server) => RefreshNetworkFields(server);
+    /// <summary>Secondary DNS: second public IPv4, or primary again when only one; empty when no public IPs.</summary>
+    public static string GetSecondaryDns()
+    {
+        var publicIps = GetPublicOrderedIpv4Strings();
+        if (publicIps.Count == 0)
+            return "";
+        return publicIps.Count >= 2 ? publicIps[1] : publicIps[0];
+    }
 }

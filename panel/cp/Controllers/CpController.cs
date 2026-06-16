@@ -239,8 +239,6 @@ public class CpController : BaseController
 
             existingModel.UrlDoc = updatedModel.UrlDoc;
             existingModel.Server = server;
-            existingModel.PrimaryDns = updatedModel.PrimaryDns;
-            existingModel.SecondaryDns = updatedModel.SecondaryDns;
             existingModel.Alias = updatedModel.Alias;
             existingModel.StrahServer = updatedModel.StrahServer;
             existingModel.Track = updatedModel.Track;

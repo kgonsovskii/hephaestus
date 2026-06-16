@@ -35,8 +35,6 @@ public class Dev
             return;
         var server = new ServerModel { Server = PanelServerIdentity.DefaultKey };
 
-        ServerNetworkRefinement.FillIfUnset(server);
-
         File.WriteAllText(paths.DataFile, JsonSerializer.Serialize(server, jso));
     }
 
