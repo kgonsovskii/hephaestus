@@ -54,6 +54,12 @@ public static class ServerNetworkRefinement
         return merged;
     }
 
+    /// <summary>Preferred panel IPv4: first public address (interface discovery order), else first private, else <c>127.0.0.1</c>. Never persisted — evaluated from live interfaces.</summary>
+    public static string GetServerIp() => GetOrderedCandidateIpv4Strings()[0];
+
+    /// <summary>All candidate IPv4 addresses from up interfaces (public first, then private, else loopback).</summary>
+    public static IReadOnlyList<string> GetInterfaceIpv4Addresses() => GetOrderedCandidateIpv4Strings();
+
     /// <summary>Public (globally routable) IPv4 only, discovery order. Empty when none — no LAN or loopback substitute.</summary>
     public static IReadOnlyList<string> GetPublicOrderedIpv4Strings()
     {
@@ -72,14 +78,10 @@ public static class ServerNetworkRefinement
         a.AddressFamily == AddressFamily.InterNetwork &&
         a.ToString().StartsWith("169.", StringComparison.Ordinal);
 
-    /// <summary>Fills <see cref="ServerModel.ServerIp"/> when blank (public then private, else loopback). Fills DNS from public IPs when blank; secondary equals primary when only one public IP.</summary>
+    /// <summary>Fills DNS from public IPs when blank; secondary equals primary when only one public IP.</summary>
     public static void FillIfUnset(ServerModel server)
     {
-        var ips = GetOrderedCandidateIpv4Strings();
         var publicIps = GetPublicOrderedIpv4Strings();
-
-        if (string.IsNullOrWhiteSpace(server.ServerIp))
-            server.ServerIp = ips[0];
 
         if (string.IsNullOrWhiteSpace(server.PrimaryDns) && publicIps.Count > 0)
             server.PrimaryDns = publicIps[0];

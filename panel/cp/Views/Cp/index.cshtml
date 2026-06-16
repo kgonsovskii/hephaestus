@@ -241,7 +241,8 @@ Layout = "~/Views/Shared/_Layout.cshtml";
 
                                     <div>
                                         <label>ServerIp</label>
-                                        <input name="ServerIp" readonly="readonly" value="@Model.Server.ServerIp" class="form-control"/>
+                                        <input readonly="readonly" value="@Model.Server.ServerIp" class="form-control"/>
+                                        <small class="form-text text-muted">Auto-detected: @string.Join(", ", Model.Server.InterfaceIpv4Addresses)</small>
                                         <span class="text-danger"></span>
                                     </div>
                                 </div>

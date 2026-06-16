@@ -239,7 +239,6 @@ public class CpController : BaseController
 
             existingModel.UrlDoc = updatedModel.UrlDoc;
             existingModel.Server = server;
-            existingModel.ServerIp = updatedModel.ServerIp;
             existingModel.PrimaryDns = updatedModel.PrimaryDns;
             existingModel.SecondaryDns = updatedModel.SecondaryDns;
             existingModel.Alias = updatedModel.Alias;

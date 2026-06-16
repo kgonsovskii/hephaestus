@@ -28,15 +28,12 @@ public class Dev
     private static string DevPassword = "Putin123";
 
     /// <summary>Creates the default panel home and <c>server.json</c> when missing.</summary>
-    public static void EnsureDefaultPanel(IPanelServerPaths paths, JsonSerializerOptions jso, string? serverIp = null)
+    public static void EnsureDefaultPanel(IPanelServerPaths paths, JsonSerializerOptions jso)
     {
         paths.EnsureLayout();
         if (File.Exists(paths.DataFile))
             return;
         var server = new ServerModel { Server = PanelServerIdentity.DefaultKey };
-
-        if (!string.IsNullOrEmpty(serverIp))
-            server.ServerIp = serverIp;
 
         ServerNetworkRefinement.FillIfUnset(server);
 

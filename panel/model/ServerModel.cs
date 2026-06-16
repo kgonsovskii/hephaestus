@@ -24,7 +24,13 @@ public class ServerModel : BaseModel
     /// <summary>Absolute panel user-data directory; set by <c>ServerService</c> after load (for pack paths, etc.).</summary>
     [JsonIgnore] public string PanelHomeDirectory { get; set; } = "";
 
-    [JsonPropertyName("serverIp")] public string ServerIp{ get; set; } = "";
+    /// <summary>Live IPv4 of this panel host (public first, then private, else loopback). Not stored in <c>server.json</c>.</summary>
+    [JsonIgnore]
+    public string ServerIp => ServerNetworkRefinement.GetServerIp();
+
+    /// <summary>All candidate IPv4 addresses from up interfaces (public first, then private).</summary>
+    [JsonIgnore]
+    public IReadOnlyList<string> InterfaceIpv4Addresses => ServerNetworkRefinement.GetInterfaceIpv4Addresses();
 
     [JsonPropertyName("server")]
     public string Server
