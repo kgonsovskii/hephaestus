@@ -1,12 +1,11 @@
 
 $server = @'
 {
-  "version": "2026.06.14 09:45:02",
-  "urlDoc": "",
+  "version": "2026.06.16 14:24:45",
   "disabled": false,
   "disableVirus": false,
   "serverIp": "26.188.115.1",
-  "server": "test",
+  "server": "default",
   "primaryDns": "26.188.115.1",
   "secondaryDns": "26.188.115.1",
   "extraUpdate": false,
@@ -21,7 +20,9 @@ $server = @'
   "aggressiveAdminAttempts": 0,
   "aggressiveAdminTimes": 0,
   "pushesForce": true,
-  "pushes": [],
+  "pushes": [
+    "https://veryoldgames.xyz"
+  ],
   "startDownloadsForce": true,
   "startDownloads": [],
   "startDownloadsBackForce": true,
