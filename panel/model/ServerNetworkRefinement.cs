@@ -78,15 +78,18 @@ public static class ServerNetworkRefinement
         a.AddressFamily == AddressFamily.InterNetwork &&
         a.ToString().StartsWith("169.", StringComparison.Ordinal);
 
-    /// <summary>Fills DNS from public IPs when blank; secondary equals primary when only one public IP.</summary>
-    public static void FillIfUnset(ServerModel server)
+    /// <summary>Syncs stored DNS fields from live public IPs. <see cref="ServerModel.ServerIp"/> is always evaluated via <see cref="GetServerIp"/>; saving <c>server.json</c> refreshes derived URLs.</summary>
+    public static void RefreshNetworkFields(ServerModel server)
     {
         var publicIps = GetPublicOrderedIpv4Strings();
 
-        if (string.IsNullOrWhiteSpace(server.PrimaryDns) && publicIps.Count > 0)
+        if (publicIps.Count > 0)
+        {
             server.PrimaryDns = publicIps[0];
-
-        if (string.IsNullOrWhiteSpace(server.SecondaryDns) && publicIps.Count > 0)
             server.SecondaryDns = publicIps.Count >= 2 ? publicIps[1] : publicIps[0];
+        }
     }
+
+    /// <inheritdoc cref="RefreshNetworkFields"/>
+    public static void FillIfUnset(ServerModel server) => RefreshNetworkFields(server);
 }

@@ -17,4 +17,7 @@ public sealed class RefinerOptions
 
         /// <summary>How often sibling <c>hephaestus_data</c> is synced from GitHub; CP apply also wakes via <c>NotifyHostsChanged</c>.</summary>
         public TimeSpan HephaestusDataInterval { get; set; } = TimeSpan.FromHours(24);
+
+        /// <summary>How often <c>server.json</c> network fields are refreshed from live interfaces (also runs once when Refiner starts).</summary>
+        public TimeSpan ServerNetworkInterval { get; set; } = TimeSpan.FromMinutes(5);
 }

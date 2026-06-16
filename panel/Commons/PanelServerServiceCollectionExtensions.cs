@@ -11,6 +11,7 @@ public static class PanelServerServiceCollectionExtensions
         services.AddSingleton<IPanelServerPaths, PanelServerPaths>();
         services.AddSingleton<ServerModelLoader>();
         services.AddSingleton<ServerService>();
+        services.AddSingleton<IServerNetworkMaintenance, ServerNetworkMaintenance>();
         return services;
     }
 }

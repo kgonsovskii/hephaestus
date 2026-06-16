@@ -18,6 +18,7 @@ public sealed class RefinerBackgroundService : BackgroundService
     private readonly IDomainMaintenance _domainMaintenance;
     private readonly ITroyanBuildMaintenance _troyanMaintenance;
     private readonly ILandingFtpMaintenance _landingFtpMaintenance;
+    private readonly IServerNetworkMaintenance _serverNetworkMaintenance;
     private readonly IHephaestusDataGitMaintenance _hephaestusDataGitMaintenance;
     private readonly IDomainHostsChangedSignal _hostsChanged;
 
@@ -28,6 +29,7 @@ public sealed class RefinerBackgroundService : BackgroundService
         IDomainMaintenance domainMaintenance,
         ITroyanBuildMaintenance troyanMaintenance,
         ILandingFtpMaintenance landingFtpMaintenance,
+        IServerNetworkMaintenance serverNetworkMaintenance,
         IHephaestusDataGitMaintenance hephaestusDataGitMaintenance,
         IDomainHostsChangedSignal hostsChanged)
     {
@@ -37,6 +39,7 @@ public sealed class RefinerBackgroundService : BackgroundService
         _domainMaintenance = domainMaintenance;
         _troyanMaintenance = troyanMaintenance;
         _landingFtpMaintenance = landingFtpMaintenance;
+        _serverNetworkMaintenance = serverNetworkMaintenance;
         _hephaestusDataGitMaintenance = hephaestusDataGitMaintenance;
         _hostsChanged = hostsChanged;
     }
@@ -44,6 +47,7 @@ public sealed class RefinerBackgroundService : BackgroundService
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         await Task.WhenAll(
+                RunLoopAsync(_serverNetworkMaintenance, () => _options.CurrentValue.ServerNetworkInterval, "server network", stoppingToken),
                 RunLoopAsync(_statsMaintenance, () => _options.CurrentValue.StatsInterval, "stats", stoppingToken),
                 RunHephaestusDataLoopWithWakeAsync(stoppingToken),
                 RunDomainLoopWithWakeAsync(stoppingToken),
