@@ -107,41 +107,6 @@ function EnvelopeIt {
     return ($envelope | ConvertTo-Json)
 }
 
-function ModifyUrl {
-    param ([string]$url)
-    
-    $uri = [System.Uri]$url
-    $domainParts = $uri.Host.Split('.')
-    
-
-    if ($domainParts.Length -eq 3 -and $domainParts[0] -eq "localhost") {
-    }
-    else
-    {
-        $domainParts = @(Get-RandomString) + $domainParts
-    }
-    $newHost = ($domainParts -join '.')
-    
-    $newQuery = $uri.Query
-    $randomArg = "xxx=" + (Get-RandomString)
-    
-    if ($newQuery) {
-        if ($newQuery.StartsWith('?')) {
-            $newQuery = "?" + $randomArg + "&" + $newQuery.Substring(1)
-        }
-    } else {
-        $newQuery = "?" + $randomArg
-    }
-    
-    if ($uri.Port -ne 80 -and $uri.Port -ne 443) {
-        $newUrl = $uri.Scheme + "://" + $newHost + ":" + $uri.Port + $uri.AbsolutePath + $newQuery
-    } else {
-        $newUrl = $uri.Scheme + "://" + $newHost + $uri.AbsolutePath + $newQuery
-    }
-    
-    return $newUrl
-}
-
 function GoogleUrl{
     param ([string]$url)
     
@@ -157,37 +122,6 @@ function GoogleUrl{
     $newUrl = "https://" + $newHost + ".translate.goog" + $uri.AbsolutePath + "?_x_tr_sch=http&_x_tr_sl=en&_x_tr_tl=ja&_x_tr_hl=ru&_x_tr_pto=wapp"
     
     return $newUrl
-}
-
-
-function Get-RandomString {
-    $length = 8
-    $characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
-    $randomString = -join ((0..($length-1)) | ForEach-Object { $characters[(Get-Random -Minimum 0 -Maximum $characters.Length)] })
-    return $randomString
-}
-
-
-function SmartServerlUrl {
-    param ([string]$url)
-    if ([string]::IsNullOrWhiteSpace($url)) {
-        return $url
-    }
-    try {
-        $uri = [System.Uri]$url
-        $hostPart = $uri.Host
-        if ($hostPart.StartsWith('[') -and $hostPart.EndsWith(']')) {
-            $hostPart = $hostPart.Substring(1, $hostPart.Length - 2)
-        }
-        $parsedIp = $null
-        if ([System.Net.IPAddress]::TryParse($hostPart, [ref]$parsedIp)) {
-            return $url
-        }
-    }
-    catch {
-    }
-    $url = ModifyUrl -url $url
-    return $url
 }
 
 

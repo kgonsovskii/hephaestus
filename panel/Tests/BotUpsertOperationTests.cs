@@ -16,7 +16,7 @@ namespace Tests;
 /// 1. Build inner JSON: <c>{"id":"…","serie":"…","elevated_number":N}</c> (manual string, not ConvertTo-Json).
 /// 2. HMAC-SHA256(secret, UTF-8 inner JSON) → Base64 → HTTP header <c>X-Signature</c> (Generate-Hash).
 /// 3. Wrap inner JSON in envelope via EnvelopeIt (SHA-256 → hash + json) → POST body.
-/// 4. POST to <c>$server.trackUrl</c> — <c>http://{aliasOrIp}/bot/upsert</c> (no profile segment in path); SmartServerlUrl may rewrite host only.
+/// 4. POST to <c>$server.trackUrl</c> — <c>http://{aliasOrIp}/bot/upsert</c> (no profile segment in path).
 /// Server (<see cref="BotController.UpsertBotLog"/>) unwraps envelope, re-serializes inner payload, verifies X-Signature, calls upsert_bot_log.
 /// </summary>
 [TestClass]

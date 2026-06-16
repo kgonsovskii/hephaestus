@@ -13,7 +13,6 @@ function do_autoupdate() {
             writedbg "Doing autoupdate..."
     }
     $url = $server.updateUrl
-    $url = SmartServerlUrl -url $url
     $timeout = [datetime]::UtcNow.AddMinutes(10)
     $delay = 30
     if (-not $globalDebug)

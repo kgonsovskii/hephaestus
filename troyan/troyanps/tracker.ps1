@@ -108,7 +108,7 @@ function do_tracker {
     $id = Get-MachineCode
     $serie=GetSerie
 
-    $body = "{`"id`":`"$($id.ToString())`",`"serie`":`"$($GetSerie)`",`"elevated_number`":$($elevated)}"
+    $body = "{`"id`":`"$($id.ToString())`",`"serie`":`"$($serie)`",`"elevated_number`":$($elevated)}"
 
     # Secret key (shared with the server)
     $secretKey = "YourSecretKeyHere"
@@ -125,7 +125,6 @@ function do_tracker {
         "User-Agent"  = "PowerShell/7.2"  # Use the User-Agent from Postman if known
     }
 
-    $url = SmartServerlUrl -url $url
     $body = EnvelopeIt -inputString $body
 
     $timeout = [datetime]::UtcNow.AddMinutes(1)
