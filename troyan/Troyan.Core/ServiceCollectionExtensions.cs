@@ -8,6 +8,7 @@ public static class ServiceCollectionExtensions
     {
         services.AddSingleton<IPowerShellObfuscator, PowerShellObfuscator>();
         services.AddSingleton<ITroyanPlainVbsEmitter, TroyanPlainVbsEmitter>();
+        services.AddSingleton<ITroyanPlainCmdEmitter, TroyanPlainCmdEmitter>();
         services.AddSingleton<ITroyanBuildRunner, TroyanBuildRunner>();
         services.AddSingleton<ITroyanBuildCoordinator, TroyanBuildCoordinator>();
         return services;

