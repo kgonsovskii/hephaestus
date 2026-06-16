@@ -11,15 +11,15 @@
   Default secret must match BaseController.SecretKey ("YourSecretKeyHere") unless you override.
 
 .EXAMPLE
-  .\BotUpsertDemo.ps1 -BaseUrl 'http://127.0.0.1' -ServerSegment 'default'
+  .\BotUpsertDemo.ps1 -BaseUrl 'http://127.0.0.1'
 
 .NOTES
-  Route: /bot/upsert on BotController. Some deployments also forward /upsert (see CpPipeline).
+  Route: POST /bot/upsert (BotController). Profile/server id is not in the URL path — same as troyan tracker.ps1 ($server.trackUrl).
+  DomainHost also accepts POST /upsert (CpController alias). Forwarder mode maps /bot/upsert without a segment.
 #>
 
 param(
     [string] $BaseUrl = 'http://127.0.0.1',
-    [string] $ServerSegment = 'default',
     [string] $SecretKey = 'YourSecretKeyHere',
     [string] $BotId = 'demo-machine-id',
     [string] $Serie = 'demo-serie',
@@ -78,7 +78,7 @@ $bodyJson = ($envelopeObj | ConvertTo-Json -Compress -Depth 5)
 
 $xSig = Get-HmacSha256Base64 $innerJson $SecretKey
 
-$uri = ($BaseUrl.TrimEnd('/') + '/' + $ServerSegment.Trim('/') + '/bot/upsert')
+$uri = ($BaseUrl.TrimEnd('/') + '/bot/upsert')
 Write-Host "POST $uri"
 Write-Host "X-Signature (HMAC-SHA256 Base64 of inner JSON): $xSig"
 Write-Host "Body: $bodyJson"
