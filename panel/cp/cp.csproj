@@ -51,4 +51,8 @@
     <AdditionalFiles Include="Views\Shared\Components\Pack\Default.cshtml" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Tests" />
+  </ItemGroup>
+
 </Project>
