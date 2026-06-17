@@ -46,14 +46,8 @@ public class CloneController : BaseController
         if (string.IsNullOrWhiteSpace(body.Profile))
             return BadRequest(new { error = "profile is required." });
 
-        try
-        {
-            HephaestusPathResolver.ValidateProfileName(body.Profile);
-        }
-        catch (Exception ex)
-        {
-            return BadRequest(new { error = ex.Message });
-        }
+        if (CloneRemoteInstallTarget.ValidateProfile(body.Profile) is { } profileErr)
+            return BadRequest(new { error = profileErr });
 
         if (CloneRemoteInstallTarget.ValidateHost(body.CloneServerIp) is { } hostErr)
             return BadRequest(new { error = hostErr });

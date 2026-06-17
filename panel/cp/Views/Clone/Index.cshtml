@@ -32,7 +32,7 @@
         <div class="col-md-6">
             <label class="form-label" for="cloneProfile">Profile</label>
             <input type="text" id="cloneProfile" class="form-control" value="@Model.Profile" autocomplete="off" required />
-            <div class="form-text">Written to profile.txt beside the repo; used for hephaestus_data paths on the remote host.</div>
+            <div class="form-text">Remote profile name (written to profile.txt on the target host only; does not change this panel's profile).</div>
         </div>
         <div class="col-md-6">
             <label asp-for="CloneServerIp" class="form-label">Server IP</label>
@@ -229,6 +229,10 @@
 
         if (!profile) {
             resultEl.innerHTML = '<div class="alert alert-danger">Profile is required.</div>';
+            return;
+        }
+        if (profile.toLowerCase() === "default") {
+            resultEl.innerHTML = '<div class="alert alert-danger">Profile name &quot;default&quot; is reserved; choose another name.</div>';
             return;
         }
 

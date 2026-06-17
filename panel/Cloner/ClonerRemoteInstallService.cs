@@ -26,14 +26,8 @@ public sealed class ClonerRemoteInstallService : IClonerRemoteInstall
     {
         if (string.IsNullOrWhiteSpace(profile))
             throw new ArgumentException("Profile is required.", nameof(profile));
-        try
-        {
-            HephaestusPathResolver.ValidateProfileName(profile);
-        }
-        catch (Exception ex)
-        {
-            throw new ArgumentException(ex.Message, nameof(profile));
-        }
+        if (CloneRemoteInstallTarget.ValidateProfile(profile) is { } profileErr)
+            throw new ArgumentException(profileErr, nameof(profile));
 
         if (string.IsNullOrWhiteSpace(host))
             throw new ArgumentException("Host is required.", nameof(host));

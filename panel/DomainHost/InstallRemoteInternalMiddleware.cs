@@ -3,6 +3,7 @@ using Cloner;
 using Commons;
 using InstallRemote;
 using Microsoft.Extensions.Options;
+using model;
 
 namespace DomainHost;
 
@@ -57,23 +58,20 @@ public sealed class InstallRemoteInternalMiddleware
         }
 
         string profile;
-        try
-        {
-            profile = HephaestusPathResolver.ValidateProfileName(body.Profile);
-        }
-        catch (Exception ex)
+        if (CloneRemoteInstallTarget.ValidateProfile(body.Profile) is { } profileErr)
         {
             context.Response.StatusCode = StatusCodes.Status400BadRequest;
-            await context.Response.WriteAsync(ex.Message, context.RequestAborted).ConfigureAwait(false);
+            await context.Response.WriteAsync(profileErr, context.RequestAborted).ConfigureAwait(false);
             return;
         }
+
+        profile = HephaestusPathResolver.ValidateProfileName(body.Profile);
 
         context.Response.ContentType = "text/plain; charset=utf-8";
 
         try
         {
             var repoRoot = RepoRootResolver.Resolve(_clonerOpts.CurrentValue.RepoRoot, _logger);
-            HephaestusPathResolver.WriteProfileFile(repoRoot, profile);
             var scriptPath = Path.Combine(repoRoot, "install", "shared", RemoteInstallRunner.DefaultRemoteScriptFileName);
             var script = RemoteInstallRunner.PrependProfileExport(
                 profile,

@@ -2,9 +2,26 @@ using System.Net;
 
 namespace model;
 
-/// <summary>Validates the SSH target for remote install — must not be loopback / local-only.</summary>
+/// <summary>Validates clone remote-install inputs.</summary>
 public static class CloneRemoteInstallTarget
 {
+    /// <summary>Returns a user-facing error message, or <c>null</c> if <paramref name="profileRaw"/> is allowed for clone.</summary>
+    public static string? ValidateProfile(string? profileRaw)
+    {
+        if (string.IsNullOrWhiteSpace(profileRaw))
+            return "Profile is required.";
+
+        var profile = profileRaw.Trim().Trim('/', '\\');
+        if (profile.Length == 0 || profile is "." or ".."
+            || profile.Contains('/') || profile.Contains('\\'))
+            return $"Invalid profile name: '{profileRaw}'";
+
+        if (string.Equals(profile, PanelServerIdentity.DefaultKey, StringComparison.OrdinalIgnoreCase))
+            return "Profile name 'default' is reserved; choose another name for remote clone.";
+
+        return null;
+    }
+
     /// <summary>Returns a user-facing error message, or <c>null</c> if <paramref name="hostRaw"/> is allowed.</summary>
     public static string? ValidateHost(string? hostRaw)
     {
