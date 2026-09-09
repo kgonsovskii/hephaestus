@@ -50,7 +50,7 @@ public static class Program
             .ValidateOnStart();
         services.AddSingleton<IHephaestusPathResolver, HephaestusPathResolver>();
         services.AddPanelServerStack();
-        services.AddTroyanCore();
+        services.AddTroyanCore(config);
 
         using var provider = services.BuildServiceProvider();
         var panelService = provider.GetRequiredService<ServerService>();

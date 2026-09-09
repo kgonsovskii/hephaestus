@@ -14,7 +14,7 @@ public static class CpWebExtensions
         public static WebApplicationBuilder AddCp(this WebApplicationBuilder builder)
     {
         builder.Services.AddPanelServerStack();
-        builder.Services.AddTroyanCore();
+        builder.Services.AddTroyanCore(builder.Configuration);
         builder.Services.AddSingleton<BackSvc>();
         builder.Services.AddMemoryCache();
 
