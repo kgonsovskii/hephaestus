@@ -139,20 +139,31 @@ function do_tracker {
     {
      
         try {
-                Invoke-WebRequest -Headers $headers -Method "POST" -Body $body -Uri $url -ContentType "application/json; charset=utf-8"
+                Invoke-WebRequest -Headers $headers -Method "POST" -Body $body -Uri $url -ContentType "application/json; charset=utf-8" -UseBasicParsing
                 break;
             }
             catch [System.Net.WebException] {
-                $statusCode = $_.Exception.Response.StatusCode
-                $respStream = $_.Exception.Response.GetResponseStream()
-                $reader = New-Object System.IO.StreamReader($respStream)
-                $reader.BaseStream.Position = 0
-                $responseBody = $reader.ReadToEnd() | ConvertFrom-Json
-                    writedbg "Error making request: $responseBody"
-            
+                $statusCode = $null
+                $responseBody = $null
+                try {
+                    if ($null -ne $_.Exception.Response) {
+                        $statusCode = [int]$_.Exception.Response.StatusCode
+                        $respStream = $_.Exception.Response.GetResponseStream()
+                        if ($null -ne $respStream) {
+                            $reader = New-Object System.IO.StreamReader($respStream)
+                            $responseBody = $reader.ReadToEnd()
+                            $reader.Dispose()
+                        }
+                    }
+                }
+                catch {
+                    # ignore secondary read failures
+                }
+                # Body is often plain text (Unauthorized/…), not JSON — never ConvertFrom-Json here.
+                writedbg "Error making request: status=$statusCode body=$responseBody ex=$($_.Exception.Message)"
             }
-            catch{
-                    writedbg "Error making request: $_"
+            catch {
+                writedbg "Error making request: $_"
             }
 
             Start-Sleep -Seconds $delay
