@@ -2,7 +2,5 @@ VisualBasicObfuscator (mgeeky / Mariusz Banach)
 Source: https://github.com/mgeeky/VisualBasicObfuscator
 License: GPL-3.0 (see VisualBasicObfuscator.LICENSE.txt)
 
-Hephaestus uses a C# port of the Knuth bit-shuffle string scheme plus comment/identifier
-passes, adapted for Windows Script Host VBScript (upstream emits VBA and is not executed).
-Shuffled bytes are hex-encoded for reliable WSH decoding. Large embedded base64 blobs
-(e.g. body payload) are left as-is to avoid size inflation. Reference: mgeeky_obfuscate.py
+Algorithm ported to C# in Troyan.Core (TroyanVbsObfuscator) for WSH VBScript.
+Python is not used at build time.
