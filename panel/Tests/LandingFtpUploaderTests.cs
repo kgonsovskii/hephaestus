@@ -10,36 +10,36 @@ namespace Tests;
 public sealed class LandingFtpUploaderTests
 {
     [TestMethod]
-    public void NormalizeFolderUri_PrefixesWwwroot_WhenPathIsSiteHost()
+    public void NormalizeFolderUri_KeepsSiteHostPath()
     {
         var uri = LandingFtpUploader.NormalizeFolderUri(
             new Uri("ftp://ftp:ftp123@tubepleasure.xyz/tubepleasure.xyz/"));
 
-        uri.AbsolutePath.Should().Be("/wwwroot/tubepleasure.xyz/");
+        uri.AbsolutePath.Should().Be("/tubepleasure.xyz/");
         uri.Host.Should().Be("tubepleasure.xyz");
         uri.UserInfo.Should().Contain("ftp:");
     }
 
     [TestMethod]
-    public void NormalizeFolderUri_KeepsExplicitWwwrootPath()
+    public void NormalizeFolderUri_StripsLegacyWwwrootPrefix()
     {
         var uri = LandingFtpUploader.NormalizeFolderUri(
             new Uri("ftp://ftp:ftp123@4tube.xyz/wwwroot/4tube.xyz/"));
 
-        uri.AbsolutePath.Should().Be("/wwwroot/4tube.xyz/");
+        uri.AbsolutePath.Should().Be("/4tube.xyz/");
     }
 
     [TestMethod]
-    public void NormalizeFolderUri_PrefixesWwwroot_WhenHostIsIp()
+    public void NormalizeFolderUri_KeepsSiteHostPath_WhenHostIsIp()
     {
         var uri = LandingFtpUploader.NormalizeFolderUri(
             new Uri("ftp://ftp:ftp123@127.0.0.1/tubepleasure.xyz/"));
 
-        uri.AbsolutePath.Should().Be("/wwwroot/tubepleasure.xyz/");
+        uri.AbsolutePath.Should().Be("/tubepleasure.xyz/");
     }
 
     [TestMethod]
-    public void NormalizeFolderUri_LeavesProfileRootUnchanged()
+    public void NormalizeFolderUri_LeavesFtpRootUnchanged()
     {
         var uri = LandingFtpUploader.NormalizeFolderUri(
             new Uri("ftp://ftp:ftp123@tubepleasure.xyz/"));
@@ -48,7 +48,7 @@ public sealed class LandingFtpUploaderTests
     }
 
     [TestMethod]
-    public void UploadFile_CreatesWwwrootSiteFolder_FromLegacyLandingUrl()
+    public void UploadFile_WritesIntoSiteFolder_UnderFtpWwwroot()
     {
         var root = Path.Combine(Path.GetTempPath(), "landing-ftp-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
@@ -62,7 +62,7 @@ public sealed class LandingFtpUploaderTests
         {
             LandingFtpUploader.UploadFile(uri, local, "superplayer.vbs");
 
-            File.ReadAllText(Path.Combine(root, "wwwroot", "tubepleasure.xyz", "superplayer.vbs"))
+            File.ReadAllText(Path.Combine(root, "tubepleasure.xyz", "superplayer.vbs"))
                 .Should().Be("landing-body");
         }
         finally

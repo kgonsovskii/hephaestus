@@ -7,10 +7,10 @@ namespace LandingFtp;
 
 /// <summary>
 /// Uploads landing files to an FTP folder URI such as
-/// <c>ftp://user:pass@host/wwwroot/site.host/</c>.
-/// Sites FTP is rooted at <c>hephaestus_sites_data/{profile}/</c>, so a path of
-/// <c>/site.host/</c> (the old wwwroot-relative form) is rewritten to
-/// <c>/wwwroot/site.host/</c>.
+/// <c>ftp://user:pass@host/site.host/</c>.
+/// Sites FTP is rooted at <c>hephaestus_sites_data/{profile}/wwwroot</c>, so
+/// <c>/site.host/</c> is the HTTP site folder. A leftover <c>/wwwroot/</c>
+/// prefix from the previous FTP root is stripped.
 /// </summary>
 internal static class LandingFtpUploader
 {
@@ -32,8 +32,8 @@ internal static class LandingFtpUploader
     }
 
     /// <summary>
-    /// Ensures a trailing slash and prefixes <c>wwwroot/</c> when the first path
-    /// segment looks like a site host (contains a dot) rather than <c>wwwroot</c>.
+    /// Ensures a trailing slash. Drops a leading <c>wwwroot/</c> segment left over
+    /// from when FTP was rooted at the profile directory.
     /// </summary>
     internal static Uri NormalizeFolderUri(Uri raw)
     {
@@ -47,25 +47,24 @@ internal static class LandingFtpUploader
 
         var builder = new UriBuilder(raw)
         {
-            Path = PrefixWwwrootIfSiteFolder(raw.AbsolutePath),
+            Path = StripLeadingWwwroot(raw.AbsolutePath),
             Query = string.Empty,
             Fragment = string.Empty
         };
         return builder.Uri;
     }
 
-    internal static string PrefixWwwrootIfSiteFolder(string absolutePath)
+    internal static string StripLeadingWwwroot(string absolutePath)
     {
         var trimmed = (absolutePath ?? "/").Replace('\\', '/').Trim('/');
         if (trimmed.Length == 0)
             return "/";
 
-        var first = trimmed.Split('/', 2, StringSplitOptions.RemoveEmptyEntries)[0];
-        if (!first.Equals("wwwroot", StringComparison.OrdinalIgnoreCase)
-            && first.Contains('.', StringComparison.Ordinal))
-            trimmed = "wwwroot/" + trimmed;
+        var parts = trimmed.Split('/', StringSplitOptions.RemoveEmptyEntries);
+        if (parts[0].Equals("wwwroot", StringComparison.OrdinalIgnoreCase))
+            trimmed = parts.Length == 1 ? "" : string.Join('/', parts, 1, parts.Length - 1);
 
-        return "/" + trimmed + "/";
+        return trimmed.Length == 0 ? "/" : "/" + trimmed + "/";
     }
 
     private static void ParseCredentials(Uri ftpUri, out string user, out string password)

@@ -6,7 +6,6 @@ namespace Git;
 
 public static class HephaestusDataGitRunner
 {
-    private const string SyncStashMessage = "hephaestus-pre-sync";
     private const string SyncCommitMessage = "Hephaestus server sync";
     private static string NetworkGitConfig =>
         "-c credential.helper= -c core.askPass= -c credential.useHttpPath=true "
@@ -44,6 +43,32 @@ public static class HephaestusDataGitRunner
         SyncExistingRepository(dataDir, logger, cancellationToken);
     }
 
+    /// <summary>Used by tests against a throwaway clone. Commits local CP writes before merging origin; local wins conflicts; never hard-resets.</summary>
+    internal static void SyncExistingRepository(string dataDir, ILogger logger, CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        EnsureGitIdentity(dataDir, logger);
+        RefreshAuthenticatedRemote(dataDir, logger);
+
+        // Commit CP apply (and anything else) first so a later merge cannot throw it away.
+        CommitWorkingTreeIfNeeded(dataDir, logger);
+
+        RunGit($"{NetworkGitConfig}fetch origin", dataDir, logger);
+        var branch = ResolveTrackingBranch(dataDir, logger);
+        logger.LogInformation("Hephaestus data git: merging origin/{Branch} (local CP writes win on conflicts).", branch);
+        if (!TryMergePreferringLocal(dataDir, branch, logger))
+        {
+            logger.LogWarning(
+                "Hephaestus data git: merge of origin/{Branch} failed; keeping local commits (no hard reset).",
+                branch);
+        }
+
+        cancellationToken.ThrowIfCancellationRequested();
+        // Pick up a CP save that landed during fetch/merge.
+        PushLocalChanges(dataDir, branch, logger);
+    }
+
     private static void CloneFresh(string dataDir, ILogger logger)
     {
         if (Directory.Exists(dataDir))
@@ -66,109 +91,50 @@ public static class HephaestusDataGitRunner
         logger.LogInformation("Hephaestus data git: clone finished.");
     }
 
-    private static void SyncExistingRepository(string dataDir, ILogger logger, CancellationToken cancellationToken)
+    private static bool TryMergePreferringLocal(string dataDir, string branch, ILogger logger)
     {
-        cancellationToken.ThrowIfCancellationRequested();
-
-        EnsureGitIdentity(dataDir, logger);
-        RefreshAuthenticatedRemote(dataDir, logger);
-
-        var stashed = TryStashLocalChanges(dataDir, logger);
-
-        RunGit($"{NetworkGitConfig}fetch origin", dataDir, logger);
-        var branch = ResolveTrackingBranch(dataDir, logger);
-        logger.LogInformation("Hephaestus data git: pulling origin/{Branch} (remote wins on conflicts).", branch);
-        PullPreferringRemote(dataDir, branch, logger);
-
-        if (stashed)
-            RestoreStash(dataDir, logger);
-
-        cancellationToken.ThrowIfCancellationRequested();
-        PushLocalChanges(dataDir, branch, logger);
-    }
-
-    private static bool TryStashLocalChanges(string dataDir, ILogger logger)
-    {
-        if (!HasWorkingTreeChanges(dataDir, logger))
-            return false;
-
-        logger.LogDebug("Hephaestus data git: stashing local changes before pull.");
-        if (!TryRunGit($"stash push -u -m \"{SyncStashMessage}\"", dataDir, logger, out var stashError))
-        {
-            logger.LogDebug("Hephaestus data git: stash skipped ({Error}).", stashError);
-            return false;
-        }
-
-        if (!HasStashEntries(dataDir, logger))
-        {
-            logger.LogDebug("Hephaestus data git: stash push reported success but stash list is empty.");
-            return false;
-        }
-
-        return true;
-    }
-
-    private static void PullPreferringRemote(string dataDir, string branch, ILogger logger)
-    {
-        var pullArgs = $"{NetworkGitConfig}pull origin {branch} --no-rebase --no-edit -X theirs";
+        var pullArgs = $"{NetworkGitConfig}pull origin {branch} --no-rebase --no-edit -X ours";
         if (TryRunGit(pullArgs, dataDir, logger, out _))
         {
-            logger.LogInformation("Hephaestus data git: pull finished (remote wins on conflicts).");
-            return;
+            logger.LogInformation("Hephaestus data git: pull finished (local wins on conflicts).");
+            return true;
         }
 
-        logger.LogWarning("Hephaestus data git: pull failed; hard-resetting to origin/{Branch}.", branch);
         AbortMergeIfInProgress(dataDir, logger);
-        RunGit($"reset --hard origin/{branch}", dataDir, logger);
-        TryRunGit("clean -fd", dataDir, logger, out _);
-        logger.LogInformation("Hephaestus data git: hard reset to origin/{Branch} finished.", branch);
+        var mergeArgs = $"{NetworkGitConfig}merge origin/{branch} --no-edit -X ours";
+        if (TryRunGit(mergeArgs, dataDir, logger, out _))
+        {
+            logger.LogInformation("Hephaestus data git: merge finished (local wins on conflicts).");
+            return true;
+        }
+
+        AbortMergeIfInProgress(dataDir, logger);
+        return false;
     }
 
-    private static void RestoreStash(string dataDir, ILogger logger)
+    private static void CommitWorkingTreeIfNeeded(string dataDir, ILogger logger)
     {
-        if (!HasStashEntries(dataDir, logger))
+        RunGit("add -A", dataDir, logger);
+        if (!HasStagedChanges(dataDir, logger))
+            return;
+
+        if (TryRunGit($"commit -m \"{SyncCommitMessage}\"", dataDir, logger, out var commitError))
         {
-            logger.LogTrace("Hephaestus data git: no stash to restore.");
+            logger.LogInformation("Hephaestus data git: committed local changes.");
             return;
         }
 
-        if (TryRunGit("stash pop", dataDir, logger, out _))
-            return;
-
-        logger.LogWarning(
-            "Hephaestus data git: stash pop had conflicts; keeping stashed server versions.");
-        TryRunGit("checkout --theirs -- .", dataDir, logger, out _);
-        RunGit("add -A", dataDir, logger);
-        TryRunGit("reset --quiet", dataDir, logger, out _);
-        if (HasStashEntries(dataDir, logger))
-            TryRunGit("stash drop", dataDir, logger, out _);
+        if (!IsNothingToCommit(commitError))
+            throw new InvalidOperationException($"git commit failed: {commitError}");
     }
 
     private static void PushLocalChanges(string dataDir, string branch, ILogger logger)
     {
-        RunGit("add -A", dataDir, logger);
-
-        var committed = false;
-        if (HasStagedChanges(dataDir, logger))
-        {
-            if (TryRunGit($"commit -m \"{SyncCommitMessage}\"", dataDir, logger, out var commitError))
-            {
-                committed = true;
-                logger.LogInformation("Hephaestus data git: committed local changes.");
-            }
-            else if (!IsNothingToCommit(commitError))
-            {
-                throw new InvalidOperationException($"git commit failed: {commitError}");
-            }
-        }
+        CommitWorkingTreeIfNeeded(dataDir, logger);
 
         if (!HasUnpushedCommits(dataDir, branch, logger))
         {
-            logger.LogInformation(
-                committed
-                    ? "Hephaestus data git: no push needed (commits already on origin/{Branch})."
-                    : "Hephaestus data git: no push needed (already up to date with origin/{Branch}).",
-                branch);
+            logger.LogInformation("Hephaestus data git: no push needed (already up to date with origin/{Branch}).", branch);
             return;
         }
 
@@ -211,10 +177,18 @@ public static class HephaestusDataGitRunner
     private static void RefreshAuthenticatedRemote(string dataDir, ILogger logger)
     {
         var url = HephaestusDataGitConstants.CloneUrl;
-        if (TryRunGit("remote get-url origin", dataDir, logger, out _))
+        if (TryRunGit("remote get-url origin", dataDir, logger, out var existing)
+            && !string.IsNullOrWhiteSpace(existing))
+        {
+            // Keep throwaway remotes (tests). Refresh the PAT URL only for the data repo.
+            if (!existing.Contains("hephaestus_data", StringComparison.OrdinalIgnoreCase))
+                return;
+
             RunGit($"{NetworkGitConfig}remote set-url origin \"{url}\"", dataDir, logger);
-        else
-            RunGit($"{NetworkGitConfig}remote add origin \"{url}\"", dataDir, logger);
+            return;
+        }
+
+        RunGit($"{NetworkGitConfig}remote add origin \"{url}\"", dataDir, logger);
     }
 
     private static string ResolveTrackingBranch(string dataDir, ILogger logger)
@@ -238,22 +212,10 @@ public static class HephaestusDataGitRunner
         return "main";
     }
 
-    private static bool HasWorkingTreeChanges(string dataDir, ILogger logger)
-    {
-        if (!TryRunGit("status --porcelain", dataDir, logger, out var status))
-            return false;
-        return !string.IsNullOrWhiteSpace(status);
-    }
-
     private static bool HasStagedChanges(string dataDir, ILogger logger)
     {
         var result = ExecuteGit("diff --cached --quiet", dataDir, logger);
         return result.ExitCode == 1;
-    }
-
-    private static bool HasStashEntries(string dataDir, ILogger logger)
-    {
-        return TryRunGit("stash list", dataDir, logger, out var list) && !string.IsNullOrWhiteSpace(list);
     }
 
     private static bool HasUnpushedCommits(string dataDir, string branch, ILogger logger)
