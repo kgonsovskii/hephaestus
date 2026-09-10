@@ -7,7 +7,7 @@ namespace LandingFtp;
 
 /// <summary>
 /// Uploads landing files to the folder in the configured FTP URL, for example
-/// <c>ftp://user:pass@host/site.host/</c>. The URL path is the remote folder as-is.
+/// <c>ftp://user:pass@host/wwwroot/site.host/</c>. The URL path is the remote folder as-is.
 /// </summary>
 internal static class LandingFtpUploader
 {
