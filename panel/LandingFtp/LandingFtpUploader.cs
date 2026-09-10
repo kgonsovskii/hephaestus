@@ -1,27 +1,71 @@
+using System.Globalization;
 using System.Net;
+using System.Net.Sockets;
+using System.Text;
 
 namespace LandingFtp;
 
-/// <summary>FTP(S) upload using <see cref="FtpWebRequest"/> from a URI like <c>ftp://user:pass@host/path/to/folder/</c> (same pattern as WinINet-style URLs).</summary>
+/// <summary>
+/// Uploads landing files to an FTP folder URI such as
+/// <c>ftp://user:pass@host/wwwroot/site.host/</c>.
+/// Sites FTP is rooted at <c>hephaestus_sites_data/{profile}/</c>, so a path of
+/// <c>/site.host/</c> (the old wwwroot-relative form) is rewritten to
+/// <c>/wwwroot/site.host/</c>.
+/// </summary>
 internal static class LandingFtpUploader
 {
+    private static readonly Encoding FtpEncoding = Encoding.ASCII;
+
     public static void UploadFile(Uri baseUri, string localFilePath, string remoteFileName)
     {
         ArgumentNullException.ThrowIfNull(baseUri);
+        ArgumentException.ThrowIfNullOrWhiteSpace(localFilePath);
+        ArgumentException.ThrowIfNullOrWhiteSpace(remoteFileName);
+
+        if (remoteFileName.IndexOfAny(['/', '\\']) >= 0)
+            throw new ArgumentException("Remote file name must not contain a path.", nameof(remoteFileName));
 
         var folder = NormalizeFolderUri(baseUri);
-        var uploadUri = new Uri(folder, remoteFileName);
-
-        ParseCredentials(uploadUri, out var user, out var password);
-
+        ParseCredentials(folder, out var user, out var password);
         var buf = File.ReadAllBytes(localFilePath);
-        UploadBytes(uploadUri, user, password, buf);
+        UploadBytes(folder, user, password, remoteFileName, buf);
     }
 
-    private static Uri NormalizeFolderUri(Uri raw)
+    /// <summary>
+    /// Ensures a trailing slash and prefixes <c>wwwroot/</c> when the first path
+    /// segment looks like a site host (contains a dot) rather than <c>wwwroot</c>.
+    /// </summary>
+    internal static Uri NormalizeFolderUri(Uri raw)
     {
-        var s = raw.AbsoluteUri.TrimEnd('/');
-        return new Uri(s + '/', UriKind.Absolute);
+        ArgumentNullException.ThrowIfNull(raw);
+
+        if (!string.Equals(raw.Scheme, "ftp", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new NotSupportedException(
+                $"Landing FTP supports ftp:// only (got '{raw.Scheme}').");
+        }
+
+        var builder = new UriBuilder(raw)
+        {
+            Path = PrefixWwwrootIfSiteFolder(raw.AbsolutePath),
+            Query = string.Empty,
+            Fragment = string.Empty
+        };
+        return builder.Uri;
+    }
+
+    internal static string PrefixWwwrootIfSiteFolder(string absolutePath)
+    {
+        var trimmed = (absolutePath ?? "/").Replace('\\', '/').Trim('/');
+        if (trimmed.Length == 0)
+            return "/";
+
+        var first = trimmed.Split('/', 2, StringSplitOptions.RemoveEmptyEntries)[0];
+        if (!first.Equals("wwwroot", StringComparison.OrdinalIgnoreCase)
+            && first.Contains('.', StringComparison.Ordinal))
+            trimmed = "wwwroot/" + trimmed;
+
+        return "/" + trimmed + "/";
     }
 
     private static void ParseCredentials(Uri ftpUri, out string user, out string password)
@@ -40,27 +84,182 @@ internal static class LandingFtpUploader
             throw new InvalidOperationException("FTP URL must include credentials (ftp://user:password@host/...).");
     }
 
-    private static void UploadBytes(Uri uploadUri, string user, string password, byte[] buf)
+    private static void UploadBytes(Uri folderUri, string user, string password, string remoteFileName, byte[] buf)
     {
-#pragma warning disable SYSLIB0014 // WebRequest/FtpWebRequest obsolete but standard for ftp:// across runtimes here
-        var req = (FtpWebRequest)WebRequest.Create(uploadUri);
-#pragma warning restore SYSLIB0014
+        var port = folderUri.IsDefaultPort ? 21 : folderUri.Port;
+        using var control = new TcpClient();
+        control.ReceiveTimeout = 30_000;
+        control.SendTimeout = 30_000;
+        control.Connect(folderUri.Host, port);
 
-        req.Method = WebRequestMethods.Ftp.UploadFile;
-        req.UseBinary = true;
-        req.UsePassive = true;
-        req.EnableSsl = string.Equals(uploadUri.Scheme, "ftps", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(uploadUri.Scheme, "ftpes", StringComparison.OrdinalIgnoreCase);
-        req.Credentials = new NetworkCredential(user, password);
+        using var stream = control.GetStream();
+        Expect(ReadReply(stream), 220);
 
-        using var ms = new MemoryStream(buf);
-        using (var ws = req.GetRequestStream())
-            ms.CopyTo(ws);
+        Send(stream, "USER " + user);
+        var userReply = ReadReply(stream);
+        if (userReply.Code == 331)
+        {
+            Send(stream, "PASS " + password);
+            Expect(ReadReply(stream), 230);
+        }
+        else
+        {
+            Expect(userReply, 230);
+        }
 
-#pragma warning disable SYSLIB0014
-        using var resp = (FtpWebResponse)req.GetResponse();
-#pragma warning restore SYSLIB0014
+        Send(stream, "TYPE I");
+        Expect(ReadReply(stream), 200);
 
-        resp.Close();
+        EnsureDirectory(stream, folderUri.AbsolutePath);
+
+        var pasvPort = EnterPassive(stream);
+        using var data = ConnectData(control, pasvPort);
+        using var dataStream = data.GetStream();
+
+        Send(stream, "STOR " + remoteFileName);
+        Expect(ReadReply(stream), 125, 150);
+
+        dataStream.Write(buf, 0, buf.Length);
+        dataStream.Flush();
+        data.Close();
+
+        Expect(ReadReply(stream), 226, 250);
+
+        try
+        {
+            Send(stream, "QUIT");
+            ReadReply(stream);
+        }
+        catch (IOException)
+        {
+            // Server may close after QUIT.
+        }
+    }
+
+    private static void EnsureDirectory(Stream stream, string absolutePath)
+    {
+        var trimmed = absolutePath.Replace('\\', '/').Trim('/');
+        if (trimmed.Length == 0)
+            return;
+
+        Send(stream, "CWD /");
+        Expect(ReadReply(stream), 250);
+
+        foreach (var segment in trimmed.Split('/', StringSplitOptions.RemoveEmptyEntries))
+        {
+            Send(stream, "CWD " + segment);
+            var cwd = ReadReply(stream);
+            if (cwd.Code is 250 or 200)
+                continue;
+
+            Send(stream, "MKD " + segment);
+            var mkd = ReadReply(stream);
+            if (mkd.Code is not (257 or 250 or 550))
+                throw new InvalidOperationException($"FTP MKD {segment} failed: {mkd.Raw}");
+
+            Send(stream, "CWD " + segment);
+            Expect(ReadReply(stream), 250);
+        }
+    }
+
+    private static int EnterPassive(Stream stream)
+    {
+        Send(stream, "PASV");
+        var reply = ReadReply(stream);
+        Expect(reply, 227);
+
+        var open = reply.Raw.LastIndexOf('(');
+        var close = reply.Raw.LastIndexOf(')');
+        if (open < 0 || close <= open)
+            throw new InvalidOperationException("FTP PASV reply was missing host/port: " + reply.Raw);
+
+        var parts = reply.Raw[(open + 1)..close].Split(',');
+        if (parts.Length < 6)
+            throw new InvalidOperationException("FTP PASV reply was malformed: " + reply.Raw);
+
+        var p1 = int.Parse(parts[^2].Trim(), CultureInfo.InvariantCulture);
+        var p2 = int.Parse(parts[^1].Trim(), CultureInfo.InvariantCulture);
+        return (p1 * 256) + p2;
+    }
+
+    private static TcpClient ConnectData(TcpClient control, int pasvPort)
+    {
+        var peer = (IPEndPoint)control.Client.RemoteEndPoint!;
+        var data = new TcpClient();
+        data.ReceiveTimeout = 30_000;
+        data.SendTimeout = 30_000;
+        // Use the control-connection address, not the PASV advertised IP (often 127.0.0.1 behind NAT).
+        data.Connect(new IPEndPoint(peer.Address, pasvPort));
+        return data;
+    }
+
+    private static void Send(Stream stream, string command)
+    {
+        var bytes = FtpEncoding.GetBytes(command + "\r\n");
+        stream.Write(bytes, 0, bytes.Length);
+        stream.Flush();
+    }
+
+    private static void Expect(FtpReply reply, params int[] codes)
+    {
+        foreach (var code in codes)
+        {
+            if (reply.Code == code)
+                return;
+        }
+
+        throw new InvalidOperationException($"FTP command failed ({reply.Code}): {reply.Raw}");
+    }
+
+    private static FtpReply ReadReply(Stream stream)
+    {
+        var first = ReadLine(stream);
+        if (first.Length < 3
+            || !int.TryParse(first.AsSpan(0, 3), NumberStyles.None, CultureInfo.InvariantCulture, out var code))
+            throw new InvalidOperationException("Invalid FTP reply: " + first);
+
+        var raw = first;
+        if (first.Length > 3 && first[3] == '-')
+        {
+            var prefix = code.ToString("D3", CultureInfo.InvariantCulture) + " ";
+            while (true)
+            {
+                var next = ReadLine(stream);
+                raw += "\n" + next;
+                if (next.StartsWith(prefix, StringComparison.Ordinal))
+                    break;
+            }
+        }
+
+        return new FtpReply(code, raw);
+    }
+
+    private static string ReadLine(Stream stream)
+    {
+        var buffer = new MemoryStream();
+        while (true)
+        {
+            var b = stream.ReadByte();
+            if (b < 0)
+                throw new EndOfStreamException("FTP control connection closed.");
+            if (b == '\n')
+                break;
+            if (b != '\r')
+                buffer.WriteByte((byte)b);
+        }
+
+        return FtpEncoding.GetString(buffer.ToArray());
+    }
+
+    private readonly struct FtpReply
+    {
+        public FtpReply(int code, string raw)
+        {
+            Code = code;
+            Raw = raw;
+        }
+
+        public int Code { get; }
+        public string Raw { get; }
     }
 }

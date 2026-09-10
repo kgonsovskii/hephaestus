@@ -282,7 +282,8 @@ Layout = "~/Views/Shared/_Layout.cshtml";
 
 
                                     <label>Tracking URL</label>
-                                    <input name="TrackUrl" value="@Model.Server.TrackUrl" class="form-control"/>
+                                    <input readonly="readonly" value="@Model.Server.TrackUrl" class="form-control"/>
+                                    <small class="form-text text-muted">Derived from Alias (not a stored field).</small>
                                     <span class="text-danger"></span>
                                     
                                     <hr/>
@@ -325,7 +326,8 @@ Layout = "~/Views/Shared/_Layout.cshtml";
                                     <span class="text-danger"></span>
 
                                     <label>Update URL</label>
-                                    <input name="UpdateUrl" value="@Model.Server.UpdateUrl" class="form-control"/>
+                                    <input readonly="readonly" value="@Model.Server.UpdateUrl" class="form-control"/>
+                                    <small class="form-text text-muted">Derived from Alias (not a stored field).</small>
                                     <span class="text-danger"></span>
                                 </div>
 

@@ -21,6 +21,7 @@
       <ProjectReference Include="..\model\model.csproj" />
       <ProjectReference Include="..\Git\Git.csproj" />
       <ProjectReference Include="..\Refiner\Refiner.csproj" />
+      <ProjectReference Include="..\LandingFtp\LandingFtp.csproj" />
     </ItemGroup>
 
     <ItemGroup>

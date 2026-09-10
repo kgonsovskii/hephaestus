@@ -57,6 +57,7 @@ public sealed class LandingFtpMaintenance : ILandingFtpMaintenance
             try
             {
                 var uri = new Uri(server.LandingFtp.Trim(), UriKind.Absolute);
+                var folder = LandingFtpUploader.NormalizeFolderUri(uri);
                 var remoteVbs = $"{server.LandingName}.vbs";
                 var remoteCmd = $"{server.LandingName}.cmd";
                 LandingFtpUploader.UploadFile(uri, vbs, remoteVbs);
@@ -65,9 +66,9 @@ public sealed class LandingFtpMaintenance : ILandingFtpMaintenance
                     "Landing FTP uploaded {RemoteVbs} and {RemoteCmd} to {Scheme}://{Host}{Path}",
                     remoteVbs,
                     remoteCmd,
-                    uri.Scheme,
-                    uri.Host,
-                    uri.AbsolutePath);
+                    folder.Scheme,
+                    folder.Host,
+                    folder.AbsolutePath);
             }
             catch (Exception ex)
             {
