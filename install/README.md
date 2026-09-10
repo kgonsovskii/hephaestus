@@ -2,7 +2,7 @@
 
 | Path | Purpose |
 |------|---------|
-| `shared/` | Cross-platform data: `setup-postgres.sql`, `domainhost.service`, `install-remote.txt`, `install-remote-creds.txt`, `wait.sh` |
+| `shared/` | Cross-platform data: `setup-postgres.sql`, `domainhost.service`, `install-remote.txt`, `install-remote-creds.txt` (host/login/password/profile per server; all hosts in parallel), `wait.sh` |
 | `linux/` | Linux install steps (bash, apt) |
 | `win/` | Windows install steps (PowerShell, Chocolatey) |
 | `Install/`, `InstallRemote/` | .NET tools |
@@ -13,7 +13,7 @@
 - **Linux steps:** `sudo bash install/install-data.sh` then `sudo bash install/install-soft.sh`
 - **Windows full:** `install\install.bat` as Administrator (same order: dns → data → soft)
 - **Windows data only:** `install\win\install-data.bat` (Administrator)
-- **Remote SSH:** `bash install/install-remote.sh`
+- **Remote SSH:** `bash install/install-remote.sh` (Windows: `install\install-remote.bat`) — installs every host in `shared/install-remote-creds.txt` in parallel (each server’s profile is validated and `$HOME/profile.txt` is overwritten on the target). Optional extra args still run a single host: `[profile] [host] [login] [password]`.
 - **Linux update:** `sudo bash install/update.sh`
 
 ### `install-data` (before soft)

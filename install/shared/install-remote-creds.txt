@@ -1,3 +1,9 @@
+# host, login, password, profile — profile is validated and overwritten on the target each remote-install
 84.200.33.53
 root
 1!Ogviobhuetly
+default
+109.122.27.40
+root
+Rosgoszirk123!
+gonzik

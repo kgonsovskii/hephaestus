@@ -3,7 +3,7 @@ export DEBIAN_FRONTEND=noninteractive
 CLONE_DIR="${HOME}/hephaestus"
 PROFILE_FILE="$(dirname "${CLONE_DIR}")/profile.txt"
 printf '%s\n' "${HEPHAESTUS_PROFILE}" > "${PROFILE_FILE}"
-echo "[install-remote] profile ${HEPHAESTUS_PROFILE} -> ${PROFILE_FILE}"
+echo "[install-remote] profile ${HEPHAESTUS_PROFILE} overwritten -> ${PROFILE_FILE}"
 wait_for_apt_dpkg_lock
 apt_get update
 apt_get install -y git ca-certificates

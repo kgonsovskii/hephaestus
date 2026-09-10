@@ -5,19 +5,15 @@ internal static class Program
     public static async Task<int> Main(string[] args)
     {
         var argOffset = 0;
-        string profile;
+        string? cliProfile = null;
         try
         {
             var repoRoot = ResolveRepoRoot(AppContext.BaseDirectory);
             if (args.Length > 0 && !string.IsNullOrWhiteSpace(args[0]))
             {
-                profile = ValidateProfileName(args[0]);
-                WriteProfileFile(repoRoot, profile);
+                cliProfile = RemoteInstallCredsFile.ValidateProfileName(args[0]);
+                WriteProfileFile(repoRoot, cliProfile);
                 argOffset = 1;
-            }
-            else
-            {
-                profile = ResolveProfile(repoRoot);
             }
         }
         catch (Exception ex)
@@ -27,47 +23,50 @@ internal static class Program
         }
 
         var credsPath = RemoteInstallCredsFile.ResolveCredsPath(AppContext.BaseDirectory);
-        var creds = RemoteInstallCredsFile.LoadFromPathOrThrow(credsPath);
-        var server = args.Length > argOffset ? args[argOffset].Trim() : creds.Server;
-        var login = args.Length > argOffset + 1 ? args[argOffset + 1].Trim() : creds.Login;
-        var password = args.Length > argOffset + 2 ? args[argOffset + 2] : creds.Password;
+        IReadOnlyList<RemoteCreds> targets;
+        try
+        {
+            var all = RemoteInstallCredsFile.LoadAllFromPathOrThrow(credsPath);
+            targets = ResolveTargets(all, args, argOffset, cliProfile);
+        }
+        catch (Exception ex)
+        {
+            await Console.Error.WriteLineAsync(ex.Message).ConfigureAwait(false);
+            return 1;
+        }
 
         try
         {
             var repoRoot = ResolveRepoRoot(AppContext.BaseDirectory);
             var scriptPath = Path.Combine(repoRoot, "install", "shared", RemoteInstallRunner.DefaultRemoteScriptFileName);
-            var remoteCmd = RemoteInstallRunner.PrependProfileExport(
-                profile,
-                RemoteInstallRunner.LoadRemoteInstallBootstrapScript(scriptPath));
+            var bootstrap = RemoteInstallRunner.LoadRemoteInstallBootstrapScript(scriptPath);
 
-            Console.WriteLine($"Remote install -> {login}@{server} (profile {profile})");
-            Console.WriteLine("[1/1] SSH: write profile.txt, clone repo to $HOME/hephaestus (remote user), run install.sh");
+            Console.WriteLine($"Remote install: {targets.Count} server(s) in parallel (profile from creds, overwritten on each target)");
+            foreach (var t in targets)
+                Console.WriteLine($"  - {t.Login}@{t.Server}  profile {t.Profile}");
+            Console.WriteLine("SSH: write $HOME/profile.txt, clone repo to $HOME/hephaestus, run install.sh");
 
             var sshpass = await SshPassBootstrap.EnsureAsync(msg => Console.WriteLine(msg), default).ConfigureAwait(false);
 
-            var code = await RemoteInstallRunner.RunRemoteInstallAsync(
+            var consoleLock = new object();
+            var results = await RemoteInstallParallel.RunAsync(
                     sshpass,
-                    server,
-                    login,
-                    password,
-                    remoteCmd,
-                    async (line, ct) =>
+                    targets,
+                    creds => RemoteInstallRunner.PrependProfileExport(creds.Profile, bootstrap),
+                    (host, line, ct) =>
                     {
                         ct.ThrowIfCancellationRequested();
-                        await Console.Out.WriteAsync(line + Environment.NewLine).ConfigureAwait(false);
+                        lock (consoleLock)
+                            Console.Out.Write(PrefixHost(host, line) + Environment.NewLine);
+                        return Task.CompletedTask;
                     },
-                    onProcessStarted: null,
                     cancellationToken: default)
                 .ConfigureAwait(false);
 
-            if (code != 0)
-            {
-                await Console.Error.WriteLineAsync($"Remote install failed with exit {code}").ConfigureAwait(false);
-                return code;
-            }
+            Console.WriteLine();
+            Console.WriteLine(RemoteInstallParallel.FormatReport(results));
 
-            Console.WriteLine("Done.");
-            return 0;
+            return results.All(r => r.Succeeded) ? 0 : 1;
         }
         catch (Exception ex)
         {
@@ -75,6 +74,25 @@ internal static class Program
             return 1;
         }
     }
+
+    private static IReadOnlyList<RemoteCreds> ResolveTargets(
+        IReadOnlyList<RemoteCreds> fromFile,
+        string[] args,
+        int argOffset,
+        string? cliProfile)
+    {
+        if (args.Length <= argOffset)
+            return fromFile;
+
+        var first = fromFile[0];
+        var server = args[argOffset].Trim();
+        var login = args.Length > argOffset + 1 ? args[argOffset + 1].Trim() : first.Login;
+        var password = args.Length > argOffset + 2 ? args[argOffset + 2] : first.Password;
+        var profile = cliProfile ?? first.Profile;
+        return [new RemoteCreds(server, login, password, profile)];
+    }
+
+    private static string PrefixHost(string host, string line) => $"[{host}] {line}";
 
     private static string ResolveRepoRoot(string baseDirectory)
     {
@@ -97,23 +115,6 @@ internal static class Program
         throw new InvalidOperationException("Cannot resolve Hephaestus repository root (expected install/shared/install-remote.txt).");
     }
 
-    private static string ResolveProfile(string repositoryRoot)
-    {
-        var env = Environment.GetEnvironmentVariable("HEPHAESTUS_PROFILE");
-        if (!string.IsNullOrWhiteSpace(env))
-            return ValidateProfileName(env);
-
-        var path = ResolveProfileFilePath(repositoryRoot);
-        if (File.Exists(path))
-        {
-            var line = File.ReadLines(path).FirstOrDefault()?.Trim();
-            if (!string.IsNullOrWhiteSpace(line))
-                return ValidateProfileName(line);
-        }
-
-        return "default";
-    }
-
     private static string ResolveProfileFilePath(string repositoryRoot)
     {
         var parent = Directory.GetParent(Path.GetFullPath(repositoryRoot))?.FullName
@@ -121,23 +122,11 @@ internal static class Program
         return Path.Combine(parent, "profile.txt");
     }
 
-    private static string ValidateProfileName(string value)
-    {
-        var profile = value.Trim().Trim('\\', '/');
-        if (string.IsNullOrWhiteSpace(profile) || profile is "." or ".."
-            || profile.Contains('/') || profile.Contains('\\'))
-        {
-            throw new ArgumentException($"Invalid profile name: '{value}'");
-        }
-
-        return profile;
-    }
-
     private static void WriteProfileFile(string repositoryRoot, string profileName)
     {
-        var profile = ValidateProfileName(profileName);
+        var profile = RemoteInstallCredsFile.ValidateProfileName(profileName);
         var path = ResolveProfileFilePath(repositoryRoot);
         File.WriteAllText(path, profile + Environment.NewLine);
-        Console.WriteLine($"[install] Wrote profile '{profile}' to {path}");
+        Console.WriteLine($"[install] Wrote local profile '{profile}' to {path} (remote hosts still use creds profiles unless a single host is passed)");
     }
 }
