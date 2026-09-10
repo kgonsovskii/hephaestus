@@ -32,7 +32,7 @@ public sealed class HephaestusDataGitSyncTests
             RunGit("push -u origin main", clone);
             RunGit("symbolic-ref HEAD refs/heads/main", origin);
 
-            File.WriteAllText(serverPath, "{\"landingFtp\":\"ftp://ftp:ftp123@4tube.xyz/wwwroot/4tube.xyz/\"}\n");
+            File.WriteAllText(serverPath, "{\"landingFtp\":\"ftp://ftp:ftp123@4tube.xyz/4tube.xyz/\"}\n");
 
             var other = Path.Combine(root, "other");
             RunGit($"clone --branch main \"{origin}\" \"{other}\"", root);

@@ -6,11 +6,8 @@ using System.Text;
 namespace LandingFtp;
 
 /// <summary>
-/// Uploads landing files to an FTP folder URI such as
-/// <c>ftp://user:pass@host/site.host/</c>.
-/// Sites FTP is rooted at <c>hephaestus_sites_data/{profile}/wwwroot</c>, so
-/// <c>/site.host/</c> is the HTTP site folder. A leftover <c>/wwwroot/</c>
-/// prefix from the previous FTP root is stripped.
+/// Uploads landing files to the folder in the configured FTP URL, for example
+/// <c>ftp://user:pass@host/site.host/</c>. The URL path is the remote folder as-is.
 /// </summary>
 internal static class LandingFtpUploader
 {
@@ -31,10 +28,7 @@ internal static class LandingFtpUploader
         UploadBytes(folder, user, password, remoteFileName, buf);
     }
 
-    /// <summary>
-    /// Ensures a trailing slash. Drops a leading <c>wwwroot/</c> segment left over
-    /// from when FTP was rooted at the profile directory.
-    /// </summary>
+    /// <summary>Keeps the URL path unchanged except for a trailing slash.</summary>
     internal static Uri NormalizeFolderUri(Uri raw)
     {
         ArgumentNullException.ThrowIfNull(raw);
@@ -47,23 +41,16 @@ internal static class LandingFtpUploader
 
         var builder = new UriBuilder(raw)
         {
-            Path = StripLeadingWwwroot(raw.AbsolutePath),
+            Path = EnsureFolderPath(raw.AbsolutePath),
             Query = string.Empty,
             Fragment = string.Empty
         };
         return builder.Uri;
     }
 
-    internal static string StripLeadingWwwroot(string absolutePath)
+    internal static string EnsureFolderPath(string absolutePath)
     {
         var trimmed = (absolutePath ?? "/").Replace('\\', '/').Trim('/');
-        if (trimmed.Length == 0)
-            return "/";
-
-        var parts = trimmed.Split('/', StringSplitOptions.RemoveEmptyEntries);
-        if (parts[0].Equals("wwwroot", StringComparison.OrdinalIgnoreCase))
-            trimmed = parts.Length == 1 ? "" : string.Join('/', parts, 1, parts.Length - 1);
-
         return trimmed.Length == 0 ? "/" : "/" + trimmed + "/";
     }
 

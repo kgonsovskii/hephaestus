@@ -21,10 +21,10 @@ public sealed class LandingFtpUploaderTests
     }
 
     [TestMethod]
-    public void NormalizeFolderUri_StripsLegacyWwwrootPrefix()
+    public void NormalizeFolderUri_KeepsPathAsWritten()
     {
         var uri = LandingFtpUploader.NormalizeFolderUri(
-            new Uri("ftp://ftp:ftp123@4tube.xyz/wwwroot/4tube.xyz/"));
+            new Uri("ftp://ftp:ftp123@4tube.xyz/4tube.xyz"));
 
         uri.AbsolutePath.Should().Be("/4tube.xyz/");
     }
@@ -48,7 +48,7 @@ public sealed class LandingFtpUploaderTests
     }
 
     [TestMethod]
-    public void UploadFile_WritesIntoSiteFolder_UnderFtpWwwroot()
+    public void UploadFile_WritesIntoConfiguredFolder()
     {
         var root = Path.Combine(Path.GetTempPath(), "landing-ftp-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
