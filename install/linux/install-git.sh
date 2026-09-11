@@ -13,5 +13,5 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 hephaestus_load_profile_env
 hephaestus_source_shared_wait
 
-apt_get update
-apt_get install -y git ca-certificates
+ensure_pkg git
+ensure_pkg ca-certificates

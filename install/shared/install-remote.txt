@@ -4,9 +4,8 @@ CLONE_DIR="${HOME}/hephaestus"
 PROFILE_FILE="$(dirname "${CLONE_DIR}")/profile.txt"
 printf '%s\n' "${HEPHAESTUS_PROFILE}" > "${PROFILE_FILE}"
 echo "[install-remote] profile ${HEPHAESTUS_PROFILE} overwritten -> ${PROFILE_FILE}"
-wait_for_apt_dpkg_lock
-apt_get update
-apt_get install -y git ca-certificates
+ensure_pkg git
+ensure_pkg ca-certificates
 rm -rf "$CLONE_DIR"
 git clone --depth 1 https://github.com/kgonsovskii/hephaestus.git "$CLONE_DIR"
 bash "$CLONE_DIR/install/install.sh" "${HEPHAESTUS_PROFILE}"

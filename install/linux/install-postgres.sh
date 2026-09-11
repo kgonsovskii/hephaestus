@@ -20,8 +20,8 @@ fi
 
 hephaestus_source_shared_wait
 
-apt_get update
-apt_get install -y postgresql postgresql-client
+ensure_pkg postgresql
+ensure_pkg postgresql-client
 
 run_as_postgres() {
   if [ "${EUID:-0}" -eq 0 ]; then

@@ -32,3 +32,28 @@ apt_get() {
   wait_for_apt_dpkg_lock
   DEBIAN_FRONTEND=noninteractive apt-get -o DPkg::Lock::Timeout=300 "$@"
 }
+
+pkg_installed() {
+  dpkg-query -W -f='${Status}' "$1" 2>/dev/null | grep -q 'install ok installed'
+}
+
+: "${_APT_INDEX_UPDATED:=0}"
+
+apt_update_once() {
+  if [ "${_APT_INDEX_UPDATED}" -eq 0 ]; then
+    echo "[apt] update (a package is missing)"
+    apt_get update
+    _APT_INDEX_UPDATED=1
+  fi
+}
+
+ensure_pkg() {
+  local pkg="$1"
+  if pkg_installed "$pkg"; then
+    echo "[apt] skip ${pkg} (already installed)"
+    return 0
+  fi
+  echo "[apt] install ${pkg}"
+  apt_update_once
+  apt_get install -y "$pkg"
+}

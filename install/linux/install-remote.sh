@@ -63,7 +63,7 @@ fi
 if ! command -v sshpass >/dev/null 2>&1; then
   echo "[install-remote] sshpass not found; installing via apt…"
   hephaestus_source_shared_wait
-  apt_get install -y sshpass
+  ensure_pkg sshpass
 fi
 
 SSH_OPTS=(-o StrictHostKeyChecking=accept-new -o ConnectTimeout=30 -o ServerAliveInterval=15 -o ServerAliveCountMax=4)
