@@ -8,4 +8,8 @@ ensure_pkg git
 ensure_pkg ca-certificates
 rm -rf "$CLONE_DIR"
 git clone --depth 1 https://github.com/kgonsovskii/hephaestus.git "$CLONE_DIR"
-bash "$CLONE_DIR/install/install.sh" "${HEPHAESTUS_PROFILE}"
+if [ "${HEPHAESTUS_FORCE_DNS:-0}" = "1" ]; then
+  bash "$CLONE_DIR/install/install.sh" "${HEPHAESTUS_PROFILE}" --force
+else
+  bash "$CLONE_DIR/install/install.sh" "${HEPHAESTUS_PROFILE}"
+fi

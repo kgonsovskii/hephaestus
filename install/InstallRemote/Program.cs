@@ -4,6 +4,9 @@ internal static class Program
 {
     public static async Task<int> Main(string[] args)
     {
+        var forceDns = args.Any(a => string.Equals(a, "--force", StringComparison.OrdinalIgnoreCase));
+        args = args.Where(a => !string.Equals(a, "--force", StringComparison.OrdinalIgnoreCase)).ToArray();
+
         var argOffset = 0;
         string? cliProfile = null;
         try
@@ -52,7 +55,13 @@ internal static class Program
             var results = await RemoteInstallParallel.RunAsync(
                     sshpass,
                     targets,
-                    creds => RemoteInstallRunner.PrependProfileExport(creds.Profile, bootstrap),
+                    creds =>
+                    {
+                        var script = RemoteInstallRunner.PrependProfileExport(creds.Profile, bootstrap);
+                        return forceDns
+                            ? "export HEPHAESTUS_FORCE_DNS=1\n" + script
+                            : script;
+                    },
                     (host, line, ct) =>
                     {
                         ct.ThrowIfCancellationRequested();

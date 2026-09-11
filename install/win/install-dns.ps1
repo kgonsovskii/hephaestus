@@ -1,4 +1,7 @@
 #Requires -RunAsAdministrator
+param(
+    [switch]$Force
+)
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
@@ -9,6 +12,15 @@ $paths = Get-HephaestusInstallPaths
 $installDir = $paths.TechniDnsDir
 $buildDir = $paths.TechniBuildDir
 $installProj = $paths.InstallProj
+
+$dnsExePath = Join-Path $installDir 'DnsServerApp.exe'
+$dnsDllPath = Join-Path $installDir 'DnsServerApp.dll'
+$dnsInstalled = (Get-Service -Name 'hephaestus-dns' -ErrorAction SilentlyContinue) -and (
+    (Test-Path -LiteralPath $dnsExePath) -or (Test-Path -LiteralPath $dnsDllPath))
+if (-not $Force -and $dnsInstalled) {
+    Write-Host '[dns] skip Technitium (already installed; pass -Force to reinstall)'
+    exit 0
+}
 
 if (-not (Test-CommandExists 'git')) {
     throw 'git not found. Run install\win\install-git.ps1 first (or install\install.bat).'

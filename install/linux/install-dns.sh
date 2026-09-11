@@ -17,6 +17,22 @@ if [ "${EUID:-0}" -ne 0 ]; then
   exit 1
 fi
 
+FORCE_DNS=0
+for arg in "$@"; do
+  if [ "$arg" = "--force" ]; then
+    FORCE_DNS=1
+  fi
+done
+
+technitium_is_installed() {
+  [ -f /etc/systemd/system/dns.service ] && [ -f "${INSTALL_DIR}/DnsServerApp.dll" ]
+}
+
+if [ "$FORCE_DNS" -eq 0 ] && technitium_is_installed; then
+  echo "[dns] skip Technitium (already installed; pass --force to reinstall)"
+  exit 0
+fi
+
 hephaestus_source_shared_wait
 ensure_pkg curl
 

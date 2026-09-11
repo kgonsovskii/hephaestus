@@ -2,7 +2,8 @@
 # Full local Hephaestus install on Windows (Chocolatey ≈ apt). Mirrors install/linux/install.sh.
 param(
     [Parameter(Position = 0)]
-    [string]$Profile
+    [string]$Profile,
+    [switch]$Force
 )
 
 Set-StrictMode -Version Latest
@@ -19,7 +20,8 @@ if (-not $scriptDir) {
 function Invoke-InstallScript {
     param(
         [Parameter(Mandatory)][string]$Title,
-        [Parameter(Mandatory)][string]$Name
+        [Parameter(Mandatory)][string]$Name,
+        [string[]]$ExtraArgs = @()
     )
     $full = Join-Path $scriptDir $Name
     if (-not (Test-Path -LiteralPath $full)) {
@@ -27,7 +29,7 @@ function Invoke-InstallScript {
     }
     Write-Host ""
     Write-Host "========== $Title =========="
-    & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $full
+    & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $full @ExtraArgs
     if ($LASTEXITCODE -ne 0) {
         Write-Host "========== $Title FAILED (exit $LASTEXITCODE) ==========" -ForegroundColor Red
         exit $LASTEXITCODE
@@ -39,7 +41,9 @@ Invoke-InstallScript 'Uninstall (clean release)' 'uninstall.ps1'
 Invoke-InstallScript 'Git' 'install-git.ps1'
 Invoke-InstallScript '.NET 10 SDK' 'install-net.ps1'
 Invoke-InstallScript 'PostgreSQL' 'install-postgres.ps1'
-Invoke-InstallScript 'Technitium DNS' 'install-dns.ps1'
+$dnsArgs = @()
+if ($Force) { $dnsArgs = @('-Force') }
+Invoke-InstallScript 'Technitium DNS' 'install-dns.ps1' $dnsArgs
 Invoke-InstallScript 'Hephaestus data (git clone)' 'install-data.ps1'
 Invoke-InstallScript 'DomainHost (build + service)' 'install-soft.ps1'
 

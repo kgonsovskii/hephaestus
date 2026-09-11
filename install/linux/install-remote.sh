@@ -7,6 +7,21 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 CREDS_FILE="${SHARED_DIR}/install-remote-creds.txt"
 
+FORCE_DNS=0
+FILTERED_ARGS=()
+for arg in "$@"; do
+  if [ "$arg" = "--force" ]; then
+    FORCE_DNS=1
+  else
+    FILTERED_ARGS+=("$arg")
+  fi
+done
+if ((${#FILTERED_ARGS[@]})); then
+  set -- "${FILTERED_ARGS[@]}"
+else
+  set --
+fi
+
 read_install_remote_creds_file() {
   local f="$1"
   if [[ ! -f "$f" ]]; then
@@ -100,7 +115,7 @@ run_one() {
   local password="${PASSWORDS[idx]}"
   local profile="${PROFILES[idx]}"
   local exitfile="${WORKDIR}/${idx}.exit"
-  local profile_export="export HEPHAESTUS_PROFILE='${profile//\'/\'\\\'\'}'"
+  local profile_export="export HEPHAESTUS_PROFILE='${profile//\'/\'\\\'\'}'; export HEPHAESTUS_FORCE_DNS='${FORCE_DNS}'"
   (
     export SSHPASS="$password"
     set +e
