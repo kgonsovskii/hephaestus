@@ -177,9 +177,9 @@ public static class RemoteInstallRunner
         });
 
         var b64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(remoteScriptText));
-        var remoteShell = $"echo {b64} | base64 -d | bash";
+        var remoteShell = $"bash --noprofile --norc -c 'echo {b64} | base64 -d | bash; e=$?; exit $e'";
 
-        var sshArgs = new List<string> { "-e", "ssh", "-T" };
+        var sshArgs = new List<string> { "-e", "ssh", "-n", "-T" };
         sshArgs.AddRange(SshCommonOpts);
         sshArgs.Add($"{user}@{host}");
         sshArgs.Add(remoteShell);
@@ -191,6 +191,7 @@ public static class RemoteInstallRunner
             CreateNoWindow = true,
             RedirectStandardOutput = true,
             RedirectStandardError = true,
+            RedirectStandardInput = true,
             StandardOutputEncoding = Encoding.UTF8,
             StandardErrorEncoding = Encoding.UTF8,
         };
@@ -202,6 +203,15 @@ public static class RemoteInstallRunner
         using var proc = new Process { StartInfo = psi, EnableRaisingEvents = true };
         if (!proc.Start())
             throw new InvalidOperationException("Failed to start sshpass/ssh process.");
+
+        try
+        {
+            proc.StandardInput.Close();
+        }
+        catch
+        {
+            // stdin already closed
+        }
 
         onProcessStarted?.Invoke(proc);
 
