@@ -14,6 +14,7 @@ public static class RemoteInstallRunner
     private static readonly string[] SshCommonOpts =
     [
         "-o", "StrictHostKeyChecking=accept-new",
+        "-o", "RequestTTY=no",
         "-o", "ConnectTimeout=30",
         "-o", "ServerAliveInterval=15",
         "-o", "ServerAliveCountMax=4"
@@ -178,7 +179,7 @@ public static class RemoteInstallRunner
         var b64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(remoteScriptText));
         var remoteShell = $"echo {b64} | base64 -d | bash";
 
-        var sshArgs = new List<string> { "-e", "ssh", "-tt" };
+        var sshArgs = new List<string> { "-e", "ssh", "-T" };
         sshArgs.AddRange(SshCommonOpts);
         sshArgs.Add($"{user}@{host}");
         sshArgs.Add(remoteShell);

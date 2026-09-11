@@ -81,7 +81,7 @@ if ! command -v sshpass >/dev/null 2>&1; then
   ensure_pkg sshpass
 fi
 
-SSH_OPTS=(-o StrictHostKeyChecking=accept-new -o ConnectTimeout=30 -o ServerAliveInterval=15 -o ServerAliveCountMax=4)
+SSH_OPTS=(-o StrictHostKeyChecking=accept-new -o RequestTTY=no -o ConnectTimeout=30 -o ServerAliveInterval=15 -o ServerAliveCountMax=4)
 if [ -n "${SSH_KNOWN_HOSTS:-}" ]; then
   SSH_OPTS+=(-o "UserKnownHostsFile=$SSH_KNOWN_HOSTS")
 fi
@@ -120,7 +120,7 @@ run_one() {
     export SSHPASS="$password"
     set +e
     { printf '%s\n' "$profile_export"; cat "$WAIT_SH" "$REMOTE_TXT"; } \
-      | sshpass -e ssh -tt "${SSH_OPTS[@]}" "${login}@${server}" bash -s 2>&1 \
+      | sshpass -e ssh -T "${SSH_OPTS[@]}" "${login}@${server}" bash -s 2>&1 \
       | sed -u "s/^/[${server}] /"
     echo "${PIPESTATUS[1]}" >"$exitfile"
   )
