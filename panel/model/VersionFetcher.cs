@@ -6,9 +6,10 @@ public static class VersionFetcher
 {
     public static string Version()
     {
-        string version = Assembly.GetExecutingAssembly()
-            .GetCustomAttribute<AssemblyMetadataAttribute>()?
-            .Value;
-        return version;
+        var asm = Assembly.GetEntryAssembly() ?? Assembly.GetExecutingAssembly();
+        return asm.GetCustomAttributes<AssemblyMetadataAttribute>()
+                   .FirstOrDefault(a => a.Key == "BuildTimestamp")
+                   ?.Value
+               ?? "";
     }
 }

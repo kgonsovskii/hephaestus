@@ -1,6 +1,20 @@
 @using model
 @inject IHttpContextAccessor HttpContextAccessor
 
+<style>
+    .build-stamp {
+        position: fixed;
+        top: 8px;
+        right: 14px;
+        z-index: 2000;
+        font: 12px ui-monospace, Consolas, monospace;
+        color: #6b7280;
+        white-space: nowrap;
+        pointer-events: none;
+    }
+</style>
+<span class="build-stamp">@VersionFetcher.Version()</span>
+
 @if (HttpContextAccessor.HttpContext?.User?.Identity?.IsAuthenticated == true)
 {
     <div class="user-info">
@@ -9,7 +23,6 @@
                 <td>
                     Welcome, @HttpContextAccessor.HttpContext.User.Identity.Name!
                 </td>
-                <td>&nbsp;Version: @VersionFetcher.Version() &nbsp;</td>
                 <td>
                     <a href='@ViewData["UrlDoc"]' target="_blank">Goto Google Document</a>&nbsp;&nbsp;&nbsp;
                 </td>
