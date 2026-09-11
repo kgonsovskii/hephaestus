@@ -67,24 +67,29 @@ public abstract class BaseController: Controller
             string ipAddress = "unknown";
             try
             {
-                ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
+                var remote = HttpContext.Connection.RemoteIpAddress;
+                if (remote is not null && !ClientIpNormalizer.IsPrivate(remote))
+                    ipAddress = ClientIpNormalizer.Normalize(remote.ToString());
+                else
+                    ipAddress = ClientIpNormalizer.Normalize(remote?.ToString()) is { Length: > 0 } n ? n : "unknown";
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 ipAddress = "unknown";
             }
 
-            if (Request.Headers.TryGetValue("HTTP_X_FORWARDED_FOR",
-                    out Microsoft.Extensions.Primitives.StringValues value))
+            var remoteIsPrivate = ipAddress == "unknown" ||
+                (System.Net.IPAddress.TryParse(ipAddress, out var parsed) && ClientIpNormalizer.IsPrivate(parsed));
+            if (remoteIsPrivate &&
+                (Request.Headers.TryGetValue("X-Forwarded-For", out var value) ||
+                 Request.Headers.TryGetValue("HTTP_X_FORWARDED_FOR", out value)))
             {
-                var forwardedFor = value.First();
-
-                ipAddress = string.IsNullOrWhiteSpace(forwardedFor)
-                    ? ipAddress
-                    : forwardedFor.Split(',').Select(s => s.Trim()).FirstOrDefault();
+                var forwarded = ClientIpNormalizer.Normalize(value.ToString());
+                if (forwarded.Length > 0)
+                    ipAddress = forwarded;
             }
 
-            return ipAddress;
+            return string.IsNullOrWhiteSpace(ipAddress) ? "unknown" : ipAddress;
         }
     }
 }

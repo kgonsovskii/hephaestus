@@ -29,6 +29,16 @@ public sealed class SitesGoalNotifierTests
     }
 
     [TestMethod]
+    public void TryCreateRequest_NormalizesIpv4Mapped()
+    {
+        using var request = SitesGoalNotifier.TryCreateRequest("http://4tube.xyz/internal/track/goal", "::ffff:192.168.1.50");
+
+        request.Should().NotBeNull();
+        var json = request!.Content!.ReadAsStringAsync().GetAwaiter().GetResult();
+        json.Should().Contain("\"ip\":\"192.168.1.50\"");
+    }
+
+    [TestMethod]
     public void ServerModel_DeserializesSitesGoalUrl()
     {
         var model = System.Text.Json.JsonSerializer.Deserialize<model.ServerModel>(

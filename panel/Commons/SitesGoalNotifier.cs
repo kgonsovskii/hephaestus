@@ -10,7 +10,7 @@ public sealed class SitesGoalNotifier : ISitesGoalNotifier
 {
     private static readonly HttpClient SharedClient = new()
     {
-        Timeout = TimeSpan.FromSeconds(3)
+        Timeout = TimeSpan.FromSeconds(8)
     };
 
     private readonly ServerService _serverService;
@@ -38,47 +38,62 @@ public sealed class SitesGoalNotifier : ISitesGoalNotifier
         }
         catch (Exception ex)
         {
-            _logger.LogDebug(ex, "Sites goal skipped (server settings unavailable)");
+            _logger.LogWarning(ex, "Sites goal skipped (server settings unavailable)");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(url))
+        {
+            _logger.LogWarning("Sites goal skipped: sitesGoalUrl is empty");
             return;
         }
 
         var request = TryCreateRequest(url, ipAddress);
         if (request is null)
+        {
+            _logger.LogWarning("Sites goal skipped: ip={Ip} url={Url}", ipAddress, url);
             return;
+        }
 
-        _ = SendAsync(request);
+        var ip = ClientIpNormalizer.Normalize(ipAddress);
+        _ = SendAsync(request, url.Trim(), ip);
     }
 
     internal static HttpRequestMessage? TryCreateRequest(string? sitesGoalUrl, string? ipAddress)
     {
-        if (string.IsNullOrWhiteSpace(sitesGoalUrl) ||
-            string.IsNullOrWhiteSpace(ipAddress) ||
-            string.Equals(ipAddress, "unknown", StringComparison.OrdinalIgnoreCase))
+        var ip = ClientIpNormalizer.Normalize(ipAddress);
+        if (string.IsNullOrWhiteSpace(sitesGoalUrl) || ip.Length == 0)
             return null;
 
         if (!Uri.TryCreate(sitesGoalUrl.Trim(), UriKind.Absolute, out var uri) ||
             (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
             return null;
 
-        var json = JsonSerializer.Serialize(new { ip = ipAddress.Trim() });
-        return new HttpRequestMessage(HttpMethod.Post, uri)
+        var json = JsonSerializer.Serialize(new { ip });
+        var request = new HttpRequestMessage(HttpMethod.Post, uri)
         {
             Content = new StringContent(json, Encoding.UTF8, "application/json")
         };
+        request.Headers.TryAddWithoutValidation("User-Agent", "HephaestusGoal/1");
+        return request;
     }
 
-    private async Task SendAsync(HttpRequestMessage request)
+    private async Task SendAsync(HttpRequestMessage request, string url, string ip)
     {
         try
         {
             using (request)
-            using (await _http.SendAsync(request))
+            using (var response = await _http.SendAsync(request).ConfigureAwait(false))
             {
+                if (response.IsSuccessStatusCode)
+                    _logger.LogInformation("Sites goal notify {Status} {Url} ip={Ip}", (int)response.StatusCode, url, ip);
+                else
+                    _logger.LogWarning("Sites goal notify {Status} {Url} ip={Ip}", (int)response.StatusCode, url, ip);
             }
         }
         catch (Exception ex)
         {
-            _logger.LogDebug(ex, "Sites goal notify failed");
+            _logger.LogWarning(ex, "Sites goal notify failed {Url} ip={Ip}", url, ip);
         }
     }
 }
