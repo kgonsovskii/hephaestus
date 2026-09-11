@@ -107,6 +107,13 @@ namespace model;
             }
         }
 
+        [JsonPropertyName("sitesGoalUrl")]
+        public string SitesGoalUrl
+        {
+            get => ServerModel.SitesGoalUrl;
+            set => ServerModel.SitesGoalUrl = value;
+        }
+
         [JsonPropertyName("pushesForce")] public bool PushesForce
         {
             get => ServerModel.PushesForce;

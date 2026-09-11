@@ -266,6 +266,7 @@ public class CpController : BaseController
             existingModel.LandingFtp = updatedModel.LandingFtp;
             existingModel.LandingAuto = updatedModel.LandingAuto;
             existingModel.LandingName = updatedModel.LandingName;
+            existingModel.SitesGoalUrl = updatedModel.SitesGoalUrl;
 
             existingModel.Bux = updatedModel.Bux;
             existingModel.DnSponsor = updatedModel.DnSponsor;

